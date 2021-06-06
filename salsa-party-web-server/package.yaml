@@ -1,0 +1,55 @@
+name:                salsa-party-web-server
+version:             0.0.0.0
+license:             AllRightsReserved
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  dependencies:
+  - data-default
+  - envparse
+  - monad-logger
+  - optparse-applicative
+  - path
+  - path-io
+  - pretty-show
+  - shakespeare
+  - template-haskell
+  - text
+  - yaml
+  - yamlparse-applicative
+  - yesod
+  - yesod-static
+
+executables:
+  salsa-party-web-server:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - salsa-party-web-server
+
+tests:
+  salsa-party-web-server-test:
+    main: Spec.hs
+    source-dirs: test
+    build-tools: hspec-discover
+    ghc-options:
+    - -Wall
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - salsa-party-web-server
+    - genvalidity-hspec
+    - hspec
+    - monad-logger
+    - text
+    - yesod
+    - yesod-test
+
