@@ -9,6 +9,7 @@ import Database.Persist.Sqlite
 import Path
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Constants
+import Salsa.Party.Web.Server.DB
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.OptParse
 import Salsa.Party.Web.Server.Static
@@ -25,6 +26,7 @@ runSalsaPartyWebServer :: Settings -> IO ()
 runSalsaPartyWebServer Settings {..} =
   runStderrLoggingT $
     withSqlitePool (T.pack (fromAbsFile settingDbFile)) 1 $ \pool -> do
+      runSqlPool (runMigration migrateAll) pool
       let app =
             App
               { appLogLevel = settingLogLevel,
