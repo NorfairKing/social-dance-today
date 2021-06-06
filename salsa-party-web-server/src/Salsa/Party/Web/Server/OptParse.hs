@@ -30,6 +30,7 @@ getSettings = do
 data Settings = Settings
   { settingPort :: !Int,
     settingLogLevel :: !LogLevel,
+    settingDbFile :: !(Path Abs File),
     settingGoogleAnalyticsTracking :: !(Maybe Text),
     settingGoogleSearchConsoleVerification :: !(Maybe Text)
   }
@@ -38,9 +39,12 @@ data Settings = Settings
 combineToSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 combineToSettings Flags {..} Environment {..} mConf = do
   let settingPort = fromMaybe 8000 $ flagPort <|> envPort <|> mc confPort
-      settingLogLevel = fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> mc confLogLevel
-      settingGoogleAnalyticsTracking = flagGoogleAnalyticsTracking <|> envGoogleAnalyticsTracking <|> mc confGoogleAnalyticsTracking
-      settingGoogleSearchConsoleVerification = flagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification
+  let settingLogLevel = fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> mc confLogLevel
+  settingDbFile <- case flagDbFile <|> envDbFile <|> mc confDbFile of
+    Nothing -> resolveFile' "salsa-parties.sqlite3"
+    Just dbf -> resolveFile' dbf
+  let settingGoogleAnalyticsTracking = flagGoogleAnalyticsTracking <|> envGoogleAnalyticsTracking <|> mc confGoogleAnalyticsTracking
+  let settingGoogleSearchConsoleVerification = flagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification
   pure Settings {..}
   where
     mc :: (Configuration -> Maybe a) -> Maybe a
@@ -49,6 +53,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
 data Configuration = Configuration
   { confPort :: !(Maybe Int),
     confLogLevel :: !(Maybe LogLevel),
+    confDbFile :: !(Maybe FilePath),
     confGoogleAnalyticsTracking :: !(Maybe Text),
     confGoogleSearchConsoleVerification :: !(Maybe Text)
   }
@@ -63,6 +68,7 @@ instance YamlSchema Configuration where
       Configuration
         <$> optionalField "port" "Port"
         <*> optionalFieldWith "log-level" "Minimal severity for log messages" viaRead
+        <*> optionalField "database" "The path to the database file"
         <*> optionalField "google-analytics-tracking" "Google analytics tracking code"
         <*> optionalField "google-search-console-verification" "Google search console html element verification code"
 
@@ -83,6 +89,7 @@ data Environment = Environment
   { envConfigFile :: !(Maybe FilePath),
     envPort :: !(Maybe Int),
     envLogLevel :: !(Maybe LogLevel),
+    envDbFile :: !(Maybe FilePath),
     envGoogleAnalyticsTracking :: !(Maybe Text),
     envGoogleSearchConsoleVerification :: !(Maybe Text)
   }
@@ -99,6 +106,7 @@ environmentParser =
       <$> Env.var (fmap Just . Env.str) "CONFIG_FILE" (mE <> Env.help "Config file")
       <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "Port")
       <*> Env.var (fmap Just . Env.auto) "LOG_LEVEL" (mE <> Env.help "Minimal severity for log messages")
+      <*> Env.var (fmap Just . Env.auto) "DATABASE" (mE <> Env.help "The path to the database file")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_ANALYTICS_TRACKING" (mE <> Env.help "Google analytics tracking code")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (mE <> Env.help "Google search console html element verification code")
   where
@@ -132,6 +140,7 @@ data Flags = Flags
   { flagConfigFile :: !(Maybe FilePath),
     flagPort :: !(Maybe Int),
     flagLogLevel :: !(Maybe LogLevel),
+    flagDbFile :: !(Maybe FilePath),
     flagGoogleAnalyticsTracking :: !(Maybe Text),
     flagGoogleSearchConsoleVerification :: !(Maybe Text)
   }
@@ -165,6 +174,16 @@ parseFlags =
           ( mconcat
               [ long "log-level",
                 help "Minimal severity for log messages",
+                metavar "LOG_LEVEL"
+              ]
+          )
+      )
+    <*> optional
+      ( option
+          auto
+          ( mconcat
+              [ long "database",
+                help "The path to the database file",
                 metavar "LOG_LEVEL"
               ]
           )

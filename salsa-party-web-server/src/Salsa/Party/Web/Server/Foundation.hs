@@ -11,6 +11,7 @@
 module Salsa.Party.Web.Server.Foundation where
 
 import Data.Text (Text)
+import Salsa.Party.Web.Server.DB
 import Salsa.Party.Web.Server.Widget
 import Text.Hamlet
 import Yesod
@@ -19,6 +20,7 @@ import Yesod.EmbeddedStatic
 data App = App
   { appLogLevel :: !LogLevel,
     appStatic :: !EmbeddedStatic,
+    appConnectionPool :: !ConnectionPool,
     appGoogleAnalyticsTracking :: !(Maybe Text),
     appGoogleSearchConsoleVerification :: !(Maybe Text)
   }

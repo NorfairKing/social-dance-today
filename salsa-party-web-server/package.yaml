@@ -14,10 +14,14 @@ library:
   - optparse-applicative
   - path
   - path-io
+  - persistent
+  - persistent-sqlite
+  - persistent-template
   - pretty-show
   - shakespeare
   - template-haskell
   - text
+  - time
   - yaml
   - yamlparse-applicative
   - yesod
@@ -45,11 +49,12 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - salsa-party-web-server
     - genvalidity-hspec
     - hspec
     - monad-logger
+    - persistent
+    - persistent-sqlite
+    - salsa-party-web-server
     - text
     - yesod
     - yesod-test
-
