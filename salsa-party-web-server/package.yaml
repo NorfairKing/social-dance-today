@@ -51,6 +51,8 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - genvalidity-sydtest
+    - http-types
+    - http-client
     - monad-logger
     - path
     - path-io
@@ -58,6 +60,8 @@ tests:
     - persistent-sqlite
     - salsa-party-web-server
     - sydtest
+    - sydtest-persistent-sqlite
+    - sydtest-wai
     - sydtest-yesod
     - text
     - yesod

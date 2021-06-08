@@ -80,6 +80,8 @@ test-suite salsa-party-web-server-test
   build-depends:
       base >=4.7 && <5
     , genvalidity-sydtest
+    , http-client
+    , http-types
     , monad-logger
     , path
     , path-io
@@ -87,6 +89,8 @@ test-suite salsa-party-web-server-test
     , persistent-sqlite
     , salsa-party-web-server
     , sydtest
+    , sydtest-persistent-sqlite
+    , sydtest-wai
     , sydtest-yesod
     , text
     , yesod

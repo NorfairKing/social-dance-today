@@ -24,6 +24,7 @@ extra-deps:
   subdirs:
     - sydtest
     - sydtest-discover
+    - sydtest-persistent-sqlite
     - sydtest-wai
     - sydtest-yesod
 nix:
