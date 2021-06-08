@@ -9,9 +9,9 @@ import Salsa.Party.Web.Server.Handler.Import
 
 data PartyForm = PartyForm
   { partyFormTitle :: Text,
-    partyFormDescription :: Textarea,
+    partyFormDescription :: Maybe Textarea,
     partyFormDay :: Day,
-    partyFormStart :: TimeOfDay
+    partyFormStart :: Maybe TimeOfDay
   }
   deriving (Show, Eq, Generic)
 
@@ -19,9 +19,9 @@ partyForm :: FormInput Handler PartyForm
 partyForm =
   PartyForm
     <$> ireq textField "title"
-    <*> ireq textareaField "description"
+    <*> iopt textareaField "description"
     <*> ireq dayField "day"
-    <*> ireq timeField "start"
+    <*> iopt timeField "start"
 
 getSubmitPartyR :: Handler Html
 getSubmitPartyR = submitPartyPage Nothing
@@ -39,7 +39,7 @@ submitPartyPage mResult = case mResult of
         insert
           ( Party
               { partyTitle = partyFormTitle,
-                partyDescription = unTextarea partyFormDescription,
+                partyDescription = unTextarea <$> partyFormDescription,
                 partyDay = partyFormDay,
                 partyStart = partyFormStart
               }
@@ -47,9 +47,9 @@ submitPartyPage mResult = case mResult of
     redirect $ PartyR partyId
   _ -> do
     token <- genToken
-    defaultLayout $(widgetFile "submit-party")
+    withMFormResultNavBar mResult $(widgetFile "submit-party")
 
 getPartyR :: PartyId -> Handler Html
 getPartyR partyId = do
   Party {..} <- runDB $ get404 partyId
-  defaultLayout $(widgetFile "party")
+  withNavBar $(widgetFile "party")

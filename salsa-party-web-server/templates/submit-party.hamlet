@@ -9,7 +9,8 @@
     Title
   <input
     type=text
-    name="title">
+    name="title"
+    required>
 
   <label>
     Description
@@ -20,7 +21,8 @@
     Day
   <input
     type=date
-    name="day">
+    name="day"
+    required>
 
   <label>
     Start

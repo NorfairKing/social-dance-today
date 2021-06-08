@@ -1,1 +1,4 @@
+$forall (classes, message) <- messages
+  <div class=#{classes}>
+    ^{message}
 ^{widget}

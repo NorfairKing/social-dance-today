@@ -31,9 +31,9 @@ share
 
 Party
     title Text
-    description Text
+    description Text Maybe
     day Day
-    start TimeOfDay
+    start TimeOfDay Maybe
 
     deriving Show
     deriving Eq

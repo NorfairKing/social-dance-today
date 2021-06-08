@@ -1,0 +1,7 @@
+<div id="navbar">
+
+$maybe msg <- mmsg
+  ^{msg}
+
+^{body}
+

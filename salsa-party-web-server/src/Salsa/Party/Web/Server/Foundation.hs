@@ -10,6 +10,7 @@
 
 module Salsa.Party.Web.Server.Foundation where
 
+import Control.Monad
 import Data.Text (Text)
 import Path
 import Salsa.Party.Web.Server.Constants
@@ -35,6 +36,7 @@ instance Yesod App where
   shouldLogIO app _ ll = pure $ ll >= appLogLevel app
   defaultLayout widget = do
     app <- getYesod
+    messages <- getMessages
     let withAutoReload =
           if development
             then (<> autoReloadWidgetFor ReloadR)
@@ -65,3 +67,25 @@ genToken = do
     case reqToken req of
       Nothing -> mempty
       Just n -> [shamlet|<input type=hidden name=#{tokenKey} value=#{n}>|]
+
+withMFormResultNavBar :: Maybe (FormResult a) -> Widget -> Handler Html
+withMFormResultNavBar = maybe withNavBar withFormResultNavBar
+
+withFormResultNavBar :: FormResult a -> Widget -> Handler Html
+withFormResultNavBar fr w =
+  case fr of
+    FormSuccess _ -> withNavBar w
+    FormFailure ts -> withFormFailureNavBar ts w
+    FormMissing -> withFormFailureNavBar ["Missing data"] w
+
+withNavBar :: Widget -> Handler Html
+withNavBar = withFormFailureNavBar []
+
+withFormFailureNavBar :: [Text] -> Widget -> Handler Html
+withFormFailureNavBar msgs body = do
+  let mmsg =
+        Just $
+          forM_ msgs $ \msg ->
+            [shamlet|<div role="alert">#{msg}
+          |]
+  defaultLayout $(widgetFile "with-nav-bar")
