@@ -1,6 +1,9 @@
 final: previous:
 with final.haskell.lib;
 
+let
+  sources = import ./sources.nix;
+in
 {
   salsaPartyPackages =
     let
@@ -86,6 +89,7 @@ with final.haskell.lib;
                   appendful = appendfulPkg "appendful";
                   appendful-persistent = appendfulPkg "appendful-persistent";
                   genvalidity-appendful = appendfulPkg "genvalidity-appendful";
+                  yesod-autoreload = self.callCabal2nix "yesod-autoreload" sources.yesod-autoreload { };
                   base16 = base16Pkg;
                 }
             );

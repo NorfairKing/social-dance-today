@@ -11,10 +11,12 @@
 module Salsa.Party.Web.Server.Foundation where
 
 import Data.Text (Text)
+import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.DB
 import Salsa.Party.Web.Server.Widget
 import Text.Hamlet
 import Yesod
+import Yesod.AutoReload
 import Yesod.EmbeddedStatic
 
 data App = App
@@ -31,7 +33,12 @@ instance Yesod App where
   shouldLogIO app _ ll = pure $ ll >= appLogLevel app
   defaultLayout widget = do
     app <- getYesod
-    pageContent <- widgetToPageContent $(widgetFile "default-body")
+    let withAutoReload =
+          if development
+            then (<> autoReloadWidgetFor ReloadR)
+            else id
+    let body = withAutoReload $(widgetFile "default-body")
+    pageContent <- widgetToPageContent body
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
 
 instance YesodPersist App where
@@ -39,3 +46,6 @@ instance YesodPersist App where
   runDB func = do
     pool <- getsYesod appConnectionPool
     runSqlPool func pool
+
+getReloadR :: Handler ()
+getReloadR = getAutoReloadR

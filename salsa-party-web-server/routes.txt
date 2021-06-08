@@ -3,3 +3,5 @@
 
 /submit-party SubmitPartyR GET
 /party/#PartyId PartyR GET
+
+/reload ReloadR GET

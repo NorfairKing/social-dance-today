@@ -94,5 +94,17 @@
         "type": "tarball",
         "url": "https://github.com/NorfairKing/yamlparse-applicative/archive/7a329d06ffa45595963cf98f34910887115eb471.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "yesod-autoreload": {
+        "branch": "master",
+        "description": "Automatically have the browser reload a yesod site (without having to press the refresh button).",
+        "homepage": "https://cs-syd.eu/posts/2021-02-27-watching-changes-in-yesod",
+        "owner": "NorfairKing",
+        "repo": "yesod-autoreload",
+        "rev": "7135e864c0d4a48efeae473ee2761f5168946e58",
+        "sha256": "0n5r1qq9aim602baq7bh08jq8lz8bbk5wpv2dgmj415qxmk60z6d",
+        "type": "tarball",
+        "url": "https://github.com/NorfairKing/yesod-autoreload/archive/7135e864c0d4a48efeae473ee2761f5168946e58.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }

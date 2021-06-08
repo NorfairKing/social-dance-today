@@ -25,6 +25,7 @@ library:
   - yaml
   - yamlparse-applicative
   - yesod
+  - yesod-autoreload
   - yesod-static
 
 executables:
