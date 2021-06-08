@@ -1,2 +1,6 @@
-<h1>
-  #{formatTime defaultTimeLocale "%F" partyDay}: #{partyTitle}
+<section .section>
+  <div .container>
+    <h1 .title>
+      #{partyTitle}
+    <h2 .subtitle>
+      #{formatTime defaultTimeLocale "%F" partyDay}

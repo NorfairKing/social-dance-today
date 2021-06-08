@@ -15,6 +15,7 @@ import Data.Text (Text)
 import Path
 import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.DB
+import Salsa.Party.Web.Server.Static
 import Salsa.Party.Web.Server.Widget
 import Text.Hamlet
 import Yesod

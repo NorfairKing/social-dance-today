@@ -27,5 +27,7 @@ extra-deps:
     - sydtest-persistent-sqlite
     - sydtest-wai
     - sydtest-yesod
+- github: NorfairKing/yesod-static-remote
+  commit: ed6bf8ef434d49b160429028613a1f6882fccfdf
 nix:
   shell-file: shell.nix

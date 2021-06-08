@@ -1,9 +1,11 @@
-<h1>
-  Salsa Party
+<section .section>
+  <div .container>
+    <h1 .title>
+      Salsa Party
 
-<p>
-  Which parties can I go to today?
-  Answers coming soon.
+    <p>
+      Which parties can I go to today?
+      Answers coming soon.
 
-<a href=@{SubmitPartyR}>
-  Submit Party
+    <a .button .is-primary href=@{SubmitPartyR}>
+      Submit Party

@@ -49,6 +49,7 @@ library
     , yesod
     , yesod-autoreload
     , yesod-static
+    , yesod-static-remote
   default-language: Haskell2010
 
 executable salsa-party-web-server

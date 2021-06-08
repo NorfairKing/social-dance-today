@@ -5,3 +5,5 @@
 /party/#PartyId PartyR GET
 
 /reload ReloadR GET
+
+/static StaticR EmbeddedStatic appStatic

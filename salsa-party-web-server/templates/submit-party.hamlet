@@ -1,36 +1,50 @@
-<h1>
-  Submit Party
+<section .section>
+  <div .container>
+    <h1 .title .is-1>
+      Submit Party
 
-<form
-  method=post
-  action=@{SubmitPartyR}>
+    <form .form
+      method=post
+      action=@{SubmitPartyR}>
 
-  <label>
-    Title
-  <input
-    type=text
-    name="title"
-    required>
+      <div .field>
+        <label .label>
+          Title
+        <div .control>
+          <input
+            type=text
+            name="title"
+            required>
 
-  <label>
-    Description
-  <textarea
-    name="description">
+      <div .field>
+        <label .label>
+          Description
+        <div .control>
+          <textarea
+            name="description">
 
-  <label>
-    Day
-  <input
-    type=date
-    name="day"
-    required>
+      <div .field>
+        <label .label>
+          Day
+        <div .control>
+          <input
+            type=date
+            name="day"
+            required>
 
-  <label>
-    Start
-  <input
-    type=time
-    name="start">
+      <div .field>
+        <label .label>
+          Start
+        <div .control>
+          <input
+            type=time
+            name="start">
 
-  ^{token}
+      <div .field>
+        <div .control>
+          ^{token}
 
-  <button type="submit">
-    Submit
+      <div .field>
+        <div .control>
+          <button .button .is-primary type="submit">
+            Submit

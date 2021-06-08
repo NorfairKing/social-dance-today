@@ -3,8 +3,12 @@ $doctype 5
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <title>#{pageTitle pageContent}
     ^{pageHead pageContent}
+
+    <link rel="icon" type="image/x-icon" sizes="32x32" href=@{StaticR favicon_ico}>
+    <link rel="stylesheet" href=@{StaticR bulma_css}>
 
     $maybe verification <- appGoogleSearchConsoleVerification app
       <meta name="google-site-verification" content="#{verification}"/>

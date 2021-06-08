@@ -27,6 +27,8 @@ library:
   - yesod
   - yesod-autoreload
   - yesod-static
+  - yesod-static
+  - yesod-static-remote
 
 executables:
   salsa-party-web-server:
