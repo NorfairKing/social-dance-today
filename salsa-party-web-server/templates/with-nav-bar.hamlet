@@ -9,8 +9,7 @@
 
   <div class="navbar-menu">
     <div class="navbar-start">
-      <a class="navbar-item">
-      <a class="navbar-item">
+      <a class="navbar-item" href=@{HomeR}>
         <strong>
           Find a party
       
@@ -22,7 +21,6 @@
           
           <a class="button is-light">
             Log in
-      <a class="navbar-item">
 
 $forall errorMessage <- errorMessages
   <div .is-danger role="alert">

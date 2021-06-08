@@ -6,6 +6,7 @@ import Control.Monad
 import Control.Monad.Logger
 import qualified Data.Text as T
 import Database.Persist.Sqlite
+import Network.HTTP.Client.TLS as HTTP
 import Path
 import Path.IO
 import Salsa.Party.Web.Server.Application ()
@@ -29,11 +30,13 @@ runSalsaPartyWebServer Settings {..} =
     withSqlitePool (T.pack (fromAbsFile settingDbFile)) 1 $ \pool -> do
       runSqlPool (runMigration migrateAll) pool
       sessionKeyFile <- resolveFile' "client_session_key.aes"
+      man <- HTTP.newTlsManager
       let app =
             App
               { appLogLevel = settingLogLevel,
                 appStatic = salsaPartyWebServerStatic,
                 appConnectionPool = pool,
+                appHTTPManager = man,
                 appSessionKeyFile = sessionKeyFile,
                 appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
                 appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification

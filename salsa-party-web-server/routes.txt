@@ -1,9 +1,10 @@
 / HomeR GET
 
-
 /submit-party SubmitPartyR GET POST
 /party/#PartyId PartyR GET
 
 /reload ReloadR GET
 
 /static StaticR EmbeddedStatic appStatic
+
+!/#Text SearchR GET

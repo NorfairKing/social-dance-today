@@ -8,8 +8,11 @@ dependencies:
 library:
   source-dirs: src
   dependencies:
+  - aeson
   - data-default
   - envparse
+  - http-client
+  - http-client-tls
   - monad-logger
   - optparse-applicative
   - path

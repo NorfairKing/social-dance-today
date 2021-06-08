@@ -1,0 +1,7 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-1>
+      Parties around #{placeQuery}
+
+    <pre>
+      #{ppShow resp}

@@ -11,6 +11,7 @@
 module Salsa.Party.Web.Server.Foundation where
 
 import Data.Text (Text)
+import Network.HTTP.Client as HTTP
 import Path
 import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.DB
@@ -24,6 +25,7 @@ import Yesod.EmbeddedStatic
 data App = App
   { appLogLevel :: !LogLevel,
     appStatic :: !EmbeddedStatic,
+    appHTTPManager :: !HTTP.Manager,
     appConnectionPool :: !ConnectionPool,
     appSessionKeyFile :: !(Path Abs File),
     appGoogleAnalyticsTracking :: !(Maybe Text),
