@@ -83,10 +83,4 @@ withNavBar :: Widget -> Handler Html
 withNavBar = withFormFailureNavBar []
 
 withFormFailureNavBar :: [Text] -> Widget -> Handler Html
-withFormFailureNavBar msgs body = do
-  let mmsg =
-        Just $
-          forM_ msgs $ \msg ->
-            [shamlet|<div role="alert">#{msg}
-          |]
-  defaultLayout $(widgetFile "with-nav-bar")
+withFormFailureNavBar errorMessages body = defaultLayout $(widgetFile "with-nav-bar")
