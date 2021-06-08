@@ -4,6 +4,7 @@
 
 module OpenStreetMaps.Geocoding where
 
+import Control.Concurrent.TokenLimiter
 import Control.Exception
 import Data.Aeson as JSON
 import Data.Aeson.Types as JSON
@@ -13,6 +14,7 @@ import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
 import GHC.Generics (Generic)
 import Network.HTTP.Client as HTTP
+import System.IO.Unsafe
 import Text.Read
 
 -- From https://nominatim.org/release-docs/develop/api/Search/#search-queries
@@ -59,6 +61,23 @@ data GeocodingException = DecodingGeocodingResponseFailed String
 
 instance Exception GeocodingException
 
+-- https://operations.osmfoundation.org/policies/nominatim
+-- says: "an absolute maximum of 1 request per second"
+
+limitConfig :: LimitConfig
+limitConfig =
+  defaultLimitConfig
+    { maxBucketTokens = 1,
+      initialBucketTokens = 1,
+      bucketRefillTokensPerSecond = 1
+    }
+
+{-# NOINLINE rateLimiter #-}
+rateLimiter :: RateLimiter
+rateLimiter =
+  unsafePerformIO $
+    newRateLimiter limitConfig
+
 makeGeocodingRequest :: HTTP.Manager -> GeocodingRequest -> IO GeocodingResponse
 makeGeocodingRequest manager GeocodingRequest {..} = do
   requestPrototype <- parseRequest "https://nominatim.openstreetmap.org/search"
@@ -68,6 +87,7 @@ makeGeocodingRequest manager GeocodingRequest {..} = do
           requestPrototype
             { requestHeaders = [("User-Agent", "salsa-parties.today")]
             }
+  waitDebit limitConfig rateLimiter 1
   response <- httpLbs request manager
   case eitherDecode' (responseBody response) of
     -- We throw this exception because it should not happen and we can't fix it.

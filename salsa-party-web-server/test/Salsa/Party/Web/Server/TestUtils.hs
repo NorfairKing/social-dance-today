@@ -21,7 +21,7 @@ serverSpec :: ServerSpec -> Spec
 serverSpec = managerSpec . yesodSpecWithSiteSetupFunc serverSetupFunc
 
 serverSetupFunc :: HTTP.Manager -> SetupFunc App
-serverSetupFunc _ = do
+serverSetupFunc man = do
   tdir <- tempDirSetupFunc "salsa"
   pool <- connectionPoolSetupFunc migrateAll
   sessionKeyFile <- resolveFile tdir "session-key.aes"
@@ -29,6 +29,7 @@ serverSetupFunc _ = do
     App
       { appLogLevel = LevelWarn,
         appStatic = salsaPartyWebServerStatic,
+        appHTTPManager = man,
         appConnectionPool = pool,
         appSessionKeyFile = sessionKeyFile,
         appGoogleAnalyticsTracking = Nothing,

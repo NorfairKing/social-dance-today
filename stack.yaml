@@ -29,5 +29,6 @@ extra-deps:
     - sydtest-yesod
 - github: NorfairKing/yesod-static-remote
   commit: ed6bf8ef434d49b160429028613a1f6882fccfdf
+- token-limiter-0.2.0.3@sha256:7e27a9032e14c3a91f5333f9b87f260a38bcdf6339ef1aa969cdfc49bca75e8b,2321
 nix:
   shell-file: shell.nix

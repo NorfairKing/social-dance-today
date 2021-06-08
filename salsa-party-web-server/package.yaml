@@ -25,6 +25,7 @@ library:
   - template-haskell
   - text
   - time
+  - token-limiter
   - yaml
   - yamlparse-applicative
   - yesod
