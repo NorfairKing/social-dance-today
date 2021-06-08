@@ -43,19 +43,19 @@ tests:
   salsa-party-web-server-test:
     main: Spec.hs
     source-dirs: test
-    build-tools: hspec-discover
+    build-tools: sydtest-discover
     ghc-options:
     - -Wall
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - genvalidity-hspec
-    - hspec
+    - genvalidity-sydtest
     - monad-logger
     - persistent
     - persistent-sqlite
     - salsa-party-web-server
     - text
     - yesod
-    - yesod-test
+    - sydtest
+    - sydtest-yesod

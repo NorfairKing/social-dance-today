@@ -41,6 +41,9 @@ instance Yesod App where
     pageContent <- widgetToPageContent body
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
 
+instance RenderMessage App FormMessage where
+  renderMessage _ _ = defaultFormMessage
+
 instance YesodPersist App where
   type YesodPersistBackend App = SqlBackend
   runDB func = do
@@ -49,3 +52,13 @@ instance YesodPersist App where
 
 getReloadR :: Handler ()
 getReloadR = getAutoReloadR
+
+genToken :: MonadHandler m => m Html
+genToken = do
+  alreadyExpired
+  req <- getRequest
+  let tokenKey = defaultCsrfParamName
+  pure $
+    case reqToken req of
+      Nothing -> mempty
+      Just n -> [shamlet|<input type=hidden name=#{tokenKey} value=#{n}>|]

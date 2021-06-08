@@ -1,7 +1,7 @@
 / HomeR GET
 
 
-/submit-party SubmitPartyR GET
+/submit-party SubmitPartyR GET POST
 /party/#PartyId PartyR GET
 
 /reload ReloadR GET

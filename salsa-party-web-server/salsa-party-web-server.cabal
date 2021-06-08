@@ -68,6 +68,7 @@ test-suite salsa-party-web-server-test
   main-is: Spec.hs
   other-modules:
       Salsa.Party.Web.Server.Handler.HomeSpec
+      Salsa.Party.Web.Server.Handler.PartySpec
       Salsa.Party.Web.Server.Handler.TestImport
       Salsa.Party.Web.Server.TestUtils
       Paths_salsa_party_web_server
@@ -75,16 +76,16 @@ test-suite salsa-party-web-server-test
       test
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
   build-tool-depends:
-      hspec-discover:hspec-discover
+      sydtest-discover:sydtest-discover
   build-depends:
       base >=4.7 && <5
-    , genvalidity-hspec
-    , hspec
+    , genvalidity-sydtest
     , monad-logger
     , persistent
     , persistent-sqlite
     , salsa-party-web-server
+    , sydtest
+    , sydtest-yesod
     , text
     , yesod
-    , yesod-test
   default-language: Haskell2010

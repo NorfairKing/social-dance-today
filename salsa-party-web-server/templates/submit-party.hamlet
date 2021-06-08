@@ -27,3 +27,8 @@
   <input
     type=time
     name="start">
+
+  ^{token}
+
+  <button type="submit">
+    Submit
