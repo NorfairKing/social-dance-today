@@ -81,6 +81,8 @@ test-suite salsa-party-web-server-test
       base >=4.7 && <5
     , genvalidity-sydtest
     , monad-logger
+    , path
+    , path-io
     , persistent
     , persistent-sqlite
     , salsa-party-web-server

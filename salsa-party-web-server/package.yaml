@@ -52,10 +52,12 @@ tests:
     dependencies:
     - genvalidity-sydtest
     - monad-logger
+    - path
+    - path-io
     - persistent
     - persistent-sqlite
     - salsa-party-web-server
-    - text
-    - yesod
     - sydtest
     - sydtest-yesod
+    - text
+    - yesod
