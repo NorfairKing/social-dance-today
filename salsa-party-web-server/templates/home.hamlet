@@ -4,3 +4,6 @@
 <p>
   Which parties can I go to today?
   Answers coming soon.
+
+<a href=@{SubmitPartyR}>
+  Submit Party

@@ -1,0 +1,29 @@
+<h1>
+  Submit Party
+
+<form
+  method=post
+  action=@{SubmitPartyR}>
+
+  <label>
+    Title
+  <input
+    type=text
+    name="title">
+
+  <label>
+    Description
+  <textarea
+    name="description">
+
+  <label>
+    Day
+  <input
+    type=date
+    name="day">
+
+  <label>
+    Start
+  <input
+    type=time
+    name="start">

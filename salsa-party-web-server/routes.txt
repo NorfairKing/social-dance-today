@@ -1,1 +1,5 @@
 / HomeR GET
+
+
+/submit-party SubmitPartyR GET
+/party/#PartyId PartyR GET

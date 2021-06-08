@@ -3,4 +3,4 @@ stack.yaml.lock
 result*
 .pre-commit-config.yaml
 *.aes
-*.sqlite3
+*.sqlite3*

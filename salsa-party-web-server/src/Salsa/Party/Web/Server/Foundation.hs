@@ -33,3 +33,9 @@ instance Yesod App where
     app <- getYesod
     pageContent <- widgetToPageContent $(widgetFile "default-body")
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
+
+instance YesodPersist App where
+  type YesodPersistBackend App = SqlBackend
+  runDB func = do
+    pool <- getsYesod appConnectionPool
+    runSqlPool func pool

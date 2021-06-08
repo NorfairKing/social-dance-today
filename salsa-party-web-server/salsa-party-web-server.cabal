@@ -19,6 +19,7 @@ library
       Salsa.Party.Web.Server.Handler
       Salsa.Party.Web.Server.Handler.Home
       Salsa.Party.Web.Server.Handler.Import
+      Salsa.Party.Web.Server.Handler.Party
       Salsa.Party.Web.Server.OptParse
       Salsa.Party.Web.Server.Static
       Salsa.Party.Web.Server.Static.TH
