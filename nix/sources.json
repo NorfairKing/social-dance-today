@@ -106,5 +106,17 @@
         "type": "tarball",
         "url": "https://github.com/NorfairKing/yesod-autoreload/archive/7135e864c0d4a48efeae473ee2761f5168946e58.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "yesod-static-remote": {
+        "branch": "master",
+        "description": "Turn runtime CDN usage into compile-time CDN usage.",
+        "homepage": "https://cs-syd.eu/posts/2019-07-14-yesod-static-remote",
+        "owner": "NorfairKing",
+        "repo": "yesod-static-remote",
+        "rev": "ed6bf8ef434d49b160429028613a1f6882fccfdf",
+        "sha256": "0sya5in6zb8q3nbjx0zma7kc71wd3r63k1vf9z0hk0fpqgavr1xc",
+        "type": "tarball",
+        "url": "https://github.com/NorfairKing/yesod-static-remote/archive/ed6bf8ef434d49b160429028613a1f6882fccfdf.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }

@@ -1,4 +1,5 @@
 final: previous:
+with final.lib;
 with final.haskell.lib;
 
 let
@@ -24,10 +25,38 @@ in
         exeName: name:
         generateOptparseApplicativeCompletion exeName (salsaPartyPkg name);
       salsaPartyPkgWithOwnComp = name: salsaPartyPkgWithComp name name;
-
+      withStaticResources = pkg: resources: overrideCabal pkg (
+        old:
+        {
+          preConfigure =
+            let
+              copyResource = path: resource:
+                ''
+                  local path="${path}"
+                  mkdir --parents $(dirname "''$path")
+                  cp ${resource} "''$path"
+                '';
+              copyScript = concatStringsSep "\n" (mapAttrsToList copyResource resources);
+            in
+            ''
+              ${old.preConfigure or ""}
+              ${copyScript}
+            '';
+        }
+      );
+      salsa-party-web-server = withStaticResources (salsaPartyPkg "salsa-party-web-server") {
+        "static/favicon.ico" = builtins.fetchurl {
+          url = "https://cs-syd.eu/logo/res/favicon.ico";
+          sha256 = "0ahvcky6lrcpk2vd41558bjgh3x80mpkz4cl7smka534ypm5arz9";
+        };
+        "static/bulma.css" = builtins.fetchurl {
+          url = "https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css";
+          sha256 = "0nbwcsa1gi36f2aq9y96bap7glkp40k3g2bjb9s1vmg0011sri1v";
+        };
+      };
     in
     {
-      "salsa-party-web-server" = salsaPartyPkg "salsa-party-web-server";
+      inherit salsa-party-web-server;
     };
 
   salsaPartyRelease =
@@ -59,8 +88,7 @@ in
                       owner = "supki";
                       repo = "envparse";
                       rev = "de5944fb09e9d941fafa35c0f05446af348e7b4d";
-                      sha256 =
-                        "sha256:0piljyzplj3bjylnxqfl4zpc3vc88i9fjhsj06bk7xj48dv3jg3b";
+                      sha256 = "sha256:0piljyzplj3bjylnxqfl4zpc3vc88i9fjhsj06bk7xj48dv3jg3b";
                     };
                   envparsePkg =
                     dontCheck (
@@ -90,6 +118,7 @@ in
                   appendful-persistent = appendfulPkg "appendful-persistent";
                   genvalidity-appendful = appendfulPkg "genvalidity-appendful";
                   yesod-autoreload = self.callCabal2nix "yesod-autoreload" sources.yesod-autoreload { };
+                  yesod-static-remote = dontCheck (self.callCabal2nix "yesod-static-remote" sources.yesod-static-remote { });
                   base16 = base16Pkg;
                 }
             );

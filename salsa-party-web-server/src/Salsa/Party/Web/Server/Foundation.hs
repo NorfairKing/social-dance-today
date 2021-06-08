@@ -10,7 +10,6 @@
 
 module Salsa.Party.Web.Server.Foundation where
 
-import Control.Monad
 import Data.Text (Text)
 import Path
 import Salsa.Party.Web.Server.Constants
