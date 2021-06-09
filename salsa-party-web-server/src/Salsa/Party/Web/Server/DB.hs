@@ -35,6 +35,7 @@ Party
     description Text Maybe
     day Day
     start TimeOfDay Maybe
+    place PlaceId
 
     deriving Show
     deriving Eq

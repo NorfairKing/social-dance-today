@@ -4,3 +4,6 @@
       #{partyTitle}
     <h2 .subtitle>
       #{formatTime defaultTimeLocale "%F" partyDay}
+
+    <h3 .title>
+      Address: #{placeQuery}

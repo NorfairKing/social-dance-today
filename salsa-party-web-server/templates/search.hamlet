@@ -5,3 +5,9 @@
 
     <pre>
       #{ppShow place}
+
+    <pre>
+      #{ppShow today}
+
+    <pre>
+      #{ppShow parties}

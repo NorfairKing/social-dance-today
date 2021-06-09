@@ -5,13 +5,15 @@
 
 module Salsa.Party.Web.Server.Handler.Party where
 
+import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
 
 data PartyForm = PartyForm
   { partyFormTitle :: Text,
     partyFormDescription :: Maybe Textarea,
     partyFormDay :: Day,
-    partyFormStart :: Maybe TimeOfDay
+    partyFormStart :: Maybe TimeOfDay,
+    partyFormAddress :: Text,
   }
   deriving (Show, Eq, Generic)
 
@@ -22,6 +24,7 @@ partyForm =
     <*> iopt textareaField "description"
     <*> ireq dayField "day"
     <*> iopt timeField "start"
+    <*> ireq textField "address"
 
 getSubmitPartyR :: Handler Html
 getSubmitPartyR = submitPartyPage Nothing
@@ -34,6 +37,7 @@ postSubmitPartyR = do
 submitPartyPage :: Maybe (FormResult PartyForm) -> Handler Html
 submitPartyPage mResult = case mResult of
   Just (FormSuccess PartyForm {..}) -> do
+    Entity placeId _ <- lookupPlace partyFormLocation
     partyId <-
       runDB $
         insert
@@ -41,7 +45,8 @@ submitPartyPage mResult = case mResult of
               { partyTitle = partyFormTitle,
                 partyDescription = unTextarea <$> partyFormDescription,
                 partyDay = partyFormDay,
-                partyStart = partyFormStart
+                partyStart = partyFormStart,
+                partyPlace = placeId
               }
           )
     redirect $ PartyR partyId
@@ -52,4 +57,5 @@ submitPartyPage mResult = case mResult of
 getPartyR :: PartyId -> Handler Html
 getPartyR partyId = do
   Party {..} <- runDB $ get404 partyId
+  Place{..} <- runDB $ get404 partyPlace
   withNavBar $(widgetFile "party")

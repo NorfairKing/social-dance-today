@@ -36,6 +36,7 @@ library
     , base >=4.7 && <5
     , data-default
     , envparse
+    , esqueleto
     , http-client
     , http-client-tls
     , monad-logger
