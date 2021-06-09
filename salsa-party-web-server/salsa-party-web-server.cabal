@@ -17,6 +17,7 @@ library
       Salsa.Party.Web.Server.Constants
       Salsa.Party.Web.Server.DB
       Salsa.Party.Web.Server.Foundation
+      Salsa.Party.Web.Server.Geocoding
       Salsa.Party.Web.Server.Handler
       Salsa.Party.Web.Server.Handler.Home
       Salsa.Party.Web.Server.Handler.Import

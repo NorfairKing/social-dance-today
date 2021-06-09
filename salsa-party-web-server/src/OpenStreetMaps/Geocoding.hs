@@ -8,6 +8,7 @@ import Control.Concurrent.TokenLimiter
 import Control.Exception
 import Data.Aeson as JSON
 import Data.Aeson.Types as JSON
+import Data.Fixed
 import Data.List
 import Data.Ord
 import Data.Text (Text)
@@ -34,8 +35,8 @@ instance FromJSON GeocodingResponse where
   parseJSON = fmap GeocodingResponse . parseJSON
 
 data Place = Place
-  { placeLat :: !Double,
-    placeLon :: !Double,
+  { placeLat :: !Nano,
+    placeLon :: !Nano,
     placeImportance :: !Double,
     placeRank :: !Double,
     placeDisplayName :: !Text

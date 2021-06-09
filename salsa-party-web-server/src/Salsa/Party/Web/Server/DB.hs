@@ -18,6 +18,7 @@ module Salsa.Party.Web.Server.DB
   )
 where
 
+import Data.Fixed
 import Data.Text (Text)
 import Data.Time
 import Database.Persist
@@ -34,6 +35,17 @@ Party
     description Text Maybe
     day Day
     start TimeOfDay Maybe
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
+Place
+    query Text
+    lat Nano
+    lon Nano
+
+    UniquePlaceQuery query
 
     deriving Show
     deriving Eq

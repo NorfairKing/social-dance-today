@@ -4,4 +4,4 @@
       Parties around #{placeQuery}
 
     <pre>
-      #{ppShow resp}
+      #{ppShow place}
