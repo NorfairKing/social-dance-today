@@ -5,7 +5,27 @@
 
     <p>
       Which parties can I go to today?
-      Answers coming soon.
 
-    <a .button .is-primary href=@{SubmitPartyR}>
-      Submit Party
+    <p>
+      Find parties near:
+    
+    <form
+      method=get
+      action=@{QueryR}>
+      <div .field>
+        <div .control>
+          <input type=text name="query" placeholder="Zürich" required>
+
+      <div .field>
+        <div .control>
+          <button .button .is-primary type="submit">
+            Search
+
+
+          
+
+    <p>
+      I want to advertise a party
+    <p>
+      <a .button href=@{SubmitPartyR}>
+        Submit Party

@@ -1,5 +1,7 @@
 / HomeR GET
 
+/query QueryR GET
+
 /submit-party SubmitPartyR GET POST
 /party/#PartyId PartyR GET
 
