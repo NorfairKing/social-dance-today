@@ -10,10 +10,10 @@ import Salsa.Party.Web.Server.Handler.Import
 
 data PartyForm = PartyForm
   { partyFormTitle :: Text,
-    partyFormDescription :: Maybe Textarea,
     partyFormDay :: Day,
-    partyFormStart :: Maybe TimeOfDay,
     partyFormAddress :: Text,
+    partyFormDescription :: Maybe Textarea,
+    partyFormStart :: Maybe TimeOfDay
   }
   deriving (Show, Eq, Generic)
 
@@ -21,10 +21,10 @@ partyForm :: FormInput Handler PartyForm
 partyForm =
   PartyForm
     <$> ireq textField "title"
-    <*> iopt textareaField "description"
     <*> ireq dayField "day"
-    <*> iopt timeField "start"
     <*> ireq textField "address"
+    <*> iopt textareaField "description"
+    <*> iopt timeField "start"
 
 getSubmitPartyR :: Handler Html
 getSubmitPartyR = submitPartyPage Nothing
@@ -37,7 +37,7 @@ postSubmitPartyR = do
 submitPartyPage :: Maybe (FormResult PartyForm) -> Handler Html
 submitPartyPage mResult = case mResult of
   Just (FormSuccess PartyForm {..}) -> do
-    Entity placeId _ <- lookupPlace partyFormLocation
+    Entity placeId _ <- lookupPlace partyFormAddress
     partyId <-
       runDB $
         insert
@@ -57,5 +57,5 @@ submitPartyPage mResult = case mResult of
 getPartyR :: PartyId -> Handler Html
 getPartyR partyId = do
   Party {..} <- runDB $ get404 partyId
-  Place{..} <- runDB $ get404 partyPlace
+  Place {..} <- runDB $ get404 partyPlace
   withNavBar $(widgetFile "party")

@@ -11,17 +11,11 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Salsa.Party.Web.Server.DB
-  ( module Salsa.Party.Web.Server.DB,
-    module Database.Persist,
-    module Database.Persist.Sql,
-  )
-where
+module Salsa.Party.Web.Server.DB where
 
 import Data.Fixed
 import Data.Text (Text)
 import Data.Time
-import Database.Persist
 import Database.Persist.Sql
 import Database.Persist.TH
 import GHC.Generics (Generic)

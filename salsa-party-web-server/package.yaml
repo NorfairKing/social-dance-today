@@ -58,9 +58,10 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - genvalidity-sydtest
-    - http-types
     - http-client
+    - http-types
     - monad-logger
+    - mtl
     - path
     - path-io
     - persistent

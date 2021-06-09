@@ -11,6 +11,7 @@
 module Salsa.Party.Web.Server.Foundation where
 
 import Data.Text (Text)
+import Database.Persist.Sql
 import Network.HTTP.Client as HTTP
 import Path
 import Salsa.Party.Web.Server.Constants

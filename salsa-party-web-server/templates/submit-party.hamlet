@@ -18,19 +18,28 @@
 
       <div .field>
         <label .label>
-          Description
-        <div .control>
-          <textarea
-            name="description">
-
-      <div .field>
-        <label .label>
           Day
         <div .control>
           <input
             type=date
             name="day"
             required>
+
+      <div .field>
+        <label .label>
+          Address
+        <div .control>
+          <input
+            type=text
+            name="address"
+            required>
+
+      <div .field>
+        <label .label>
+          Description
+        <div .control>
+          <textarea
+            name="description">
 
       <div .field>
         <label .label>

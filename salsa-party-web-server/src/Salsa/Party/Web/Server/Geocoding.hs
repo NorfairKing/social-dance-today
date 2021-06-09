@@ -11,22 +11,22 @@ import Salsa.Party.Web.Server.Foundation
 import Yesod
 
 lookupPlace :: Text -> Handler (Entity Place)
-lookupPlace placeQuery = do
-  mPlace <- runDB $ getBy $ UniquePlaceQuery placeQuery
+lookupPlace query = do
+  mPlace <- runDB $ getBy $ UniquePlaceQuery query
   case mPlace of
     Just pe -> pure pe
     Nothing -> do
       man <- getsYesod appHTTPManager
-      let req = OSM.GeocodingRequest {OSM.geocodingRequestQuery = placeQuery}
+      let req = OSM.GeocodingRequest {OSM.geocodingRequestQuery = query}
       resp <- liftIO $ OSM.makeGeocodingRequest man req
       case listToMaybe $ OSM.geocodingResponsePlaces resp of
         Nothing -> invalidArgs ["Place not found."]
         Just p ->
           runDB $
             upsertBy
-              (UniquePlaceQuery placeQuery)
+              (UniquePlaceQuery query)
               ( Place
-                  { placeQuery = placeQuery,
+                  { placeQuery = query,
                     placeLat = OSM.placeLat p,
                     placeLon = OSM.placeLon p
                   }

@@ -92,6 +92,7 @@ test-suite salsa-party-web-server-test
     , http-client
     , http-types
     , monad-logger
+    , mtl
     , path
     , path-io
     , persistent
