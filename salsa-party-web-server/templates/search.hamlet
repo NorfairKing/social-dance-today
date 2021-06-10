@@ -7,7 +7,7 @@
       #{ppShow place}
 
     <pre>
-      #{ppShow today}
+      #{ppShow day}
 
     <pre>
       #{ppShow parties}

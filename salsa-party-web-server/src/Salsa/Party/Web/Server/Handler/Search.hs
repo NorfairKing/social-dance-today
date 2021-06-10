@@ -5,6 +5,7 @@
 
 module Salsa.Party.Web.Server.Handler.Search where
 
+import qualified Data.Text as T
 import qualified Database.Esqueleto as E
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
@@ -22,13 +23,16 @@ getPlaceR placeQuery = do
 
 getSearchR :: Text -> Handler Html
 getSearchR placeQuery = do
+  md <- lookupGetParam "day"
+  day <- case md >>= parseTimeM True defaultTimeLocale "%F" . T.unpack of
+    Nothing -> liftIO $ utctDay <$> getCurrentTime -- today
+    Just d -> pure d
   Entity _ place <- lookupPlace placeQuery
-  today <- liftIO $ utctDay <$> getCurrentTime
   parties <- runDB $
     E.select $
       E.from $ \(party `E.InnerJoin` p) -> do
         E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
-        E.where_ (party E.^. PartyDay E.==. E.val today)
+        E.where_ (party E.^. PartyDay E.==. E.val day)
         let latDiff = p E.^. PlaceLat E.-. E.val (placeLat place)
         let lonDiff = p E.^. PlaceLon E.-. E.val (placeLon place)
         let latDiffSquared = latDiff E.*. latDiff
