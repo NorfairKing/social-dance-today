@@ -46,6 +46,11 @@ serverSetupFunc man = do
         appGoogleSearchConsoleVerification = Nothing
       }
 
+type DBSpec = SpecWith DB.ConnectionPool
+
+dbSpec :: DBSpec -> Spec
+dbSpec = modifyMaxSuccess (`div` 10) . persistSqliteSpec migrateAll
+
 testSubmitPlace :: Text -> Location -> YesodClientM App (Entity Place)
 testSubmitPlace address Location {..} =
   testDB $

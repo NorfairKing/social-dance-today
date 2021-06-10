@@ -31,6 +31,8 @@ getSearchR placeQuery = do
   parties <- runDB $ searchQuery day place
   withNavBar $(widgetFile "search")
 
+-- For a given day and a given place,
+-- find all parties sorted by distance.
 searchQuery :: MonadIO m => Day -> Place -> SqlPersistT m [Entity Party]
 searchQuery day place =
   E.select $
