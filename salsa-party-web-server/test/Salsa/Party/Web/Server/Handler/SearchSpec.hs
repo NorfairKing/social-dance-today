@@ -3,6 +3,7 @@
 module Salsa.Party.Web.Server.Handler.SearchSpec (spec) where
 
 import qualified Data.Text as T
+import Salsa.Party.Web.Server.Handler.Search
 import Salsa.Party.Web.Server.Handler.TestImport
 
 spec :: Spec
@@ -41,3 +42,11 @@ spec = serverSpec $ do
                 setUrl $ SearchR query
                 forM_ (mDay :: Maybe Day) $ \day -> addGetParam "day" $ T.pack $ formatTime defaultTimeLocale "%F" day
               statusIs 200
+
+    describe "searchQuery" $
+      it "runs without results" $ \yc ->
+        forAllValid $ \day ->
+          forAllValid $ \place ->
+            runYesodClientM yc $ do
+              ps <- testDB $ searchQuery day place
+              liftIO $ ps `shouldBe` []

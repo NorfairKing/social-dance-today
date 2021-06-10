@@ -16,6 +16,10 @@ module Salsa.Party.Web.Server.DB where
 import Data.Fixed
 import Data.Text (Text)
 import Data.Time
+import Data.Validity
+import Data.Validity.Persist ()
+import Data.Validity.Text ()
+import Data.Validity.Time ()
 import Database.Persist.Sql
 import Database.Persist.TH
 import GHC.Generics (Generic)
@@ -24,16 +28,6 @@ share
   [mkPersist sqlSettings, mkMigrate "migrateAll"]
   [persistLowerCase|
 
-Party
-    title Text
-    description Text Maybe
-    day Day
-    start TimeOfDay Maybe
-    place PlaceId
-
-    deriving Show
-    deriving Eq
-    deriving Generic
 
 Place
     query Text
@@ -45,4 +39,20 @@ Place
     deriving Show
     deriving Eq
     deriving Generic
+
+
+Party
+    title Text
+    description Text Maybe
+    day Day
+    start TimeOfDay Maybe
+    place PlaceId
+
+    deriving Show
+    deriving Eq
+    deriving Generic
 |]
+
+instance Validity Place
+
+instance Validity Party

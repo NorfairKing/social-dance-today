@@ -11,9 +11,17 @@ extra-deps:
 - github: NorfairKing/validity
   commit: 549f92de456dd7fbf21b84f2f6fdca9a3c6506d9
   subdirs:
-    - validity
     - genvalidity
+    - genvalidity-containers
+    - genvalidity-persistent
     - genvalidity-sydtest
+    - genvalidity-text
+    - genvalidity-time
+    - validity
+    - validity-containers
+    - validity-persistent
+    - validity-text
+    - validity-time
 - github: NorfairKing/safe-coloured-text
   commit: 7f157485e55528648a95edf3508a122b2e55779e
   subdirs:

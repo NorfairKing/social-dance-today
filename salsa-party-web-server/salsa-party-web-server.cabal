@@ -53,6 +53,7 @@ library
     , time
     , token-limiter
     , validity
+    , validity-persistent
     , validity-text
     , validity-time
     , yaml
@@ -95,6 +96,7 @@ test-suite salsa-party-web-server-test
       QuickCheck
     , base >=4.7 && <5
     , genvalidity
+    , genvalidity-persistent
     , genvalidity-sydtest
     , genvalidity-text
     , genvalidity-time

@@ -3,6 +3,7 @@
 module Salsa.Party.Web.Server.Gen where
 
 import Data.GenValidity
+import Data.GenValidity.Persist ()
 import Data.GenValidity.Text ()
 import Data.GenValidity.Time ()
 import Salsa.Party.Web.Server.Handler.Import
@@ -17,5 +18,13 @@ instance GenValid Location where
   shrinkValid = shrinkValidStructurally
 
 instance GenValid PartyForm where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid Place where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid Party where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally

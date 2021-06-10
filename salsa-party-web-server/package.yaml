@@ -30,6 +30,7 @@ library:
   - validity
   - validity-text
   - validity-time
+  - validity-persistent
   - yaml
   - yamlparse-applicative
   - yesod
@@ -65,6 +66,7 @@ tests:
     - genvalidity-sydtest
     - genvalidity-text
     - genvalidity-time
+    - genvalidity-persistent
     - http-client
     - http-types
     - monad-logger
