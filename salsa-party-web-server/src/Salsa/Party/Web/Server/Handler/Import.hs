@@ -9,6 +9,8 @@ import Data.Time as X
 import Data.Validity as X hiding (Location, check)
 import Data.Validity.Text as X
 import Data.Validity.Time as X
+import Database.Persist as X
+import Database.Persist.Sql as X
 import GHC.Generics as X (Generic)
 import Salsa.Party.Web.Server.DB as X
 import Salsa.Party.Web.Server.Foundation as X

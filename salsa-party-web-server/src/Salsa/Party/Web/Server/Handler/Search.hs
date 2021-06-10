@@ -28,18 +28,20 @@ getSearchR placeQuery = do
     Nothing -> liftIO $ utctDay <$> getCurrentTime -- today
     Just d -> pure d
   Entity _ place <- lookupPlace placeQuery
-  parties <- runDB $
-    E.select $
-      E.from $ \(party `E.InnerJoin` p) -> do
-        E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
-        E.where_ (party E.^. PartyDay E.==. E.val day)
-        let latDiff = p E.^. PlaceLat E.-. E.val (placeLat place)
-        let lonDiff = p E.^. PlaceLon E.-. E.val (placeLon place)
-        let latDiffSquared = latDiff E.*. latDiff
-        let lonDiffSquared = lonDiff E.*. lonDiff
-        -- Luckily the square function is monotone so we don't need to sqrt here
-        let distSquared = latDiffSquared E.+. lonDiffSquared
-        E.orderBy [E.asc distSquared]
-        pure party
-
+  parties <- runDB $ searchQuery day place
   withNavBar $(widgetFile "search")
+
+searchQuery :: MonadIO m => Day -> Place -> SqlPersistT m [Entity Party]
+searchQuery day place =
+  E.select $
+    E.from $ \(party `E.InnerJoin` p) -> do
+      E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
+      E.where_ (party E.^. PartyDay E.==. E.val day)
+      let latDiff = p E.^. PlaceLat E.-. E.val (placeLat place)
+      let lonDiff = p E.^. PlaceLon E.-. E.val (placeLon place)
+      let latDiffSquared = latDiff E.*. latDiff
+      let lonDiffSquared = lonDiff E.*. lonDiff
+      -- Luckily the square function is monotone so we don't need to sqrt here
+      let distSquared = latDiffSquared E.+. lonDiffSquared
+      E.orderBy [E.asc distSquared]
+      pure party
