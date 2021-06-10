@@ -3,6 +3,7 @@
 module Salsa.Party.Web.Server.Geocoding where
 
 import Control.Monad.IO.Class
+import Control.Monad.Logger
 import Data.Maybe
 import Data.Text (Text)
 import qualified OpenStreetMaps.Geocoding as OSM
@@ -14,8 +15,11 @@ lookupPlace :: Text -> Handler (Entity Place)
 lookupPlace query = do
   mPlace <- runDB $ getBy $ UniquePlaceQuery query
   case mPlace of
-    Just pe -> pure pe
+    Just pe -> do
+      logDebugNS "geocoding" $ "Founding place in cache, not gecoding query: " <> query
+      pure pe
     Nothing -> do
+      logDebugNS "geocoding" $ "Did not find place in cache, gecoding query: " <> query
       man <- getsYesod appHTTPManager
       let req = OSM.GeocodingRequest {OSM.geocodingRequestQuery = query}
       resp <- liftIO $ OSM.makeGeocodingRequest man req

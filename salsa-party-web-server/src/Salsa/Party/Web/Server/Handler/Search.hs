@@ -22,18 +22,19 @@ getPlaceR placeQuery = do
   withNavBar $(widgetFile "place")
 
 getSearchR :: Text -> Handler Html
-getSearchR placeQuery = do
+getSearchR query = do
   md <- lookupGetParam "day"
-  day <- case md >>= parseTimeM True defaultTimeLocale "%F" . T.unpack of
+  let mDay = md >>= parseTimeM True defaultTimeLocale "%F" . T.unpack
+  day <- case mDay of
     Nothing -> liftIO $ utctDay <$> getCurrentTime -- today
     Just d -> pure d
-  Entity _ place <- lookupPlace placeQuery
+  Entity _ place <- lookupPlace query
   parties <- runDB $ searchQuery day place
   withNavBar $(widgetFile "search")
 
 -- For a given day and a given place,
 -- find all parties sorted by distance.
-searchQuery :: MonadIO m => Day -> Place -> SqlPersistT m [Entity Party]
+searchQuery :: MonadIO m => Day -> Place -> SqlPersistT m [(Entity Party, Entity Place)]
 searchQuery day place =
   E.select $
     E.from $ \(party `E.InnerJoin` p) -> do
@@ -46,4 +47,4 @@ searchQuery day place =
       -- Luckily the square function is monotone so we don't need to sqrt here
       let distSquared = latDiffSquared E.+. lonDiffSquared
       E.orderBy [E.asc distSquared]
-      pure party
+      pure (party, p)

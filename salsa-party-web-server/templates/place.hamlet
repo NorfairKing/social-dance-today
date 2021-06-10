@@ -4,4 +4,8 @@
       Place: #{placeQuery}
 
     <pre>
+      TODO put a nice openstreetmap here.
+
       #{ppShow place}
+
+
