@@ -60,6 +60,7 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - QuickCheck
     - genvalidity
     - genvalidity-sydtest
     - genvalidity-text

@@ -92,7 +92,8 @@ test-suite salsa-party-web-server-test
   build-tool-depends:
       sydtest-discover:sydtest-discover
   build-depends:
-      base >=4.7 && <5
+      QuickCheck
+    , base >=4.7 && <5
     , genvalidity
     , genvalidity-sydtest
     , genvalidity-text

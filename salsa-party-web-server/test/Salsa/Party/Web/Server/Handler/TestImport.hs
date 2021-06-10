@@ -7,6 +7,7 @@ import Salsa.Party.Web.Server.DB as X
 import Salsa.Party.Web.Server.Foundation as X
 import Salsa.Party.Web.Server.Gen as X ()
 import Salsa.Party.Web.Server.TestUtils as X
+import Test.QuickCheck as X
 import Test.Syd as X
 import Test.Syd.Validity as X hiding (Location)
 import Test.Syd.Yesod as X
