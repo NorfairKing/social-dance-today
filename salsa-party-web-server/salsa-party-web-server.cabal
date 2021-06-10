@@ -103,5 +103,6 @@ test-suite salsa-party-web-server-test
     , sydtest-wai
     , sydtest-yesod
     , text
+    , time
     , yesod
   default-language: Haskell2010
