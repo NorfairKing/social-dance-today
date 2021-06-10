@@ -27,6 +27,9 @@ library:
   - text
   - time
   - token-limiter
+  - validity
+  - validity-text
+  - validity-time
   - yaml
   - yamlparse-applicative
   - yesod
@@ -57,7 +60,10 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - genvalidity
     - genvalidity-sydtest
+    - genvalidity-text
+    - genvalidity-time
     - http-client
     - http-types
     - monad-logger

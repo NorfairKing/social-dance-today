@@ -52,6 +52,9 @@ library
     , text
     , time
     , token-limiter
+    , validity
+    , validity-text
+    , validity-time
     , yaml
     , yamlparse-applicative
     , yesod
@@ -76,6 +79,7 @@ test-suite salsa-party-web-server-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Salsa.Party.Web.Server.Gen
       Salsa.Party.Web.Server.Handler.HomeSpec
       Salsa.Party.Web.Server.Handler.PartySpec
       Salsa.Party.Web.Server.Handler.SearchSpec
@@ -89,7 +93,10 @@ test-suite salsa-party-web-server-test
       sydtest-discover:sydtest-discover
   build-depends:
       base >=4.7 && <5
+    , genvalidity
     , genvalidity-sydtest
+    , genvalidity-text
+    , genvalidity-time
     , http-client
     , http-types
     , monad-logger

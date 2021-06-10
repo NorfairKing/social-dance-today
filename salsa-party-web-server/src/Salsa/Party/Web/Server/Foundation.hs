@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -10,8 +11,13 @@
 
 module Salsa.Party.Web.Server.Foundation where
 
+import Data.Fixed
 import Data.Text (Text)
+import Data.Validity
+import Data.Validity.Text ()
+import Data.Validity.Time ()
 import Database.Persist.Sql
+import GHC.Generics (Generic)
 import Network.HTTP.Client as HTTP
 import Path
 import Salsa.Party.Web.Server.Constants
@@ -21,7 +27,7 @@ import Salsa.Party.Web.Server.Widget
 import Text.Hamlet
 import Yesod
 import Yesod.AutoReload
-import Yesod.EmbeddedStatic
+import Yesod.EmbeddedStatic (EmbeddedStatic)
 
 data App = App
   { appLogLevel :: !LogLevel,
@@ -86,3 +92,14 @@ withNavBar = withFormFailureNavBar []
 
 withFormFailureNavBar :: [Text] -> Widget -> Handler Html
 withFormFailureNavBar errorMessages body = defaultLayout $(widgetFile "with-nav-bar")
+
+data Location = Location
+  { locationLat :: !Nano,
+    locationLon :: !Nano
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity Location
+
+instance Validity Textarea where
+  validate = validate . unTextarea

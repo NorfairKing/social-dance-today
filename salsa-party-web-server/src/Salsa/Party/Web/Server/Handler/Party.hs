@@ -5,6 +5,7 @@
 
 module Salsa.Party.Web.Server.Handler.Party where
 
+import qualified Data.Text as T
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
 
@@ -16,6 +17,14 @@ data PartyForm = PartyForm
     partyFormStart :: Maybe TimeOfDay
   }
   deriving (Show, Eq, Generic)
+
+instance Validity PartyForm where
+  validate pf@PartyForm {..} =
+    mconcat
+      [ genericValidate pf,
+        declare "The title is nonempty" $ not $ T.null partyFormTitle,
+        declare "The address is nonempty" $ not $ T.null partyFormAddress
+      ]
 
 partyForm :: FormInput Handler PartyForm
 partyForm =

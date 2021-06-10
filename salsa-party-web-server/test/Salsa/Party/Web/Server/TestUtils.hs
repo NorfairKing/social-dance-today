@@ -5,7 +5,6 @@ module Salsa.Party.Web.Server.TestUtils where
 
 import Control.Monad.Logger
 import Control.Monad.Reader
-import Data.Fixed
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
@@ -29,7 +28,7 @@ import Yesod (Textarea (..))
 type ServerSpec = YesodSpec App
 
 serverSpec :: ServerSpec -> Spec
-serverSpec = managerSpec . yesodSpecWithSiteSetupFunc serverSetupFunc
+serverSpec = modifyMaxSuccess (`div` 20) . managerSpec . yesodSpecWithSiteSetupFunc serverSetupFunc
 
 serverSetupFunc :: HTTP.Manager -> SetupFunc App
 serverSetupFunc man = do
@@ -46,12 +45,6 @@ serverSetupFunc man = do
         appGoogleAnalyticsTracking = Nothing,
         appGoogleSearchConsoleVerification = Nothing
       }
-
-data Location = Location
-  { locationLat :: !Nano,
-    locationLon :: !Nano
-  }
-  deriving (Show, Eq)
 
 testSubmitPlace :: Text -> Location -> YesodClientM App (Entity Place)
 testSubmitPlace address Location {..} =
@@ -82,7 +75,7 @@ testSubmitParty PartyForm {..} loc = do
     addPostParam "day" $ T.pack $ formatTime defaultTimeLocale "%F" partyFormDay
     addPostParam "address" partyFormAddress
     forM_ partyFormDescription $ \description -> addPostParam "description" $ unTextarea description
-    forM_ partyFormStart $ \start -> addPostParam "start" $ T.pack $ formatTime defaultTimeLocale "%H:%M:%S" start
+    forM_ partyFormStart $ \start -> addPostParam "start" $ T.pack $ formatTime defaultTimeLocale "%H:%M" start
   statusIs 303
   errOrLoc <- getLocation
   case errOrLoc of
