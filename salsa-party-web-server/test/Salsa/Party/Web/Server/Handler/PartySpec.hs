@@ -12,32 +12,34 @@ spec = serverSpec $ do
       get SubmitPartyR
       statusIs 200
     yit "Can create a party by POSTing to SubmitPartyR" $
-      submitParty
-        PartyForm
-          { partyFormTitle = "example title",
-            partyFormDay = fromGregorian 2021 06 08,
-            partyFormAddress = "Badenerstrasse 551, 8048 Zürich",
-            partyFormDescription = Just "Example description",
-            partyFormStart = Just $ TimeOfDay 21 00 00
-          }
-        Location -- TODO make this location, but not the party (?), generated
-          { locationLat = 0,
-            locationLon = 0
-          }
+      void $
+        testSubmitParty
+          PartyForm
+            { partyFormTitle = "example title",
+              partyFormDay = fromGregorian 2021 06 08,
+              partyFormAddress = "Badenerstrasse 551, 8048 Zürich",
+              partyFormDescription = Just "Example description",
+              partyFormStart = Just $ TimeOfDay 21 00 00
+            }
+          Location -- TODO make this location, but not the party (?), generated
+            { locationLat = 0,
+              locationLon = 0
+            }
     yit "Can get the party page for an existing party" $ do
-      submitParty -- TODO make this party generated
-        PartyForm
-          { partyFormTitle = "example title",
-            partyFormDay = fromGregorian 2021 06 08,
-            partyFormAddress = "Badenerstrasse 551, 8048 Zürich",
-            partyFormDescription = Just "Example description",
-            partyFormStart = Just $ TimeOfDay 21 00 00
-          }
-        Location
-          { locationLat = 0,
-            locationLon = 0
-          }
-      get $ PartyR $ toSqlKey 1 -- Will be the first party in a new database
+      partyId <-
+        testSubmitParty -- TODO make this party generated
+          PartyForm
+            { partyFormTitle = "example title",
+              partyFormDay = fromGregorian 2021 06 08,
+              partyFormAddress = "Badenerstrasse 551, 8048 Zürich",
+              partyFormDescription = Just "Example description",
+              partyFormStart = Just $ TimeOfDay 21 00 00
+            }
+          Location
+            { locationLat = 0,
+              locationLon = 0
+            }
+      get $ PartyR partyId
       statusIs 200
 
   describe "PartyR" $

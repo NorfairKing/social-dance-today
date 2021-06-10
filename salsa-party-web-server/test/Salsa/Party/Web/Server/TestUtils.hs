@@ -6,8 +6,10 @@ module Salsa.Party.Web.Server.TestUtils where
 import Control.Monad.Logger
 import Control.Monad.Reader
 import Data.Fixed
+import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
+import Database.Persist (Entity (..), (=.))
 import qualified Database.Persist as DB
 import qualified Database.Persist.Sql as DB
 import Network.HTTP.Client as HTTP
@@ -51,10 +53,25 @@ data Location = Location
   }
   deriving (Show, Eq)
 
-submitParty :: PartyForm -> Location -> YesodClientM App ()
-submitParty PartyForm {..} Location {..} = do
+testSubmitPlace :: Text -> Location -> YesodClientM App (Entity Place)
+testSubmitPlace address Location {..} =
+  testDB $
+    DB.upsertBy
+      (UniquePlaceQuery address)
+      ( Place
+          { placeLat = locationLat,
+            placeLon = locationLon,
+            placeQuery = address
+          }
+      )
+      [ PlaceLat =. locationLat,
+        PlaceLon =. locationLon
+      ]
+
+testSubmitParty :: PartyForm -> Location -> YesodClientM App PartyId
+testSubmitParty PartyForm {..} loc = do
   -- Put the address in the database already so we don't need to use an external service for geocoding
-  testDB $ DB.insert_ $ Place {placeLat = locationLat, placeLon = locationLon, placeQuery = partyFormAddress}
+  _ <- testSubmitPlace partyFormAddress loc
   get SubmitPartyR
   statusIs 200
   request $ do
@@ -70,9 +87,9 @@ submitParty PartyForm {..} Location {..} = do
   errOrLoc <- getLocation
   case errOrLoc of
     Left err -> liftIO $ expectationFailure $ T.unpack err
-    Right loc -> case loc of
-      PartyR _ -> pure ()
-      _ -> liftIO $ expectationFailure "Location should have been PartyR"
+    Right redirectLocation -> case redirectLocation of
+      PartyR partyId -> pure partyId
+      _ -> liftIO $ expectationFailure $ "Location should have been some PartyR after submitting a party, was this instead: " <> show redirectLocation
 
 testDB :: DB.SqlPersistT IO a -> YesodClientM App a
 testDB func = do
