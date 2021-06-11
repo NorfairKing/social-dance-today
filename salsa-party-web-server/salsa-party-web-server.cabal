@@ -43,6 +43,7 @@ library
     , optparse-applicative
     , path
     , path-io
+    , path-pieces
     , persistent
     , persistent-sqlite
     , persistent-template

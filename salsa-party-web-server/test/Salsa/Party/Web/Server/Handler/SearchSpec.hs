@@ -25,14 +25,6 @@ spec = do
                 setUrl QueryR
                 addGetParam "query" query
               statusIs 303
-    describe "PlaceR" $ do
-      it "Can GET a 200 place page for a place" $ \yc ->
-        forAll (genValid `suchThat` (not . T.null)) $ \query ->
-          forAllValid $ \location ->
-            runYesodClientM yc $ do
-              _ <- testSubmitPlace query location
-              get $ PlaceR query
-              statusIs 200
     describe "SearchR" $ do
       it "Can GET a 200 place page for a place" $ \yc ->
         forAll (genValid `suchThat` (not . T.null)) $ \query ->
@@ -92,5 +84,5 @@ spec = do
                     partyStart = Nothing
                   }
           _ <- DB.insert party3
-          ps <- searchQuery @IO (fromGregorian 2021 06 10) queryPlace
+          ps <- searchQuery @IO (fromGregorian 2021 06 10) (placeCoordinates queryPlace)
           liftIO $ ps `shouldBe` [(Entity party1Id party1, Entity place1Id place1), (Entity party2Id party2, Entity place2Id place2)]

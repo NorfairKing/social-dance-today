@@ -18,6 +18,7 @@ library:
   - optparse-applicative
   - path
   - path-io
+  - path-pieces
   - persistent
   - persistent-sqlite
   - persistent-template
@@ -28,9 +29,9 @@ library:
   - time
   - token-limiter
   - validity
+  - validity-persistent
   - validity-text
   - validity-time
-  - validity-persistent
   - yaml
   - yamlparse-applicative
   - yesod

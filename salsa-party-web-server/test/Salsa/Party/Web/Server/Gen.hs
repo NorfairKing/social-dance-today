@@ -13,7 +13,7 @@ instance GenValid Textarea where
   genValid = Textarea <$> genValid
   shrinkValid = fmap Textarea . shrinkValid . unTextarea
 
-instance GenValid Location where
+instance GenValid Coordinates where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 

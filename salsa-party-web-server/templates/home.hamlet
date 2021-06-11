@@ -14,7 +14,10 @@
       action=@{QueryR}>
       <div .field>
         <div .control>
-          <input type=text name="query" placeholder="Zürich" required>
+          <input #queryInput type=text name="query" placeholder="Zürich" required>
+
+      <input #latitudeInput type=hidden name="latitude">
+      <input #longitudeInput type=hidden name="longitude">
 
       <div .field>
         <div .control>
@@ -29,3 +32,12 @@
     <p>
       <a .button href=@{SubmitPartyR}>
         Submit Party
+
+
+    <button id="find-me">
+      Show my location
+    <p id="status">
+    <a id="map-link" target="_blank">
+
+
+

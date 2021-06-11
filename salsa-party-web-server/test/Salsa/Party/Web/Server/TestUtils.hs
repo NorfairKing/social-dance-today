@@ -51,22 +51,22 @@ type DBSpec = SpecWith DB.ConnectionPool
 dbSpec :: DBSpec -> Spec
 dbSpec = modifyMaxSuccess (`div` 10) . persistSqliteSpec migrateAll
 
-testSubmitPlace :: Text -> Location -> YesodClientM App (Entity Place)
-testSubmitPlace address Location {..} =
+testSubmitPlace :: Text -> Coordinates -> YesodClientM App (Entity Place)
+testSubmitPlace address Coordinates {..} =
   testDB $
     DB.upsertBy
       (UniquePlaceQuery address)
       ( Place
-          { placeLat = locationLat,
-            placeLon = locationLon,
+          { placeLat = coordinatesLat,
+            placeLon = coordinatesLon,
             placeQuery = address
           }
       )
-      [ PlaceLat =. locationLat,
-        PlaceLon =. locationLon
+      [ PlaceLat =. coordinatesLat,
+        PlaceLon =. coordinatesLon
       ]
 
-testSubmitParty :: PartyForm -> Location -> YesodClientM App PartyId
+testSubmitParty :: PartyForm -> Coordinates -> YesodClientM App PartyId
 testSubmitParty PartyForm {..} loc = do
   -- Put the address in the database already so we don't need to use an external service for geocoding
   _ <- testSubmitPlace partyFormAddress loc
@@ -87,7 +87,7 @@ testSubmitParty PartyForm {..} loc = do
     Left err -> liftIO $ expectationFailure $ T.unpack err
     Right redirectLocation -> case redirectLocation of
       PartyR partyId -> pure partyId
-      _ -> liftIO $ expectationFailure $ "Location should have been some PartyR after submitting a party, was this instead: " <> show redirectLocation
+      _ -> liftIO $ expectationFailure $ "Coordinates should have been some PartyR after submitting a party, was this instead: " <> show redirectLocation
 
 testDB :: DB.SqlPersistT IO a -> YesodClientM App a
 testDB func = do

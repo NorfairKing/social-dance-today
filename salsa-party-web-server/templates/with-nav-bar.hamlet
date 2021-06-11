@@ -8,15 +8,16 @@
   
 
   <div class="navbar-menu">
-    <div class="navbar-start">
-      <a class="navbar-item" href=@{HomeR}>
-        <strong>
-          Find a party
+    $if currentRoute /= Just HomeR
+      <div class="navbar-start">
+        <a class="navbar-item" href=@{HomeR}>
+          <strong>
+            Find a party
       
     <div class="navbar-end">
       <div class="navbar-item">
         <div class="buttons">
-          <a class="button is-primary">
+          <a class="button is-light">
             <strong>Sign up
           
           <a class="button is-light">

@@ -4,7 +4,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -91,15 +93,25 @@ withNavBar :: Widget -> Handler Html
 withNavBar = withFormFailureNavBar []
 
 withFormFailureNavBar :: [Text] -> Widget -> Handler Html
-withFormFailureNavBar errorMessages body = defaultLayout $(widgetFile "with-nav-bar")
+withFormFailureNavBar errorMessages body = do
+  currentRoute <- getCurrentRoute
+  defaultLayout $(widgetFile "with-nav-bar")
 
-data Location = Location
-  { locationLat :: !Nano,
-    locationLon :: !Nano
+data Coordinates = Coordinates
+  { coordinatesLat :: !Nano,
+    coordinatesLon :: !Nano
   }
   deriving (Show, Eq, Generic)
 
-instance Validity Location
+instance Validity Coordinates
 
 instance Validity Textarea where
   validate = validate . unTextarea
+
+-- This could potentially be dangerous if a type is read than written
+instance HasResolution a => PathPiece (Fixed a) where
+  fromPathPiece = fmap MkFixed . fromPathPiece
+  toPathPiece (MkFixed i) = toPathPiece i
+
+placeCoordinates :: Place -> Coordinates
+placeCoordinates Place {..} = Coordinates {coordinatesLat = placeLat, coordinatesLon = placeLon}

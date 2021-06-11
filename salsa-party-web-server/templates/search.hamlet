@@ -1,7 +1,11 @@
 <section .section>
   <div .container>
     <h1 .title .is-1>
-      Parties around #{query} 
+      Parties around 
+      $maybe address <- mAddress
+        #{address} 
+      $nothing
+        your location 
       $maybe day <- mDay
         on #{formatTime defaultTimeLocale "%F" day}
       $nothing
