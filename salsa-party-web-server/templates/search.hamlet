@@ -1,7 +1,7 @@
 <section .section>
   <div .container>
     <h1 .title .is-1>
-      Parties around #{placeQuery} 
+      Parties around #{query} 
       $maybe day <- mDay
         on #{formatTime defaultTimeLocale "%F" day}
       $nothing
@@ -9,11 +9,10 @@
 
 $forall (Entity partyId party, Entity _ p) <- parties
   <section .section>
-    <h3 .title .is-3>
-      #{partyTitle party}
-    <h4 .subtitle .is-4>
-      #{placeQuery p}
-    <a .button href=@{PartyR partyId}>
-      Details
-    <pre>
-      #{ppShow party}
+    <div .container>
+      <h3 .title .is-3>
+        #{partyTitle party}
+      <h4 .subtitle .is-4>
+        #{placeQuery p}
+      <a .button href=@{PartyR partyId}>
+        Details

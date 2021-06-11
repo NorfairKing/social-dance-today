@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Salsa.Party.Web.Server.Handler.SearchSpec (spec) where
 
@@ -51,21 +52,45 @@ spec = do
         forAllValid $ \day ->
           forAllValid $ \place ->
             flip runSqlPool pool $ do
-              ps <- searchQuery day place :: SqlPersistT IO [Entity Party]
+              ps <- searchQuery @IO day place
               liftIO $ ps `shouldBe` []
       it "runs correctly with these three parties" $ \pool ->
         flip runSqlPool pool $ do
           let queryPlace = Place {placeQuery = "Search Place", placeLat = 0, placeLon = 0}
           _ <- DB.insert queryPlace
-          place1 <- DB.insert $ Place {placeQuery = "Place 1", placeLat = 1, placeLon = 1}
-          place2 <- DB.insert $ Place {placeQuery = "Place 2", placeLat = 3, placeLon = 3}
-          place3 <- DB.insert $ Place {placeQuery = "Place 3", placeLat = 2, placeLon = 2}
-          let party1 = Party {partyTitle = "Example party 1", partyDay = fromGregorian 2021 06 10, partyPlace = place1, partyDescription = Nothing, partyStart = Nothing}
+          let place1 = Place {placeQuery = "Place 1", placeLat = 1, placeLon = 1}
+          place1Id <- DB.insert place1
+          let place2 = Place {placeQuery = "Place 2", placeLat = 3, placeLon = 3}
+          place2Id <- DB.insert place2
+          let place3 = Place {placeQuery = "Place 3", placeLat = 2, placeLon = 2}
+          place3Id <- DB.insert place3
+          let party1 =
+                Party
+                  { partyTitle = "Example party 1",
+                    partyDay = fromGregorian 2021 06 10,
+                    partyPlace = place1Id,
+                    partyDescription = Nothing,
+                    partyStart = Nothing
+                  }
           party1Id <- DB.insert party1
-          let party2 = Party {partyTitle = "Example party 2", partyDay = fromGregorian 2021 06 10, partyPlace = place2, partyDescription = Nothing, partyStart = Nothing}
+          let party2 =
+                Party
+                  { partyTitle = "Example party 2",
+                    partyDay = fromGregorian 2021 06 10,
+                    partyPlace = place2Id,
+                    partyDescription = Nothing,
+                    partyStart = Nothing
+                  }
           party2Id <- DB.insert party2
           -- close to party 1, but the next day
-          let party3 = Party {partyTitle = "Example party 3", partyDay = fromGregorian 2021 06 11, partyPlace = place3, partyDescription = Nothing, partyStart = Nothing}
+          let party3 =
+                Party
+                  { partyTitle = "Example party 3",
+                    partyDay = fromGregorian 2021 06 11,
+                    partyPlace = place3Id,
+                    partyDescription = Nothing,
+                    partyStart = Nothing
+                  }
           _ <- DB.insert party3
-          ps <- searchQuery (fromGregorian 2021 06 10) queryPlace :: SqlPersistT IO [Entity Party]
-          liftIO $ ps `shouldBe` [Entity party1Id party1, Entity party2Id party2]
+          ps <- searchQuery @IO (fromGregorian 2021 06 10) queryPlace
+          liftIO $ ps `shouldBe` [(Entity party1Id party1, Entity place1Id place1), (Entity party2Id party2, Entity place2Id place2)]
