@@ -5,8 +5,9 @@
 /submit-party SubmitPartyR GET POST
 /party/#PartyId PartyR GET
 
-/reload ReloadR GET
-
+/auth AuthR Auth getAuth
 /static StaticR EmbeddedStatic appStatic
+
+/reload ReloadR GET
 
 !/#Text SearchR GET

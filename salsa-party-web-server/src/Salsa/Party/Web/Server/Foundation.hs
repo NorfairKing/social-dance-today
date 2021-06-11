@@ -28,6 +28,8 @@ import Salsa.Party.Web.Server.Static
 import Salsa.Party.Web.Server.Widget
 import Text.Hamlet
 import Yesod
+import Yesod.Auth
+import Yesod.Auth.Email
 import Yesod.AutoReload
 import Yesod.EmbeddedStatic (EmbeddedStatic)
 
@@ -65,6 +67,30 @@ instance YesodPersist App where
   runDB func = do
     pool <- getsYesod appConnectionPool
     runSqlPool func pool
+
+instance YesodAuth App where
+  type AuthId App = UserId
+  loginDest _ = HomeR -- TODO change this to the account overview screen
+  logoutDest _ = HomeR
+  authenticate creds = case credsPlugin creds of
+    "email" -> error "TODO: authenticate"
+    _ -> pure $ ServerError "Unknown auth plugin"
+  authPlugins _ = [authEmail]
+
+instance YesodAuthPersist App
+
+instance YesodAuthEmail App where
+  type AuthEmailId App = UserId
+  addUnverified = error "addUnverified"
+  sendVerifyEmail = error "sendVerifyEmail"
+  getVerifyKey = error "getVerifyKey"
+  setVerifyKey = error "setVerifyKey"
+  verifyAccount = error "verifyAccount"
+  getPassword = error "getPassword"
+  setPassword = error "setPassword"
+  getEmailCreds = error "getEmailCreds"
+  getEmail = error "getEmail"
+  afterPasswordRoute = error "afterPasswordRoute"
 
 getReloadR :: Handler ()
 getReloadR = getAutoReloadR

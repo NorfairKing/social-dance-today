@@ -23,10 +23,22 @@ import Data.Validity.Time ()
 import Database.Persist.Sql
 import Database.Persist.TH
 import GHC.Generics (Generic)
+import Yesod.Auth.Email
 
 share
   [mkPersist sqlSettings, mkMigrate "migrateAll"]
   [persistLowerCase|
+
+User
+    email Text
+    saltedPass SaltedPass
+    verificationKey VerKey Maybe -- Nothing means verified
+
+    UniqueUserEmail email
+
+    deriving Show
+    deriving Eq
+    deriving Generic
 
 
 Place

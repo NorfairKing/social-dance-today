@@ -60,6 +60,7 @@ library
     , yaml
     , yamlparse-applicative
     , yesod
+    , yesod-auth
     , yesod-autoreload
     , yesod-static
     , yesod-static-remote
