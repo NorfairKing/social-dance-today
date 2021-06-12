@@ -66,6 +66,8 @@ testRegister emailAddress passphrase = do
     addPostParam "passphrase-confirm" passphrase
   statusIs 303
   locationShouldBe HomeR
+  _ <- followRedirect
+  statusIs 200
 
 testLogin :: Text -> Text -> YesodExample App ()
 testLogin emailAddress passphrase = do
@@ -79,12 +81,16 @@ testLogin emailAddress passphrase = do
     addPostParam "passphrase" passphrase
   statusIs 303
   locationShouldBe HomeR
+  _ <- followRedirect
+  statusIs 200
 
 testLogout :: YesodExample App ()
 testLogout = do
   post $ AuthR LogoutR
   statusIs 303
   locationShouldBe HomeR
+  _ <- followRedirect
+  statusIs 200
 
 testSubmitPlace :: Text -> Coordinates -> YesodClientM App (Entity Place)
 testSubmitPlace address Coordinates {..} =

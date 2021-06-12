@@ -12,18 +12,17 @@ spec = serverSpec $ do
       get $ AuthR registerR
       statusIs 200
     yit "can succesfully POST to the registration page" $ do
-      testRegister "john.doe@example.com" "example"
-      statusIs 303
-      locationShouldBe HomeR
-      _ <- followRedirect
-      statusIs 200
+      let emailAddress = "john.doe@example.com"
+          passphrase = "example"
+      testRegister emailAddress passphrase
     yit "can POST to the registration page and fail because of mismatching passphrases" $ do
+      let emailAddress = "john.doe@example.com"
       get $ AuthR registerR
       statusIs 200
       request $ do
         setMethod methodPost
         setUrl $ AuthR registerR
-        addPostParam "email-address" "john.doe@example.com"
+        addPostParam "email-address" emailAddress
         addPostParam "passphrase" "example1"
         addPostParam "passphrase-confirm" "example2"
       statusIs 303
@@ -35,10 +34,38 @@ spec = serverSpec $ do
       get $ AuthR LoginR
       statusIs 200
     yit "can POST the login page after registering" $ do
-      testRegister "john.doe@example.com" "example"
+      let emailAddress = "john.doe@example.com"
+          passphrase = "example"
+      testRegister emailAddress passphrase
       testLogout
-      testLogin "john.doe@example.com" "example"
+      testLogin emailAddress passphrase
+    yit "cannot login with the wrong email address" $ do
+      let emailAddress = "john.doe@example.com"
+      testRegister emailAddress "example1"
+      testLogout
+      get $ AuthR LoginR
+      statusIs 200
+      request $ do
+        setMethod methodPost
+        setUrl $ AuthR loginR
+        addToken
+        addPostParam "email-address" emailAddress
+        addPostParam "passphrase" "example2"
       statusIs 303
-      locationShouldBe HomeR
+      locationShouldBe $ AuthR LoginR
+      _ <- followRedirect
+      statusIs 200
+    yit "gets the same answer for a login to a nonexistent user as for an invalid password" $ do
+      let emailAddress = "john.doe@example.com"
+      get $ AuthR LoginR
+      statusIs 200
+      request $ do
+        setMethod methodPost
+        setUrl $ AuthR loginR
+        addToken
+        addPostParam "email-address" emailAddress
+        addPostParam "passphrase" "example"
+      statusIs 303
+      locationShouldBe $ AuthR LoginR
       _ <- followRedirect
       statusIs 200
