@@ -20,6 +20,7 @@ library
       Salsa.Party.Web.Server.Foundation
       Salsa.Party.Web.Server.Geocoding
       Salsa.Party.Web.Server.Handler
+      Salsa.Party.Web.Server.Handler.Account
       Salsa.Party.Web.Server.Handler.Home
       Salsa.Party.Web.Server.Handler.Import
       Salsa.Party.Web.Server.Handler.Party

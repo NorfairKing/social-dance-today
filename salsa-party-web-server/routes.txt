@@ -2,12 +2,15 @@
 
 /query QueryR GET
 
-/submit-party SubmitPartyR GET POST
 /party/#PartyId PartyR GET
+
+/submit-party SubmitPartyR GET POST
+/account AccountR GET
 
 /auth AuthR Auth getAuth
 /static StaticR EmbeddedStatic appStatic
 
 /reload ReloadR GET
 
+-- This route has to be at the end so that it can be a catch-all
 !/#Text SearchR GET

@@ -62,6 +62,24 @@ instance Yesod App where
     pageContent <- widgetToPageContent body
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
   makeSessionBackend a = Just <$> defaultClientSessionBackend 120 (fromAbsFile (appSessionKeyFile a))
+  authRoute _ = Just $ AuthR LoginR
+  isAuthorized route _ =
+    -- List each route that a user can access without login
+    -- so we don't accidentally authorize anything.
+    case route of
+      HomeR -> pure Authorized
+      QueryR -> pure Authorized
+      SearchR _ -> pure Authorized
+      PartyR _ -> pure Authorized
+      ReloadR -> pure Authorized
+      AuthR _ -> pure Authorized
+      StaticR _ -> pure Authorized
+      _ -> do
+        -- Has to be logged-in
+        mAuthId <- maybeAuthId
+        case mAuthId of
+          Nothing -> pure AuthenticationRequired
+          Just _ -> pure Authorized
 
 instance RenderMessage App FormMessage where
   renderMessage _ _ = defaultFormMessage

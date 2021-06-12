@@ -1,0 +1,6 @@
+<section .section>
+  <div .container>
+    <h1 .title>
+      Account
+    <p>
+      Email Address: #{userEmailAddress}

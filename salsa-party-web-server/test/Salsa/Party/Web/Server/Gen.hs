@@ -2,12 +2,15 @@
 
 module Salsa.Party.Web.Server.Gen where
 
+import Control.Monad
 import Data.GenValidity
 import Data.GenValidity.Persist ()
 import Data.GenValidity.Text ()
 import Data.GenValidity.Time ()
+import qualified Data.Text as T
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Party
+import Test.QuickCheck
 
 instance GenValid Textarea where
   genValid = Textarea <$> genValid
@@ -28,3 +31,17 @@ instance GenValid Place where
 instance GenValid Party where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
+
+-- FIXME this isn't very general
+genValidEmailAddress :: Gen Text
+genValidEmailAddress = do
+  userLen <- upTo 10
+  user <- replicateM (max 1 userLen) $ choose ('a', 'z')
+  domainLen <- upTo 10
+  domain <- replicateM (max 1 domainLen) $ choose ('a', 'z')
+  tldLen <- upTo 10
+  tld <- replicateM (max 1 tldLen) $ choose ('a', 'z')
+  pure $ T.pack $ concat [user, "@", domain, ".", tld]
+
+genValidPassword :: Gen Text
+genValidPassword = genValid `suchThat` (not . T.null)

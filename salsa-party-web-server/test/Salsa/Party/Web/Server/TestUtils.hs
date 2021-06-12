@@ -16,8 +16,10 @@ import Path.IO
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.DB
 import Salsa.Party.Web.Server.Foundation
+import Salsa.Party.Web.Server.Gen
 import Salsa.Party.Web.Server.Handler.Party
 import Salsa.Party.Web.Server.Static
+import Test.QuickCheck
 import Test.Syd
 import Test.Syd.Path
 import Test.Syd.Persistent.Sqlite
@@ -92,6 +94,14 @@ testLogout = do
   locationShouldBe HomeR
   _ <- followRedirect
   statusIs 200
+
+withAnyLoggedInUser_ :: YesodClient App -> YesodClientM App () -> Property
+withAnyLoggedInUser_ yc func =
+  forAll genValidEmailAddress $ \email ->
+    forAll genValidPassword $ \password -> do
+      runYesodClientM yc $ do
+        testRegister email password
+        func
 
 testSubmitPlace :: Text -> Coordinates -> YesodClientM App (Entity Place)
 testSubmitPlace address Coordinates {..} =

@@ -8,11 +8,14 @@
   
 
   <div class="navbar-menu">
-    $if currentRoute /= Just HomeR
-      <div class="navbar-start">
+    <div class="navbar-start">
+      $if currentRoute /= Just HomeR
         <a class="navbar-item" href=@{HomeR}>
           <strong>
             Find a party
+      $maybe _ <- mAuthId
+        <a .navbar-item href=@{AccountR}>
+          Account
       
     <div class="navbar-end">
       <div class="navbar-item">

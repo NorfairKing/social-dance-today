@@ -7,13 +7,14 @@ import Salsa.Party.Web.Server.Handler.TestImport
 spec :: Spec
 spec = serverSpec $ do
   describe "SubmitPartyR" $ do
-    yit "GETs a 200 for SubmitPartyR" $ do
-      get SubmitPartyR
-      statusIs 200
+    it "GETs a 200 for SubmitPartyR" $ \yc ->
+      withAnyLoggedInUser_ yc $ do
+        get SubmitPartyR
+        statusIs 200
     it "Can create a party by POSTing to SubmitPartyR" $ \yc ->
       forAllValid $ \partyForm_ ->
         forAllValid $ \location ->
-          runYesodClientM yc $
+          withAnyLoggedInUser_ yc $
             void $
               testSubmitParty
                 partyForm_
@@ -21,7 +22,7 @@ spec = serverSpec $ do
     it "Can get the party page for an existing party" $ \yc ->
       forAllValid $ \partyForm_ ->
         forAllValid $ \location ->
-          runYesodClientM yc $ do
+          withAnyLoggedInUser_ yc $ do
             partyId <-
               testSubmitParty
                 partyForm_
