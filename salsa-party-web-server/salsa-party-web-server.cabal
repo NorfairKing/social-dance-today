@@ -16,6 +16,7 @@ library
       Salsa.Party.Web.Server.Application
       Salsa.Party.Web.Server.Constants
       Salsa.Party.Web.Server.DB
+      Salsa.Party.Web.Server.DB.Password
       Salsa.Party.Web.Server.Foundation
       Salsa.Party.Web.Server.Geocoding
       Salsa.Party.Web.Server.Handler
@@ -41,6 +42,7 @@ library
     , http-client-tls
     , monad-logger
     , optparse-applicative
+    , password
     , path
     , path-io
     , path-pieces

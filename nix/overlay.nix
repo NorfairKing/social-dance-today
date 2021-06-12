@@ -94,14 +94,6 @@ in
                     dontCheck (
                       self.callCabal2nix "envparse" envparseRepo { }
                     );
-                  appendfulRepo =
-                    final.fetchFromGitHub {
-                      owner = "NorfairKing";
-                      repo = "appendful";
-                      rev = "98d1a191941f94fa0379d5c08371ba0963d3462e";
-                      sha256 = "sha256:1lkxhpn1cvxjqa4v45k9b0n9hgw1psvs40abp09gqrc3009v974l";
-                    };
-                  appendfulPkg = name: self.callCabal2nix "appendful" (appendfulRepo + "/${name}") { };
                   base16Repo =
                     final.fetchFromGitHub {
                       owner = "emilypi";
@@ -114,11 +106,9 @@ in
                 in
                 final.salsaPartyPackages // {
                   envparse = envparsePkg;
-                  appendful = appendfulPkg "appendful";
-                  appendful-persistent = appendfulPkg "appendful-persistent";
-                  genvalidity-appendful = appendfulPkg "genvalidity-appendful";
                   yesod-autoreload = self.callCabal2nix "yesod-autoreload" sources.yesod-autoreload { };
                   yesod-static-remote = dontCheck (self.callCabal2nix "yesod-static-remote" sources.yesod-static-remote { });
+                  token-limiter = unmarkBroken (doJailbreak super.token-limiter);
                   base16 = base16Pkg;
                 }
             );

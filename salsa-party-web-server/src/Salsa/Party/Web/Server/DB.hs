@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -9,11 +10,16 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -fno-warn-orphans -fno-warn-dodgy-exports #-}
 
-module Salsa.Party.Web.Server.DB where
+module Salsa.Party.Web.Server.DB
+  ( module Salsa.Party.Web.Server.DB,
+    module Salsa.Party.Web.Server.DB.Password,
+  )
+where
 
 import Data.Fixed
+import Data.Password.Bcrypt
 import Data.Text (Text)
 import Data.Time
 import Data.Validity
@@ -23,7 +29,7 @@ import Data.Validity.Time ()
 import Database.Persist.Sql
 import Database.Persist.TH
 import GHC.Generics (Generic)
-import Yesod.Auth.Email
+import Salsa.Party.Web.Server.DB.Password ()
 
 share
   [mkPersist sqlSettings, mkMigrate "migrateAll"]
@@ -31,8 +37,8 @@ share
 
 User
     email Text
-    saltedPass SaltedPass
-    verificationKey VerKey Maybe -- Nothing means verified
+    saltedPass (PasswordHash Bcrypt)
+    verificationKey Text Maybe -- Nothing means verified
 
     UniqueUserEmail email
 

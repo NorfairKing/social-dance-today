@@ -23,7 +23,7 @@ spec = do
               request $ do
                 setMethod methodGet
                 setUrl QueryR
-                addGetParam "query" query
+                addGetParam "address" query
               statusIs 303
     describe "SearchR" $ do
       it "Can GET a 200 place page for a place" $ \yc ->

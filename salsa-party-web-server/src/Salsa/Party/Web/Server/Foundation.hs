@@ -29,7 +29,6 @@ import Salsa.Party.Web.Server.Widget
 import Text.Hamlet
 import Yesod
 import Yesod.Auth
-import Yesod.Auth.Email
 import Yesod.AutoReload
 import Yesod.EmbeddedStatic (EmbeddedStatic)
 
@@ -73,24 +72,11 @@ instance YesodAuth App where
   loginDest _ = HomeR -- TODO change this to the account overview screen
   logoutDest _ = HomeR
   authenticate creds = case credsPlugin creds of
-    "email" -> error "TODO: authenticate"
+    "salsa" -> error "TODO: authenticate"
     _ -> pure $ ServerError "Unknown auth plugin"
-  authPlugins _ = [authEmail]
+  authPlugins _ = [salsaAuthPlugin]
 
 instance YesodAuthPersist App
-
-instance YesodAuthEmail App where
-  type AuthEmailId App = UserId
-  addUnverified = error "addUnverified"
-  sendVerifyEmail = error "sendVerifyEmail"
-  getVerifyKey = error "getVerifyKey"
-  setVerifyKey = error "setVerifyKey"
-  verifyAccount = error "verifyAccount"
-  getPassword = error "getPassword"
-  setPassword = error "setPassword"
-  getEmailCreds = error "getEmailCreds"
-  getEmail = error "getEmail"
-  afterPasswordRoute = error "afterPasswordRoute"
 
 getReloadR :: Handler ()
 getReloadR = getAutoReloadR
@@ -122,6 +108,28 @@ withFormFailureNavBar :: [Text] -> Widget -> Handler Html
 withFormFailureNavBar errorMessages body = do
   currentRoute <- getCurrentRoute
   defaultLayout $(widgetFile "with-nav-bar")
+
+salsaAuthPlugin :: AuthPlugin App
+salsaAuthPlugin = AuthPlugin salsaAuthPluginName dispatch salsaLoginHandler
+  where
+    dispatch "GET" ["register"] = getRegisterR
+    dispatch "POST" ["register"] = postRegisterR
+    dispatch _ _ = notFound
+
+salsaLoginHandler :: (Route Auth -> Route App) -> Widget
+salsaLoginHandler _toParentRoute = notFound
+
+registerR :: Route Auth
+registerR = PluginR salsaAuthPluginName ["register"]
+
+salsaAuthPluginName :: Text
+salsaAuthPluginName = "salsa"
+
+getRegisterR :: AuthHandler App TypedContent
+getRegisterR = notFound
+
+postRegisterR :: AuthHandler App TypedContent
+postRegisterR = notFound
 
 data Coordinates = Coordinates
   { coordinatesLat :: !Nano,

@@ -1,7 +1,8 @@
-resolver: lts-16.12
+resolver: nightly-2021-05-10
 packages:
 - salsa-party-web-server
 
+allow-newer: true # Because of token-limiter
 extra-deps:
 - github: supki/envparse
   commit: de5944fb09e9d941fafa35c0f05446af348e7b4d

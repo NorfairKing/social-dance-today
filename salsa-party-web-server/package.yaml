@@ -16,6 +16,7 @@ library:
   - http-client-tls
   - monad-logger
   - optparse-applicative
+  - password
   - path
   - path-io
   - path-pieces
@@ -35,8 +36,8 @@ library:
   - yaml
   - yamlparse-applicative
   - yesod
-  - yesod-autoreload
   - yesod-auth
+  - yesod-autoreload
   - yesod-static
   - yesod-static-remote
 
