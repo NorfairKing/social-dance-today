@@ -66,10 +66,10 @@ tests:
     dependencies:
     - QuickCheck
     - genvalidity
+    - genvalidity-persistent
     - genvalidity-sydtest
     - genvalidity-text
     - genvalidity-time
-    - genvalidity-persistent
     - http-client
     - http-types
     - monad-logger
@@ -86,3 +86,4 @@ tests:
     - text
     - time
     - yesod
+    - yesod-auth

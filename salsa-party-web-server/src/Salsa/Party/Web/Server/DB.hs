@@ -36,11 +36,11 @@ share
   [persistLowerCase|
 
 User
-    email Text
+    emailAddress Text
     passphraseHash (PasswordHash Bcrypt)
     verificationKey Text Maybe -- Nothing means verified
 
-    UniqueUserEmail email
+    UniqueUserEmailAddress emailAddress
 
     deriving Show
     deriving Eq

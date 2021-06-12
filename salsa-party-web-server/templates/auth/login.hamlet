@@ -1,0 +1,51 @@
+<section .hero .is-light .is-fullheight>
+  <div .hero-body>
+    <div .container>
+      <div .columns .is-centered>
+        <div .column .is-7-tablet .is-6-desktop .is-5-widescreen>
+          <form .box
+            method="post"
+            action=@{AuthR loginR}>
+            <div .field>
+              <label for="user" .label>
+                Email Address
+              <div .control>
+                <input .input
+                  name="email-address"
+                  placeholder="John.Doe@example.com"
+                  required=""
+                  value=""
+                  autofocus="autofocus"
+                  type="text">
+                
+              
+            <div .field>
+              <label for="passhprase" .label>
+                Passphrase
+              <div .control>
+                <input .input
+                  name="passphrase"
+                  placeholder="*****************************"
+                  required=""
+                  value=""
+                  type="password">
+                
+
+            ^{token}
+            
+            $if not (null messages)
+              <div .field>
+                $forall (_, message) <- messages
+                  <p .help .is-danger>
+                    #{message}
+              
+            
+            <div .field .is-grouped>
+              <div .control>
+                <button .button .is-light type="submit">
+                  Login
+              
+
+              <div .control>
+                <a .button .is-text href=@{AuthR registerR}>
+                  Register

@@ -17,15 +17,15 @@
     <div class="navbar-end">
       <div class="navbar-item">
         $maybe _ <- mAuthId
+          <a class="button is-light" href=@{AuthR LogoutR}>
+            Log out
+        $nothing
           <div class="buttons">
             <a class="button is-light" href=@{AuthR registerR}>
               <strong>Sign up
             
-            <a class="button is-light">
+            <a class="button is-light" href=@{AuthR LoginR}>
               Log in
-        $nothing
-          <a class="button is-light" href={LogoutR}>
-            Log out
 
 $forall errorMessage <- errorMessages
   <article .message .is-danger role="alert">

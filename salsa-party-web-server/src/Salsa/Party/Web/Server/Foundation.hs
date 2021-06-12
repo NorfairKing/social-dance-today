@@ -77,7 +77,7 @@ instance YesodAuth App where
   logoutDest _ = HomeR
   authenticate Creds {..} = case credsPlugin of
     "salsa" -> do
-      mUser <- liftHandler $ runDB $ getBy (UniqueUserEmail credsIdent)
+      mUser <- liftHandler $ runDB $ getBy (UniqueUserEmailAddress credsIdent)
       pure $ case mUser of
         Nothing -> UserError $ IdentifierNotFound credsIdent
         Just (Entity userId _) -> Authenticated userId
@@ -124,21 +124,25 @@ salsaAuthPlugin = AuthPlugin salsaAuthPluginName dispatch salsaLoginHandler
   where
     dispatch "GET" ["register"] = getRegisterR >>= sendResponse
     dispatch "POST" ["register"] = postRegisterR
+    dispatch "POST" ["login"] = postLoginR
     dispatch _ _ = notFound
-
-salsaLoginHandler :: (Route Auth -> Route App) -> Widget
-salsaLoginHandler _toParentRoute = notFound
-
-registerR :: Route Auth
-registerR = PluginR salsaAuthPluginName ["register"]
 
 salsaAuthPluginName :: Text
 salsaAuthPluginName = "salsa"
 
+registerR :: Route Auth
+registerR = PluginR salsaAuthPluginName ["register"]
+
+getRegisterR :: AuthHandler App Html
+getRegisterR = do
+  messages <- getMessages
+  token <- genToken
+  liftHandler $ withNavBar $(widgetFile "auth/register")
+
 data RegisterForm = RegisterForm
-  { registerFormEmail :: Text,
+  { registerFormEmailAddress :: Text,
     registerFormPassphrase :: Password,
-    registerFormConfirmPassphrase :: Text
+    registerFormConfirmPassphrase :: Password
   }
   deriving (Show, Generic)
 
@@ -147,35 +151,69 @@ registerForm =
   RegisterForm
     <$> ireq emailField "email-address"
     <*> (mkPassword <$> ireq passwordField "passphrase")
-    <*> ireq passwordField "passphrase-confirm"
-
-getRegisterR :: AuthHandler App Html
-getRegisterR = do
-  messages <- getMessages
-  token <- genToken
-  liftHandler $ withNavBar $(widgetFile "auth/register")
+    <*> (mkPassword <$> ireq passwordField "passphrase-confirm")
 
 postRegisterR :: AuthHandler App TypedContent
 postRegisterR = liftHandler $ do
   RegisterForm {..} <- runInputPost registerForm
-  mUser <- runDB $ getBy (UniqueUserEmail registerFormEmail)
+  mUser <- runDB $ getBy (UniqueUserEmailAddress registerFormEmailAddress)
   case mUser of
     Just _ -> do
       setMessage "An account with this username already exists"
       redirect $ AuthR registerR
     Nothing -> do
-      verificationKey <- liftIO $ T.pack <$> replicateM 32 (randomRIO ('a', 'z'))
-      passphraseHash <- liftIO $ hashPassword registerFormPassphrase
-      void $
-        runDB $
-          insertBy
-            ( User
-                { userEmail = registerFormEmail,
-                  userPassphraseHash = passphraseHash,
-                  userVerificationKey = Just verificationKey
-                }
-            )
-      setCredsRedirect Creds {credsPlugin = salsaAuthPluginName, credsIdent = registerFormEmail, credsExtra = []}
+      if unsafeShowPassword registerFormPassphrase == unsafeShowPassword registerFormConfirmPassphrase
+        then do
+          verificationKey <- liftIO $ T.pack <$> replicateM 32 (randomRIO ('a', 'z'))
+          -- TODO send email here.
+          -- addMessageI "is-success" ConfirmationEmailSentTitle
+          passphraseHash <- liftIO $ hashPassword registerFormPassphrase
+          void $
+            runDB $
+              insertBy
+                ( User
+                    { userEmailAddress = registerFormEmailAddress,
+                      userPassphraseHash = passphraseHash,
+                      userVerificationKey = Just verificationKey
+                    }
+                )
+          setCredsRedirect Creds {credsPlugin = salsaAuthPluginName, credsIdent = registerFormEmailAddress, credsExtra = []}
+        else do
+          addMessageI "is-danger" PassMismatch
+          redirect $ AuthR registerR
+
+loginR :: Route Auth
+loginR = PluginR salsaAuthPluginName ["login"]
+
+salsaLoginHandler :: (Route Auth -> Route App) -> Widget
+salsaLoginHandler _toParentRoute = do
+  messages <- getMessages
+  token <- genToken
+  $(widgetFile "auth/login")
+
+data LoginForm = LoginForm
+  { loginFormEmailAddress :: Text,
+    loginFormPassphrase :: Password
+  }
+  deriving (Show, Generic)
+
+loginForm :: FormInput Handler LoginForm
+loginForm =
+  LoginForm
+    <$> ireq emailField "email-address"
+    <*> (mkPassword <$> ireq passwordField "passphrase")
+
+postLoginR :: AuthHandler App TypedContent
+postLoginR = do
+  LoginForm {..} <- liftHandler $ runInputPost loginForm
+  mUser <- liftHandler $ runDB $ getBy (UniqueUserEmailAddress loginFormEmailAddress)
+  let loginFail = loginErrorMessageI LoginR InvalidLogin
+  case mUser of
+    Nothing -> loginFail
+    Just (Entity _ User {..}) ->
+      case checkPassword loginFormPassphrase userPassphraseHash of
+        PasswordCheckSuccess -> setCredsRedirect Creds {credsPlugin = salsaAuthPluginName, credsIdent = loginFormEmailAddress, credsExtra = []}
+        PasswordCheckFail -> loginFail
 
 data Coordinates = Coordinates
   { coordinatesLat :: !Nano,
