@@ -16,6 +16,8 @@
       $maybe _ <- mAuthId
         <a .navbar-item href=@{AccountR}>
           Account
+        <a .navbar-item href=@{SubmitPartyR}>
+          Submit Party
       
     <div class="navbar-end">
       <div class="navbar-item">

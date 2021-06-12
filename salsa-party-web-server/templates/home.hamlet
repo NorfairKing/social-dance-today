@@ -41,17 +41,3 @@
         <div .control>
           <button .button .is-primary type="submit">
             Search
-
-
-          
-
-    <p>
-      I want to advertise a party
-    <p>
-      <a .button href=@{SubmitPartyR}>
-        Submit Party
-
-
-
-
-
