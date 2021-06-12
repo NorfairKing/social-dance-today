@@ -24,6 +24,7 @@ import Test.Syd.Persistent.Sqlite
 import Test.Syd.Wai (managerSpec)
 import Test.Syd.Yesod
 import Yesod (Textarea (..))
+import Yesod.Auth
 
 type ServerSpec = YesodSpec App
 
@@ -50,6 +51,40 @@ type DBSpec = SpecWith DB.ConnectionPool
 
 dbSpec :: DBSpec -> Spec
 dbSpec = modifyMaxSuccess (`div` 10) . persistSqliteSpec migrateAll
+
+testRegister ::
+  Text -> Text -> YesodExample App ()
+testRegister emailAddress passphrase = do
+  get $ AuthR registerR
+  statusIs 200
+  request $ do
+    setMethod methodPost
+    setUrl $ AuthR registerR
+    addToken
+    addPostParam "email-address" emailAddress
+    addPostParam "passphrase" passphrase
+    addPostParam "passphrase-confirm" passphrase
+  statusIs 303
+  locationShouldBe HomeR
+
+testLogin :: Text -> Text -> YesodExample App ()
+testLogin emailAddress passphrase = do
+  get $ AuthR LoginR
+  statusIs 200
+  request $ do
+    setMethod methodPost
+    setUrl $ AuthR loginR
+    addToken
+    addPostParam "email-address" emailAddress
+    addPostParam "passphrase" passphrase
+  statusIs 303
+  locationShouldBe HomeR
+
+testLogout :: YesodExample App ()
+testLogout = do
+  post $ AuthR LogoutR
+  statusIs 303
+  locationShouldBe HomeR
 
 testSubmitPlace :: Text -> Coordinates -> YesodClientM App (Entity Place)
 testSubmitPlace address Coordinates {..} =
