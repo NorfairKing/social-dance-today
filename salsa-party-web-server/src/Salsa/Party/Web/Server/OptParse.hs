@@ -31,6 +31,7 @@ data Settings = Settings
   { settingPort :: !Int,
     settingLogLevel :: !LogLevel,
     settingDbFile :: !(Path Abs File),
+    settingSendEmails :: !Bool,
     settingGoogleAnalyticsTracking :: !(Maybe Text),
     settingGoogleSearchConsoleVerification :: !(Maybe Text)
   }
@@ -43,6 +44,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
   settingDbFile <- case flagDbFile <|> envDbFile <|> mc confDbFile of
     Nothing -> resolveFile' "salsa-parties.sqlite3"
     Just dbf -> resolveFile' dbf
+  let settingSendEmails = fromMaybe True $ flagSendEmails <|> envSendEmails <|> mc confSendEmails
   let settingGoogleAnalyticsTracking = flagGoogleAnalyticsTracking <|> envGoogleAnalyticsTracking <|> mc confGoogleAnalyticsTracking
   let settingGoogleSearchConsoleVerification = flagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification
   pure Settings {..}
@@ -54,6 +56,7 @@ data Configuration = Configuration
   { confPort :: !(Maybe Int),
     confLogLevel :: !(Maybe LogLevel),
     confDbFile :: !(Maybe FilePath),
+    confSendEmails :: !(Maybe Bool),
     confGoogleAnalyticsTracking :: !(Maybe Text),
     confGoogleSearchConsoleVerification :: !(Maybe Text)
   }
@@ -69,6 +72,7 @@ instance YamlSchema Configuration where
         <$> optionalField "port" "Port"
         <*> optionalFieldWith "log-level" "Minimal severity for log messages" viaRead
         <*> optionalField "database" "The path to the database file"
+        <*> optionalField "send-emails" "Whether to send emails and require email verification"
         <*> optionalField "google-analytics-tracking" "Google analytics tracking code"
         <*> optionalField "google-search-console-verification" "Google search console html element verification code"
 
@@ -90,6 +94,7 @@ data Environment = Environment
     envPort :: !(Maybe Int),
     envLogLevel :: !(Maybe LogLevel),
     envDbFile :: !(Maybe FilePath),
+    envSendEmails :: !(Maybe Bool),
     envGoogleAnalyticsTracking :: !(Maybe Text),
     envGoogleSearchConsoleVerification :: !(Maybe Text)
   }
@@ -107,6 +112,7 @@ environmentParser =
       <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "Port")
       <*> Env.var (fmap Just . Env.auto) "LOG_LEVEL" (mE <> Env.help "Minimal severity for log messages")
       <*> Env.var (fmap Just . Env.auto) "DATABASE" (mE <> Env.help "The path to the database file")
+      <*> Env.var (fmap Just . Env.auto) "SEND_EMAILS" (mE <> Env.help "Whether to send emails and require email verification")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_ANALYTICS_TRACKING" (mE <> Env.help "Google analytics tracking code")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (mE <> Env.help "Google search console html element verification code")
   where
@@ -141,6 +147,7 @@ data Flags = Flags
     flagPort :: !(Maybe Int),
     flagLogLevel :: !(Maybe LogLevel),
     flagDbFile :: !(Maybe FilePath),
+    flagSendEmails :: !(Maybe Bool),
     flagGoogleAnalyticsTracking :: !(Maybe Text),
     flagGoogleSearchConsoleVerification :: !(Maybe Text)
   }
@@ -185,6 +192,14 @@ parseFlags =
               [ long "database",
                 help "The path to the database file",
                 metavar "LOG_LEVEL"
+              ]
+          )
+      )
+    <*> optional
+      ( switch
+          ( mconcat
+              [ long "send-emails",
+                help "Whether to send emails and require email verification"
               ]
           )
       )

@@ -15,7 +15,9 @@ in
             (
               failOnAllWarnings (
                 disableLibraryProfiling (
-                  final.haskellPackages.callCabal2nixWithOptions name (final.gitignoreSource (../. + "/${name}")) "--no-hpack" { }
+                  final.haskellPackages.callCabal2nixWithOptions name (final.gitignoreSource (../. + "/${name}"))
+                    "--no-hpack"
+                    { }
                 )
               )
             )
@@ -94,14 +96,6 @@ in
                     dontCheck (
                       self.callCabal2nix "envparse" envparseRepo { }
                     );
-                  base16Repo =
-                    final.fetchFromGitHub {
-                      owner = "emilypi";
-                      repo = "base16";
-                      rev = "f340b4a9a496320010930368e503ba6b7907f725";
-                      sha256 = "sha256:1c6910h9y3nmj2277d7bif3nilgacp4qafl4g5b3r2c0295hbq7z";
-                    };
-                  base16Pkg = self.callCabal2nix "base16" base16Repo { };
 
                 in
                 final.salsaPartyPackages // {
@@ -109,7 +103,6 @@ in
                   yesod-autoreload = self.callCabal2nix "yesod-autoreload" sources.yesod-autoreload { };
                   yesod-static-remote = dontCheck (self.callCabal2nix "yesod-static-remote" sources.yesod-static-remote { });
                   token-limiter = unmarkBroken (doJailbreak super.token-limiter);
-                  base16 = base16Pkg;
                 }
             );
       }

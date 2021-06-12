@@ -9,6 +9,8 @@ library:
   source-dirs: src
   dependencies:
   - aeson
+  - amazonka
+  - amazonka-ses
   - data-default
   - envparse
   - esqueleto

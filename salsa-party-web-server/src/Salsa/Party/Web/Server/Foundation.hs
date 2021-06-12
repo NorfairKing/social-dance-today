@@ -42,6 +42,7 @@ data App = App
     appHTTPManager :: !HTTP.Manager,
     appConnectionPool :: !ConnectionPool,
     appSessionKeyFile :: !(Path Abs File),
+    appSendEmails :: !Bool,
     appGoogleAnalyticsTracking :: !(Maybe Text),
     appGoogleSearchConsoleVerification :: !(Maybe Text)
   }

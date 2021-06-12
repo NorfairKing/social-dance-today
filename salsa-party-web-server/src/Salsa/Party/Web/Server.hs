@@ -38,6 +38,7 @@ runSalsaPartyWebServer Settings {..} =
                 appConnectionPool = pool,
                 appHTTPManager = man,
                 appSessionKeyFile = sessionKeyFile,
+                appSendEmails = settingSendEmails,
                 appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
                 appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
               }
