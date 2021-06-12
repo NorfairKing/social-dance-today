@@ -1,20 +1,38 @@
 <section .section>
   <div .container>
     <h1 .title>
-      Salsa Party
+      Which parties can I go to?
 
-    <p>
-      Which parties can I go to today?
-
-    <p>
-      Find parties near:
     
     <form
       method=get
       action=@{QueryR}>
       <div .field>
+        <label .label>
+          Find parties near:
         <div .control>
-          <input #queryInput type=text name="query" placeholder="Zürich" required>
+          <div .field .has-addons>
+            <p .control>
+              <input
+                .input
+                #queryInput
+                type=text
+                name="address"
+                placeholder="Zürich"
+                required>
+            <p .control>
+              <a .button #find-me>
+                My location
+
+      <div .field>
+        <label .label>
+          On:
+        <div .control>
+          <input 
+            .input
+            #dayInput
+            type=date
+            name="day">
 
       <input #latitudeInput type=hidden name="latitude">
       <input #longitudeInput type=hidden name="longitude">
@@ -34,10 +52,6 @@
         Submit Party
 
 
-    <button id="find-me">
-      Show my location
-    <p id="status">
-    <a id="map-link" target="_blank">
 
 
 

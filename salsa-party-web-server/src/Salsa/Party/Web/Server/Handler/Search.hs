@@ -10,21 +10,37 @@ import qualified Database.Esqueleto as E
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
 
+data QueryForm = QueryForm
+  { queryFormAddress :: Maybe Text,
+    queryFormCoordinates :: Maybe Coordinates,
+    queryFormDay :: Maybe Day
+  }
+  deriving (Show, Eq, Generic)
+
+queryForm :: FormInput Handler QueryForm
+queryForm =
+  QueryForm
+    <$> iopt textField "address"
+    <*> ( liftA2 Coordinates
+            <$> (fmap realToFrac <$> iopt doubleField "latitude")
+            <*> (fmap realToFrac <$> iopt doubleField "longitude")
+        )
+    <*> iopt dayField "day"
+
 getQueryR :: Handler Html
 getQueryR = do
-  addressResult <- runInputGetResult $ ireq textField "query"
-  case addressResult of
-    FormSuccess placeQuery -> redirect $ SearchR placeQuery
-    _ -> do
-      coordinatesResult <-
-        runInputGetResult $
-          Coordinates
-            <$> ireq hiddenField "latitude"
-            <*> ireq hiddenField "longitude"
-      case coordinatesResult of
-        FormFailure ts -> invalidArgs ts
-        FormMissing -> invalidArgs ["Either a query or coordinates must be provided."]
-        FormSuccess coordinates -> searchResultPageWithDay Nothing coordinates
+  QueryForm {..} <- runInputGet queryForm
+  case queryFormCoordinates of
+    Just coordinates -> searchResultPage queryFormDay queryFormAddress coordinates
+    Nothing -> case queryFormAddress of
+      Just address -> do
+        redirect
+          ( SearchR address,
+            [ ("day", T.pack $ formatTime defaultTimeLocale "%F" day)
+              | day <- maybeToList queryFormDay
+            ]
+          )
+      Nothing -> invalidArgs ["Must supply either an address or coordinates."]
 
 getSearchR :: Text -> Handler Html
 getSearchR query = do
