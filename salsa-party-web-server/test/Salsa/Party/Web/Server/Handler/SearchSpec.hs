@@ -4,6 +4,7 @@
 module Salsa.Party.Web.Server.Handler.SearchSpec (spec) where
 
 import qualified Data.Text as T
+import qualified Database.Esqueleto as E
 import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Handler.Search
 import Salsa.Party.Web.Server.Handler.TestImport
@@ -62,6 +63,7 @@ spec = do
                     partyDay = fromGregorian 2021 06 10,
                     partyPlace = place1Id,
                     partyDescription = Nothing,
+                    partyHomepage = Nothing,
                     partyStart = Nothing
                   }
           party1Id <- DB.insert party1
@@ -71,6 +73,7 @@ spec = do
                     partyDay = fromGregorian 2021 06 10,
                     partyPlace = place2Id,
                     partyDescription = Nothing,
+                    partyHomepage = Nothing,
                     partyStart = Nothing
                   }
           party2Id <- DB.insert party2
@@ -81,8 +84,13 @@ spec = do
                     partyDay = fromGregorian 2021 06 11,
                     partyPlace = place3Id,
                     partyDescription = Nothing,
+                    partyHomepage = Nothing,
                     partyStart = Nothing
                   }
           _ <- DB.insert party3
           ps <- searchQuery @IO (fromGregorian 2021 06 10) (placeCoordinates queryPlace)
-          liftIO $ ps `shouldBe` [(Entity party1Id party1, Entity place1Id place1), (Entity party2Id party2, Entity place2Id place2)]
+          liftIO $
+            ps
+              `shouldBe` [ (Entity party1Id party1, Entity place1Id place1, E.Value Nothing),
+                           (Entity party2Id party2, Entity place2Id place2, E.Value Nothing)
+                         ]

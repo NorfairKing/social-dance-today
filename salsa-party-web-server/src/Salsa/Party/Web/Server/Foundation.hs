@@ -5,6 +5,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -15,6 +16,7 @@ module Salsa.Party.Web.Server.Foundation where
 
 import Control.Monad
 import Data.Fixed
+import Data.Function
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Validity
@@ -34,6 +36,7 @@ import Yesod
 import Yesod.Auth
 import Yesod.Auth.Message
 import Yesod.AutoReload
+import Yesod.Core.Types
 import Yesod.EmbeddedStatic (EmbeddedStatic)
 
 data App = App
@@ -71,6 +74,7 @@ instance Yesod App where
       QueryR -> pure Authorized
       SearchR _ -> pure Authorized
       PartyR _ -> pure Authorized
+      PosterR _ -> pure Authorized
       ReloadR -> pure Authorized
       AuthR _ -> pure Authorized
       StaticR _ -> pure Authorized
@@ -244,6 +248,17 @@ instance Validity Coordinates
 
 instance Validity Textarea where
   validate = validate . unTextarea
+
+instance Validity FileInfo where
+  validate = trivialValidation
+
+instance Show FileInfo where
+  show fileInfo = show ("File with name: " <> fileName fileInfo)
+
+instance Eq FileInfo where
+  (==) = (==) `on` fileName
+
+deriving instance Generic FileInfo
 
 -- This could potentially be dangerous if a type is read than written
 instance HasResolution a => PathPiece (Fixed a) where

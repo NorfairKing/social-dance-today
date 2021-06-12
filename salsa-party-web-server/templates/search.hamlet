@@ -34,12 +34,15 @@
 $if null parties
   No parties found
 $else
-  $forall (Entity partyId party, Entity _ p) <- parties
+  $forall (Entity partyId party, Entity _ p, mPosterVal) <- parties
     <section .section>
       <div .container>
         <h3 .title .is-3>
           #{partyTitle party}
         <h4 .subtitle .is-4>
           #{placeQuery p}
-        <a .button href=@{PartyR partyId}>
-          Details
+        $maybe posterId <- E.unValue mPosterVal
+          <img src=@{PosterR posterId}>
+        <p>
+          <a .button href=@{PartyR partyId}>
+            Details

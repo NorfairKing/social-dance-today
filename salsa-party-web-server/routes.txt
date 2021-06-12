@@ -3,6 +3,7 @@
 /query QueryR GET
 
 /party/#PartyId PartyR GET
+/poster/#PosterId PosterR GET
 
 /submit-party SubmitPartyR GET POST
 /account AccountR GET

@@ -18,6 +18,7 @@ module Salsa.Party.Web.Server.DB
   )
 where
 
+import Data.ByteString (ByteString)
 import Data.Fixed
 import Data.Password.Bcrypt
 import Data.Text (Text)
@@ -70,6 +71,18 @@ Party
     deriving Show
     deriving Eq
     deriving Generic
+
+Poster
+    party PartyId
+    imageType Text
+    image ByteString
+
+    UniquePosterParty party
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
 |]
 
 instance Validity Place

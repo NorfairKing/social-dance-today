@@ -9,7 +9,6 @@ import qualified Data.Text as T
 import qualified Database.Esqueleto as E
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
-import Text.Printf
 import Text.Time.Pretty
 
 data QueryForm = QueryForm
@@ -68,11 +67,12 @@ searchResultPage mDay mAddress coordinates = do
 
 -- For a given day and a given place,
 -- find all parties sorted by distance.
-searchQuery :: MonadIO m => Day -> Coordinates -> SqlPersistT m [(Entity Party, Entity Place)]
+searchQuery :: MonadIO m => Day -> Coordinates -> SqlPersistT m [(Entity Party, Entity Place, E.Value (Maybe PosterId))]
 searchQuery day Coordinates {..} =
   E.select $
-    E.from $ \(party `E.InnerJoin` p) -> do
+    E.from $ \(party `E.InnerJoin` p `E.LeftOuterJoin` mPoster) -> do
       E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
+      E.on (E.just (party E.^. PartyId) E.==. mPoster E.?. PosterParty)
       E.where_ (party E.^. PartyDay E.==. E.val day)
       let latDiff = p E.^. PlaceLat E.-. E.val coordinatesLat
       let lonDiff = p E.^. PlaceLon E.-. E.val coordinatesLon
@@ -81,4 +81,4 @@ searchQuery day Coordinates {..} =
       -- Luckily the square function is monotone so we don't need to sqrt here
       let distSquared = latDiffSquared E.+. lonDiffSquared
       E.orderBy [E.asc distSquared]
-      pure (party, p)
+      pure (party, p, mPoster E.?. PosterId)

@@ -11,6 +11,9 @@
     <h3 .title .is-3>
       Address: #{placeQuery}
 
+    $forall posterId <- posterIds
+      <img src=@{PosterR posterId}>
+
     $maybe description <- partyDescription
       <div .content>
         <p>

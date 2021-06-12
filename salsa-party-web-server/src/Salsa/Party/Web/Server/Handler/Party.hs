@@ -5,6 +5,7 @@
 
 module Salsa.Party.Web.Server.Handler.Party where
 
+import Control.Monad
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Network.HTTP.Types
@@ -18,7 +19,8 @@ data PartyForm = PartyForm
     partyFormAddress :: Text,
     partyFormDescription :: Maybe Textarea,
     partyFormStart :: Maybe TimeOfDay,
-    partyFormHomepage :: Maybe Text
+    partyFormHomepage :: Maybe Text,
+    partyFormPoster :: Maybe FileInfo
   }
   deriving (Show, Eq, Generic)
 
@@ -39,6 +41,7 @@ partyForm =
     <*> iopt textareaField "description"
     <*> iopt timeField "start"
     <*> iopt urlField "homepage"
+    <*> iopt fileField "poster"
 
 getSubmitPartyR :: Handler Html
 getSubmitPartyR = submitPartyPage Nothing
@@ -64,6 +67,20 @@ submitPartyPage mResult = case mResult of
                 partyPlace = placeId
               }
           )
+    forM_ partyFormPoster $ \posterFileInfo -> do
+      imageBlob <- fileSourceByteString posterFileInfo
+      runDB $
+        upsertBy
+          (UniquePosterParty partyId)
+          ( Poster
+              { posterParty = partyId,
+                posterImage = imageBlob,
+                posterImageType = fileContentType posterFileInfo
+              }
+          )
+          [ PosterImage =. imageBlob,
+            PosterImageType =. fileContentType posterFileInfo
+          ]
     redirect $ PartyR partyId
   _ -> do
     token <- genToken
@@ -73,9 +90,15 @@ getPartyR :: PartyId -> Handler Html
 getPartyR partyId = do
   Party {..} <- runDB $ get404 partyId
   Place {..} <- runDB $ get404 partyPlace
+  posterIds <- runDB $ selectKeysList [PosterParty ==. partyId] []
   let mapsAPI = "https://www.google.com/maps/embed/v1/place"
   let apiKey = "dummy"
   let googleMapsEmbedQuery = renderQuery True [("key", Just apiKey), ("q", Just $ TE.encodeUtf8 placeQuery)]
   let googleMapsEmbedUrl = mapsAPI <> TE.decodeUtf8 googleMapsEmbedQuery
   today <- liftIO $ utctDay <$> getCurrentTime
   withNavBar $(widgetFile "party")
+
+getPosterR :: PosterId -> Handler TypedContent
+getPosterR posterId = do
+  Poster {..} <- runDB $ get404 posterId
+  respond (TE.encodeUtf8 posterImageType) posterImage

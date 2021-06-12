@@ -11,6 +11,7 @@ library:
   - aeson
   - amazonka
   - amazonka-ses
+  - bytestring
   - data-default
   - envparse
   - esqueleto
@@ -43,6 +44,7 @@ library:
   - yesod
   - yesod-auth
   - yesod-autoreload
+  - yesod-core
   - yesod-static
   - yesod-static-remote
 
@@ -69,7 +71,10 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - QuickCheck
+    - conduit
+    - esqueleto
     - genvalidity
+    - genvalidity-bytestring
     - genvalidity-persistent
     - genvalidity-sydtest
     - genvalidity-text
@@ -91,3 +96,4 @@ tests:
     - time
     - yesod
     - yesod-auth
+    - yesod-core

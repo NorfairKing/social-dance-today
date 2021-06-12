@@ -4,6 +4,7 @@
       Submit Party
 
     <form .form
+      enctype="multipart/form-data"
       method=post
       action=@{SubmitPartyR}>
 
@@ -56,6 +57,22 @@
           <input
             type=url
             name="homepage">
+
+      <div .field>
+        <label .label>
+          Poster
+        <div .control>
+          <div #posterInput .file .has-name>
+            <label .file-label>
+              <input .file-input name="poster" type="file">
+              <span .file-cta>
+                <span .file-icon>
+                  <i .fas .fa-upload>
+                <span .file-label>
+                  Choose a poster image
+              <span .file-name>
+                No poster selected
+
 
       <div .field>
         <div .control>

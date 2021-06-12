@@ -38,6 +38,7 @@ library
     , amazonka
     , amazonka-ses
     , base >=4.7 && <5
+    , bytestring
     , data-default
     , envparse
     , esqueleto
@@ -70,6 +71,7 @@ library
     , yesod
     , yesod-auth
     , yesod-autoreload
+    , yesod-core
     , yesod-static
     , yesod-static-remote
   default-language: Haskell2010
@@ -106,7 +108,10 @@ test-suite salsa-party-web-server-test
   build-depends:
       QuickCheck
     , base >=4.7 && <5
+    , conduit
+    , esqueleto
     , genvalidity
+    , genvalidity-bytestring
     , genvalidity-persistent
     , genvalidity-sydtest
     , genvalidity-text
@@ -128,4 +133,5 @@ test-suite salsa-party-web-server-test
     , time
     , yesod
     , yesod-auth
+    , yesod-core
   default-language: Haskell2010
