@@ -50,6 +50,14 @@
             name="start">
 
       <div .field>
+        <label .label>
+          Homepage
+        <div .control>
+          <input
+            type=url
+            name="homepage">
+
+      <div .field>
         <div .control>
           ^{token}
 

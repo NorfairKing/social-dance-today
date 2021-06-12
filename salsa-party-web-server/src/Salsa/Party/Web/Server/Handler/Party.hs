@@ -17,7 +17,8 @@ data PartyForm = PartyForm
     partyFormDay :: Day,
     partyFormAddress :: Text,
     partyFormDescription :: Maybe Textarea,
-    partyFormStart :: Maybe TimeOfDay
+    partyFormStart :: Maybe TimeOfDay,
+    partyFormHomepage :: Maybe Text
   }
   deriving (Show, Eq, Generic)
 
@@ -37,6 +38,7 @@ partyForm =
     <*> ireq textField "address"
     <*> iopt textareaField "description"
     <*> iopt timeField "start"
+    <*> iopt urlField "homepage"
 
 getSubmitPartyR :: Handler Html
 getSubmitPartyR = submitPartyPage Nothing
@@ -58,6 +60,7 @@ submitPartyPage mResult = case mResult of
                 partyDescription = unTextarea <$> partyFormDescription,
                 partyDay = partyFormDay,
                 partyStart = partyFormStart,
+                partyHomepage = partyFormHomepage,
                 partyPlace = placeId
               }
           )

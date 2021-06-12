@@ -15,10 +15,18 @@
       <div .content>
         <p>
           #{description}
-    <iframe
-      width="600"
-      height="450"
-      style="border:0"
-      loading="lazy"
-      allowfullscreen
-      src=#{googleMapsEmbedUrl}>
+  
+    $maybe homepage <- partyHomepage
+      <p>
+        <a .button href=#{homepage}>
+          #{homepage}
+  
+
+    <p>
+      <iframe
+        width="600"
+        height="450"
+        style="border:0"
+        loading="lazy"
+        allowfullscreen
+        src=#{googleMapsEmbedUrl}>

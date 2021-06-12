@@ -64,6 +64,7 @@ Party
     description Text Maybe
     day Day
     start TimeOfDay Maybe
+    homepage Text Maybe
     place PlaceId
 
     deriving Show
