@@ -16,15 +16,19 @@
       
     <div class="navbar-end">
       <div class="navbar-item">
-        <div class="buttons">
-          <a class="button is-light" href=@{AuthR registerR}>
-            <strong>Sign up
-          
-          <a class="button is-light">
-            Log in
+        $maybe _ <- mAuthId
+          <div class="buttons">
+            <a class="button is-light" href=@{AuthR registerR}>
+              <strong>Sign up
+            
+            <a class="button is-light">
+              Log in
+        $nothing
+          <a class="button is-light" href={LogoutR}>
+            Log out
 
 $forall errorMessage <- errorMessages
-  <div .is-danger role="alert">
+  <article .message .is-danger role="alert">
     #{errorMessage}
 
 ^{body}

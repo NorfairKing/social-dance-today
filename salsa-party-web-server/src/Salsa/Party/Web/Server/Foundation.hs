@@ -13,8 +13,10 @@
 
 module Salsa.Party.Web.Server.Foundation where
 
+import Control.Monad
 import Data.Fixed
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Validity
 import Data.Validity.Text ()
 import Data.Validity.Time ()
@@ -26,9 +28,11 @@ import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.DB
 import Salsa.Party.Web.Server.Static
 import Salsa.Party.Web.Server.Widget
+import System.Random
 import Text.Hamlet
 import Yesod
 import Yesod.Auth
+import Yesod.Auth.Message
 import Yesod.AutoReload
 import Yesod.EmbeddedStatic (EmbeddedStatic)
 
@@ -71,9 +75,14 @@ instance YesodAuth App where
   type AuthId App = UserId
   loginDest _ = HomeR -- TODO change this to the account overview screen
   logoutDest _ = HomeR
-  authenticate creds = case credsPlugin creds of
-    "salsa" -> error "TODO: authenticate"
+  authenticate Creds {..} = case credsPlugin of
+    "salsa" -> do
+      mUser <- liftHandler $ runDB $ getBy (UniqueUserEmail credsIdent)
+      pure $ case mUser of
+        Nothing -> UserError $ IdentifierNotFound credsIdent
+        Just (Entity userId _) -> Authenticated userId
     _ -> pure $ ServerError "Unknown auth plugin"
+  onLogin = addMessageI "is-success" NowLoggedIn
   authPlugins _ = [salsaAuthPlugin]
 
 instance YesodAuthPersist App
@@ -107,12 +116,13 @@ withNavBar = withFormFailureNavBar []
 withFormFailureNavBar :: [Text] -> Widget -> Handler Html
 withFormFailureNavBar errorMessages body = do
   currentRoute <- getCurrentRoute
+  mAuthId <- maybeAuthId
   defaultLayout $(widgetFile "with-nav-bar")
 
 salsaAuthPlugin :: AuthPlugin App
 salsaAuthPlugin = AuthPlugin salsaAuthPluginName dispatch salsaLoginHandler
   where
-    dispatch "GET" ["register"] = getRegisterR
+    dispatch "GET" ["register"] = getRegisterR >>= sendResponse
     dispatch "POST" ["register"] = postRegisterR
     dispatch _ _ = notFound
 
@@ -125,11 +135,47 @@ registerR = PluginR salsaAuthPluginName ["register"]
 salsaAuthPluginName :: Text
 salsaAuthPluginName = "salsa"
 
-getRegisterR :: AuthHandler App TypedContent
-getRegisterR = notFound
+data RegisterForm = RegisterForm
+  { registerFormEmail :: Text,
+    registerFormPassphrase :: Password,
+    registerFormConfirmPassphrase :: Text
+  }
+  deriving (Show, Generic)
+
+registerForm :: FormInput Handler RegisterForm
+registerForm =
+  RegisterForm
+    <$> ireq emailField "email-address"
+    <*> (mkPassword <$> ireq passwordField "passphrase")
+    <*> ireq passwordField "passphrase-confirm"
+
+getRegisterR :: AuthHandler App Html
+getRegisterR = do
+  messages <- getMessages
+  token <- genToken
+  liftHandler $ withNavBar $(widgetFile "auth/register")
 
 postRegisterR :: AuthHandler App TypedContent
-postRegisterR = notFound
+postRegisterR = liftHandler $ do
+  RegisterForm {..} <- runInputPost registerForm
+  mUser <- runDB $ getBy (UniqueUserEmail registerFormEmail)
+  case mUser of
+    Just _ -> do
+      setMessage "An account with this username already exists"
+      redirect $ AuthR registerR
+    Nothing -> do
+      verificationKey <- liftIO $ T.pack <$> replicateM 32 (randomRIO ('a', 'z'))
+      passphraseHash <- liftIO $ hashPassword registerFormPassphrase
+      void $
+        runDB $
+          insertBy
+            ( User
+                { userEmail = registerFormEmail,
+                  userPassphraseHash = passphraseHash,
+                  userVerificationKey = Just verificationKey
+                }
+            )
+      setCredsRedirect Creds {credsPlugin = salsaAuthPluginName, credsIdent = registerFormEmail, credsExtra = []}
 
 data Coordinates = Coordinates
   { coordinatesLat :: !Nano,

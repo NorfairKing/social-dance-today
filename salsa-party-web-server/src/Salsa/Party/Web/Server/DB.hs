@@ -29,7 +29,7 @@ import Data.Validity.Time ()
 import Database.Persist.Sql
 import Database.Persist.TH
 import GHC.Generics (Generic)
-import Salsa.Party.Web.Server.DB.Password ()
+import Salsa.Party.Web.Server.DB.Password
 
 share
   [mkPersist sqlSettings, mkMigrate "migrateAll"]
@@ -37,7 +37,7 @@ share
 
 User
     email Text
-    saltedPass (PasswordHash Bcrypt)
+    passphraseHash (PasswordHash Bcrypt)
     verificationKey Text Maybe -- Nothing means verified
 
     UniqueUserEmail email

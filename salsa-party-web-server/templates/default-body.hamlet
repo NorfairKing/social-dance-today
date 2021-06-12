@@ -1,4 +1,5 @@
 $forall (classes, message) <- messages
-  <div class=#{classes}>
+  <article class="message #{classes}">
     ^{message}
+
 ^{widget}

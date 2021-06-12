@@ -21,8 +21,6 @@ pkgs.nixosTest (
       };
     };
     testScript = ''
-      from shlex import quote
-
       machine.start()
       machine.wait_for_unit("multi-user.target")
 

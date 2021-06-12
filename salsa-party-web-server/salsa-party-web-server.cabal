@@ -50,6 +50,7 @@ library
     , persistent-sqlite
     , persistent-template
     , pretty-show
+    , random
     , shakespeare
     , template-haskell
     , text
@@ -85,6 +86,7 @@ test-suite salsa-party-web-server-test
   main-is: Spec.hs
   other-modules:
       Salsa.Party.Web.Server.Gen
+      Salsa.Party.Web.Server.Handler.AuthSpec
       Salsa.Party.Web.Server.Handler.HomeSpec
       Salsa.Party.Web.Server.Handler.PartySpec
       Salsa.Party.Web.Server.Handler.SearchSpec
