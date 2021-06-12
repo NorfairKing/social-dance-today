@@ -10,6 +10,7 @@ import qualified Data.Text.Encoding as TE
 import Network.HTTP.Types
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
+import Text.Time.Pretty
 
 data PartyForm = PartyForm
   { partyFormTitle :: Text,
@@ -73,4 +74,5 @@ getPartyR partyId = do
   let apiKey = "dummy"
   let googleMapsEmbedQuery = renderQuery True [("key", Just apiKey), ("q", Just $ TE.encodeUtf8 placeQuery)]
   let googleMapsEmbedUrl = mapsAPI <> TE.decodeUtf8 googleMapsEmbedQuery
+  today <- liftIO $ utctDay <$> getCurrentTime
   withNavBar $(widgetFile "party")

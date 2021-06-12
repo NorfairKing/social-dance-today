@@ -6,10 +6,30 @@
         #{address} 
       $nothing
         your location 
-      $maybe day <- mDay
-        on #{formatTime defaultTimeLocale "%F" day}
-      $nothing
-        today
+      on #{formatTime defaultTimeLocale prettyDayFormat day}
+      (#{prettyDayAuto today day})
+
+
+    <form
+      method=get
+      action=@{QueryR}>
+      <input name="day" type="hidden" value="#{formatTime defaultTimeLocale "%F" prevDay}">
+      $maybe address <- mAddress
+        <input name="address" type="hidden" value="#{address}">
+      <input name="latitude" type="hidden" value="#{toDouble $ coordinatesLat coordinates}">
+      <input name="longitude" type="hidden" value="#{toDouble $ coordinatesLon coordinates}">
+      <button .button type="submit">
+        Previous day
+    <form
+      method=get
+      action=@{QueryR}>
+      <input name="day" type="hidden" value="#{formatTime defaultTimeLocale "%F" nextDay}">
+      $maybe address <- mAddress
+        <input name="address" type="hidden" value="#{address}">
+      <input name="latitude" type="hidden" value="#{toDouble $ coordinatesLat coordinates}">
+      <input name="longitude" type="hidden" value="#{toDouble $ coordinatesLon coordinates}">
+      <button .button type="submit">
+        Next day
 
 $if null parties
   No parties found

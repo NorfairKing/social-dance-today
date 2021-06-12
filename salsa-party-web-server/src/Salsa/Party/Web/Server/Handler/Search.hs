@@ -9,6 +9,8 @@ import qualified Data.Text as T
 import qualified Database.Esqueleto as E
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
+import Text.Printf
+import Text.Time.Pretty
 
 data QueryForm = QueryForm
   { queryFormAddress :: Maybe Text,
@@ -55,9 +57,12 @@ searchResultPageWithDay mAddress coordinates = do
 
 searchResultPage :: Maybe Day -> Maybe Text -> Coordinates -> Handler Html
 searchResultPage mDay mAddress coordinates = do
-  day <- case mDay of
-    Nothing -> liftIO $ utctDay <$> getCurrentTime -- today
-    Just d -> pure d
+  today <- liftIO $ utctDay <$> getCurrentTime -- today
+  let day = fromMaybe today mDay
+  let prevDay = addDays (- 1) day
+  let nextDay = addDays 1 day
+  let toDouble :: Nano -> Double
+      toDouble = realToFrac
   parties <- runDB $ searchQuery day coordinates
   withNavBar $(widgetFile "search")
 

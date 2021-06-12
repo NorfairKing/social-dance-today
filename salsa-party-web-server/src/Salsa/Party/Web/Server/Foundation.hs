@@ -252,3 +252,6 @@ instance HasResolution a => PathPiece (Fixed a) where
 
 placeCoordinates :: Place -> Coordinates
 placeCoordinates Place {..} = Coordinates {coordinatesLat = placeLat, coordinatesLon = placeLon}
+
+prettyDayFormat :: String
+prettyDayFormat = "%A, %B %e"

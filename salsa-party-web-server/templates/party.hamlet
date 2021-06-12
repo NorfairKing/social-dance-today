@@ -3,9 +3,10 @@
     <h1 .title .is-1>
       #{partyTitle}
     <h2 .subtitle .is-2>
-      #{formatTime defaultTimeLocale "%F" partyDay}
+      #{formatTime defaultTimeLocale prettyDayFormat partyDay} 
       $maybe start <- partyStart
-        #{formatTime defaultTimeLocale "%H:%M" start}
+        #{formatTime defaultTimeLocale "%H:%M" start} 
+      (#{prettyDayAuto today partyDay})
 
     <h3 .title .is-3>
       Address: #{placeQuery}
