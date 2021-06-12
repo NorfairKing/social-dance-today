@@ -12,6 +12,7 @@ function geoFindMe() {
 
     address.placeholder = 'My Location';
     status.textContent = 'Located';
+    status.classList.add("is-success");
 
     document.querySelector('#queryInput').required = false;
     document.querySelector('#latitudeInput').value = latitude;

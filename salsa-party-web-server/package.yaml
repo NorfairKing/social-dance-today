@@ -16,6 +16,7 @@ library:
   - esqueleto
   - http-client
   - http-client-tls
+  - http-types
   - monad-logger
   - optparse-applicative
   - password

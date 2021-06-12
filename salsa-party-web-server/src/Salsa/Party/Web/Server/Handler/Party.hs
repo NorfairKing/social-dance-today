@@ -6,6 +6,8 @@
 module Salsa.Party.Web.Server.Handler.Party where
 
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
+import Network.HTTP.Types
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
 
@@ -67,4 +69,8 @@ getPartyR :: PartyId -> Handler Html
 getPartyR partyId = do
   Party {..} <- runDB $ get404 partyId
   Place {..} <- runDB $ get404 partyPlace
+  let mapsAPI = "https://www.google.com/maps/embed/v1/place"
+  let apiKey = "dummy"
+  let googleMapsEmbedQuery = renderQuery True [("key", Just apiKey), ("q", Just $ TE.encodeUtf8 placeQuery)]
+  let googleMapsEmbedUrl = mapsAPI <> TE.decodeUtf8 googleMapsEmbedQuery
   withNavBar $(widgetFile "party")

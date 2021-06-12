@@ -1,9 +1,23 @@
 <section .section>
   <div .container>
-    <h1 .title>
+    <h1 .title .is-1>
       #{partyTitle}
-    <h2 .subtitle>
+    <h2 .subtitle .is-2>
       #{formatTime defaultTimeLocale "%F" partyDay}
+      $maybe start <- partyStart
+        #{formatTime defaultTimeLocale "%H:%M" start}
 
-    <h3 .title>
+    <h3 .title .is-3>
       Address: #{placeQuery}
+
+    $maybe description <- partyDescription
+      <div .content>
+        <p>
+          #{description}
+    <iframe
+      width="600"
+      height="450"
+      style="border:0"
+      loading="lazy"
+      allowfullscreen
+      src=#{googleMapsEmbedUrl}>
