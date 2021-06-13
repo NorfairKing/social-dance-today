@@ -1,16 +1,16 @@
-<nav class="navbar" role="navigation" aria-label="main navigation">
-  <div class="navbar-brand">
-    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navMenu">
+<nav .navbar role="navigation" aria-label="main navigation">
+  <div .navbar-brand>
+    <a .navbar-burger role="button" aria-label="menu" aria-expanded="false" data-target="navMenu">
       <span aria-hidden="true">
       <span aria-hidden="true">
       <span aria-hidden="true">
     
   
 
-  <div class="navbar-menu">
-    <div class="navbar-start">
+  <div #navMenu .navbar-menu>
+    <div .navbar-start>
       $if currentRoute /= Just HomeR
-        <a class="navbar-item" href=@{HomeR}>
+        <a .navbar-item href=@{HomeR}>
           <strong>
             Find a party
       $maybe _ <- mAuthId
@@ -19,17 +19,17 @@
         <a .navbar-item href=@{SubmitPartyR}>
           Submit Party
       
-    <div class="navbar-end">
-      <div class="navbar-item">
+    <div .navbar-end>
+      <div .navbar-item>
         $maybe _ <- mAuthId
-          <a class="button is-light" href=@{AuthR LogoutR}>
+          <a .button .is-light href=@{AuthR LogoutR}>
             Log out
         $nothing
-          <div class="buttons">
-            <a class="button is-light" href=@{AuthR registerR}>
-              <strong>Sign up
+          <div .buttons>
+            <a .button .is-light href=@{AuthR registerR}>
+              Sign up
             
-            <a class="button is-light" href=@{AuthR LoginR}>
+            <a .button .is-light href=@{AuthR LoginR}>
               Log in
 
 $forall errorMessage <- errorMessages
