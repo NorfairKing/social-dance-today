@@ -15,5 +15,6 @@ mkStatic = do
     development
     "salsaPartyWebServerStatic"
     [ remoteStatic "bulma.css" "https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css",
-      remoteStatic "favicon.ico" "https://cs-syd.eu/logo/res/favicon.ico"
+      remoteStatic "favicon.ico" "https://cs-syd.eu/logo/res/favicon.ico",
+      embedDir "assets"
     ]
