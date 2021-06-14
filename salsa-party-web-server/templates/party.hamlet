@@ -12,7 +12,9 @@
       Address: #{placeQuery}
 
     <h4 .title .is-4>
-      Organiser: #{organiserName}
+      Organiser: 
+      <a href=@{OrganiserR partyOrganiser}>
+        #{organiserName}
 
     $forall posterId <- posterIds
       <img src=@{PosterR posterId}>
