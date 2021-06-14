@@ -1,0 +1,36 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-1>
+      Organiser Profile
+
+    $maybe Entity organiserId _ <- mOrganiser
+      <a .button .is-light
+        href=@{OrganiserR organiserId}>
+        View Public profile
+
+<section .section>
+  <div .container>
+    <h2 .title .is-2>
+      Update organiser profile
+    <form
+      method=post
+      action=@{AccountOrganiserR}>
+      
+      <div .field>
+        <label .label>
+          Display Name
+        <div .control>
+          <input
+            type=text
+            name="name"
+            value=#{tv organiserName}
+            required>
+            
+
+      ^{token}
+      
+      <div .field>
+        <div .control>
+          <button .button .is-primary type="submit">
+            Submit
+

@@ -25,11 +25,11 @@ organiserForm =
   OrganiserForm
     <$> ireq textField "name"
 
-getOrganiserR :: Handler Html
-getOrganiserR = organiserFormPage Nothing
+getAccountOrganiserR :: Handler Html
+getAccountOrganiserR = organiserFormPage Nothing
 
-postOrganiserR :: Handler Html
-postOrganiserR = do
+postAccountOrganiserR :: Handler Html
+postAccountOrganiserR = do
   res <- runInputPostResult organiserForm
   organiserFormPage (Just res)
 
@@ -45,11 +45,16 @@ organiserFormPage mResult = do
             (UniqueOrganiserUser userId)
             (Organiser {organiserUser = userId, organiserName = organiserFormName})
             [OrganiserName =. organiserFormName]
-      redirect OrganiserR
+      redirect AccountOrganiserR
     _ -> do
       token <- genToken
       let mv :: a -> (Organiser -> a) -> a
           mv defaultValue func = maybe defaultValue (func . entityVal) mOrganiser
           tv :: (Organiser -> Text) -> Text
           tv = mv ""
-      withMFormResultNavBar mResult $(widgetFile "organiser")
+      withMFormResultNavBar mResult $(widgetFile "account-organiser")
+
+getOrganiserR :: OrganiserId -> Handler Html
+getOrganiserR organiserId = do
+  Organiser {..} <- runDB $ get404 organiserId
+  withNavBar $(widgetFile "organiser")

@@ -4,10 +4,11 @@
 
 /party/#PartyId PartyR GET
 /poster/#PosterId PosterR GET
+/organiser/#OrganiserId OrganiserR GET
 
 /submit-party SubmitPartyR GET POST
 /account AccountR GET
-/organiser OrganiserR GET POST
+/account/organiser AccountOrganiserR GET POST
 
 /auth AuthR Auth getAuth
 /static StaticR EmbeddedStatic appStatic

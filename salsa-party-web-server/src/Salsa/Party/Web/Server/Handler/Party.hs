@@ -58,7 +58,7 @@ submitPartyPage mResult = do
   case mOrganiser of
     Nothing -> do
       addMessage "is-danger" "You must set up an organiser profile in the account overview before you can submit a party."
-      redirect OrganiserR
+      redirect AccountOrganiserR
     Just (Entity organiserId _) ->
       case mResult of
         Just (FormSuccess PartyForm {..}) -> do

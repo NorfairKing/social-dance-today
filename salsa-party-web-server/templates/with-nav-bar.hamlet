@@ -16,7 +16,7 @@
       $maybe _ <- mAuthId
         <a .navbar-item href=@{AccountR}>
           Account
-        <a .navbar-item href=@{OrganiserR}>
+        <a .navbar-item href=@{AccountOrganiserR}>
           Organiser Profile
         <a .navbar-item href=@{SubmitPartyR}>
           Submit Party

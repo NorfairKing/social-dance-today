@@ -76,6 +76,7 @@ instance Yesod App where
       SearchR _ -> pure Authorized
       PartyR _ -> pure Authorized
       PosterR _ -> pure Authorized
+      OrganiserR _ -> pure Authorized
       ReloadR -> pure Authorized
       AuthR _ -> pure Authorized
       StaticR _ -> pure Authorized

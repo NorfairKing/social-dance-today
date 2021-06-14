@@ -133,15 +133,15 @@ testSubmitPlace address Coordinates {..} =
 
 testSubmitOrganiser :: OrganiserForm -> YesodClientM App ()
 testSubmitOrganiser OrganiserForm {..} = do
-  get OrganiserR
+  get AccountOrganiserR
   statusIs 200
   request $ do
     setMethod methodPost
-    setUrl OrganiserR
+    setUrl AccountOrganiserR
     addToken
     addPostParam "name" organiserFormName
   statusIs 303
-  locationShouldBe OrganiserR
+  locationShouldBe AccountOrganiserR
   _ <- followRedirect
   statusIs 200
 
