@@ -1,4 +1,23 @@
 <section .section>
   <div .container>
-    <h1 .title>
+    <h1 .title .is-1>
       Organiser: #{organiserName}
+
+<section .section>
+  <div .container>
+    <h2 .title .is-2>
+      Upcoming Parties
+    $if null parties
+      No parties found
+    $else
+      $forall (Entity partyId party, Entity _ p, mPosterVal) <- parties
+        <h3 .title .is-3>
+          #{formatTime defaultTimeLocale prettyDayFormat $ partyDay party}: #{partyTitle party}
+        <h4 .subtitle .is-4>
+          #{placeQuery p}
+        $maybe posterId <- E.unValue mPosterVal
+          <img src=@{PosterR posterId}>
+        <p>
+          <a .button href=@{PartyR partyId}>
+            Details
+
