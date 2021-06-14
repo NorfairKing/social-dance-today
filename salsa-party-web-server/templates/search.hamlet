@@ -31,12 +31,12 @@
       <button .button type="submit">
         Next day
 
-$if null parties
-  No parties found
-$else
-  $forall (Entity partyId party, Entity _ p, mPosterVal) <- parties
-    <section .section>
-      <div .container>
+<section .section>
+  <div .container>
+    $if null parties
+      No parties found
+    $else
+      $forall (Entity partyId party, Entity _ p, mPosterVal) <- parties
         <h3 .title .is-3>
           #{partyTitle party}
         <h4 .subtitle .is-4>
