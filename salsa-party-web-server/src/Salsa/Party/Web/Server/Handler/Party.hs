@@ -52,39 +52,42 @@ postSubmitPartyR = do
   submitPartyPage $ Just res
 
 submitPartyPage :: Maybe (FormResult PartyForm) -> Handler Html
-submitPartyPage mResult = case mResult of
-  Just (FormSuccess PartyForm {..}) -> do
-    Entity placeId _ <- lookupPlace partyFormAddress
-    partyId <-
-      runDB $
-        insert
-          ( Party
-              { partyTitle = partyFormTitle,
-                partyDescription = unTextarea <$> partyFormDescription,
-                partyDay = partyFormDay,
-                partyStart = partyFormStart,
-                partyHomepage = partyFormHomepage,
-                partyPlace = placeId
-              }
-          )
-    forM_ partyFormPoster $ \posterFileInfo -> do
-      imageBlob <- fileSourceByteString posterFileInfo
-      runDB $
-        upsertBy
-          (UniquePosterParty partyId)
-          ( Poster
-              { posterParty = partyId,
-                posterImage = imageBlob,
-                posterImageType = fileContentType posterFileInfo
-              }
-          )
-          [ PosterImage =. imageBlob,
-            PosterImageType =. fileContentType posterFileInfo
-          ]
-    redirect $ PartyR partyId
-  _ -> do
-    token <- genToken
-    withMFormResultNavBar mResult $(widgetFile "submit-party")
+submitPartyPage mResult = do
+  userId <- requireAuthId
+  case mResult of
+    Just (FormSuccess PartyForm {..}) -> do
+      Entity placeId _ <- lookupPlace partyFormAddress
+      partyId <-
+        runDB $
+          insert
+            ( Party
+                { partyOrganiser = userId,
+                  partyTitle = partyFormTitle,
+                  partyDescription = unTextarea <$> partyFormDescription,
+                  partyDay = partyFormDay,
+                  partyStart = partyFormStart,
+                  partyHomepage = partyFormHomepage,
+                  partyPlace = placeId
+                }
+            )
+      forM_ partyFormPoster $ \posterFileInfo -> do
+        imageBlob <- fileSourceByteString posterFileInfo
+        runDB $
+          upsertBy
+            (UniquePosterParty partyId)
+            ( Poster
+                { posterParty = partyId,
+                  posterImage = imageBlob,
+                  posterImageType = fileContentType posterFileInfo
+                }
+            )
+            [ PosterImage =. imageBlob,
+              PosterImageType =. fileContentType posterFileInfo
+            ]
+      redirect $ PartyR partyId
+    _ -> do
+      token <- genToken
+      withMFormResultNavBar mResult $(widgetFile "submit-party")
 
 getPartyR :: PartyId -> Handler Html
 getPartyR partyId = do

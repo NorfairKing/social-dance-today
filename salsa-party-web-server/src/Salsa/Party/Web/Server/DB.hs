@@ -61,6 +61,7 @@ Place
 
 
 Party
+    organiser UserId
     title Text
     description Text Maybe
     day Day

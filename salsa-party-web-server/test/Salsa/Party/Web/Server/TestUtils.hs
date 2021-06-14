@@ -11,6 +11,8 @@ import Data.Time
 import Database.Persist (Entity (..), (=.))
 import qualified Database.Persist as DB
 import qualified Database.Persist.Sql as DB
+import Database.Persist.Sqlite (fkEnabled, mkSqliteConnectionInfo, walEnabled, withSqlitePoolInfo)
+import Lens.Micro
 import Network.HTTP.Client as HTTP
 import Path.IO
 import Salsa.Party.Web.Server.Application ()
@@ -36,7 +38,7 @@ serverSpec = modifyMaxSuccess (`div` 20) . managerSpec . yesodSpecWithSiteSetupF
 serverSetupFunc :: HTTP.Manager -> SetupFunc App
 serverSetupFunc man = do
   tdir <- tempDirSetupFunc "salsa"
-  pool <- connectionPoolSetupFunc migrateAll
+  pool <- salsaConnectionPoolSetupFunc
   sessionKeyFile <- resolveFile tdir "session-key.aes"
   pure
     App
@@ -54,7 +56,16 @@ serverSetupFunc man = do
 type DBSpec = SpecWith DB.ConnectionPool
 
 dbSpec :: DBSpec -> Spec
-dbSpec = modifyMaxSuccess (`div` 10) . persistSqliteSpec migrateAll
+dbSpec = modifyMaxSuccess (`div` 10) . setupAround salsaConnectionPoolSetupFunc
+
+salsaConnectionPoolSetupFunc :: SetupFunc DB.ConnectionPool
+salsaConnectionPoolSetupFunc =
+  SetupFunc $ \func ->
+    runNoLoggingT $
+      let info = mkSqliteConnectionInfo ":memory:" & walEnabled .~ False & fkEnabled .~ False
+       in withSqlitePoolInfo info 1 $ \pool -> do
+            _ <- flip runSqlPool pool $ DB.runMigrationQuiet migrateAll
+            liftIO $ func pool
 
 testRegister ::
   Text -> Text -> YesodExample App ()

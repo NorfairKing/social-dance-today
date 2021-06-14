@@ -81,6 +81,7 @@ tests:
     - genvalidity-time
     - http-client
     - http-types
+    - microlens
     - monad-logger
     - mtl
     - path

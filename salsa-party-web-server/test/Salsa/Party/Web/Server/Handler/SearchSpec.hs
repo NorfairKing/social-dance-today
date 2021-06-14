@@ -59,7 +59,8 @@ spec = do
           place3Id <- DB.insert place3
           let party1 =
                 Party
-                  { partyTitle = "Example party 1",
+                  { partyOrganiser = toSqlKey 1,
+                    partyTitle = "Example party 1",
                     partyDay = fromGregorian 2021 06 10,
                     partyPlace = place1Id,
                     partyDescription = Nothing,
@@ -69,7 +70,8 @@ spec = do
           party1Id <- DB.insert party1
           let party2 =
                 Party
-                  { partyTitle = "Example party 2",
+                  { partyOrganiser = toSqlKey 2,
+                    partyTitle = "Example party 2",
                     partyDay = fromGregorian 2021 06 10,
                     partyPlace = place2Id,
                     partyDescription = Nothing,
@@ -80,7 +82,8 @@ spec = do
           -- close to party 1, but the next day
           let party3 =
                 Party
-                  { partyTitle = "Example party 3",
+                  { partyOrganiser = toSqlKey 3,
+                    partyTitle = "Example party 3",
                     partyDay = fromGregorian 2021 06 11,
                     partyPlace = place3Id,
                     partyDescription = Nothing,
