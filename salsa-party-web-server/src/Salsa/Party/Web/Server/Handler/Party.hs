@@ -92,7 +92,8 @@ submitPartyPage mPartyId mResult = do
           Entity placeId _ <- lookupPlace partyFormAddress
           -- Insert or update the party
           partyId <- runDB $ case partyFormId of
-            Nothing ->
+            Nothing -> do
+              addMessage "is-success" "Succesfully submitted party"
               insert
                 ( Party
                     { partyOrganiser = organiserId,
@@ -105,6 +106,7 @@ submitPartyPage mPartyId mResult = do
                     }
                 )
             Just partyId -> do
+              addMessage "is-success" "Succesfully edited party"
               update
                 partyId
                 [ PartyTitle =. partyFormTitle,
