@@ -22,6 +22,7 @@ function geoFindMe() {
   function error(err) {
     console.log(err)
     status.textContent = 'Unable to retrieve your location';
+    status.classList.add("is-danger");
   }
 
   if(!navigator.geolocation) {
