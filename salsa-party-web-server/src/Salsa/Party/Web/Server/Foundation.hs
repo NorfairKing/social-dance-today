@@ -46,6 +46,7 @@ data App = App
     appConnectionPool :: !ConnectionPool,
     appSessionKeyFile :: !(Path Abs File),
     appSendEmails :: !Bool,
+    appGoogleAPIKey :: !(Maybe Text),
     appGoogleAnalyticsTracking :: !(Maybe Text),
     appGoogleSearchConsoleVerification :: !(Maybe Text)
   }

@@ -91,10 +91,18 @@ getPartyR partyId = do
   Party {..} <- runDB $ get404 partyId
   Place {..} <- runDB $ get404 partyPlace
   posterIds <- runDB $ selectKeysList [PosterParty ==. partyId] []
-  let mapsAPI = "https://www.google.com/maps/embed/v1/place"
-  let apiKey = "dummy"
-  let googleMapsEmbedQuery = renderQuery True [("key", Just apiKey), ("q", Just $ TE.encodeUtf8 placeQuery)]
-  let googleMapsEmbedUrl = mapsAPI <> TE.decodeUtf8 googleMapsEmbedQuery
+  mGoogleAPIKey <- getsYesod appGoogleAPIKey
+  let mGoogleMapsEmbedUrl = do
+        apiKey <- mGoogleAPIKey
+        let mapsAPI = "https://www.google.com/maps/embed/v1/place"
+        let googleMapsEmbedQuery =
+              renderQuery
+                True
+                [ ("key", Just $ TE.encodeUtf8 apiKey),
+                  ("q", Just $ TE.encodeUtf8 placeQuery)
+                ]
+        let googleMapsEmbedUrl = mapsAPI <> TE.decodeUtf8 googleMapsEmbedQuery
+        pure googleMapsEmbedUrl
   today <- liftIO $ utctDay <$> getCurrentTime
   withNavBar $(widgetFile "party")
 

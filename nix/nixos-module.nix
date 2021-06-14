@@ -4,7 +4,9 @@ with lib;
 
 let
   cfg = config.services.salsa-party."${envname}";
-  concatAttrs = attrList: fold (x: y: x // y) { } attrList;
+  mergeListRecursively = pkgs.callPackage ./merge-lists-recursively.nix { };
+
+  toYamlFile = pkgs.callPackage ./to-yaml.nix { };
 in
 {
   options.services.salsa-party."${envname}" =
@@ -17,25 +19,46 @@ in
               options =
                 {
                   enable = mkEnableOption "Salsa/Party WEB Server";
-                  log-level =
+                  config =
                     mkOption {
+                      description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
+                      default = { };
+                    };
+                  log-level =                    mkOption {
                       type = types.str;
                       example = "LevelDebug";
                       default = "LevelWarn";
                       description = "The log level to use";
                     };
-                  hosts =
-                    mkOption {
+                  hosts =                    mkOption {
                       type = types.listOf (types.str);
                       example = "salsa-party.cs-syd.eu";
+                      default = [];
                       description = "The host to serve web requests on";
                     };
-                  port =
-                    mkOption {
+                  port =                    mkOption {
                       type = types.int;
                       example = 8001;
                       description = "The port to serve web requests on";
                     };
+                  google-api-key =                         mkOption {
+                    type = types.nullOr types.str;
+                    example = "XXXXXXXXXXXXXXXXXXXXXXXXX-XXXXXXXXXXXXX";
+                    default = null;
+                    description = "The google API key";
+                  };
+                  google-analytics-tracking =                         mkOption {
+                    type = types.nullOr types.str;
+                    example = "X-XXXXXXXXXX";
+                    default = null;
+                    description = "The google Analytics tracking code";
+                  };
+                  google-search-console-verification =                         mkOption {
+                    type = types.nullOr types.str;
+                    example = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-XXXX";
+                    default = null;
+                    description = "The google Search Console verification code";
+                  };
                 };
             };
           default = null;
@@ -43,22 +66,36 @@ in
     };
   config =
     let
+      nullOrOption =
+        name: opt: optionalAttrs (!builtins.isNull opt) { "${name}" = opt; };
+      nullOrOptionHead =
+        name: opt: optionalAttrs (!builtins.isNull opt && opt != [ ]) { "${name}" = builtins.head opt; };
+
+      web-server-config =with cfg.web-server;
+        mergeListRecursively  [
+          (nullOrOption "log-level" log-level)
+          (nullOrOptionHead "host" hosts)
+          (nullOrOption "port" port)
+          (nullOrOption "google-api-key" google-api-key)
+          (nullOrOption "google-analytics-tracking" google-analytics-tracking)
+          (nullOrOption "google-search-console-verification" google-search-console-verification)
+          cfg.web-server.config
+        ];
+      web-server-config-file = toYamlFile "salsa-web-server-config" web-server-config;
+
       working-dir = "/www/salsa-party/${envname}/";
       # The docs server
       web-server-working-dir = working-dir + "web-server/";
       # The api server
       web-server-service =
-        with cfg.web-server;
-        optionalAttrs enable {
+        optionalAttrs (cfg.web-server.enable or false) {
           "salsa-party-web-server-${envname}" = {
             description = "Salsa/Party WEB Server ${envname} Service";
             wantedBy = [ "multi-user.target" ];
             environment =
               {
-                "SALSA_PARTY_WEB_SERVER_LOG_LEVEL" =
-                  "${builtins.toString log-level}";
-                "SALSA_PARTY_WEB_SERVER_PORT" =
-                  "${builtins.toString port}";
+                "SALSA_PARTY_WEB_SERVER_CONFIG_FILE" =
+                  "${web-server-config-file}";
               };
             script =
               ''
@@ -89,10 +126,6 @@ in
               forceSSL = true;
               locations."/" = {
                 proxyPass = "http://localhost:${builtins.toString port}";
-                # Just to make sure we don't run into 413 errors on big syncs
-                extraConfig = ''
-                  client_max_body_size 0;
-                '';
               };
               serverAliases = tail hosts;
             };
@@ -100,14 +133,14 @@ in
     in
     mkIf cfg.enable {
       systemd.services =
-        concatAttrs [
+        mergeListRecursively [
           web-server-service
         ];
       networking.firewall.allowedTCPPorts = builtins.concatLists [
         (optional cfg.web-server.enable cfg.web-server.port)
       ];
       services.nginx.virtualHosts =
-        concatAttrs [
+        mergeListRecursively [
           web-server-host
         ];
     };

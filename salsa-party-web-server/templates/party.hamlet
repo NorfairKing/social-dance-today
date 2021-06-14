@@ -25,11 +25,12 @@
           #{homepage}
   
 
-    <p>
-      <iframe
-        width="600"
-        height="450"
-        style="border:0"
-        loading="lazy"
-        allowfullscreen
-        src=#{googleMapsEmbedUrl}>
+    $maybe googleMapsEmbedUrl <- mGoogleMapsEmbedUrl
+      <p>
+        <iframe
+          width="600"
+          height="450"
+          style="border:0"
+          loading="lazy"
+          allowfullscreen
+          src=#{googleMapsEmbedUrl}>
