@@ -47,6 +47,11 @@ User
     deriving Eq
     deriving Generic
 
+Organiser
+    user UserId
+    name Text
+
+    UniqueOrganiserUser user
 
 Place
     query Text
@@ -61,7 +66,7 @@ Place
 
 
 Party
-    organiser UserId
+    organiser OrganiserId
     title Text
     description Text Maybe
     day Day

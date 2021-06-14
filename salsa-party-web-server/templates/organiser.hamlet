@@ -1,0 +1,27 @@
+<section .section>
+  <div .container>
+    <h1 .title>
+      Organiser Profile
+
+    <form
+      method=post
+      action=@{OrganiserR}>
+      
+      <div .field>
+        <label .label>
+          Display Name
+        <div .control>
+          <input
+            type=text
+            name="name"
+            value=#{tv organiserName}
+            required>
+            
+
+      ^{token}
+      
+      <div .field>
+        <div .control>
+          <button .button .is-primary type="submit">
+            Submit
+

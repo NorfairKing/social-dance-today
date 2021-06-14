@@ -11,6 +11,7 @@ import Data.GenValidity.Text ()
 import Data.GenValidity.Time ()
 import qualified Data.Text as T
 import Salsa.Party.Web.Server.Handler.Import
+import Salsa.Party.Web.Server.Handler.Organiser
 import Salsa.Party.Web.Server.Handler.Party
 import Test.QuickCheck
 import Yesod.Core.Types
@@ -27,6 +28,10 @@ instance GenValid FileInfo where
       <*> genValid
       <*> (yield <$> genValid)
       <*> pure (\_ -> pure ()) -- We really shouldn't be generating this ..?
+
+instance GenValid OrganiserForm where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
 
 instance GenValid Coordinates where
   genValid = genValidStructurally

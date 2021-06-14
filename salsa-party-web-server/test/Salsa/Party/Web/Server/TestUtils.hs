@@ -19,6 +19,7 @@ import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.DB
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Gen
+import Salsa.Party.Web.Server.Handler.Organiser
 import Salsa.Party.Web.Server.Handler.Party
 import Salsa.Party.Web.Server.Static
 import Test.QuickCheck
@@ -129,6 +130,20 @@ testSubmitPlace address Coordinates {..} =
       [ PlaceLat =. coordinatesLat,
         PlaceLon =. coordinatesLon
       ]
+
+testSubmitOrganiser :: OrganiserForm -> YesodClientM App ()
+testSubmitOrganiser OrganiserForm {..} = do
+  get OrganiserR
+  statusIs 200
+  request $ do
+    setMethod methodPost
+    setUrl OrganiserR
+    addToken
+    addPostParam "name" organiserFormName
+  statusIs 303
+  locationShouldBe OrganiserR
+  _ <- followRedirect
+  statusIs 200
 
 testSubmitParty :: PartyForm -> Coordinates -> YesodClientM App PartyId
 testSubmitParty PartyForm {..} loc = do

@@ -23,6 +23,7 @@ library
       Salsa.Party.Web.Server.Handler.Account
       Salsa.Party.Web.Server.Handler.Home
       Salsa.Party.Web.Server.Handler.Import
+      Salsa.Party.Web.Server.Handler.Organiser
       Salsa.Party.Web.Server.Handler.Party
       Salsa.Party.Web.Server.Handler.Search
       Salsa.Party.Web.Server.OptParse
@@ -95,6 +96,7 @@ test-suite salsa-party-web-server-test
       Salsa.Party.Web.Server.Gen
       Salsa.Party.Web.Server.Handler.AuthSpec
       Salsa.Party.Web.Server.Handler.HomeSpec
+      Salsa.Party.Web.Server.Handler.OrganiserSpec
       Salsa.Party.Web.Server.Handler.PartySpec
       Salsa.Party.Web.Server.Handler.SearchSpec
       Salsa.Party.Web.Server.Handler.TestImport

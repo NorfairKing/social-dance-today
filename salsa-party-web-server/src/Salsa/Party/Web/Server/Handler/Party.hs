@@ -54,46 +54,52 @@ postSubmitPartyR = do
 submitPartyPage :: Maybe (FormResult PartyForm) -> Handler Html
 submitPartyPage mResult = do
   userId <- requireAuthId
-  case mResult of
-    Just (FormSuccess PartyForm {..}) -> do
-      Entity placeId _ <- lookupPlace partyFormAddress
-      partyId <-
-        runDB $
-          insert
-            ( Party
-                { partyOrganiser = userId,
-                  partyTitle = partyFormTitle,
-                  partyDescription = unTextarea <$> partyFormDescription,
-                  partyDay = partyFormDay,
-                  partyStart = partyFormStart,
-                  partyHomepage = partyFormHomepage,
-                  partyPlace = placeId
-                }
-            )
-      forM_ partyFormPoster $ \posterFileInfo -> do
-        imageBlob <- fileSourceByteString posterFileInfo
-        runDB $
-          upsertBy
-            (UniquePosterParty partyId)
-            ( Poster
-                { posterParty = partyId,
-                  posterImage = imageBlob,
-                  posterImageType = fileContentType posterFileInfo
-                }
-            )
-            [ PosterImage =. imageBlob,
-              PosterImageType =. fileContentType posterFileInfo
-            ]
-      redirect $ PartyR partyId
-    _ -> do
-      token <- genToken
-      withMFormResultNavBar mResult $(widgetFile "submit-party")
+  mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
+  case mOrganiser of
+    Nothing -> do
+      addMessage "is-danger" "You must set up an organiser profile in the account overview before you can submit a party."
+      redirect OrganiserR
+    Just (Entity organiserId _) ->
+      case mResult of
+        Just (FormSuccess PartyForm {..}) -> do
+          Entity placeId _ <- lookupPlace partyFormAddress
+          partyId <-
+            runDB $
+              insert
+                ( Party
+                    { partyOrganiser = organiserId,
+                      partyTitle = partyFormTitle,
+                      partyDescription = unTextarea <$> partyFormDescription,
+                      partyDay = partyFormDay,
+                      partyStart = partyFormStart,
+                      partyHomepage = partyFormHomepage,
+                      partyPlace = placeId
+                    }
+                )
+          forM_ partyFormPoster $ \posterFileInfo -> do
+            imageBlob <- fileSourceByteString posterFileInfo
+            runDB $
+              upsertBy
+                (UniquePosterParty partyId)
+                ( Poster
+                    { posterParty = partyId,
+                      posterImage = imageBlob,
+                      posterImageType = fileContentType posterFileInfo
+                    }
+                )
+                [ PosterImage =. imageBlob,
+                  PosterImageType =. fileContentType posterFileInfo
+                ]
+          redirect $ PartyR partyId
+        _ -> do
+          token <- genToken
+          withMFormResultNavBar mResult $(widgetFile "submit-party")
 
 getPartyR :: PartyId -> Handler Html
 getPartyR partyId = do
   Party {..} <- runDB $ get404 partyId
   Place {..} <- runDB $ get404 partyPlace
-  User {..} <- runDB $ get404 partyOrganiser
+  Organiser {..} <- runDB $ get404 partyOrganiser
   posterIds <- runDB $ selectKeysList [PosterParty ==. partyId] []
   mGoogleAPIKey <- getsYesod appGoogleAPIKey
   let mGoogleMapsEmbedUrl = do
