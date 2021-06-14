@@ -53,7 +53,7 @@ organiserFormPage mResult = do
           mv defaultValue func = maybe defaultValue (func . entityVal) mOrganiser
           tv :: (Organiser -> Text) -> Text
           tv = mv ""
-      withMFormResultNavBar mResult $(widgetFile "account-organiser")
+      withMFormResultNavBar mResult $(widgetFile "account/organiser")
 
 getOrganiserR :: OrganiserId -> Handler Html
 getOrganiserR organiserId = do

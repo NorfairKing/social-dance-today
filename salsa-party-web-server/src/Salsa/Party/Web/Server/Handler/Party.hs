@@ -32,7 +32,7 @@ getAccountPartiesR = do
             E.orderBy [E.desc $ party E.^. PartyDay]
             pure (party, p, mPoster E.?. PosterId)
       token <- genToken
-      withNavBar $(widgetFile "account-parties")
+      withNavBar $(widgetFile "account/parties")
 
 data PartyForm = PartyForm
   { partyFormId :: Maybe PartyId,
@@ -147,7 +147,7 @@ submitPartyPage mPartyId mResult = do
               mt :: FormatTime a => String -> (Party -> a) -> Text
               mt formatString func = mmt formatString $ Just . func
           -- mtv :: (Party -> Maybe Text) ->
-          withMFormResultNavBar mResult $(widgetFile "submit-party")
+          withMFormResultNavBar mResult $(widgetFile "account/submit-party")
 
 postAccountPartyDeleteR :: PartyId -> Handler Html
 postAccountPartyDeleteR partyId = do

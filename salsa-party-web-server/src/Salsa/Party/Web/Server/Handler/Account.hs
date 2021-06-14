@@ -10,4 +10,4 @@ import Salsa.Party.Web.Server.Handler.Import
 getAccountR :: Handler Html
 getAccountR = do
   Entity _ User {..} <- requireAuth
-  withNavBar $(widgetFile "account")
+  withNavBar $(widgetFile "account/overview")
