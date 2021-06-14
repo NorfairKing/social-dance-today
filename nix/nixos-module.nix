@@ -24,36 +24,36 @@ in
                       description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
                       default = { };
                     };
-                  log-level =                    mkOption {
-                      type = types.str;
-                      example = "LevelDebug";
-                      default = "LevelWarn";
-                      description = "The log level to use";
-                    };
-                  hosts =                    mkOption {
-                      type = types.listOf (types.str);
-                      example = "salsa-party.cs-syd.eu";
-                      default = [];
-                      description = "The host to serve web requests on";
-                    };
-                  port =                    mkOption {
-                      type = types.int;
-                      example = 8001;
-                      description = "The port to serve web requests on";
-                    };
-                  google-api-key =                         mkOption {
+                  log-level = mkOption {
+                    type = types.str;
+                    example = "LevelDebug";
+                    default = "LevelWarn";
+                    description = "The log level to use";
+                  };
+                  hosts = mkOption {
+                    type = types.listOf (types.str);
+                    example = "salsa-party.cs-syd.eu";
+                    default = [ ];
+                    description = "The host to serve web requests on";
+                  };
+                  port = mkOption {
+                    type = types.int;
+                    example = 8001;
+                    description = "The port to serve web requests on";
+                  };
+                  google-api-key = mkOption {
                     type = types.nullOr types.str;
                     example = "XXXXXXXXXXXXXXXXXXXXXXXXX-XXXXXXXXXXXXX";
                     default = null;
                     description = "The google API key";
                   };
-                  google-analytics-tracking =                         mkOption {
+                  google-analytics-tracking = mkOption {
                     type = types.nullOr types.str;
                     example = "X-XXXXXXXXXX";
                     default = null;
                     description = "The google Analytics tracking code";
                   };
-                  google-search-console-verification =                         mkOption {
+                  google-search-console-verification = mkOption {
                     type = types.nullOr types.str;
                     example = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-XXXX";
                     default = null;
@@ -71,8 +71,8 @@ in
       nullOrOptionHead =
         name: opt: optionalAttrs (!builtins.isNull opt && opt != [ ]) { "${name}" = builtins.head opt; };
 
-      web-server-config =with cfg.web-server;
-        mergeListRecursively  [
+      web-server-config = with cfg.web-server;
+        mergeListRecursively [
           (nullOrOption "log-level" log-level)
           (nullOrOptionHead "host" hosts)
           (nullOrOption "port" port)
