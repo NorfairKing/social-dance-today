@@ -93,6 +93,7 @@ getPartyR :: PartyId -> Handler Html
 getPartyR partyId = do
   Party {..} <- runDB $ get404 partyId
   Place {..} <- runDB $ get404 partyPlace
+  User {..} <- runDB $ get404 partyOrganiser
   posterIds <- runDB $ selectKeysList [PosterParty ==. partyId] []
   mGoogleAPIKey <- getsYesod appGoogleAPIKey
   let mGoogleMapsEmbedUrl = do

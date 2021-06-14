@@ -11,6 +11,9 @@
     <h3 .title .is-3>
       Address: #{placeQuery}
 
+    <h4 .title .is-4>
+      Organiser: #{userEmailAddress}
+
     $forall posterId <- posterIds
       <img src=@{PosterR posterId}>
 
