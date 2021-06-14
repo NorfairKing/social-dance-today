@@ -11,7 +11,7 @@ spec = serverSpec $ do
       forAllValid $ \organiserForm_ ->
         withAnyLoggedInUser_ yc $ do
           testSubmitOrganiser organiserForm_
-          get SubmitPartyR
+          get AccountSubmitPartyR
           statusIs 200
     it "Can create a party by POSTing to SubmitPartyR" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -40,3 +40,39 @@ spec = serverSpec $ do
     yit "GETs a 404 for a nonexistent party" $ do
       get $ PartyR $ toSqlKey 666
       statusIs 404
+
+  describe "GetAccountPartiesR" $
+    it "GETS a 200 for any account with a party" $ \yc -> do
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm_ ->
+          forAllValid $ \location ->
+            withAnyLoggedInUser_ yc $ do
+              testSubmitOrganiser organiserForm_
+              _ <-
+                testSubmitParty
+                  partyForm_
+                  location
+              get AccountPartiesR
+              statusIs 200
+
+  describe "DeleteAccountPartyR" $
+    it "can delete a party" $ \yc -> do
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm_ ->
+          forAllValid $ \location ->
+            withAnyLoggedInUser_ yc $ do
+              testSubmitOrganiser organiserForm_
+              partyId <-
+                testSubmitParty
+                  partyForm_
+                  location
+              get $ AccountPartyR partyId
+              statusIs 200
+              request $ do
+                setMethod methodPost
+                setUrl $ AccountPartyDeleteR partyId
+                addToken
+              statusIs 303
+              locationShouldBe AccountPartiesR
+              _ <- followRedirect
+              statusIs 200

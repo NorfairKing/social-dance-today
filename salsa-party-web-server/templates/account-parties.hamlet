@@ -1,0 +1,34 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-1>
+      Your parties
+
+<section .section>
+  <div .container>
+    <a .button .is-primary href=@{AccountSubmitPartyR}>
+      Submit party
+
+<section .section>
+  <div .container>
+    $if null parties
+      No parties submitted yet
+    $else
+      $forall (Entity partyId party, Entity _ p, mPosterVal) <- parties
+        <h3 .title .is-3>
+          #{formatTime defaultTimeLocale prettyDayFormat $ partyDay party}: #{partyTitle party}
+        <h4 .subtitle .is-4>
+          #{placeQuery p}
+        $maybe posterId <- E.unValue mPosterVal
+          <img src=@{PosterR posterId}>
+        <p>
+          <div .buttons>
+            <a .button href=@{AccountPartyR partyId}>
+              Edit
+            <form
+              method=post
+              action=@{AccountPartyDeleteR partyId}>
+              ^{token}
+              <button .button .is-danger type=submit
+                onclick="return confirm('Are you sure you want to delete this party? This cannot be undone.');">
+                Delete
+

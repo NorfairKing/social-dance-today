@@ -6,9 +6,14 @@
 /poster/#PosterId PosterR GET
 /organiser/#OrganiserId OrganiserR GET
 
-/submit-party SubmitPartyR GET POST
 /account AccountR GET
 /account/organiser AccountOrganiserR GET POST
+
+/account/submit-party AccountSubmitPartyR GET POST
+/account/party/#PartyId AccountPartyR GET
+/account/party/#PartyId/delete AccountPartyDeleteR POST
+
+/account/parties AccountPartiesR GET
 
 /auth AuthR Auth getAuth
 /static StaticR EmbeddedStatic appStatic

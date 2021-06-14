@@ -18,8 +18,8 @@
           Account
         <a .navbar-item href=@{AccountOrganiserR}>
           Organiser Profile
-        <a .navbar-item href=@{SubmitPartyR}>
-          Submit Party
+        <a .navbar-item href=@{AccountPartiesR}>
+          My Parties
       
     <div .navbar-end>
       <div .navbar-item>

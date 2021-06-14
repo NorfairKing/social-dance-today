@@ -8,13 +8,35 @@ module Salsa.Party.Web.Server.Handler.Party where
 import Control.Monad
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Database.Esqueleto as E
 import Network.HTTP.Types
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
 import Text.Time.Pretty
 
+getAccountPartiesR :: Handler Html
+getAccountPartiesR = do
+  userId <- requireAuthId
+  mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
+  case mOrganiser of
+    Nothing -> do
+      addMessage "is-danger" "You must set up an organiser profile in the account overview before you can submit a party."
+      redirect AccountOrganiserR
+    Just (Entity organiserId _) -> do
+      parties <- runDB $
+        E.select $
+          E.from $ \(party `E.InnerJoin` p `E.LeftOuterJoin` mPoster) -> do
+            E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
+            E.on (E.just (party E.^. PartyId) E.==. mPoster E.?. PosterParty)
+            E.where_ (party E.^. PartyOrganiser E.==. E.val organiserId)
+            E.orderBy [E.desc $ party E.^. PartyDay]
+            pure (party, p, mPoster E.?. PosterId)
+      token <- genToken
+      withNavBar $(widgetFile "account-parties")
+
 data PartyForm = PartyForm
-  { partyFormTitle :: Text,
+  { partyFormId :: Maybe PartyId,
+    partyFormTitle :: Text,
     partyFormDay :: Day,
     partyFormAddress :: Text,
     partyFormDescription :: Maybe Textarea,
@@ -35,7 +57,8 @@ instance Validity PartyForm where
 partyForm :: FormInput Handler PartyForm
 partyForm =
   PartyForm
-    <$> ireq textField "title"
+    <$> iopt hiddenField "id"
+    <*> ireq textField "title"
     <*> ireq dayField "day"
     <*> ireq textField "address"
     <*> iopt textareaField "description"
@@ -43,16 +66,20 @@ partyForm =
     <*> iopt urlField "homepage"
     <*> iopt fileField "poster"
 
-getSubmitPartyR :: Handler Html
-getSubmitPartyR = submitPartyPage Nothing
+getAccountPartyR :: PartyId -> Handler Html
+getAccountPartyR partyId =
+  submitPartyPage (Just partyId) Nothing
 
-postSubmitPartyR :: Handler Html
-postSubmitPartyR = do
+getAccountSubmitPartyR :: Handler Html
+getAccountSubmitPartyR = submitPartyPage Nothing Nothing
+
+postAccountSubmitPartyR :: Handler Html
+postAccountSubmitPartyR = do
   res <- runInputPostResult partyForm
-  submitPartyPage $ Just res
+  submitPartyPage Nothing $ Just res
 
-submitPartyPage :: Maybe (FormResult PartyForm) -> Handler Html
-submitPartyPage mResult = do
+submitPartyPage :: Maybe PartyId -> Maybe (FormResult PartyForm) -> Handler Html
+submitPartyPage mPartyId mResult = do
   userId <- requireAuthId
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
   case mOrganiser of
@@ -63,8 +90,9 @@ submitPartyPage mResult = do
       case mResult of
         Just (FormSuccess PartyForm {..}) -> do
           Entity placeId _ <- lookupPlace partyFormAddress
-          partyId <-
-            runDB $
+          -- Insert or update the party
+          partyId <- runDB $ case partyFormId of
+            Nothing ->
               insert
                 ( Party
                     { partyOrganiser = organiserId,
@@ -76,6 +104,18 @@ submitPartyPage mResult = do
                       partyPlace = placeId
                     }
                 )
+            Just partyId -> do
+              update
+                partyId
+                [ PartyTitle =. partyFormTitle,
+                  PartyDescription =. unTextarea <$> partyFormDescription,
+                  PartyDay =. partyFormDay,
+                  PartyStart =. partyFormStart,
+                  PartyHomepage =. partyFormHomepage,
+                  PartyPlace =. placeId
+                ]
+              pure partyId
+          -- Update the poster if a new one has been submitted
           forM_ partyFormPoster $ \posterFileInfo -> do
             imageBlob <- fileSourceByteString posterFileInfo
             runDB $
@@ -90,10 +130,31 @@ submitPartyPage mResult = do
                 [ PosterImage =. imageBlob,
                   PosterImageType =. fileContentType posterFileInfo
                 ]
-          redirect $ PartyR partyId
+          redirect $ AccountPartyR partyId
         _ -> do
+          mParty <- forM mPartyId $ runDB . get404
+          mPlace <- forM mParty $ runDB . get404 . partyPlace
+          posterIds <- fmap (fromMaybe []) $ forM mPartyId $ \partyId -> runDB $ selectKeysList [PosterParty ==. partyId] []
           token <- genToken
+          let mv :: a -> (Party -> a) -> a
+              mv defaultValue func = maybe defaultValue func mParty
+              tv :: (Party -> Text) -> Text
+              tv = mv ""
+              mtv :: (Party -> Maybe Text) -> Text
+              mtv = fromMaybe "" . mv Nothing
+              mmt :: FormatTime a => String -> (Party -> Maybe a) -> Text
+              mmt formatString func = tv $ maybe "" (T.pack . formatTime defaultTimeLocale formatString) . func
+              mt :: FormatTime a => String -> (Party -> a) -> Text
+              mt formatString func = mmt formatString $ Just . func
+          -- mtv :: (Party -> Maybe Text) ->
           withMFormResultNavBar mResult $(widgetFile "submit-party")
+
+postAccountPartyDeleteR :: PartyId -> Handler Html
+postAccountPartyDeleteR partyId = do
+  runDB $ do
+    deleteWhere [PosterParty ==. partyId]
+    delete partyId
+  redirect AccountPartiesR
 
 getPartyR :: PartyId -> Handler Html
 getPartyR partyId = do

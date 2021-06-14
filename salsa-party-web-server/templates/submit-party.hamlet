@@ -1,12 +1,15 @@
 <section .section>
   <div .container>
     <h1 .title .is-1>
-      Submit Party
+      $maybe _ <- mPartyId
+        Edit Party
+      $nothing
+        Submit Party
 
     <form .form
       enctype="multipart/form-data"
       method=post
-      action=@{SubmitPartyR}>
+      action=@{AccountSubmitPartyR}>
 
       <div .field>
         <label .label>
@@ -15,6 +18,7 @@
           <input
             type=text
             name="title"
+            value=#{tv partyTitle}
             required>
 
       <div .field>
@@ -23,8 +27,9 @@
         <div .control>
           <input
             type=date
-            name="day"
-            required>
+            required
+            value=#{mt "%F" partyDay}
+            name="day">
 
       <div .field>
         <label .label>
@@ -32,8 +37,9 @@
         <div .control>
           <input
             type=text
-            name="address"
-            required>
+            value=#{maybe "" placeQuery mPlace}
+            required
+            name="address">
 
       <div .field>
         <label .label>
@@ -41,6 +47,7 @@
         <div .control>
           <textarea
             name="description">
+            #{mtv partyDescription}
 
       <div .field>
         <label .label>
@@ -48,6 +55,7 @@
         <div .control>
           <input
             type=time
+            value=#{mmt "%H:%M" partyStart}
             name="start">
 
       <div .field>
@@ -56,6 +64,7 @@
         <div .control>
           <input
             type=url
+            value=#{mtv partyHomepage}
             name="homepage">
 
       <div .field>
@@ -73,6 +82,14 @@
               <span .file-name>
                 No poster selected
 
+      $forall posterId <- posterIds
+        <img src=@{PosterR posterId}>
+
+
+      $maybe partyId <- mPartyId
+        <div .field>
+          <div .control>
+            <input name="id" type="hidden" value=#{fromSqlKey partyId}>
 
       <div .field>
         <div .control>
@@ -80,5 +97,8 @@
 
       <div .field>
         <div .control>
-          <button .button .is-primary type="submit">
-            Submit
+          <div .buttons>
+            <button .button .is-primary type="submit">
+              Submit
+            <a .button href=@{AccountPartiesR}>
+              Back
