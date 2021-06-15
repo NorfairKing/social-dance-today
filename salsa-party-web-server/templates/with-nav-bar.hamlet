@@ -13,7 +13,7 @@
         <a .navbar-item href=@{HomeR}>
           <strong>
             Find a party
-      $maybe _ <- mAuthId
+      $maybe _ <- mAuth
         <a .navbar-item href=@{AccountR}>
           Account
         <a .navbar-item href=@{AccountOrganiserR}>
@@ -22,8 +22,12 @@
           My Parties
       
     <div .navbar-end>
+      $if isAdmin
+        <a .navbar-item href=@{AdminR PanelR}>
+          Admin Panel
+
       <div .navbar-item>
-        $maybe _ <- mAuthId
+        $maybe _ <- mAuth
           <a .button .is-light href=@{AuthR LogoutR}>
             Log out
         $nothing

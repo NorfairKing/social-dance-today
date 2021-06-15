@@ -34,7 +34,8 @@
 <section .section>
   <div .container>
     $if null parties
-      No parties found
+      <p>
+        No parties found
     $else
       $forall (Entity partyId party, Entity _ p, mPosterVal) <- parties
         <h3 .title .is-3>

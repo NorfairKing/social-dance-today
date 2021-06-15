@@ -1,4 +1,69 @@
 <section .section>
   <div .container>
-    <h1 .title>
+    <h1 .title .is-1>
       Admin Panel
+
+<section .section>
+  <div .container>
+    <h2 .title .is-2>
+      Users
+
+    <table .table .is-fullwidth .is-striped>
+      <thead>
+        <tr>
+          <th>
+            Email address
+          <th>
+            Verified
+      <tbody>
+        $forall Entity _ user <- users
+          <tr>
+            <td>
+              #{userEmailAddress user}
+            <td>
+              $maybe _ <- userVerificationKey user
+                No
+              $nothing
+                Yes
+
+<section .section>
+  <div .container>
+    <h2 .title .is-2>
+      Organisers
+
+    <table .table .is-fullwidth .is-striped>
+      <thead>
+        <tr>
+          <th>
+            Display Name
+          <th>
+            Profile
+      <tbody>
+        $forall Entity organiserId organiser <- organisers
+          <tr>
+            <td>
+              #{organiserName organiser}
+            <td>
+              <a .button href=@{OrganiserR organiserId}>
+                Profile
+
+<section .section>
+  <div .container>
+    <h2 .title .is-2>
+      Parties
+
+    <table .table .is-fullwidth .is-striped>
+      <thead>
+        <tr>
+          <th>
+            Title
+          <th>
+            Details
+      <tbody>
+        $forall Entity partyId party <- parties
+          <tr>
+            <td>
+              #{partyTitle party}
+            <td>
+              <a .button href=@{PartyR partyId}>
+                Profile

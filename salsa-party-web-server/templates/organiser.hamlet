@@ -8,7 +8,8 @@
     <h2 .title .is-2>
       Upcoming Parties
     $if null parties
-      No parties found
+      <p>
+        No parties found
     $else
       $forall (Entity partyId party, Entity _ p, mPosterVal) <- parties
         <h3 .title .is-3>

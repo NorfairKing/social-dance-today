@@ -154,7 +154,9 @@ withNavBar = withFormFailureNavBar []
 withFormFailureNavBar :: [Text] -> Widget -> Handler Html
 withFormFailureNavBar errorMessages body = do
   currentRoute <- getCurrentRoute
-  mAuthId <- maybeAuthId
+  mAuth <- maybeAuth
+  mAdmin <- getsYesod appAdmin
+  let isAdmin = (userEmailAddress . entityVal <$> mAuth) == mAdmin
   defaultLayout $(widgetFile "with-nav-bar")
 
 salsaAuthPlugin :: AuthPlugin App

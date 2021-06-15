@@ -49,11 +49,17 @@ User
     deriving Eq
     deriving Generic
 
+
 Organiser
     user UserId
     name Text
 
     UniqueOrganiserUser user
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
 
 Place
     query Text
@@ -79,6 +85,7 @@ Party
     deriving Show
     deriving Eq
     deriving Generic
+
 
 Poster
     party PartyId
