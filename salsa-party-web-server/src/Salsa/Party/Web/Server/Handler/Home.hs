@@ -9,5 +9,5 @@ getHomeR :: Handler Html
 getHomeR =
   withNavBar $ do
     setTitle "Salsa Parties Today"
-    setDescription "Salsa Parties Today: Which parties can I go to today? Where and when are they?"
+    setDescription "Where can I dance today?"
     $(widgetFile "home")
