@@ -57,7 +57,7 @@ organiserFormPage mResult = do
 
 getOrganiserR :: OrganiserId -> Handler Html
 getOrganiserR organiserId = do
-  Organiser {..} <- runDB $ get404 organiserId
+  organiser@Organiser {..} <- runDB $ get404 organiserId
   today <- liftIO $ utctDay <$> getCurrentTime
   parties <- runDB $
     E.select $
@@ -68,4 +68,7 @@ getOrganiserR organiserId = do
         E.where_ (party E.^. PartyDay E.>=. E.val today)
         E.orderBy [E.asc $ party E.^. PartyDay]
         pure (party, p, mPoster E.?. PosterKey)
-  withNavBar $(widgetFile "organiser")
+  withNavBar $ do
+    setTitle $ "Organiser profile: " <> toHtml organiserName
+    setDescription $ mconcat ["The organiser profile of ", organiserName, ", and a list of their upcoming social dance parties"]
+    $(widgetFile "organiser")

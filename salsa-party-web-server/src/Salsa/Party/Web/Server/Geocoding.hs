@@ -16,7 +16,7 @@ lookupPlace query = do
   mPlace <- runDB $ getBy $ UniquePlaceQuery query
   case mPlace of
     Just pe -> do
-      logDebugNS "geocoding" $ "Founding place in cache, not gecoding query: " <> query
+      logDebugNS "geocoding" $ "Found place in cache, not gecoding query: " <> query
       pure pe
     Nothing -> do
       logDebugNS "geocoding" $ "Did not find place in cache, gecoding query: " <> query

@@ -1,0 +1,13 @@
+.zoom-without-container {
+  transition: transform .2s;
+  margin: 0 auto;
+}
+
+.zoom-without-container img{
+  width:100%;
+  height:auto;	
+}
+
+.zoom-without-container:hover {
+  transform: scale(1.025); 
+}

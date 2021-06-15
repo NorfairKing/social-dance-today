@@ -22,7 +22,7 @@ getAccountPartiesR = do
     Nothing -> do
       addMessage "is-danger" "You must set up an organiser profile in the account overview before you can submit a party."
       redirect $ AccountR AccountOrganiserR
-    Just (Entity organiserId _) -> do
+    Just (Entity organiserId organiser) -> do
       parties <- runDB $
         E.select $
           E.from $ \(party `E.InnerJoin` p `E.LeftOuterJoin` mPoster) -> do
@@ -145,17 +145,23 @@ submitPartyPage mPartyId mResult = do
                     ]
           redirect $ AccountR $ AccountPartyR partyId
         _ -> do
-          mParty <- forM mPartyId $ runDB . get404
-          mPlace <- forM mParty $ runDB . get404 . partyPlace
-          posterKeys <- fmap (fromMaybe []) $
-            forM mPartyId $ \partyId -> runDB $
-              E.select $
-                E.from $ \poster -> do
-                  E.where_ $ poster E.^. PosterParty E.==. E.val partyId
-                  pure (poster E.^. PosterKey)
+          mPartyEntity <- fmap join $
+            forM mPartyId $ \partyId -> do
+              mParty <- runDB $ get partyId
+              pure $ Entity partyId <$> mParty
+          mPlace <- forM mPartyEntity $ \(Entity _ party) -> runDB $ get404 $ partyPlace party
+          posterWidgets <- fmap (fromMaybe []) $
+            forM mPartyEntity $ \(Entity partyId party) -> do
+              organiser <- runDB $ get404 $ partyOrganiser party
+              posterKeys <- runDB $
+                E.select $
+                  E.from $ \poster -> do
+                    E.where_ $ poster E.^. PosterParty E.==. E.val partyId
+                    pure (poster E.^. PosterKey)
+              pure $ map (posterImageWidget party organiser . E.unValue) posterKeys
           token <- genToken
           let mv :: a -> (Party -> a) -> a
-              mv defaultValue func = maybe defaultValue func mParty
+              mv defaultValue func = maybe defaultValue (func . entityVal) mPartyEntity
               tv :: (Party -> Text) -> Text
               tv = mv ""
               mtv :: (Party -> Maybe Text) -> Text
@@ -176,9 +182,9 @@ postAccountPartyDeleteR partyId = do
 
 getPartyR :: PartyId -> Handler Html
 getPartyR partyId = do
-  Party {..} <- runDB $ get404 partyId
+  party@Party {..} <- runDB $ get404 partyId
   Place {..} <- runDB $ get404 partyPlace
-  Organiser {..} <- runDB $ get404 partyOrganiser
+  organiser@Organiser {..} <- runDB $ get404 partyOrganiser
   posterKeys <- runDB $
     E.select $
       E.from $ \poster -> do
@@ -197,7 +203,10 @@ getPartyR partyId = do
         let googleMapsEmbedUrl = mapsAPI <> TE.decodeUtf8 googleMapsEmbedQuery
         pure googleMapsEmbedUrl
   today <- liftIO $ utctDay <$> getCurrentTime
-  withNavBar $(widgetFile "party")
+  withNavBar $ do
+    setTitle $ toHtml partyTitle
+    setDescription $ fromMaybe "Party without description" partyDescription
+    $(widgetFile "party")
 
 getPosterR :: CASKey -> Handler TypedContent
 getPosterR key = do

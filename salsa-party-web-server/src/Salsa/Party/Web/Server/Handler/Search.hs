@@ -62,7 +62,32 @@ searchResultPage mDay mAddress coordinates = do
   let toDouble :: Nano -> Double
       toDouble = realToFrac
   parties <- runDB $ searchQuery day coordinates
-  withNavBar $(widgetFile "search")
+  withNavBar $ do
+    setTitle $
+      mconcat
+        [ "Social dance parties around ",
+          case mAddress of
+            Just address -> toHtml address
+            Nothing -> "your location",
+          " ",
+          toHtml $ case mDay of
+            Nothing -> "today"
+            Just d -> "on " <> formatTime defaultTimeLocale prettyDayFormat d
+        ]
+    setDescription $
+      mconcat
+        [ "This is our list of social dance parties in and around ",
+          case mAddress of
+            Just address -> address
+            Nothing -> "your location",
+          " ",
+          T.pack $ case mDay of
+            Nothing -> "today"
+            Just d -> "on " <> formatTime defaultTimeLocale prettyDayFormat d,
+          ".",
+          "Should you wish to see your parties featured here, please make an account and submit your party for free!"
+        ]
+    $(widgetFile "search")
 
 -- For a given day and a given place,
 -- find all parties sorted by distance.

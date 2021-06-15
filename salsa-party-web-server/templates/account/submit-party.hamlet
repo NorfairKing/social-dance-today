@@ -93,8 +93,8 @@
               <span .file-name>
                 No poster selected
 
-      $forall E.Value posterKey <- posterKeys
-        ^{posterImageWidget posterKey}
+      $forall posterWidget <- posterWidgets
+        ^{posterWidget}
 
 
       $maybe partyId <- mPartyId

@@ -1,9 +1,9 @@
 <section .section>
   <div .container>
-    <h3 .title .is-3>
+    <h1 .title .is-3>
       Organiser: #{organiserName}
 
-    <h4 .title .is-4>
+    <h2 .title .is-4>
       Upcoming Parties
     $if null parties
       <p>
@@ -18,16 +18,13 @@
                   $maybe posterKey <- E.unValue mPosterVal
                     <div .card-image .has-text-centered>
                       <figure .image .is-16by9>
-                        <img
-                          width=640
-                          height=360
-                          src=@{PosterR posterKey}>
+                        ^{posterImageWidget party organiser posterKey}
                   <div .card-content>
-                    <h3 .title is-3>
+                    <h3 .title .is-5>
                       #{formatTime defaultTimeLocale prettyDayFormat $ partyDay party}
                       (#{prettyDayAuto today $ partyDay party})
-                    <h4 .title .is-4>
+                    <h4 .title .is-6>
                       #{partyTitle party}
-                    <h5 .subtitle .is-5>
+                    <h5 .subtitle .is-6>
                       #{placeQuery p}
 

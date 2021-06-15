@@ -50,9 +50,11 @@
                         <img
                           width=640
                           height=360
-                          src=@{PosterR posterKey}>
+                          src=@{PosterR posterKey}
+                          alt="Poster for #{partyTitle party} on #{formatTime defaultTimeLocale prettyDayFormat $ partyDay party}">
+
                   <div .card-content>
-                    <h3 .title .is-3>
+                    <h2 .title .is-4>
                       #{partyTitle party}
-                    <h4 .subtitle .is-4>
+                    <h3 .subtitle .is-5>
                       #{placeQuery p}

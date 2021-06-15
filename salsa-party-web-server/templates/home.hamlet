@@ -1,6 +1,6 @@
 <section .section .is-large>
   <div .container>
-    <h1 .title .has-text-centered>
+    <h1 .title .is-3 .has-text-centered>
       Where can I go dance today?
 
     <div .columns .is-centered>
@@ -32,3 +32,14 @@
             <div .control>
               <button .button .is-primary type="submit">
                 Search
+
+
+<section .section>
+  <div .columns .is-centered>
+    <div .column .is-half>
+      <h2 .title .is-4 .has-text-centered>
+        Explore the world of social dance
+      <div .field .has-text-centered>
+        <a .button .is-light
+          href=@{ExploreR}>
+          Explore

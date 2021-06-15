@@ -17,8 +17,11 @@ library:
   - bytestring
   - cryptohash-sha256
   - data-default
+  - directory
   - envparse
   - esqueleto
+  - file-embed
+  - filepath
   - http-client
   - http-client-tls
   - http-types

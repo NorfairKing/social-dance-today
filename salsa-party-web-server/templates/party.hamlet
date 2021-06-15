@@ -13,7 +13,7 @@
       (#{prettyDayAuto today partyDay})
 
     $forall E.Value posterKey <- posterKeys
-      ^{posterImageWidget posterKey}
+      ^{posterImageWidget party organiser posterKey}
 
     <h6 .title .is-6>
       Organiser: 

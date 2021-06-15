@@ -1,5 +1,7 @@
 / HomeR GET
 
+/explore ExploreR GET
+
 /query QueryR GET
 
 /party/#PartyId PartyR GET

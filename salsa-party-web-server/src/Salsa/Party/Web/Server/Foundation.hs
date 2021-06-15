@@ -15,10 +15,12 @@
 module Salsa.Party.Web.Server.Foundation where
 
 import Control.Monad
+import Data.FileEmbed
 import Data.Fixed
 import Data.Function
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Time
 import Data.Validity
 import Data.Validity.Text ()
 import Data.Validity.Time ()
@@ -53,7 +55,7 @@ data App = App
     appGoogleSearchConsoleVerification :: !(Maybe Text)
   }
 
-mkYesodData "App" $(parseRoutesFile "routes.txt")
+mkYesodData "App" $(makeRelativeToProject "routes.txt" >>= parseRoutesFile)
 
 instance Yesod App where
   shouldLogIO app _ ll = pure $ ll >= appLogLevel app
@@ -290,11 +292,12 @@ placeCoordinates Place {..} = Coordinates {coordinatesLat = placeLat, coordinate
 prettyDayFormat :: String
 prettyDayFormat = "%A, %B %e"
 
-posterImageWidget :: CASKey -> Widget
-posterImageWidget posterKey =
+posterImageWidget :: Party -> Organiser -> CASKey -> Widget
+posterImageWidget Party {..} Organiser {..} posterKey =
   [whamlet|
     <img
       width=#{desiredWidth}
       height=#{desiredHeight}
-      src=@{PosterR posterKey}>
+      src=@{PosterR posterKey}
+      alt="Poster for #{partyTitle} on #{formatTime defaultTimeLocale prettyDayFormat partyDay}, by #{organiserName}">
   |]

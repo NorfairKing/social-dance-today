@@ -18,7 +18,7 @@
         <h6 .subtitle .is-6>
           #{placeQuery p}
         $maybe posterKey <- E.unValue mPosterVal
-          ^{posterImageWidget posterKey}
+          ^{posterImageWidget party organiser posterKey}
         <p>
           <div .buttons>
             <a .button href=@{AccountR $ AccountPartyR partyId}>

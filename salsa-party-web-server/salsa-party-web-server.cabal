@@ -23,6 +23,7 @@ library
       Salsa.Party.Web.Server.Handler
       Salsa.Party.Web.Server.Handler.Account
       Salsa.Party.Web.Server.Handler.Admin
+      Salsa.Party.Web.Server.Handler.Explore
       Salsa.Party.Web.Server.Handler.Home
       Salsa.Party.Web.Server.Handler.Import
       Salsa.Party.Web.Server.Handler.Organiser
@@ -48,8 +49,11 @@ library
     , bytestring
     , cryptohash-sha256
     , data-default
+    , directory
     , envparse
     , esqueleto
+    , file-embed
+    , filepath
     , http-client
     , http-client-tls
     , http-types
