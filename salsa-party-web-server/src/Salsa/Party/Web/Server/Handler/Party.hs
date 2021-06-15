@@ -12,6 +12,7 @@ import qualified Database.Esqueleto as E
 import Network.HTTP.Types
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
+import Salsa.Party.Web.Server.Poster
 import Text.Time.Pretty
 
 getAccountPartiesR :: Handler Html
@@ -122,20 +123,23 @@ submitPartyPage mPartyId mResult = do
             imageBlob <- fileSourceByteString posterFileInfo
             let contentType = fileContentType posterFileInfo
             let casKey = mkCASKey contentType imageBlob
-            runDB $
-              upsertBy
-                (UniquePosterParty partyId)
-                ( Poster
-                    { posterParty = partyId,
-                      posterKey = casKey,
-                      posterImage = imageBlob,
-                      posterImageType = contentType
-                    }
-                )
-                [ PosterKey =. casKey,
-                  PosterImage =. imageBlob,
-                  PosterImageType =. contentType
-                ]
+            case posterCropImage contentType imageBlob of
+              Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
+              Right (convertedImageType, convertedImageBlob) -> do
+                runDB $
+                  upsertBy
+                    (UniquePosterParty partyId)
+                    ( Poster
+                        { posterParty = partyId,
+                          posterKey = casKey,
+                          posterImage = convertedImageBlob,
+                          posterImageType = convertedImageType
+                        }
+                    )
+                    [ PosterKey =. casKey,
+                      PosterImage =. convertedImageBlob,
+                      PosterImageType =. convertedImageType
+                    ]
           redirect $ AccountR $ AccountPartyR partyId
         _ -> do
           mParty <- forM mPartyId $ runDB . get404

@@ -83,7 +83,7 @@
                 No poster selected
 
       $forall E.Value posterKey <- posterKeys
-        <img src=@{PosterR posterKey}>
+        ^{posterImageWidget posterKey}
 
 
       $maybe partyId <- mPartyId
@@ -102,3 +102,6 @@
               Submit
             <a .button href=@{AccountR AccountPartiesR}>
               Back
+            $maybe partyId <- mPartyId
+              <a .button href=@{PartyR partyId}>
+                Public party profile

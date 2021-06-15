@@ -17,7 +17,7 @@
         #{organiserName}
 
     $forall E.Value posterKey <- posterKeys
-      <img src=@{PosterR posterKey}>
+      ^{posterImageWidget posterKey}
 
     $maybe description <- partyDescription
       <div .content>

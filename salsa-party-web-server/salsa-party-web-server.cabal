@@ -29,6 +29,7 @@ library
       Salsa.Party.Web.Server.Handler.Party
       Salsa.Party.Web.Server.Handler.Search
       Salsa.Party.Web.Server.OptParse
+      Salsa.Party.Web.Server.Poster
       Salsa.Party.Web.Server.Static
       Salsa.Party.Web.Server.Static.TH
       Salsa.Party.Web.Server.Widget
@@ -37,7 +38,9 @@ library
   hs-source-dirs:
       src
   build-depends:
-      aeson
+      JuicyPixels
+    , JuicyPixels-extra
+    , aeson
     , amazonka
     , amazonka-ses
     , base >=4.7 && <5

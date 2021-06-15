@@ -28,6 +28,8 @@ import Network.HTTP.Client as HTTP
 import Path
 import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.DB
+import Salsa.Party.Web.Server.DB.CASKey
+import Salsa.Party.Web.Server.Poster
 import Salsa.Party.Web.Server.Static
 import Salsa.Party.Web.Server.Widget
 import System.Random
@@ -288,3 +290,12 @@ placeCoordinates Place {..} = Coordinates {coordinatesLat = placeLat, coordinate
 
 prettyDayFormat :: String
 prettyDayFormat = "%A, %B %e"
+
+posterImageWidget :: CASKey -> Widget
+posterImageWidget posterKey =
+  [whamlet|
+    <img
+      width=#{desiredWidth}
+      height=#{desiredHeight}
+      src=@{PosterR posterKey}>
+  |]
