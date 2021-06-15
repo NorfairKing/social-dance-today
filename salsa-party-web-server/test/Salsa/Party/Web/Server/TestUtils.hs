@@ -88,7 +88,7 @@ testRegister emailAddress passphrase = do
     addPostParam "passphrase" passphrase
     addPostParam "passphrase-confirm" passphrase
   statusIs 303
-  locationShouldBe AccountR
+  locationShouldBe $ AccountR AccountOverviewR
   _ <- followRedirect
   statusIs 200
 
@@ -103,7 +103,7 @@ testLogin emailAddress passphrase = do
     addPostParam "email-address" emailAddress
     addPostParam "passphrase" passphrase
   statusIs 303
-  locationShouldBe AccountR
+  locationShouldBe $ AccountR AccountOverviewR
   _ <- followRedirect
   statusIs 200
 
@@ -150,11 +150,11 @@ testSubmitOrganiser OrganiserForm {..} = do
   statusIs 200
   request $ do
     setMethod methodPost
-    setUrl AccountOrganiserR
+    setUrl $ AccountR AccountOrganiserR
     addToken
     addPostParam "name" organiserFormName
   statusIs 303
-  locationShouldBe AccountOrganiserR
+  locationShouldBe $ AccountR AccountOrganiserR
   _ <- followRedirect
   statusIs 200
 

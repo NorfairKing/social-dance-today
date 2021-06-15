@@ -72,16 +72,12 @@ instance Yesod App where
     -- List each route that a user can access without login
     -- so we don't accidentally authorize anything.
     case route of
-      HomeR -> pure Authorized
-      QueryR -> pure Authorized
-      SearchR _ -> pure Authorized
-      PartyR _ -> pure Authorized
-      PosterR _ -> pure Authorized
-      OrganiserR _ -> pure Authorized
-      ReloadR -> pure Authorized
-      FaviconR -> pure Authorized
-      AuthR _ -> pure Authorized
-      StaticR _ -> pure Authorized
+      AccountR _ -> do
+        -- Has to be logged-in
+        mAuthId <- maybeAuthId
+        case mAuthId of
+          Nothing -> pure AuthenticationRequired
+          Just _ -> pure Authorized
       AdminR _ -> do
         -- Has to be admin
         mAuthId <- maybeAuth
@@ -92,12 +88,7 @@ instance Yesod App where
             if Just (userEmailAddress u) == mAdmin
               then pure Authorized
               else notFound
-      _ -> do
-        -- Has to be logged-in
-        mAuthId <- maybeAuthId
-        case mAuthId of
-          Nothing -> pure AuthenticationRequired
-          Just _ -> pure Authorized
+      _ -> pure Authorized
 
 instance RenderMessage App FormMessage where
   renderMessage _ _ = defaultFormMessage
@@ -110,7 +101,7 @@ instance YesodPersist App where
 
 instance YesodAuth App where
   type AuthId App = UserId
-  loginDest _ = AccountR
+  loginDest _ = AccountR AccountOverviewR
   logoutDest _ = HomeR
   authenticate Creds {..} = case credsPlugin of
     "salsa" -> do

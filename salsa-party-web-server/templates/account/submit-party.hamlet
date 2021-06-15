@@ -9,7 +9,7 @@
     <form .form
       enctype="multipart/form-data"
       method=post
-      action=@{AccountSubmitPartyR}>
+      action=@{AccountR AccountSubmitPartyR}>
 
       <div .field>
         <label .label>
@@ -100,5 +100,5 @@
           <div .buttons>
             <button .button .is-primary type="submit">
               Submit
-            <a .button href=@{AccountPartiesR}>
+            <a .button href=@{AccountR AccountPartiesR}>
               Back

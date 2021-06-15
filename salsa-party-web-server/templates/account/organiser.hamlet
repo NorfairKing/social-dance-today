@@ -14,7 +14,7 @@
       Update organiser profile
     <form
       method=post
-      action=@{AccountOrganiserR}>
+      action=@{AccountR AccountOrganiserR}>
       
       <div .field>
         <label .label>

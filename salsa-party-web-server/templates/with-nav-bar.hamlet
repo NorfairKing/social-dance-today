@@ -14,11 +14,11 @@
           <strong>
             Find a party
       $maybe _ <- mAuth
-        <a .navbar-item href=@{AccountR}>
+        <a .navbar-item href=@{AccountR AccountOverviewR}>
           Account
-        <a .navbar-item href=@{AccountOrganiserR}>
+        <a .navbar-item href=@{AccountR AccountOrganiserR}>
           Organiser Profile
-        <a .navbar-item href=@{AccountPartiesR}>
+        <a .navbar-item href=@{AccountR AccountPartiesR}>
           My Parties
       
     <div .navbar-end>

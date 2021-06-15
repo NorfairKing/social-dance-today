@@ -6,14 +6,15 @@
 /poster/#CASKey PosterR GET
 /organiser/#OrganiserId OrganiserR GET
 
-/account AccountR GET
-/account/organiser AccountOrganiserR GET POST
+/account AccountR:
+  / AccountOverviewR GET
+  /organiser AccountOrganiserR GET POST
 
-/account/submit-party AccountSubmitPartyR GET POST
-/account/party/#PartyId AccountPartyR GET
-/account/party/#PartyId/delete AccountPartyDeleteR POST
+  /submit-party AccountSubmitPartyR GET POST
+  /party/#PartyId AccountPartyR GET
+  /party/#PartyId/delete AccountPartyDeleteR POST
 
-/account/parties AccountPartiesR GET
+  /parties AccountPartiesR GET
 
 /admin AdminR:
   / PanelR GET

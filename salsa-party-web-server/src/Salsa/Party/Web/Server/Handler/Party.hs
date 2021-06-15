@@ -21,7 +21,7 @@ getAccountPartiesR = do
   case mOrganiser of
     Nothing -> do
       addMessage "is-danger" "You must set up an organiser profile in the account overview before you can submit a party."
-      redirect AccountOrganiserR
+      redirect $ AccountR AccountOrganiserR
     Just (Entity organiserId _) -> do
       parties <- runDB $
         E.select $
@@ -85,7 +85,7 @@ submitPartyPage mPartyId mResult = do
   case mOrganiser of
     Nothing -> do
       addMessage "is-danger" "You must set up an organiser profile in the account overview before you can submit a party."
-      redirect AccountOrganiserR
+      redirect $ AccountR AccountOrganiserR
     Just (Entity organiserId _) ->
       case mResult of
         Just (FormSuccess PartyForm {..}) -> do
@@ -136,7 +136,7 @@ submitPartyPage mPartyId mResult = do
                   PosterImage =. imageBlob,
                   PosterImageType =. contentType
                 ]
-          redirect $ AccountPartyR partyId
+          redirect $ AccountR $ AccountPartyR partyId
         _ -> do
           mParty <- forM mPartyId $ runDB . get404
           mPlace <- forM mParty $ runDB . get404 . partyPlace
@@ -165,7 +165,7 @@ postAccountPartyDeleteR partyId = do
   runDB $ do
     deleteWhere [PosterParty ==. partyId]
     delete partyId
-  redirect AccountPartiesR
+  redirect $ AccountR AccountPartiesR
 
 getPartyR :: PartyId -> Handler Html
 getPartyR partyId = do

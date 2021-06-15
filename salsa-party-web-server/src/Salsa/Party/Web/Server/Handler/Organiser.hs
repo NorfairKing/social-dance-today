@@ -46,7 +46,7 @@ organiserFormPage mResult = do
             (UniqueOrganiserUser userId)
             (Organiser {organiserUser = userId, organiserName = organiserFormName})
             [OrganiserName =. organiserFormName]
-      redirect AccountOrganiserR
+      redirect $ AccountR AccountOrganiserR
     _ -> do
       token <- genToken
       let mv :: a -> (Organiser -> a) -> a
