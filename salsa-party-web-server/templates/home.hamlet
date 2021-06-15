@@ -1,43 +1,34 @@
-<section .section>
+<section .section .is-large>
   <div .container>
-    <h1 .title>
-      Which parties can I go to?
+    <h1 .title .has-text-centered>
+      Where can I go dance today?
 
-    
-    <form
-      method=get
-      action=@{QueryR}>
-      <div .field>
-        <label .label>
-          Find parties near:
-        <div .control>
-          <div .field .has-addons>
-            <p .control>
-              <input
-                .input
-                #queryInput
-                type=text
-                name="address"
-                placeholder="Zürich"
-                required>
-            <p .control>
-              <a .button #find-me>
-                My location
+    <div .columns .is-centered>
+      <div .column .is-half>
+        <form
+          method=get
+          action=@{QueryR}>
+          <div .field .has-text-centered>
+            <label .label>
+              Find parties near:
+            <div .control>
+              <div .field .has-text-centered .has-addons .has-addons-centered>
+                <p .control>
+                  <input
+                    .input
+                    #queryInput
+                    type=text
+                    name="address"
+                    placeholder="Zürich"
+                    required>
+                <p .control>
+                  <a .button #find-me>
+                    My location
 
-      <div .field>
-        <label .label>
-          On:
-        <div .control>
-          <input 
-            .input
-            #dayInput
-            type=date
-            name="day">
+          <input #latitudeInput type=hidden name="latitude">
+          <input #longitudeInput type=hidden name="longitude">
 
-      <input #latitudeInput type=hidden name="latitude">
-      <input #longitudeInput type=hidden name="longitude">
-
-      <div .field>
-        <div .control>
-          <button .button .is-primary type="submit">
-            Search
+          <div .field .has-text-centered>
+            <div .control>
+              <button .button .is-primary type="submit">
+                Search

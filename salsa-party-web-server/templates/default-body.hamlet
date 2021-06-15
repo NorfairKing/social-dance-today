@@ -10,14 +10,6 @@ $forall (classes, message) <- messages
   <div .container>
     <div .columns .is-centered .p-4>
       <p .has-text-centered>
-        Geocoding by 
-        <a href="https://wiki.openstreetmap.org/wiki/Nominatim">
-          OpenStreetMaps Nominatim
-        <br>
-        <a href="https://www.openstreetmap.org/copyright">
-          &copy; OpenStreetMap contributors
-    <div .columns .is-centered .p-4>
-      <p .has-text-centered>
         &copy;
         <span id="copyright">
           <script>
@@ -55,3 +47,11 @@ $forall (classes, message) <- messages
       <p>
         @cs-syd.eu
 
+    <div .columns .is-centered .py-6>
+      <p .has-text-centered>
+        Geocoding by 
+        <a href="https://wiki.openstreetmap.org/wiki/Nominatim">
+          OpenStreetMaps Nominatim
+        <br>
+        <a href="https://www.openstreetmap.org/copyright">
+          &copy; OpenStreetMap contributors
