@@ -31,16 +31,16 @@ queryForm =
 getQueryR :: Handler Html
 getQueryR = do
   QueryForm {..} <- runInputGet queryForm
-  case queryFormCoordinates of
-    Just coordinates -> searchResultPage queryFormDay queryFormAddress coordinates
-    Nothing -> case queryFormAddress of
-      Just address -> do
-        redirect
-          ( SearchR address,
-            [ ("day", T.pack $ formatTime defaultTimeLocale "%F" day)
-              | day <- maybeToList queryFormDay
-            ]
-          )
+  case queryFormAddress of
+    Just address -> do
+      redirect
+        ( SearchR address,
+          [ ("day", T.pack $ formatTime defaultTimeLocale "%F" day)
+            | day <- maybeToList queryFormDay
+          ]
+        )
+    Nothing -> case queryFormCoordinates of
+      Just coordinates -> searchResultPage queryFormDay queryFormAddress coordinates
       Nothing -> invalidArgs ["Must supply either an address or coordinates."]
 
 getSearchR :: Text -> Handler Html
