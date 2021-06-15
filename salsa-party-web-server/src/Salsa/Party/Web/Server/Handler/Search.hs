@@ -9,7 +9,6 @@ import qualified Data.Text as T
 import qualified Database.Esqueleto as E
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
-import Text.Time.Pretty
 
 data QueryForm = QueryForm
   { queryFormAddress :: Maybe Text,

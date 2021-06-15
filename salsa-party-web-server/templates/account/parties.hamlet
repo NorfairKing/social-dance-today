@@ -3,10 +3,9 @@
     <h1 .title .is-1>
       Your parties
 
-<section .section>
-  <div .container>
-    <a .button .is-primary href=@{AccountR AccountSubmitPartyR}>
-      Submit party
+    <p>
+      <a .button .is-primary href=@{AccountR AccountSubmitPartyR}>
+        Submit party
 
 <section .section>
   <div .container>
@@ -14,9 +13,9 @@
       No parties submitted yet
     $else
       $forall (Entity partyId party, Entity _ p, mPosterVal) <- parties
-        <h3 .title .is-3>
+        <h4 .title .is-4>
           #{formatTime defaultTimeLocale prettyDayFormat $ partyDay party}: #{partyTitle party}
-        <h4 .subtitle .is-4>
+        <h6 .subtitle .is-6>
           #{placeQuery p}
         $maybe posterKey <- E.unValue mPosterVal
           ^{posterImageWidget posterKey}

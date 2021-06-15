@@ -6,7 +6,6 @@
 module Salsa.Party.Web.Server.Handler.Admin where
 
 import Salsa.Party.Web.Server.Handler.Import
-import Text.Time.Pretty
 
 getPanelR :: Handler Html
 getPanelR = do

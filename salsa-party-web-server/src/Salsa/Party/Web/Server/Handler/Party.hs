@@ -13,7 +13,6 @@ import Network.HTTP.Types
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Poster
-import Text.Time.Pretty
 
 getAccountPartiesR :: Handler Html
 getAccountPartiesR = do

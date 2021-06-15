@@ -1,23 +1,24 @@
 <section .section>
   <div .container>
-    <h1 .title .is-1>
+    <h2 .title .is-2>
       #{partyTitle}
-    <h2 .subtitle .is-2>
+
+    <h4 .title .is-4>
+      Address: #{placeQuery}
+    
+    <h6 .subtitle .is-6>
       #{formatTime defaultTimeLocale prettyDayFormat partyDay} 
       $maybe start <- partyStart
         #{formatTime defaultTimeLocale "%H:%M" start} 
       (#{prettyDayAuto today partyDay})
 
-    <h3 .title .is-3>
-      Address: #{placeQuery}
+    $forall E.Value posterKey <- posterKeys
+      ^{posterImageWidget posterKey}
 
-    <h4 .title .is-4>
+    <h6 .title .is-6>
       Organiser: 
       <a href=@{OrganiserR partyOrganiser}>
         #{organiserName}
-
-    $forall E.Value posterKey <- posterKeys
-      ^{posterImageWidget posterKey}
 
     $maybe description <- partyDescription
       <div .content>
@@ -31,8 +32,8 @@
   
     $maybe homepage <- partyHomepage
       <p>
-        <a .button href=#{homepage}>
-          #{homepage}
+        <a .button .is-light href=#{homepage}>
+          Homepage
   
 
     $maybe googleMapsEmbedUrl <- mGoogleMapsEmbedUrl
