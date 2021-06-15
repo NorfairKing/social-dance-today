@@ -108,6 +108,7 @@ executable salsa-party-web-server-e2e
     , monad-logger
     , network-uri
     , salsa-party-web-server
+    , seocheck
     , sydtest
   default-language: Haskell2010
 

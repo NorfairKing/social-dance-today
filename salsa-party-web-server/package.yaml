@@ -76,6 +76,7 @@ executables:
     - monad-logger
     - network-uri
     - salsa-party-web-server
+    - seocheck
     - sydtest
 
 tests:

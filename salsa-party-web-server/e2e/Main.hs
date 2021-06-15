@@ -4,6 +4,8 @@ import Control.Monad.Logger
 import LinkCheck (runLinkCheck)
 import qualified LinkCheck.OptParse.Types as LinkCheck (Settings (..))
 import Network.URI
+import SeoCheck (runSeoCheck)
+import qualified SeoCheck.OptParse.Types as SeoCheck (Settings (..))
 import System.Environment
 import System.Exit
 import Test.Syd
@@ -29,4 +31,12 @@ spec uri = do
             LinkCheck.setFetchers = Nothing,
             LinkCheck.setExternal = False,
             LinkCheck.setCheckFragments = False
+          }
+  sequential $
+    it "passes seocheck" $ do
+      runSeoCheck
+        SeoCheck.Settings
+          { SeoCheck.setUri = uri,
+            SeoCheck.setLogLevel = LevelWarn,
+            SeoCheck.setFetchers = Nothing
           }

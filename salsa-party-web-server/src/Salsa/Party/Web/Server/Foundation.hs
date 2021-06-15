@@ -99,7 +99,7 @@ instance YesodPersist App where
 
 instance YesodAuth App where
   type AuthId App = UserId
-  loginDest _ = HomeR -- TODO change this to the account overview screen
+  loginDest _ = AccountR
   logoutDest _ = HomeR
   authenticate Creds {..} = case credsPlugin of
     "salsa" -> do
@@ -163,7 +163,11 @@ getRegisterR :: AuthHandler App Html
 getRegisterR = do
   messages <- getMessages
   token <- genToken
-  liftHandler $ withNavBar $(widgetFile "auth/register")
+  liftHandler $
+    withNavBar $ do
+      setTitle "Salsa Parties Today: Registration"
+      setDescription "Register an account at Salsa Parties Today"
+      $(widgetFile "auth/register")
 
 data RegisterForm = RegisterForm
   { registerFormEmailAddress :: Text,
@@ -215,6 +219,8 @@ salsaLoginHandler :: (Route Auth -> Route App) -> Widget
 salsaLoginHandler _toParentRoute = do
   messages <- getMessages
   token <- genToken
+  setTitle "Salsa Parties Today: Login"
+  setDescription "Log into your account at Salsa Parties Today"
   $(widgetFile "auth/login")
 
 data LoginForm = LoginForm

@@ -81,7 +81,7 @@ testRegister emailAddress passphrase = do
     addPostParam "passphrase" passphrase
     addPostParam "passphrase-confirm" passphrase
   statusIs 303
-  locationShouldBe HomeR
+  locationShouldBe AccountR
   _ <- followRedirect
   statusIs 200
 
@@ -96,7 +96,7 @@ testLogin emailAddress passphrase = do
     addPostParam "email-address" emailAddress
     addPostParam "passphrase" passphrase
   statusIs 303
-  locationShouldBe HomeR
+  locationShouldBe AccountR
   _ <- followRedirect
   statusIs 200
 

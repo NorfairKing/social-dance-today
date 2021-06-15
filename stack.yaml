@@ -7,6 +7,10 @@ extra-deps:
   commit: 88a325e3a6c8610d1ca380457cd267d87ab2c0ab
   subdirs:
     - linkcheck
+- github: NorfairKing/seocheck
+  commit: f182ec4fb43d100530a4ca685b89670d15da2389
+  subdirs:
+    - seocheck
 - github: supki/envparse
   commit: de5944fb09e9d941fafa35c0f05446af348e7b4d
 - yamlparse-applicative-0.1.0.2@sha256:bda91f2818c1b5b124963931cb7f9a4e5758d026c09713e9ae2234534062747d,2133

@@ -71,6 +71,18 @@
         "url": "https://github.com/NorfairKing/safe-coloured-text/archive/7f157485e55528648a95edf3508a122b2e55779e.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "seocheck": {
+        "branch": "master",
+        "description": null,
+        "homepage": null,
+        "owner": "NorfairKing",
+        "repo": "seocheck",
+        "rev": "f182ec4fb43d100530a4ca685b89670d15da2389",
+        "sha256": "09h3shqzlcch4njllar1v5kki9ffgss08g94yx5zdhzanih1lq4f",
+        "type": "tarball",
+        "url": "https://github.com/NorfairKing/seocheck/archive/f182ec4fb43d100530a4ca685b89670d15da2389.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "sydtest": {
         "branch": "master",
         "description": "A modern testing framework for Haskell with good defaults and advanced testing features.",
