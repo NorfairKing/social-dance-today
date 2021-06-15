@@ -69,6 +69,17 @@
 
       <div .field>
         <label .label>
+          Price
+        <div .control>
+          <input
+            type=text
+            value=#{mtv partyPrice}
+            name="price">
+        <p .help>
+          Make sure to write FREE if the party is free.
+
+      <div .field>
+        <label .label>
           Poster
         <div .control>
           <div #posterInput .file .has-name>

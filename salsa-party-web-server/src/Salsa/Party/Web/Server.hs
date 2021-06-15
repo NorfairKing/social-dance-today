@@ -6,6 +6,7 @@ import Control.Monad
 import Control.Monad.Logger
 import qualified Data.Text as T
 import Database.Persist.Sqlite
+import Lens.Micro
 import Network.HTTP.Client.TLS as HTTP
 import qualified Network.Wai.Handler.Warp as Warp
 import Network.Wai.Middleware.RequestLogger
@@ -27,9 +28,10 @@ salsaPartyWebServer = do
   runSalsaPartyWebServer sets
 
 runSalsaPartyWebServer :: Settings -> IO ()
-runSalsaPartyWebServer Settings {..} =
+runSalsaPartyWebServer Settings {..} = do
+  let info = mkSqliteConnectionInfo (T.pack (fromAbsFile settingDbFile)) & walEnabled .~ False & fkEnabled .~ False
   runStderrLoggingT $
-    withSqlitePool (T.pack (fromAbsFile settingDbFile)) 1 $ \pool -> do
+    withSqlitePoolInfo info 1 $ \pool -> do
       runSqlPool (runMigration migrateAll) pool
       sessionKeyFile <- resolveFile' "client_session_key.aes"
       man <- HTTP.newTlsManager

@@ -80,6 +80,7 @@ Party
     day Day
     start TimeOfDay Maybe
     homepage Text Maybe
+    price Text Maybe default=NULL
     place PlaceId
 
     deriving Show

@@ -43,6 +43,7 @@ data PartyForm = PartyForm
     partyFormDescription :: Maybe Textarea,
     partyFormStart :: Maybe TimeOfDay,
     partyFormHomepage :: Maybe Text,
+    partyFormPrice :: Maybe Text,
     partyFormPoster :: Maybe FileInfo
   }
   deriving (Show, Eq, Generic)
@@ -65,6 +66,7 @@ partyForm =
     <*> iopt textareaField "description"
     <*> iopt timeField "start"
     <*> iopt urlField "homepage"
+    <*> iopt textField "price"
     <*> iopt fileField "poster"
 
 getAccountPartyR :: PartyId -> Handler Html
@@ -103,6 +105,7 @@ submitPartyPage mPartyId mResult = do
                       partyDay = partyFormDay,
                       partyStart = partyFormStart,
                       partyHomepage = partyFormHomepage,
+                      partyPrice = partyFormPrice,
                       partyPlace = placeId
                     }
                 )
@@ -115,6 +118,7 @@ submitPartyPage mPartyId mResult = do
                   PartyDay =. partyFormDay,
                   PartyStart =. partyFormStart,
                   PartyHomepage =. partyFormHomepage,
+                  PartyPrice =. partyFormPrice,
                   PartyPlace =. placeId
                 ]
               pure partyId

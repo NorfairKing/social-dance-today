@@ -23,6 +23,11 @@
       <div .content>
         <p>
           #{description}
+
+    $maybe price <- partyPrice
+      <div .content>
+        <p>
+          Price: #{price}
   
     $maybe homepage <- partyHomepage
       <p>

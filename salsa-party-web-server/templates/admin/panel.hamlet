@@ -20,7 +20,7 @@
           <tr>
             <td>
               #{userEmailAddress user}
-            <td>
+            <td width=50px>
               $maybe _ <- userVerificationKey user
                 No
               $nothing
@@ -36,7 +36,7 @@
         <tr>
           <th>
             Display Name
-          <th>
+          <th width=50px>
             Profile
       <tbody>
         $forall Entity organiserId organiser <- organisers
@@ -57,13 +57,18 @@
         <tr>
           <th>
             Title
-          <th>
+          <th width=150px>
+            Day
+          <th width=50px>
             Details
       <tbody>
         $forall Entity partyId party <- parties
           <tr>
             <td>
               #{partyTitle party}
+            <td>
+              #{formatTime defaultTimeLocale "%F" $ partyDay party}
+              (#{prettyDayAuto today $ partyDay party})
             <td>
               <a .button href=@{PartyR partyId}>
                 Profile
