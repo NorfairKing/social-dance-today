@@ -6,7 +6,7 @@ module Salsa.Party.Web.Server.DB.CASKey where
 
 import qualified Crypto.Hash.SHA256 as SHA256
 import Data.ByteString (ByteString)
-import qualified Data.ByteString.Base16 as Base16
+import qualified Data.ByteString.Base64 as Base64
 import qualified Data.ByteString.Lazy as LB
 import Data.Proxy
 import Data.Text (Text)
@@ -32,10 +32,10 @@ instance Read CASKey where
       Just ck -> pure ck
 
 instance PathPiece CASKey where
-  toPathPiece = TE.decodeUtf8 . Base16.encode . unCASKey
+  toPathPiece = TE.decodeUtf8 . Base64.encode . unCASKey
   fromPathPiece t =
-    case Base16.decode (TE.encodeUtf8 t) of
-      (decodedBS, "") -> Just $ CASKey decodedBS
+    case Base64.decode (TE.encodeUtf8 t) of
+      Right decodedBS -> Just $ CASKey decodedBS
       _ -> Nothing
 
 instance PersistField CASKey where

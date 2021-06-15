@@ -44,7 +44,7 @@ library
     , amazonka
     , amazonka-ses
     , base >=4.7 && <5
-    , base16-bytestring
+    , base64-bytestring
     , bytestring
     , cryptohash-sha256
     , data-default
