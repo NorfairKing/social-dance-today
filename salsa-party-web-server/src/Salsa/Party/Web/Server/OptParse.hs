@@ -79,7 +79,7 @@ instance YamlSchema Configuration where
         <*> optionalFieldWith "log-level" "Minimal severity for log messages" viaRead
         <*> optionalField "database" "The path to the database file"
         <*> optionalField "send-emails" "Whether to send emails and require email verification"
-        <*> optionalField "admil" "The email address of the admin user"
+        <*> optionalField "admin" "The email address of the admin user"
         <*> optionalField "google-api-key" "Google API key"
         <*> optionalField "google-analytics-tracking" "Google analytics tracking code"
         <*> optionalField "google-search-console-verification" "Google search console html element verification code"
