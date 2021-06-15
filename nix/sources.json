@@ -11,6 +11,18 @@
         "url": "https://github.com/hercules-ci/gitignore.nix/archive/211907489e9f198594c0eb0ca9256a1949c9d412.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "linkcheck": {
+        "branch": "master",
+        "description": "A fast link checker for CI",
+        "homepage": null,
+        "owner": "NorfairKing",
+        "repo": "linkcheck",
+        "rev": "88a325e3a6c8610d1ca380457cd267d87ab2c0ab",
+        "sha256": "1w4mcv8dbpgby2f39xaz505q6pai694vhl9kwgsijnf50f6sagcp",
+        "type": "tarball",
+        "url": "https://github.com/NorfairKing/linkcheck/archive/88a325e3a6c8610d1ca380457cd267d87ab2c0ab.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "niv": {
         "branch": "master",
         "description": "Easy dependency management for Nix projects",

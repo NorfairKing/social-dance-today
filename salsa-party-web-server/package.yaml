@@ -72,6 +72,9 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - linkcheck
+    - monad-logger
+    - network-uri
     - salsa-party-web-server
     - sydtest
 

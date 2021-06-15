@@ -17,7 +17,7 @@ pkgs.nixosTest (
           enable = true;
           end-to-end-test = {
             enable = true;
-            url = "machine:${builtins.toString port}";
+            url = "http://server:${builtins.toString port}";
           };
         };
       };
@@ -41,7 +41,7 @@ pkgs.nixosTest (
       server.wait_for_unit("multi-user.target")
 
       server.wait_for_open_port(${builtins.toString port})
-      client.systemctl("start salsa-party-end-to-end-test-production.service --wait")
+      client.succeed("systemctl start salsa-party-end-to-end-test-production.service --wait")
     '';
   }
 )
