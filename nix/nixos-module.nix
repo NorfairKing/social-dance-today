@@ -41,6 +41,18 @@ in
                     example = 8001;
                     description = "The port to serve web requests on";
                   };
+                  admin = mkOption {
+                    type = types.nullOr types.str;
+                    example = "syd@cs-syd.eu";
+                    default = null;
+                    description = "The email address of the administrator";
+                  };
+                  send-emails = mkOption {
+                    type = types.nullOr types.bool;
+                    example = true;
+                    default = null;
+                    description = "Whether to require email verifications and send emails";
+                  };
                   google-api-key = mkOption {
                     type = types.nullOr types.str;
                     example = "XXXXXXXXXXXXXXXXXXXXXXXXX-XXXXXXXXXXXXX";
@@ -97,6 +109,8 @@ in
           (nullOrOption "log-level" log-level)
           (nullOrOptionHead "host" hosts)
           (nullOrOption "port" port)
+          (nullOrOption "admin" admin)
+          (nullOrOption "send-emails" send-emails)
           (nullOrOption "google-api-key" google-api-key)
           (nullOrOption "google-analytics-tracking" google-analytics-tracking)
           (nullOrOption "google-search-console-verification" google-search-console-verification)
