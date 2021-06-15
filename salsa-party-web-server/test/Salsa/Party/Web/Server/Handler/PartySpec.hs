@@ -11,7 +11,7 @@ spec = serverSpec $ do
       forAllValid $ \organiserForm_ ->
         withAnyLoggedInUser_ yc $ do
           testSubmitOrganiser organiserForm_
-          get AccountSubmitPartyR
+          get $ AccountR AccountSubmitPartyR
           statusIs 200
     it "Can create a party by POSTing to SubmitPartyR" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -52,7 +52,7 @@ spec = serverSpec $ do
                 testSubmitParty
                   partyForm_
                   location
-              get AccountPartiesR
+              get $ AccountR AccountPartiesR
               statusIs 200
 
   describe "DeleteAccountPartyR" $
@@ -66,13 +66,13 @@ spec = serverSpec $ do
                 testSubmitParty
                   partyForm_
                   location
-              get $ AccountPartyR partyId
+              get $ AccountR $ AccountPartyR partyId
               statusIs 200
               request $ do
                 setMethod methodPost
-                setUrl $ AccountPartyDeleteR partyId
+                setUrl $ AccountR $ AccountPartyDeleteR partyId
                 addToken
               statusIs 303
-              locationShouldBe AccountPartiesR
+              locationShouldBe $ AccountR AccountPartiesR
               _ <- followRedirect
               statusIs 200

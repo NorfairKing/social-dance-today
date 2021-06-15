@@ -146,7 +146,9 @@ withFormFailureNavBar errorMessages body = do
   currentRoute <- getCurrentRoute
   mAuth <- maybeAuth
   mAdmin <- getsYesod appAdmin
-  let isAdmin = (userEmailAddress . entityVal <$> mAuth) == mAdmin
+  let isAdmin = case mAuth of
+        Nothing -> False
+        Just (Entity _ user) -> Just (userEmailAddress user) == mAdmin
   defaultLayout $(widgetFile "with-nav-bar")
 
 salsaAuthPlugin :: AuthPlugin App

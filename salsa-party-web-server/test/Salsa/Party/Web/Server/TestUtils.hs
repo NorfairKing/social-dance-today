@@ -146,7 +146,7 @@ testSubmitPlace address Coordinates {..} =
 
 testSubmitOrganiser :: OrganiserForm -> YesodClientM App ()
 testSubmitOrganiser OrganiserForm {..} = do
-  get AccountOrganiserR
+  get $ AccountR AccountOrganiserR
   statusIs 200
   request $ do
     setMethod methodPost
@@ -162,11 +162,11 @@ testSubmitParty :: PartyForm -> Coordinates -> YesodClientM App PartyId
 testSubmitParty PartyForm {..} loc = do
   -- Put the address in the database already so we don't need to use an external service for geocoding
   _ <- testSubmitPlace partyFormAddress loc
-  get AccountSubmitPartyR
+  get $ AccountR AccountSubmitPartyR
   statusIs 200
   request $ do
     setMethod methodPost
-    setUrl AccountSubmitPartyR
+    setUrl $ AccountR AccountSubmitPartyR
     addToken
     addPostParam "title" partyFormTitle
     addPostParam "day" $ T.pack $ formatTime defaultTimeLocale "%F" partyFormDay
@@ -178,8 +178,8 @@ testSubmitParty PartyForm {..} loc = do
   case errOrLoc of
     Left err -> liftIO $ expectationFailure $ T.unpack err
     Right redirectLocation -> case redirectLocation of
-      AccountPartyR partyId -> pure partyId
-      _ -> liftIO $ expectationFailure $ "Coordinates should have been some PartyR after submitting a party, was this instead: " <> show redirectLocation
+      AccountR (AccountPartyR partyId) -> pure partyId
+      _ -> liftIO $ expectationFailure $ "Coordinates should have been some AccountR AccountPartyR after submitting a party, was this instead: " <> show redirectLocation
 
 testDB :: DB.SqlPersistT IO a -> YesodClientM App a
 testDB func = do

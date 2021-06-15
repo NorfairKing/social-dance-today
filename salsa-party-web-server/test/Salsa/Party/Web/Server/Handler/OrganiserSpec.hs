@@ -9,7 +9,7 @@ spec = serverSpec $ do
   describe "AccountOrganiserR" $ do
     it "GETs a 200 for OrganiserR" $ \yc ->
       withAnyLoggedInUser_ yc $ do
-        get AccountOrganiserR
+        get $ AccountR AccountOrganiserR
         statusIs 200
     it "Can create a party by POSTing to OrganiserR" $ \yc ->
       forAllValid $ \organiserForm_ ->

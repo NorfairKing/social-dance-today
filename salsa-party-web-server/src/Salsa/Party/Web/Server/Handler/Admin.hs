@@ -12,4 +12,7 @@ getPanelR = do
   users <- runDB $ selectList [] [Asc UserId]
   organisers <- runDB $ selectList [] [Asc OrganiserId]
   parties <- runDB $ selectList [] [Asc PartyDay, Asc PartyId]
-  withNavBar $(widgetFile "admin/panel")
+  withNavBar $ do
+    setTitle "Salsa Parties Pdmin Panel"
+    setDescription "Admin panel for the salsa parties admin"
+    $(widgetFile "admin/panel")
