@@ -7,7 +7,6 @@ import Control.Monad.Logger
 import qualified Data.Text as T
 import Database.Persist.Sqlite
 import Network.HTTP.Client.TLS as HTTP
-import Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
 import Network.Wai.Middleware.RequestLogger
 import Path

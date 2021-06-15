@@ -30,7 +30,7 @@ getAccountPartiesR = do
             E.on (E.just (party E.^. PartyId) E.==. mPoster E.?. PosterParty)
             E.where_ (party E.^. PartyOrganiser E.==. E.val organiserId)
             E.orderBy [E.desc $ party E.^. PartyDay]
-            pure (party, p, mPoster E.?. PosterId)
+            pure (party, p, mPoster E.?. PosterKey)
       token <- genToken
       withNavBar $(widgetFile "account/parties")
 
@@ -120,23 +120,32 @@ submitPartyPage mPartyId mResult = do
           -- Update the poster if a new one has been submitted
           forM_ partyFormPoster $ \posterFileInfo -> do
             imageBlob <- fileSourceByteString posterFileInfo
+            let contentType = fileContentType posterFileInfo
+            let casKey = mkCASKey contentType imageBlob
             runDB $
               upsertBy
                 (UniquePosterParty partyId)
                 ( Poster
                     { posterParty = partyId,
+                      posterKey = casKey,
                       posterImage = imageBlob,
-                      posterImageType = fileContentType posterFileInfo
+                      posterImageType = contentType
                     }
                 )
-                [ PosterImage =. imageBlob,
-                  PosterImageType =. fileContentType posterFileInfo
+                [ PosterKey =. casKey,
+                  PosterImage =. imageBlob,
+                  PosterImageType =. contentType
                 ]
           redirect $ AccountPartyR partyId
         _ -> do
           mParty <- forM mPartyId $ runDB . get404
           mPlace <- forM mParty $ runDB . get404 . partyPlace
-          posterIds <- fmap (fromMaybe []) $ forM mPartyId $ \partyId -> runDB $ selectKeysList [PosterParty ==. partyId] []
+          posterKeys <- fmap (fromMaybe []) $
+            forM mPartyId $ \partyId -> runDB $
+              E.select $
+                E.from $ \poster -> do
+                  E.where_ $ poster E.^. PosterParty E.==. E.val partyId
+                  pure (poster E.^. PosterKey)
           token <- genToken
           let mv :: a -> (Party -> a) -> a
               mv defaultValue func = maybe defaultValue func mParty
@@ -163,7 +172,11 @@ getPartyR partyId = do
   Party {..} <- runDB $ get404 partyId
   Place {..} <- runDB $ get404 partyPlace
   Organiser {..} <- runDB $ get404 partyOrganiser
-  posterIds <- runDB $ selectKeysList [PosterParty ==. partyId] []
+  posterKeys <- runDB $
+    E.select $
+      E.from $ \poster -> do
+        E.where_ $ poster E.^. PosterParty E.==. E.val partyId
+        pure (poster E.^. PosterKey)
   mGoogleAPIKey <- getsYesod appGoogleAPIKey
   let mGoogleMapsEmbedUrl = do
         apiKey <- mGoogleAPIKey
@@ -179,7 +192,12 @@ getPartyR partyId = do
   today <- liftIO $ utctDay <$> getCurrentTime
   withNavBar $(widgetFile "party")
 
-getPosterR :: PosterId -> Handler TypedContent
-getPosterR posterId = do
-  Poster {..} <- runDB $ get404 posterId
-  respond (TE.encodeUtf8 posterImageType) posterImage
+getPosterR :: CASKey -> Handler TypedContent
+getPosterR key = do
+  mPoster <- runDB $ getBy $ UniquePosterKey key
+  case mPoster of
+    Nothing -> notFound
+    Just (Entity _ Poster {..}) -> do
+      -- Cache forever because of CAS
+      addHeader "Cache-Control" "max-age:31536000, public, immutable"
+      respond (TE.encodeUtf8 posterImageType) posterImage

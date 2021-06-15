@@ -78,6 +78,7 @@ instance Yesod App where
       PosterR _ -> pure Authorized
       OrganiserR _ -> pure Authorized
       ReloadR -> pure Authorized
+      FaviconR -> pure Authorized
       AuthR _ -> pure Authorized
       StaticR _ -> pure Authorized
       _ -> do
@@ -239,6 +240,9 @@ postLoginR = do
       case checkPassword loginFormPassphrase userPassphraseHash of
         PasswordCheckSuccess -> setCredsRedirect Creds {credsPlugin = salsaAuthPluginName, credsIdent = loginFormEmailAddress, credsExtra = []}
         PasswordCheckFail -> loginFail
+
+handleFaviconR :: Handler TypedContent
+handleFaviconR = redirect $ StaticR favicon_ico
 
 data Coordinates = Coordinates
   { coordinatesLat :: !Nano,

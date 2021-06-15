@@ -7,7 +7,6 @@ $doctype 5
     <title>#{pageTitle pageContent}
     ^{pageHead pageContent}
 
-    <link rel="icon" type="image/x-icon" sizes="32x32" href=@{StaticR favicon_ico}>
     <link rel="stylesheet" href=@{StaticR bulma_css}>
 
     $maybe verification <- appGoogleSearchConsoleVerification app

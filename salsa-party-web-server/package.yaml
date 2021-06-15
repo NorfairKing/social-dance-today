@@ -11,7 +11,9 @@ library:
   - aeson
   - amazonka
   - amazonka-ses
+  - base16-bytestring
   - bytestring
+  - cryptohash-sha256
   - data-default
   - envparse
   - esqueleto

@@ -82,8 +82,8 @@
               <span .file-name>
                 No poster selected
 
-      $forall posterId <- posterIds
-        <img src=@{PosterR posterId}>
+      $forall E.Value posterKey <- posterKeys
+        <img src=@{PosterR posterKey}>
 
 
       $maybe partyId <- mPartyId

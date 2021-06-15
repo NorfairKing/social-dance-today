@@ -67,7 +67,7 @@ searchResultPage mDay mAddress coordinates = do
 
 -- For a given day and a given place,
 -- find all parties sorted by distance.
-searchQuery :: MonadIO m => Day -> Coordinates -> SqlPersistT m [(Entity Party, Entity Place, E.Value (Maybe PosterId))]
+searchQuery :: MonadIO m => Day -> Coordinates -> SqlPersistT m [(Entity Party, Entity Place, E.Value (Maybe CASKey))]
 searchQuery day Coordinates {..} =
   E.select $
     E.from $ \(party `E.InnerJoin` p `E.LeftOuterJoin` mPoster) -> do
@@ -81,4 +81,4 @@ searchQuery day Coordinates {..} =
       -- Luckily the square function is monotone so we don't need to sqrt here
       let distSquared = latDiffSquared E.+. lonDiffSquared
       E.orderBy [E.asc distSquared]
-      pure (party, p, mPoster E.?. PosterId)
+      pure (party, p, mPoster E.?. PosterKey)

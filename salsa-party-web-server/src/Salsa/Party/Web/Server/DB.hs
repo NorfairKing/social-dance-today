@@ -14,6 +14,7 @@
 
 module Salsa.Party.Web.Server.DB
   ( module Salsa.Party.Web.Server.DB,
+    module Salsa.Party.Web.Server.DB.CASKey,
     module Salsa.Party.Web.Server.DB.Password,
   )
 where
@@ -30,6 +31,7 @@ import Data.Validity.Time ()
 import Database.Persist.Sql
 import Database.Persist.TH
 import GHC.Generics (Generic)
+import Salsa.Party.Web.Server.DB.CASKey
 import Salsa.Party.Web.Server.DB.Password
 
 share
@@ -80,10 +82,12 @@ Party
 
 Poster
     party PartyId
+    key CASKey
     imageType Text
     image ByteString
 
     UniquePosterParty party
+    UniquePosterKey key
 
     deriving Show
     deriving Eq

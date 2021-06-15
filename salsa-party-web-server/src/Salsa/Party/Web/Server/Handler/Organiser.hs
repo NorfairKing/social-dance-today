@@ -67,5 +67,5 @@ getOrganiserR organiserId = do
         E.where_ (party E.^. PartyOrganiser E.==. E.val organiserId)
         E.where_ (party E.^. PartyDay E.>=. E.val today)
         E.orderBy [E.asc $ party E.^. PartyDay]
-        pure (party, p, mPoster E.?. PosterId)
+        pure (party, p, mPoster E.?. PosterKey)
   withNavBar $(widgetFile "organiser")

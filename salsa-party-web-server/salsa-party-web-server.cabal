@@ -16,6 +16,7 @@ library
       Salsa.Party.Web.Server.Application
       Salsa.Party.Web.Server.Constants
       Salsa.Party.Web.Server.DB
+      Salsa.Party.Web.Server.DB.CASKey
       Salsa.Party.Web.Server.DB.Password
       Salsa.Party.Web.Server.Foundation
       Salsa.Party.Web.Server.Geocoding
@@ -39,7 +40,9 @@ library
     , amazonka
     , amazonka-ses
     , base >=4.7 && <5
+    , base16-bytestring
     , bytestring
+    , cryptohash-sha256
     , data-default
     , envparse
     , esqueleto
