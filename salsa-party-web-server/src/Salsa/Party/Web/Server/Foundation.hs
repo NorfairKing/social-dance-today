@@ -86,13 +86,12 @@ instance Yesod App where
         -- Has to be admin
         mAuthId <- maybeAuth
         case mAuthId of
-          Nothing -> pure AuthenticationRequired
+          Nothing -> notFound
           Just (Entity _ u) -> do
             mAdmin <- getsYesod appAdmin
-            pure $
-              if Just (userEmailAddress u) == mAdmin
-                then Authorized
-                else AuthenticationRequired
+            if Just (userEmailAddress u) == mAdmin
+              then pure Authorized
+              else notFound
       _ -> do
         -- Has to be logged-in
         mAuthId <- maybeAuthId

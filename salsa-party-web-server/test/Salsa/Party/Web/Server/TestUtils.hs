@@ -49,11 +49,17 @@ serverSetupFunc man = do
         appConnectionPool = pool,
         appSessionKeyFile = sessionKeyFile,
         appSendEmails = False,
-        appAdmin = Nothing,
+        appAdmin = Just adminEmail,
         appGoogleAPIKey = Nothing,
         appGoogleAnalyticsTracking = Nothing,
         appGoogleSearchConsoleVerification = Nothing
       }
+
+adminEmail :: Text
+adminEmail = "admin@example.com"
+
+adminPassword :: Text
+adminPassword = "dummy"
 
 type DBSpec = SpecWith DB.ConnectionPool
 
@@ -116,6 +122,12 @@ withAnyLoggedInUser_ yc func =
       runYesodClientM yc $ do
         testRegister email password
         func
+
+-- We use a withX function here instead of a login so we don't accidentally register as admin twice.
+withLoggedInAdmin :: YesodClientM App () -> YesodClientM App ()
+withLoggedInAdmin func = do
+  testRegister adminEmail adminPassword
+  func
 
 testSubmitPlace :: Text -> Coordinates -> YesodClientM App (Entity Place)
 testSubmitPlace address Coordinates {..} =
