@@ -29,6 +29,7 @@ library
       Salsa.Party.Web.Server.Handler.Organiser
       Salsa.Party.Web.Server.Handler.Party
       Salsa.Party.Web.Server.Handler.Search
+      Salsa.Party.Web.Server.Handler.Sitemap
       Salsa.Party.Web.Server.OptParse
       Salsa.Party.Web.Server.Poster
       Salsa.Party.Web.Server.Static
@@ -47,6 +48,7 @@ library
     , base >=4.7 && <5
     , base64-bytestring
     , bytestring
+    , conduit
     , cryptohash-sha256
     , data-default
     , directory
@@ -70,6 +72,7 @@ library
     , pretty-relative-time
     , pretty-show
     , random
+    , resourcet
     , shakespeare
     , template-haskell
     , text
@@ -88,6 +91,7 @@ library
     , yesod-auth
     , yesod-autoreload
     , yesod-core
+    , yesod-sitemap
     , yesod-static
     , yesod-static-remote
   default-language: Haskell2010

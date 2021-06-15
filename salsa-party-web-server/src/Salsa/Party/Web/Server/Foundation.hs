@@ -256,8 +256,8 @@ postLoginR = do
         PasswordCheckSuccess -> setCredsRedirect Creds {credsPlugin = salsaAuthPluginName, credsIdent = loginFormEmailAddress, credsExtra = []}
         PasswordCheckFail -> loginFail
 
-handleFaviconR :: Handler TypedContent
-handleFaviconR = redirect $ StaticR favicon_ico
+getFaviconR :: Handler TypedContent
+getFaviconR = redirect $ StaticR favicon_ico
 
 data Coordinates = Coordinates
   { coordinatesLat :: !Nano,

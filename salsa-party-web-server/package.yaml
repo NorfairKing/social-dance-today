@@ -15,6 +15,7 @@ library:
   - amazonka-ses
   - base64-bytestring
   - bytestring
+  - conduit
   - cryptohash-sha256
   - data-default
   - directory
@@ -38,6 +39,7 @@ library:
   - pretty-relative-time
   - pretty-show
   - random
+  - resourcet
   - shakespeare
   - template-haskell
   - text
@@ -56,6 +58,7 @@ library:
   - yesod-auth
   - yesod-autoreload
   - yesod-core
+  - yesod-sitemap
   - yesod-static
   - yesod-static-remote
 

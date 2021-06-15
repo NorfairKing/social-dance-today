@@ -21,7 +21,9 @@
 /admin AdminR:
   / PanelR GET
 
-/favicon.ico FaviconR
+/favicon.ico FaviconR GET
+/sitemap.xml SitemapR GET
+/robots.txt RobotsR GET
 
 /auth AuthR Auth getAuth
 /static StaticR EmbeddedStatic appStatic
