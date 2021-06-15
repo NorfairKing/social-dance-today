@@ -15,7 +15,7 @@ in
       web-server =
         mkOption {
           type =
-            types.submodule {
+            types.nullOr (types.submodule {
               options =
                 {
                   enable = mkEnableOption "Salsa/Party WEB Server";
@@ -60,9 +60,30 @@ in
                     description = "The google Search Console verification code";
                   };
                 };
-            };
+            });
           default = null;
         };
+      end-to-end-test = mkOption {
+        default = null;
+        type = types.nullOr (types.submodule {
+          options = {
+            # We have only one of these because we don't need any backward/forward compatibilty, only current compatibility.
+            enable = mkEnableOption "End-to-end tests for the ${envname} environment of the salsa party web server";
+            url = mkOption {
+              type = types.str;
+              example = "https://staging.salsa-parties.today";
+              description = "The url to the server to test";
+            };
+            time =
+              mkOption {
+                type = types.str;
+                example = "03:00";
+                default = "03:00";
+                description = "The time of day to start the end-to-end test.";
+              };
+          };
+        });
+      };
     };
   config =
     let
@@ -90,7 +111,7 @@ in
       web-server-service =
         optionalAttrs (cfg.web-server.enable or false) {
           "salsa-party-web-server-${envname}" = {
-            description = "Salsa/Party WEB Server ${envname} Service";
+            description = "Salsa Party web Server ${envname} Service";
             wantedBy = [ "multi-user.target" ];
             environment =
               {
@@ -130,14 +151,48 @@ in
               serverAliases = tail hosts;
             };
         };
+      end-to-end-test-service =
+        optionalAttrs (cfg.end-to-end-test.enable or false) {
+          "salsa-party-end-to-end-test-${envname}" = {
+            description = "Salsa Party End to end tests for ${envname} Service";
+            wantedBy = [ "multi-user.target" ];
+            environment =
+              {
+                "SALSA_PARTY_SERVER_URL" = "${cfg.end-to-end-test.url}";
+              };
+            script =
+              ''
+                ${salsaPartyPackages.salsa-party-web-server}/bin/salsa-party-web-server-e2e
+              '';
+            serviceConfig =
+              {
+                Type = "oneshot";
+              };
+          };
+        };
+      end-to-end-test-timer =
+        optionalAttrs (cfg.end-to-end-test.enable or false) {
+          "salsa-party-end-to-end-test-${envname}" = {
+            description = "Salsa Party End to end tests for ${envname} Service";
+            wantedBy = [ "timers.target" ];
+            timerConfig = {
+              OnCalendar = "*-*-* ${cfg.end-to-end-test.time}";
+            };
+          };
+        };
     in
     mkIf cfg.enable {
       systemd.services =
         mergeListRecursively [
           web-server-service
+          end-to-end-test-service
+        ];
+      systemd.timers =
+        mergeListRecursively [
+          end-to-end-test-timer
         ];
       networking.firewall.allowedTCPPorts = builtins.concatLists [
-        (optional cfg.web-server.enable cfg.web-server.port)
+        (optional (cfg.web-server.enable or false) cfg.web-server.port)
       ];
       services.nginx.virtualHosts =
         mergeListRecursively [

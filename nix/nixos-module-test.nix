@@ -8,23 +8,40 @@ in
 pkgs.nixosTest (
   { lib, pkgs, ... }: {
     name = "salsa-party-module-test";
-    machine = {
-      imports = [
-        salsa-party-production
-      ];
-      services.salsa-party.production = {
-        enable = true;
-        web-server = {
+    nodes = {
+      client = {
+        imports = [
+          salsa-party-production
+        ];
+        services.salsa-party.production = {
           enable = true;
-          inherit port;
+          end-to-end-test = {
+            enable = true;
+            url = "machine:${builtins.toString port}";
+          };
+        };
+      };
+      server = {
+        imports = [
+          salsa-party-production
+        ];
+        services.salsa-party.production = {
+          enable = true;
+          web-server = {
+            enable = true;
+            inherit port;
+          };
         };
       };
     };
     testScript = ''
-      machine.start()
-      machine.wait_for_unit("multi-user.target")
+      client.start()
+      server.start()
+      client.wait_for_unit("multi-user.target")
+      server.wait_for_unit("multi-user.target")
 
-      machine.wait_for_open_port(${builtins.toString port})
+      server.wait_for_open_port(${builtins.toString port})
+      client.systemctl("start salsa-party-end-to-end-test-production.service --wait")
     '';
   }
 )
