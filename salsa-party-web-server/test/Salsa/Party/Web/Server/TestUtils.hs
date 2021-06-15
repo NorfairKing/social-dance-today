@@ -49,6 +49,7 @@ serverSetupFunc man = do
         appConnectionPool = pool,
         appSessionKeyFile = sessionKeyFile,
         appSendEmails = False,
+        appAdmin = Nothing,
         appGoogleAPIKey = Nothing,
         appGoogleAnalyticsTracking = Nothing,
         appGoogleSearchConsoleVerification = Nothing

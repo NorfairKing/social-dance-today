@@ -32,6 +32,7 @@ data Settings = Settings
     settingLogLevel :: !LogLevel,
     settingDbFile :: !(Path Abs File),
     settingSendEmails :: !Bool,
+    settingAdmin :: !(Maybe Text),
     settingGoogleAPIKey :: !(Maybe Text),
     settingGoogleAnalyticsTracking :: !(Maybe Text),
     settingGoogleSearchConsoleVerification :: !(Maybe Text)
@@ -46,6 +47,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
     Nothing -> resolveFile' "salsa-parties.sqlite3"
     Just dbf -> resolveFile' dbf
   let settingSendEmails = fromMaybe True $ flagSendEmails <|> envSendEmails <|> mc confSendEmails
+  let settingAdmin = flagAdmin <|> envAdmin <|> mc confAdmin
   let settingGoogleAPIKey = flagGoogleAPIKey <|> envGoogleAPIKey <|> mc confGoogleAPIKey
   let settingGoogleAnalyticsTracking = flagGoogleAnalyticsTracking <|> envGoogleAnalyticsTracking <|> mc confGoogleAnalyticsTracking
   let settingGoogleSearchConsoleVerification = flagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification
@@ -59,6 +61,7 @@ data Configuration = Configuration
     confLogLevel :: !(Maybe LogLevel),
     confDbFile :: !(Maybe FilePath),
     confSendEmails :: !(Maybe Bool),
+    confAdmin :: !(Maybe Text),
     confGoogleAPIKey :: !(Maybe Text),
     confGoogleAnalyticsTracking :: !(Maybe Text),
     confGoogleSearchConsoleVerification :: !(Maybe Text)
@@ -76,6 +79,7 @@ instance YamlSchema Configuration where
         <*> optionalFieldWith "log-level" "Minimal severity for log messages" viaRead
         <*> optionalField "database" "The path to the database file"
         <*> optionalField "send-emails" "Whether to send emails and require email verification"
+        <*> optionalField "admil" "The email address of the admin user"
         <*> optionalField "google-api-key" "Google API key"
         <*> optionalField "google-analytics-tracking" "Google analytics tracking code"
         <*> optionalField "google-search-console-verification" "Google search console html element verification code"
@@ -99,6 +103,7 @@ data Environment = Environment
     envLogLevel :: !(Maybe LogLevel),
     envDbFile :: !(Maybe FilePath),
     envSendEmails :: !(Maybe Bool),
+    envAdmin :: !(Maybe Text),
     envGoogleAPIKey :: !(Maybe Text),
     envGoogleAnalyticsTracking :: !(Maybe Text),
     envGoogleSearchConsoleVerification :: !(Maybe Text)
@@ -118,6 +123,7 @@ environmentParser =
       <*> Env.var (fmap Just . Env.auto) "LOG_LEVEL" (mE <> Env.help "Minimal severity for log messages")
       <*> Env.var (fmap Just . Env.auto) "DATABASE" (mE <> Env.help "The path to the database file")
       <*> Env.var (fmap Just . Env.auto) "SEND_EMAILS" (mE <> Env.help "Whether to send emails and require email verification")
+      <*> Env.var (fmap Just . Env.str) "ADMIN" (mE <> Env.help "The email address of the admin user")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_API_KEY" (mE <> Env.help "Google api key")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_ANALYTICS_TRACKING" (mE <> Env.help "Google analytics tracking code")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (mE <> Env.help "Google search console html element verification code")
@@ -154,6 +160,7 @@ data Flags = Flags
     flagLogLevel :: !(Maybe LogLevel),
     flagDbFile :: !(Maybe FilePath),
     flagSendEmails :: !(Maybe Bool),
+    flagAdmin :: !(Maybe Text),
     flagGoogleAPIKey :: !(Maybe Text),
     flagGoogleAnalyticsTracking :: !(Maybe Text),
     flagGoogleSearchConsoleVerification :: !(Maybe Text)
@@ -207,6 +214,14 @@ parseFlags =
           ( mconcat
               [ long "send-emails",
                 help "Whether to send emails and require email verification"
+              ]
+          )
+      )
+    <*> optional
+      ( strOption
+          ( mconcat
+              [ long "admin",
+                help "Email address of the admin user"
               ]
           )
       )

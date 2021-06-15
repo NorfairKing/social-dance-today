@@ -15,6 +15,9 @@
 
 /account/parties AccountPartiesR GET
 
+/admin AdminR:
+  / PanelR GET
+
 /favicon.ico FaviconR
 
 /auth AuthR Auth getAuth

@@ -46,6 +46,7 @@ data App = App
     appConnectionPool :: !ConnectionPool,
     appSessionKeyFile :: !(Path Abs File),
     appSendEmails :: !Bool,
+    appAdmin :: !(Maybe Text),
     appGoogleAPIKey :: !(Maybe Text),
     appGoogleAnalyticsTracking :: !(Maybe Text),
     appGoogleSearchConsoleVerification :: !(Maybe Text)
@@ -81,6 +82,17 @@ instance Yesod App where
       FaviconR -> pure Authorized
       AuthR _ -> pure Authorized
       StaticR _ -> pure Authorized
+      AdminR _ -> do
+        -- Has to be admin
+        mAuthId <- maybeAuth
+        case mAuthId of
+          Nothing -> pure AuthenticationRequired
+          Just (Entity _ u) -> do
+            mAdmin <- getsYesod appAdmin
+            pure $
+              if Just (userEmailAddress u) == mAdmin
+                then Authorized
+                else AuthenticationRequired
       _ -> do
         -- Has to be logged-in
         mAuthId <- maybeAuthId
