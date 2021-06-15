@@ -40,7 +40,7 @@
     $else
       <div .columns .is-multiline .is-centered>
         $forall (Entity partyId party, Entity _ p, mPosterVal) <- parties
-          <div .column .is-three-quarters-mobile .is-two-thirds-tablet .is-half-desktop>
+          <div .column .is-two-thirds-tablet .is-half-desktop>
             <div .zoom-without-container>
               <a  href=@{PartyR partyId}>
                 <div .card>
