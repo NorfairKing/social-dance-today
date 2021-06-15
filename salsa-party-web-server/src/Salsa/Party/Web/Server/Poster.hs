@@ -54,7 +54,7 @@ posterCropImage imageType contents = do
         if w < desiredWidth && h < desiredHeight
           then reduceUntilSmallEnough jpegImage
           else
-            let (w', h') =
+            let (actualWidth, actualHeight) =
                   case compare w h of
                     EQ -> (desiredWidth, desiredHeight)
                     -- If width is smaller than height, it's a portrait image.
@@ -73,7 +73,7 @@ posterCropImage imageType contents = do
                     --          == w / h
                     LT ->
                       let h' = desiredHeight
-                          w' = round $ fromIntegral desiredHeight * fromIntegral w / fromIntegral h
+                          w' = round $ fromIntegral desiredHeight * fromIntegral w / (fromIntegral h :: Float)
                        in (w', h')
                     -- If width is greater than height, it's a landscape image.
                     -- In that case we want the width to be equal to the desired width
@@ -91,14 +91,14 @@ posterCropImage imageType contents = do
                     --         == w / h
                     GT ->
                       let w' = desiredWidth
-                          h' = round $ fromIntegral desiredWidth * fromIntegral h / fromIntegral w
+                          h' = round $ fromIntegral desiredWidth * fromIntegral h / (fromIntegral w :: Float)
                        in (w', h')
-                convertedImage = scaleBilinear w' h' jpegImage
+                convertedImage = scaleBilinear actualWidth actualHeight jpegImage
              in reduceUntilSmallEnough convertedImage
       pure ("image/jpeg", convertedImage)
 
 reduceUntilSmallEnough :: Image PixelYCbCr8 -> Either String ByteString
-reduceUntilSmallEnough image = go 100 -- It makes sense to start at 100% because jpeg is already smaller than png somteimes
+reduceUntilSmallEnough image = go 100 -- It makes sense to start at 100% because jpeg is already smaller than png, usually
   where
     go currentQuality
       | currentQuality > 0 =
