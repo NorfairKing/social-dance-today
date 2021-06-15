@@ -67,6 +67,9 @@ library
     , validity-persistent
     , validity-text
     , validity-time
+    , wai
+    , wai-extra
+    , warp
     , yaml
     , yamlparse-applicative
     , yesod

@@ -7,6 +7,9 @@ import Control.Monad.Logger
 import qualified Data.Text as T
 import Database.Persist.Sqlite
 import Network.HTTP.Client.TLS as HTTP
+import Network.Wai as Wai
+import qualified Network.Wai.Handler.Warp as Warp
+import Network.Wai.Middleware.RequestLogger
 import Path
 import Path.IO
 import Salsa.Party.Web.Server.Application ()
@@ -43,4 +46,9 @@ runSalsaPartyWebServer Settings {..} =
                 appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
                 appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
               }
-      liftIO $ Yesod.warp settingPort app
+      liftIO $ do
+        waiApp <- Yesod.toWaiAppPlain app
+        let loggerMiddle = if development then logStdoutDev else logStdout
+        let middles = loggerMiddle . defaultMiddlewaresNoLogging
+        let salsaApp = middles waiApp
+        Warp.run settingPort salsaApp
