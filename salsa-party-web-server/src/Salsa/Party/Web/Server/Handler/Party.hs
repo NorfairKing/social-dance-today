@@ -208,4 +208,5 @@ getPosterR key = do
     Just (Entity _ Poster {..}) -> do
       -- Cache forever because of CAS
       addHeader "Cache-Control" "max-age=31536000, public, immutable"
+      addHeader "Content-Disposition" "inline"
       respond (TE.encodeUtf8 posterImageType) posterImage

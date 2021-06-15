@@ -1,6 +1,6 @@
 <section .section>
   <div .container>
-    <h1 .title .is-1>
+    <h1 .title .is-1 .has-text-centered>
       Parties around 
       $maybe address <- mAddress
         #{address} 
@@ -10,26 +10,29 @@
       (#{prettyDayAuto today day})
 
 
-    <form
-      method=get
-      action=@{QueryR}>
-      <input name="day" type="hidden" value="#{formatTime defaultTimeLocale "%F" prevDay}">
-      $maybe address <- mAddress
-        <input name="address" type="hidden" value="#{address}">
-      <input name="latitude" type="hidden" value="#{toDouble $ coordinatesLat coordinates}">
-      <input name="longitude" type="hidden" value="#{toDouble $ coordinatesLon coordinates}">
-      <button .button type="submit">
-        Previous day
-    <form
-      method=get
-      action=@{QueryR}>
-      <input name="day" type="hidden" value="#{formatTime defaultTimeLocale "%F" nextDay}">
-      $maybe address <- mAddress
-        <input name="address" type="hidden" value="#{address}">
-      <input name="latitude" type="hidden" value="#{toDouble $ coordinatesLat coordinates}">
-      <input name="longitude" type="hidden" value="#{toDouble $ coordinatesLon coordinates}">
-      <button .button type="submit">
-        Next day
+
+    <nav .pagination role="navigation" aria-label="pagination">
+      <form .form
+        method=get
+        action=@{QueryR}>
+        <input name="day" type="hidden" value="#{formatTime defaultTimeLocale "%F" prevDay}">
+        $maybe address <- mAddress
+          <input name="address" type="hidden" value="#{address}">
+        <input name="latitude" type="hidden" value="#{toDouble $ coordinatesLat coordinates}">
+        <input name="longitude" type="hidden" value="#{toDouble $ coordinatesLon coordinates}">
+        <button .pagination-previous type="submit">
+          Previous day
+      
+      <form .form
+        method=get
+        action=@{QueryR}>
+        <input name="day" type="hidden" value="#{formatTime defaultTimeLocale "%F" nextDay}">
+        $maybe address <- mAddress
+          <input name="address" type="hidden" value="#{address}">
+        <input name="latitude" type="hidden" value="#{toDouble $ coordinatesLat coordinates}">
+        <input name="longitude" type="hidden" value="#{toDouble $ coordinatesLon coordinates}">
+        <button .pagination-next type="submit">
+          Next day
 
 <section .section>
   <div .container>
