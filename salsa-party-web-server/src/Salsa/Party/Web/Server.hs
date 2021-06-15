@@ -23,9 +23,9 @@ import Yesod
 
 salsaPartyWebServer :: IO ()
 salsaPartyWebServer = do
-  sets <- getSettings
-  when development $ pPrint sets
-  runSalsaPartyWebServer sets
+  settings <- getSettings
+  when development $ pPrint settings
+  runSalsaPartyWebServer settings
 
 runSalsaPartyWebServer :: Settings -> IO ()
 runSalsaPartyWebServer Settings {..} = do

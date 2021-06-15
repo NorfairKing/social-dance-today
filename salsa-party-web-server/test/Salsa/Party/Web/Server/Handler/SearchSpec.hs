@@ -65,7 +65,8 @@ spec = do
                     partyPlace = place1Id,
                     partyDescription = Nothing,
                     partyHomepage = Nothing,
-                    partyStart = Nothing
+                    partyStart = Nothing,
+                    partyPrice = Nothing
                   }
           party1Id <- DB.insert party1
           let party2 =
@@ -76,7 +77,8 @@ spec = do
                     partyPlace = place2Id,
                     partyDescription = Nothing,
                     partyHomepage = Nothing,
-                    partyStart = Nothing
+                    partyStart = Nothing,
+                    partyPrice = Nothing
                   }
           party2Id <- DB.insert party2
           -- close to party 1, but the next day
@@ -88,7 +90,8 @@ spec = do
                     partyPlace = place3Id,
                     partyDescription = Nothing,
                     partyHomepage = Nothing,
-                    partyStart = Nothing
+                    partyStart = Nothing,
+                    partyPrice = Nothing
                   }
           _ <- DB.insert party3
           ps <- searchQuery @IO (fromGregorian 2021 06 10) (placeCoordinates queryPlace)
