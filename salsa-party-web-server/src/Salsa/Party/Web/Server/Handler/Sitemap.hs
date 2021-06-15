@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
 
 module Salsa.Party.Web.Server.Handler.Sitemap where
 
@@ -7,14 +6,12 @@ import Conduit
 import Control.Monad
 import Control.Monad.Trans.Resource
 import qualified Data.Conduit.Combinators as C
-import qualified Database.Esqueleto as E
 import Salsa.Party.Web.Server.Handler.Explore
 import Salsa.Party.Web.Server.Handler.Import
 import Yesod.Sitemap
 
 getSitemapR :: Handler TypedContent
 getSitemapR = do
-  today <- liftIO $ utctDay <$> getCurrentTime
   acqOrganiserIds <- runDB $ selectKeysRes [] [Asc OrganiserId]
   acqPartyIds <- runDB $ selectKeysRes [] [Asc PartyId]
 

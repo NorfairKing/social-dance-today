@@ -1,2 +1,6 @@
 - ignore:
     name: "Use newtype instead of data"
+- ignore:
+    name: "Replace case with fromMaybe"
+- ignore:
+    name: "Replace case with maybe"

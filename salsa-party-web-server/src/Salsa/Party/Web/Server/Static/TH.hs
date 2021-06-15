@@ -55,7 +55,7 @@ locationPicturesGenerator = do
                     ebMimeType = "image/jpeg",
                     ebDevelExtraFiles = Nothing,
                     ebProductionContent = readPoster True mimeType fp,
-                    ebDevelReload = appE (appE (appE (varE 'readPoster) [|False|]) [|mimeType|]) [|fp|]
+                    ebDevelReload = appE (appE (appE [|readPoster|] [|False|]) [|mimeType|]) [|fp|]
                   }
       case takeExtension fp of
         ".jpg" -> goAhead "image/jpeg"
@@ -63,7 +63,7 @@ locationPicturesGenerator = do
         ".png" -> goAhead "image/png"
         _ -> pure Nothing
 
-readPoster :: Bool -> Text -> FilePath -> IO (LB.ByteString)
+readPoster :: Bool -> Text -> FilePath -> IO LB.ByteString
 readPoster reduce mimeType fp = do
   contents <- SB.readFile fp
   LB.fromStrict
