@@ -30,6 +30,7 @@ library
       Salsa.Party.Web.Server.Handler.Party
       Salsa.Party.Web.Server.Handler.Search
       Salsa.Party.Web.Server.Handler.Sitemap
+      Salsa.Party.Web.Server.Migration
       Salsa.Party.Web.Server.OptParse
       Salsa.Party.Web.Server.Poster
       Salsa.Party.Web.Server.Static

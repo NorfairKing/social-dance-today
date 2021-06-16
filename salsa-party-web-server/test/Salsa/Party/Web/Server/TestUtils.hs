@@ -21,6 +21,7 @@ import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Gen
 import Salsa.Party.Web.Server.Handler.Organiser
 import Salsa.Party.Web.Server.Handler.Party
+import Salsa.Party.Web.Server.Migration
 import Salsa.Party.Web.Server.Static
 import Test.QuickCheck
 import Test.Syd
@@ -72,7 +73,7 @@ salsaConnectionPoolSetupFunc =
     runNoLoggingT $
       let info = mkSqliteConnectionInfo ":memory:" & walEnabled .~ False & fkEnabled .~ False
        in withSqlitePoolInfo info 1 $ \pool -> do
-            _ <- flip runSqlPool pool $ DB.runMigrationQuiet migrateAll
+            _ <- runSqlPool (completeServerMigration True) pool
             liftIO $ func pool
 
 testRegister ::

@@ -14,8 +14,8 @@ import Path
 import Path.IO
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Constants
-import Salsa.Party.Web.Server.DB
 import Salsa.Party.Web.Server.Foundation
+import Salsa.Party.Web.Server.Migration
 import Salsa.Party.Web.Server.OptParse
 import Salsa.Party.Web.Server.Static
 import Text.Show.Pretty
@@ -32,7 +32,7 @@ runSalsaPartyWebServer Settings {..} = do
   let info = mkSqliteConnectionInfo (T.pack (fromAbsFile settingDbFile)) & walEnabled .~ False & fkEnabled .~ False
   runStderrLoggingT $
     withSqlitePoolInfo info 1 $ \pool -> do
-      runSqlPool (runMigration migrateAll) pool
+      runSqlPool (completeServerMigration False) pool
       sessionKeyFile <- resolveFile' "client_session_key.aes"
       man <- HTTP.newTlsManager
       let app =

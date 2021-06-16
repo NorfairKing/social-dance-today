@@ -35,7 +35,7 @@ import Salsa.Party.Web.Server.DB.CASKey
 import Salsa.Party.Web.Server.DB.Password
 
 share
-  [mkPersist sqlSettings, mkMigrate "migrateAll"]
+  [mkPersist sqlSettings, mkMigrate "automaticMigrations"]
   [persistLowerCase|
 
 User
