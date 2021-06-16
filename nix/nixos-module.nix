@@ -162,7 +162,9 @@ in
               locations."/" = {
                 proxyPass = "http://localhost:${builtins.toString port}";
               };
-              serverAliases = tail hosts;
+              serverAliases =
+                let andWWWHost = host: [ host "www.${host}" ];
+                in [ "www.${head hosts}" ] ++ concatMap andWWWHost (tail hosts);
             };
         };
       end-to-end-test-service =
