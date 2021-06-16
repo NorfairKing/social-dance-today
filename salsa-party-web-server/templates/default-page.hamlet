@@ -8,6 +8,7 @@ $doctype 5
     ^{pageHead pageContent}
 
     <link rel="stylesheet" href=@{StaticR bulma_css}>
+    <link rel="icon" href=@{FaviconR} type="image/x-icon">
 
     $maybe verification <- appGoogleSearchConsoleVerification app
       <meta name="google-site-verification" content="#{verification}"/>
