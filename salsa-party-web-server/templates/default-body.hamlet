@@ -12,10 +12,10 @@ $forall (classes, message) <- messages
       <p .has-text-centered>
         &copy;
         <span id="copyright">
-          <script>
-            document.getElementById('copyright').appendChild(document.createTextNode(new Date().getFullYear()))
           <a href="https://cs-syd.eu">
             CS SYD
+          <script>
+            document.getElementById('copyright').appendChild(document.createTextNode(new Date().getFullYear()))
 
     <div .columns .is-centered .py-6>
       <p .has-text-centered>
