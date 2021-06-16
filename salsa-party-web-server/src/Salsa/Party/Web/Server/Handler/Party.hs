@@ -6,6 +6,7 @@
 module Salsa.Party.Web.Server.Handler.Party where
 
 import Control.Monad
+import Data.Aeson as JSON
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Database.Esqueleto as E
@@ -13,6 +14,7 @@ import Network.HTTP.Types
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Poster
+import Text.Julius
 
 getAccountPartiesR :: Handler Html
 getAccountPartiesR = do
@@ -183,7 +185,7 @@ postAccountPartyDeleteR partyId = do
 getPartyR :: PartyId -> Handler Html
 getPartyR partyId = do
   party@Party {..} <- runDB $ get404 partyId
-  Place {..} <- runDB $ get404 partyPlace
+  place@Place {..} <- runDB $ get404 partyPlace
   organiser@Organiser {..} <- runDB $ get404 partyOrganiser
   posterKeys <- runDB $
     E.select $
@@ -203,10 +205,38 @@ getPartyR partyId = do
         let googleMapsEmbedUrl = mapsAPI <> TE.decodeUtf8 googleMapsEmbedQuery
         pure googleMapsEmbedUrl
   today <- liftIO $ utctDay <$> getCurrentTime
+  renderUrl <- getUrlRender
   withNavBar $ do
     setTitle $ toHtml partyTitle
     setDescription $ fromMaybe "Party without description" partyDescription
+    toWidgetHead $ toJavascript $ partyJSONLDData renderUrl party (Entity partyOrganiser organiser) place posterKeys
     $(widgetFile "party")
+
+partyJSONLDData :: (Route App -> Text) -> Party -> Entity Organiser -> Place -> [E.Value CASKey] -> JSON.Value
+partyJSONLDData renderUrl Party {..} (Entity organiserId Organiser {..}) Place {..} posterKeys =
+  object
+    [ "@context" .= ("https://schema.org" :: Text),
+      "@type" .= ("Event" :: Text),
+      "name" .= partyTitle,
+      "description" .= fromMaybe "" partyDescription, -- TODO make this an optional key?
+      "startDate" .= partyDay,
+      "endDate" .= partyDay,
+      "eventAttendanceMode" .= ("https://schema.org/OfflineEventAttendanceMode" :: Text),
+      "eventStatus" .= ("https://schema.org/EventScheduled" :: Text),
+      "location"
+        .= object
+          [ "@type" .= ("Place" :: Text),
+            "name" .= placeQuery
+          ],
+      "image"
+        .= [renderUrl (PosterR posterKey) | E.Value posterKey <- posterKeys],
+      "organiser"
+        .= object
+          [ "@type" .= ("Organization" :: Text),
+            "name" .= organiserName,
+            "url" .= renderUrl (OrganiserR organiserId)
+          ]
+    ]
 
 getPosterR :: CASKey -> Handler TypedContent
 getPosterR key = do
