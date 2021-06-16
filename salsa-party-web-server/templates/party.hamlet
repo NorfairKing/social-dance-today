@@ -1,12 +1,12 @@
 <section .section>
   <div .container>
-    <h2 .title .is-2>
+    <h1 .title .is-3>
       #{partyTitle}
 
-    <h4 .title .is-4>
+    <h2 .title .is-4>
       Address: #{placeQuery}
     
-    <h6 .subtitle .is-6>
+    <h3 .subtitle .is-5>
       #{formatTime defaultTimeLocale prettyDayFormat partyDay} 
       $maybe start <- partyStart
         #{formatTime defaultTimeLocale "%H:%M" start} 
@@ -15,7 +15,7 @@
     $forall E.Value posterKey <- posterKeys
       ^{posterImageWidget party organiser posterKey}
 
-    <h6 .title .is-6>
+    <h4 .title .is-6>
       Organiser: 
       <a href=@{OrganiserR partyOrganiser}>
         #{organiserName}

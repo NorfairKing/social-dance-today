@@ -1,6 +1,6 @@
 <section .section>
   <div .container>
-    <h1 .title .is-1>
+    <h1 .title .is-3>
       Your parties
 
     <p>
@@ -13,9 +13,9 @@
       No parties submitted yet
     $else
       $forall (Entity partyId party, Entity _ p, mPosterVal) <- parties
-        <h4 .title .is-4>
+        <h2 .title .is-4>
           #{formatTime defaultTimeLocale prettyDayFormat $ partyDay party}: #{partyTitle party}
-        <h6 .subtitle .is-6>
+        <h3 .subtitle .is-5>
           #{placeQuery p}
         $maybe posterKey <- E.unValue mPosterVal
           ^{posterImageWidget party organiser posterKey}

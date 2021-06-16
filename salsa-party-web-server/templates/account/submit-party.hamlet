@@ -1,6 +1,6 @@
 <section .section>
   <div .container>
-    <h1 .title .is-1>
+    <h1 .title .is-3>
       $maybe _ <- mPartyId
         Edit Party
       $nothing
