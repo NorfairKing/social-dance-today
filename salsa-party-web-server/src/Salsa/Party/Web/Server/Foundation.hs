@@ -58,7 +58,6 @@ data App = App
 mkYesodData "App" $(makeRelativeToProject "routes.txt" >>= parseRoutesFile)
 
 instance Yesod App where
-  shouldLogIO app _ ll = pure $ ll >= appLogLevel app
   defaultLayout widget = do
     app <- getYesod
     messages <- getMessages
@@ -69,8 +68,19 @@ instance Yesod App where
     let body = withAutoReload $(widgetFile "default-body")
     pageContent <- widgetToPageContent body
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
+
   makeSessionBackend a = Just <$> defaultClientSessionBackend 120 (fromAbsFile (appSessionKeyFile a))
+
+  shouldLogIO app _ ll = pure $ ll >= appLogLevel app
+
   authRoute _ = Just $ AuthR LoginR
+
+  errorHandler NotFound = fmap toTypedContent $
+    withNavBar $ do
+      setTitle "Page not found"
+      $(widgetFile "error/404")
+  errorHandler route = defaultErrorHandler route
+
   isAuthorized route _ =
     -- List each route that a user can access without login
     -- so we don't accidentally authorize anything.

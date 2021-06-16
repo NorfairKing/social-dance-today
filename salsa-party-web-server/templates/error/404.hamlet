@@ -1,0 +1,12 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3 .has-text-centered> Page not found
+
+<section .section>
+  <div .container>
+    <h2 .title .is-4 .has-text-centered>
+      Explore Social Dance
+
+    <div .field .has-text-centered>
+      <a .button .is-primary href=${ExploreR}>
+        Explore
