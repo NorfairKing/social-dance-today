@@ -28,3 +28,7 @@
                     <h5 .subtitle .is-6>
                       #{placeQuery p}
 
+
+<!-- Facebook Open Graph metadata -->
+<meta property="og:url" content=@{OrganiserR organiserId}>
+<meta property="og:title" content=#{organiserName}>

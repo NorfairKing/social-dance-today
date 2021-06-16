@@ -45,3 +45,12 @@
           loading="lazy"
           allowfullscreen
           src=#{googleMapsEmbedUrl}>
+
+
+<!-- Facebook Open Graph metadata -->
+<meta property="og:url" content=@{PartyR partyId}>
+<meta property="og:title" content=#{partyTitle}>
+$forall E.Value posterKey <- posterKeys
+  <meta property="og:image" content=@{PosterR posterKey}>
+$maybe description <- partyDescription
+  <meta property="og:description" content=#{description}>
