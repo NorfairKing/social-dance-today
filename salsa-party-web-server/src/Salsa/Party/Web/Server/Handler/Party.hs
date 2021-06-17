@@ -214,29 +214,30 @@ getPartyR partyId = do
 
 partyJSONLDData :: (Route App -> Text) -> Party -> Entity Organiser -> Place -> [E.Value CASKey] -> JSON.Value
 partyJSONLDData renderUrl Party {..} (Entity organiserId Organiser {..}) Place {..} posterKeys =
-  object
-    [ "@context" .= ("https://schema.org" :: Text),
-      "@type" .= ("Event" :: Text),
-      "name" .= partyTitle,
-      "description" .= fromMaybe "" partyDescription, -- TODO make this an optional key?
-      "startDate" .= partyDay,
-      "endDate" .= partyDay,
-      "eventAttendanceMode" .= ("https://schema.org/OfflineEventAttendanceMode" :: Text),
-      "eventStatus" .= ("https://schema.org/EventScheduled" :: Text),
-      "location"
-        .= object
-          [ "@type" .= ("Place" :: Text),
-            "name" .= placeQuery
-          ],
-      "image"
-        .= [renderUrl (PosterR posterKey) | E.Value posterKey <- posterKeys],
-      "organiser"
-        .= object
-          [ "@type" .= ("Organization" :: Text),
-            "name" .= organiserName,
-            "url" .= renderUrl (OrganiserR organiserId)
-          ]
-    ]
+  object $
+    concat
+      [ [ "@context" .= ("https://schema.org" :: Text),
+          "@type" .= ("Event" :: Text),
+          "name" .= partyTitle,
+          "startDate" .= partyDay,
+          "eventAttendanceMode" .= ("https://schema.org/OfflineEventAttendanceMode" :: Text),
+          "eventStatus" .= ("https://schema.org/EventScheduled" :: Text), -- TODO mark this as CANCELLED when we implement cancellation.
+          "location"
+            .= object
+              [ "@type" .= ("Place" :: Text),
+                "address" .= placeQuery
+              ],
+          "image"
+            .= [renderUrl (PosterR posterKey) | E.Value posterKey <- posterKeys],
+          "organiser"
+            .= object
+              [ "@type" .= ("Organization" :: Text),
+                "name" .= organiserName,
+                "url" .= renderUrl (OrganiserR organiserId)
+              ]
+        ],
+        ["description" .= description | description <- maybeToList partyDescription]
+      ]
 
 getPosterR :: CASKey -> Handler TypedContent
 getPosterR key = do
