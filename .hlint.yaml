@@ -4,3 +4,5 @@
     name: "Replace case with fromMaybe"
 - ignore:
     name: "Replace case with maybe"
+- ignore:
+    name: "Use ++"
