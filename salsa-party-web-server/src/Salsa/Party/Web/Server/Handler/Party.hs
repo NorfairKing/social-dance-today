@@ -1,5 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
@@ -14,6 +16,9 @@ import Network.HTTP.Types
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Poster
+import Text.Blaze.Html5 ((!))
+import qualified Text.Blaze.Html5 as H
+import qualified Text.Blaze.Html5.Attributes as HA
 import Text.Julius
 
 getAccountPartiesR :: Handler Html
@@ -209,8 +214,19 @@ getPartyR partyId = do
   withNavBar $ do
     setTitle $ toHtml partyTitle
     setDescription $ fromMaybe "Party without description" partyDescription
-    toWidgetHead $ toJavascript $ partyJSONLDData renderUrl party (Entity partyOrganiser organiser) place posterKeys
+    toWidgetHead $ toJSONLDData $ partyJSONLDData renderUrl party (Entity partyOrganiser organiser) place posterKeys
     $(widgetFile "party")
+
+newtype JSONLDData = JSONLDData Value
+
+toJSONLDData :: ToJSON a => a -> JSONLDData
+toJSONLDData = JSONLDData . toJSON
+
+instance ToWidgetHead App JSONLDData where
+  toWidgetHead (JSONLDData v) =
+    toWidgetHead $
+      H.script ! HA.type_ "application/ld+json" $
+        H.preEscapedLazyText $ renderJavascript $ toJavascript v
 
 partyJSONLDData :: (Route App -> Text) -> Party -> Entity Organiser -> Place -> [E.Value CASKey] -> JSON.Value
 partyJSONLDData renderUrl Party {..} (Entity organiserId Organiser {..}) Place {..} posterKeys =

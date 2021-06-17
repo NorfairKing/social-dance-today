@@ -1,4 +1,3 @@
-
 function geoFindMe() {
 
   const address = document.querySelector('#queryInput');
@@ -38,7 +37,7 @@ document.querySelector('#find-me').addEventListener('click', geoFindMe);
 
 
 document.addEventListener("DOMContentLoaded", function() {
-  navigator.permissions.query({name:'geolocation'}).then(function(result) { 
+  navigator.permissions.query({name: 'geolocation'}).then(function(result) { 
     if (result.state == 'granted') {
       geoFindMe();
     };

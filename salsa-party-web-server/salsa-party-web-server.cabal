@@ -48,6 +48,7 @@ library
     , amazonka-ses
     , base >=4.7 && <5
     , base64-bytestring
+    , blaze-html
     , bytestring
     , conduit
     , cryptohash-sha256

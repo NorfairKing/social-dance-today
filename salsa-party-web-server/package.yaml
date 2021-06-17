@@ -14,6 +14,7 @@ library:
   - amazonka
   - amazonka-ses
   - base64-bytestring
+  - blaze-html
   - bytestring
   - conduit
   - cryptohash-sha256
