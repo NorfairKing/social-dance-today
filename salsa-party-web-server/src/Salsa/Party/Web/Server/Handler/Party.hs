@@ -11,11 +11,13 @@ import Control.Monad
 import Data.Aeson as JSON
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Lazy as LT
 import qualified Database.Esqueleto as E
 import Network.HTTP.Types
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Poster
+import qualified Text.Blaze.Html.Renderer.Text as HT
 import Text.Blaze.Html5 ((!))
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
@@ -230,30 +232,32 @@ instance ToWidgetHead App JSONLDData where
 
 partyJSONLDData :: (Route App -> Text) -> Party -> Entity Organiser -> Place -> [E.Value CASKey] -> JSON.Value
 partyJSONLDData renderUrl Party {..} (Entity organiserId Organiser {..}) Place {..} posterKeys =
-  object $
-    concat
-      [ [ "@context" .= ("https://schema.org" :: Text),
-          "@type" .= ("Event" :: Text),
-          "name" .= partyTitle,
-          "startDate" .= partyDay,
-          "eventAttendanceMode" .= ("https://schema.org/OfflineEventAttendanceMode" :: Text),
-          "eventStatus" .= ("https://schema.org/EventScheduled" :: Text), -- TODO mark this as CANCELLED when we implement cancellation.
-          "location"
-            .= object
-              [ "@type" .= ("Place" :: Text),
-                "address" .= placeQuery
-              ],
-          "image"
-            .= [renderUrl (PosterR posterKey) | E.Value posterKey <- posterKeys],
-          "organiser"
-            .= object
-              [ "@type" .= ("Organization" :: Text),
-                "name" .= organiserName,
-                "url" .= renderUrl (OrganiserR organiserId)
-              ]
-        ],
-        ["description" .= description | description <- maybeToList partyDescription]
-      ]
+  let htmlEscapedText :: Text -> Text
+      htmlEscapedText = LT.toStrict . HT.renderHtml . toHtml
+   in object $
+        concat
+          [ [ "@context" .= ("https://schema.org" :: Text),
+              "@type" .= ("Event" :: Text),
+              "name" .= htmlEscapedText partyTitle,
+              "startDate" .= partyDay,
+              "eventAttendanceMode" .= ("https://schema.org/OfflineEventAttendanceMode" :: Text),
+              "eventStatus" .= ("https://schema.org/EventScheduled" :: Text), -- TODO mark this as CANCELLED when we implement cancellation.
+              "location"
+                .= object
+                  [ "@type" .= ("Place" :: Text),
+                    "address" .= htmlEscapedText placeQuery
+                  ],
+              "image"
+                .= [renderUrl (PosterR posterKey) | E.Value posterKey <- posterKeys],
+              "organizer"
+                .= object
+                  [ "@type" .= ("Organization" :: Text),
+                    "name" .= htmlEscapedText organiserName,
+                    "url" .= renderUrl (OrganiserR organiserId)
+                  ]
+            ],
+            ["description" .= htmlEscapedText description | description <- maybeToList partyDescription]
+          ]
 
 getPosterR :: CASKey -> Handler TypedContent
 getPosterR key = do
