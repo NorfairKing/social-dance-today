@@ -22,6 +22,8 @@ spec = serverSpec $ do
         statusIs 404
     it "GETs a 200 for an existent organiser" $ \yc ->
       -- TODO use a logged-out user
-      withAnyLoggedInUser_ yc $ do
-        get $ OrganiserR $ toSqlKey 0 -- Won't exist
-        statusIs 404
+      forAllValid $ \organiserForm_ ->
+        withAnyLoggedInUser_ yc $ do
+          testSubmitOrganiser organiserForm_ -- TODO submit to database instead of via web form
+          get $ OrganiserR $ toSqlKey 1 -- Will exist
+          statusIs 200
