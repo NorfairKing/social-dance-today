@@ -44,7 +44,7 @@
             <div .zoom-without-container>
               <a  href=@{PartyR partyId}>
                 <div .card>
-                  $maybe posterKey <- E.unValue mPosterVal
+                  $maybe posterKey <- mPosterVal
                     <div .card-image .has-text-centered>
                       <figure .image .is-16by9>
                         <img

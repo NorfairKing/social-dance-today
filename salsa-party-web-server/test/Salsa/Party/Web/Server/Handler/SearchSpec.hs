@@ -4,7 +4,6 @@
 module Salsa.Party.Web.Server.Handler.SearchSpec (spec) where
 
 import qualified Data.Text as T
-import qualified Database.Esqueleto as E
 import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Handler.Search
 import Salsa.Party.Web.Server.Handler.TestImport
@@ -47,56 +46,81 @@ spec = do
             flip runSqlPool pool $ do
               ps <- searchQuery @IO day place
               liftIO $ ps `shouldBe` []
-      it "runs correctly with these three parties" $ \pool ->
-        flip runSqlPool pool $ do
-          let queryPlace = Place {placeQuery = "Search Place", placeLat = 0, placeLon = 0}
-          _ <- DB.insert queryPlace
-          let place1 = Place {placeQuery = "Place 1", placeLat = 1, placeLon = 1}
-          place1Id <- DB.insert place1
-          let place2 = Place {placeQuery = "Place 2", placeLat = 3, placeLon = 3}
-          place2Id <- DB.insert place2
-          let place3 = Place {placeQuery = "Place 3", placeLat = 2, placeLon = 2}
-          place3Id <- DB.insert place3
-          let party1 =
-                Party
-                  { partyOrganiser = toSqlKey 1,
-                    partyTitle = "Example party 1",
-                    partyDay = fromGregorian 2021 06 10,
-                    partyPlace = place1Id,
-                    partyDescription = Nothing,
-                    partyHomepage = Nothing,
-                    partyStart = Nothing,
-                    partyPrice = Nothing
-                  }
-          party1Id <- DB.insert party1
-          let party2 =
-                Party
-                  { partyOrganiser = toSqlKey 2,
-                    partyTitle = "Example party 2",
-                    partyDay = fromGregorian 2021 06 10,
-                    partyPlace = place2Id,
-                    partyDescription = Nothing,
-                    partyHomepage = Nothing,
-                    partyStart = Nothing,
-                    partyPrice = Nothing
-                  }
-          party2Id <- DB.insert party2
-          -- close to party 1, but the next day
-          let party3 =
-                Party
-                  { partyOrganiser = toSqlKey 3,
-                    partyTitle = "Example party 3",
-                    partyDay = fromGregorian 2021 06 11,
-                    partyPlace = place3Id,
-                    partyDescription = Nothing,
-                    partyHomepage = Nothing,
-                    partyStart = Nothing,
-                    partyPrice = Nothing
-                  }
-          _ <- DB.insert party3
-          ps <- searchQuery @IO (fromGregorian 2021 06 10) (placeCoordinates queryPlace)
-          liftIO $
-            ps
-              `shouldBe` [ (Entity party1Id party1, Entity place1Id place1, E.Value Nothing),
-                           (Entity party2Id party2, Entity place2Id place2, E.Value Nothing)
-                         ]
+      it "runs correctly with these three parties where one is on a different day" $ \pool ->
+        forAllValid $ \party1Prototype ->
+          forAllValid $ \party2Prototype ->
+            forAllValid $ \party3Prototype ->
+              forAllValid $ \day ->
+                flip runSqlPool pool $ do
+                  let queryPlace = Place {placeQuery = "Search Place", placeLat = 0, placeLon = 0}
+                  _ <- DB.insert queryPlace
+                  let place1 = Place {placeQuery = "Place 1", placeLat = 0, placeLon = 0.05}
+                  place1Id <- DB.insert place1
+                  let place2 = Place {placeQuery = "Place 2", placeLat = 0, placeLon = 0.1}
+                  place2Id <- DB.insert place2
+                  let place3 = Place {placeQuery = "Place 3", placeLat = 0, placeLon = 0.15}
+                  place3Id <- DB.insert place3
+                  let party1 =
+                        party1Prototype
+                          { partyDay = day,
+                            partyPlace = place1Id
+                          }
+                  party1Id <- DB.insert party1
+                  let party2 =
+                        party2Prototype
+                          { partyDay = day,
+                            partyPlace = place2Id
+                          }
+                  party2Id <- DB.insert party2
+                  -- close to party 1, but the next day
+                  let party3 =
+                        party3Prototype
+                          { partyDay = addDays 1 day,
+                            partyPlace = place3Id
+                          }
+                  _ <- DB.insert party3
+                  ps <- searchQuery @IO day (placeCoordinates queryPlace)
+                  liftIO $
+                    ps
+                      `shouldBe` [ (Entity party1Id party1, Entity place1Id place1, Nothing),
+                                   (Entity party2Id party2, Entity place2Id place2, Nothing)
+                                 ]
+      it "runs correctly with these three parties where one is too far away" $ \pool ->
+        forAllValid $ \party1Prototype ->
+          forAllValid $ \party2Prototype ->
+            forAllValid $ \party3Prototype ->
+              forAllValid $ \day ->
+                flip runSqlPool pool $ do
+                  let queryPlace = Place {placeQuery = "Search Place", placeLat = 0, placeLon = 0}
+                  _ <- DB.insert queryPlace
+                  let place1 = Place {placeQuery = "Place 1", placeLat = 0, placeLon = 0.1}
+                  place1Id <- DB.insert place1
+                  let place2 = Place {placeQuery = "Place 2", placeLat = 0.1, placeLon = 0}
+                  place2Id <- DB.insert place2
+                  let place3 = Place {placeQuery = "Place 3", placeLat = 5, placeLon = 5}
+                  place3Id <- DB.insert place3
+                  let party1 =
+                        party1Prototype
+                          { partyDay = day,
+                            partyPlace = place1Id
+                          }
+                  party1Id <- DB.insert party1
+                  let party2 =
+                        party2Prototype
+                          { partyDay = day,
+                            partyPlace = place2Id
+                          }
+                  party2Id <- DB.insert party2
+                  -- close to party 1, but the next day
+                  let party3 =
+                        party3Prototype
+                          { partyDay = day,
+                            partyPlace = place3Id
+                          }
+                  _ <- DB.insert party3
+                  ps <- searchQuery @IO day (placeCoordinates queryPlace)
+                  liftIO $
+                    ps
+                      `shouldBe` [ (Entity party1Id party1, Entity place1Id place1, Nothing),
+                                   (Entity party2Id party2, Entity place2Id place2, Nothing)
+                                 ]

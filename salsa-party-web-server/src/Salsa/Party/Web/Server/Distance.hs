@@ -18,8 +18,8 @@ distanceTo co1 co2 =
       lon2 = toRadians $ realToFrac (coordinatesLon co2) :: Double
       latDiff = lat2 - lat1
       lonDiff = lon2 - lon1
-      sinSqLat = sin (latDiff / 2) ^ 2
-      sinSqLon = sin (lonDiff / 2) ^ 2
+      sinSqLat = sin (latDiff / 2) ^ (2 :: Int)
+      sinSqLon = sin (lonDiff / 2) ^ (2 :: Int)
       under = sinSqLat + cos lat1 * cos lat2 * sinSqLon
       -- Average radius of earth:
       r = 6_371_000 -- m
