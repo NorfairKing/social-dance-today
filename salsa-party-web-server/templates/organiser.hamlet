@@ -32,3 +32,11 @@
 <!-- Facebook Open Graph metadata -->
 <meta property="og:url" content=@{OrganiserR organiserId}>
 <meta property="og:title" content=#{organiserName}>
+
+
+<!-- Twitter Meta tags -->
+<meta name="twitter:site" content="@kerckhove_ts">
+<meta property="twitter:domain" content=@{HomeR}>
+<meta property="twitter:url" content=@{OrganiserR organiserId}>
+<meta name="twitter:title" content=#{organiserName}>
+
