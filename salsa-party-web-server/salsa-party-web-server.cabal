@@ -18,6 +18,7 @@ library
       Salsa.Party.Web.Server.DB
       Salsa.Party.Web.Server.DB.CASKey
       Salsa.Party.Web.Server.DB.Password
+      Salsa.Party.Web.Server.Distance
       Salsa.Party.Web.Server.Foundation
       Salsa.Party.Web.Server.Geocoding
       Salsa.Party.Web.Server.Handler
@@ -131,6 +132,7 @@ test-suite salsa-party-web-server-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Salsa.Party.Web.Server.DistanceSpec
       Salsa.Party.Web.Server.Gen
       Salsa.Party.Web.Server.Handler.AdminSpec
       Salsa.Party.Web.Server.Handler.AuthSpec
