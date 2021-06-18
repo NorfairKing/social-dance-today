@@ -16,7 +16,7 @@
                   required=""
                   value=""
                   autofocus="autofocus"
-                  type="text">
+                  type="email">
                 
               
             <div .field>
