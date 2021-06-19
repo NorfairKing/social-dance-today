@@ -134,6 +134,7 @@ test-suite salsa-party-web-server-test
   other-modules:
       Salsa.Party.Web.Server.DistanceSpec
       Salsa.Party.Web.Server.Gen
+      Salsa.Party.Web.Server.Handler.AccountSpec
       Salsa.Party.Web.Server.Handler.AdminSpec
       Salsa.Party.Web.Server.Handler.AuthSpec
       Salsa.Party.Web.Server.Handler.HomeSpec

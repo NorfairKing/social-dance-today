@@ -12,3 +12,4 @@ import Test.Syd as X
 import Test.Syd.Validity as X hiding (Location)
 import Test.Syd.Yesod as X
 import Yesod as X (Textarea (..))
+import Yesod.Auth as X

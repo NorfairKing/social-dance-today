@@ -3,7 +3,6 @@
 module Salsa.Party.Web.Server.Handler.AuthSpec (spec) where
 
 import Salsa.Party.Web.Server.Handler.TestImport
-import Yesod.Auth
 
 spec :: Spec
 spec = serverSpec $ do
