@@ -226,12 +226,14 @@ postRegisterR = liftHandler $ do
         then do
           verificationKey <- liftIO $ T.pack <$> replicateM 32 (randomRIO ('a', 'z'))
           passphraseHash <- liftIO $ hashPassword registerFormPassphrase
+          now <- liftIO getCurrentTime
           runDB $
             insert_
               User
                 { userEmailAddress = registerFormEmailAddress,
                   userPassphraseHash = passphraseHash,
-                  userVerificationKey = Just verificationKey
+                  userVerificationKey = Just verificationKey,
+                  userCreated = Just now
                 }
           sendVerificationEmail registerFormEmailAddress verificationKey
           setCredsRedirect Creds {credsPlugin = salsaAuthPluginName, credsIdent = registerFormEmailAddress, credsExtra = []}

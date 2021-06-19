@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Salsa.Party.Web.Server.Handler.Sitemap where
 
@@ -12,8 +13,9 @@ import Yesod.Sitemap
 
 getSitemapR :: Handler TypedContent
 getSitemapR = do
-  acqOrganiserIds <- runDB $ selectKeysRes [] [Asc OrganiserId]
-  acqPartyIds <- runDB $ selectKeysRes [] [Asc PartyId]
+  acqOrganisers <- runDB $ selectSourceRes [] [Asc OrganiserId]
+  acqParties <- runDB $ selectSourceRes [] [Asc PartyId]
+  now <- liftIO getCurrentTime
 
   sitemap $ do
     yield
@@ -55,21 +57,21 @@ getSitemapR = do
             .| C.map func
           release rk
     dbAcq
-      acqOrganiserIds
-      ( \organiserId ->
+      acqOrganisers
+      ( \(Entity organiserId Organiser {..}) ->
           SitemapUrl
             { sitemapLoc = OrganiserR organiserId,
-              sitemapLastMod = Nothing,
+              sitemapLastMod = Just $ fromMaybe now $ organiserCreated <|> organiserModified,
               sitemapChangeFreq = Nothing,
               sitemapPriority = Just 0.5
             }
       )
     dbAcq
-      acqPartyIds
-      ( \partyId ->
+      acqParties
+      ( \(Entity partyId Party {..}) ->
           SitemapUrl
             { sitemapLoc = PartyR partyId,
-              sitemapLastMod = Nothing,
+              sitemapLastMod = Just $ fromMaybe now $ partyCreated <|> partyModified,
               sitemapChangeFreq = Nothing,
               sitemapPriority = Just 0.4
             }

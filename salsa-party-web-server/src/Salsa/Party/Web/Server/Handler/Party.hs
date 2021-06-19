@@ -107,6 +107,7 @@ submitPartyPage mPartyId mResult = do
       case mResult of
         Just (FormSuccess PartyForm {..}) -> do
           Entity placeId _ <- lookupPlace partyFormAddress
+          now <- liftIO getCurrentTime
           -- Insert or update the party
           partyId <- runDB $ case partyFormId of
             Nothing -> do
@@ -120,6 +121,8 @@ submitPartyPage mPartyId mResult = do
                       partyStart = partyFormStart,
                       partyHomepage = partyFormHomepage,
                       partyPrice = partyFormPrice,
+                      partyCreated = Just now,
+                      partyModified = Nothing,
                       partyPlace = placeId
                     }
                 )
@@ -133,7 +136,8 @@ submitPartyPage mPartyId mResult = do
                   PartyStart =. partyFormStart,
                   PartyHomepage =. partyFormHomepage,
                   PartyPrice =. partyFormPrice,
-                  PartyPlace =. placeId
+                  PartyPlace =. placeId,
+                  PartyModified =. Just now
                 ]
               pure partyId
           -- Update the poster if a new one has been submitted
@@ -215,12 +219,14 @@ getPartyR partyId = do
                 ]
         let googleMapsEmbedUrl = mapsAPI <> TE.decodeUtf8 googleMapsEmbedQuery
         pure googleMapsEmbedUrl
-  today <- liftIO $ utctDay <$> getCurrentTime
+  now <- liftIO getCurrentTime
+  let today = utctDay now
   renderUrl <- getUrlRender
   withNavBar $ do
     setTitle $ toHtml partyTitle
     setDescription $ fromMaybe "Party without description" partyDescription
     toWidgetHead $ toJSONLDData $ partyJSONLDData renderUrl party (Entity partyOrganiser organiser) place posterKeys
+    addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe now $ partyCreated <|> partyModified
     $(widgetFile "party")
 
 newtype JSONLDData = JSONLDData Value

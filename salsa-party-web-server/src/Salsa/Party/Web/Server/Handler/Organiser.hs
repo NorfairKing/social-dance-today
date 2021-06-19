@@ -6,6 +6,7 @@
 module Salsa.Party.Web.Server.Handler.Organiser where
 
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import qualified Database.Esqueleto as E
 import Salsa.Party.Web.Server.Handler.Import
 
@@ -40,12 +41,21 @@ organiserFormPage mResult = do
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
   case mResult of
     Just (FormSuccess OrganiserForm {..}) -> do
+      now <- liftIO getCurrentTime
       _ <-
         runDB $
           upsertBy
             (UniqueOrganiserUser userId)
-            (Organiser {organiserUser = userId, organiserName = organiserFormName})
-            [OrganiserName =. organiserFormName]
+            ( Organiser
+                { organiserUser = userId,
+                  organiserName = organiserFormName,
+                  organiserCreated = Just now,
+                  organiserModified = Nothing
+                }
+            )
+            [ OrganiserName =. organiserFormName,
+              OrganiserModified =. Just now
+            ]
       redirect $ AccountR AccountOrganiserR
     _ -> do
       token <- genToken
@@ -58,7 +68,8 @@ organiserFormPage mResult = do
 getOrganiserR :: OrganiserId -> Handler Html
 getOrganiserR organiserId = do
   organiser@Organiser {..} <- runDB $ get404 organiserId
-  today <- liftIO $ utctDay <$> getCurrentTime
+  now <- liftIO getCurrentTime
+  let today = utctDay now
   parties <- runDB $
     E.select $
       E.from $ \(party `E.InnerJoin` p `E.LeftOuterJoin` mPoster) -> do
@@ -71,4 +82,5 @@ getOrganiserR organiserId = do
   withNavBar $ do
     setTitle $ "Organiser profile: " <> toHtml organiserName
     setDescription $ mconcat ["The organiser profile of ", organiserName, ", and a list of their upcoming social dance parties"]
+    addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe now $ organiserCreated <|> organiserModified
     $(widgetFile "organiser")

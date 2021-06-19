@@ -6,13 +6,16 @@ module Salsa.Party.Web.Server.Migration where
 import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Logger
+import qualified Data.Text as T
 import Database.Persist.Sql
 import Salsa.Party.Web.Server.DB
+import System.Exit
+import UnliftIO
 
-completeServerMigration :: (MonadIO m, MonadLogger m) => Bool -> SqlPersistT m ()
+completeServerMigration :: (MonadUnliftIO m, MonadLogger m) => Bool -> SqlPersistT m ()
 completeServerMigration quiet = do
   logInfoN "Running automatic migrations"
-  (if quiet then void . runMigrationQuiet else runMigration) automaticMigrations
+  (if quiet then void . runMigrationQuiet else runMigration) automaticMigrations `catch` (\(PersistError t) -> liftIO $ die $ T.unpack t)
   logInfoN "Setting up standard places in database"
   forM_ locations $ \location@Place {..} -> do
     mPlace <- getBy (UniquePlaceQuery placeQuery)
