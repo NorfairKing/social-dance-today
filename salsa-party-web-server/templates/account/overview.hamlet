@@ -14,6 +14,15 @@ $if requireVerification
 
         <p .content>
           Your account is not verified yet.
+          You will not be able to submit parties.
+
+        <p .content>
+          Please check your email inbox for a verification email.
+
+        <p .content>
+          If your verification email has not arrived yet, please make sure to check your spam folder.
+          We do our best to prevent emails from ending up in spam but fail sometimes.
+          If you still do not find a verification email, please contact the site administrators.
 
 
         <form .form

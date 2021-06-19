@@ -340,10 +340,19 @@ sendVerificationEmail userEmailAddress verificationKey = do
     else logInfoN $ "Not sending verification email (because sendEmail is turned of), to address: " <> userEmailAddress
 
 verifyR :: Text -> Text -> Route Auth
-verifyR userEmailAddress verificationKey = PluginR salsaAuthPluginName ["register", userEmailAddress, verificationKey]
+verifyR userEmailAddress verificationKey = PluginR salsaAuthPluginName ["verify", userEmailAddress, verificationKey]
 
 getVerifyR :: Text -> Text -> AuthHandler App Html
-getVerifyR userEmailAddress verificationKey = undefined
+getVerifyR userEmailAddress verificationKey = liftHandler $ do
+  runDB $ do
+    mUser <- getBy (UniqueUserEmailAddress userEmailAddress)
+    -- If the user is unverified, they'll have a verification key which has to match the given key.
+    -- If anything goes wrong, we must not send back notFound because then we leak account existence.
+    case mUser of
+      Nothing -> pure ()
+      Just (Entity userId User {..}) ->
+        when (userVerificationKey == Just verificationKey) $ update userId [UserVerificationKey =. Nothing]
+  redirect $ AccountR AccountOverviewR
 
 getFaviconR :: Handler TypedContent
 getFaviconR = redirect $ StaticR favicon_ico
