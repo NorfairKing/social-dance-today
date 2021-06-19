@@ -343,9 +343,9 @@ verifyR :: Text -> Text -> Route Auth
 verifyR userEmailAddress verificationKey = PluginR salsaAuthPluginName ["verify", userEmailAddress, verificationKey]
 
 getVerifyR :: Text -> Text -> AuthHandler App Html
-getVerifyR userEmailAddress verificationKey = liftHandler $ do
+getVerifyR emailAddress verificationKey = liftHandler $ do
   runDB $ do
-    mUser <- getBy (UniqueUserEmailAddress userEmailAddress)
+    mUser <- getBy (UniqueUserEmailAddress emailAddress)
     -- If the user is unverified, they'll have a verification key which has to match the given key.
     -- If anything goes wrong, we must not send back notFound because then we leak account existence.
     case mUser of

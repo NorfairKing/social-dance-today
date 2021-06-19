@@ -6,7 +6,7 @@
       Email Address: #{userEmailAddress}
 
 $if requireVerification
-  $maybe verificationKey <- userVerificationKey
+  $maybe _ <- userVerificationKey
     <section .section>
       <div .container>
         <h2 .title .is-4>
