@@ -121,7 +121,7 @@ submitPartyPage mPartyId mResult = do
                       partyStart = partyFormStart,
                       partyHomepage = partyFormHomepage,
                       partyPrice = partyFormPrice,
-                      partyCreated = Just now,
+                      partyCreated = now,
                       partyModified = Nothing,
                       partyPlace = placeId
                     }
@@ -226,7 +226,7 @@ getPartyR partyId = do
     setTitle $ toHtml partyTitle
     setDescription $ fromMaybe "Party without description" partyDescription
     toWidgetHead $ toJSONLDData $ partyJSONLDData renderUrl party (Entity partyOrganiser organiser) place posterKeys
-    addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe now $ partyCreated <|> partyModified
+    addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified
     $(widgetFile "party")
 
 newtype JSONLDData = JSONLDData Value

@@ -61,7 +61,7 @@ getSitemapR = do
       ( \(Entity organiserId Organiser {..}) ->
           SitemapUrl
             { sitemapLoc = OrganiserR organiserId,
-              sitemapLastMod = Just $ fromMaybe now $ organiserCreated <|> organiserModified,
+              sitemapLastMod = Just $ fromMaybe organiserCreated organiserModified,
               sitemapChangeFreq = Nothing,
               sitemapPriority = Just 0.5
             }
@@ -71,7 +71,7 @@ getSitemapR = do
       ( \(Entity partyId Party {..}) ->
           SitemapUrl
             { sitemapLoc = PartyR partyId,
-              sitemapLastMod = Just $ fromMaybe now $ partyCreated <|> partyModified,
+              sitemapLastMod = Just $ fromMaybe partyCreated partyModified,
               sitemapChangeFreq = Nothing,
               sitemapPriority = Just 0.4
             }

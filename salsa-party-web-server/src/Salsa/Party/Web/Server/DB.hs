@@ -42,7 +42,7 @@ User
     emailAddress Text
     passphraseHash (PasswordHash Bcrypt)
     verificationKey Text Maybe -- Nothing means verified
-    created UTCTime Maybe default=NULL -- TODO make this non-null
+    created UTCTime
 
     UniqueUserEmailAddress emailAddress
 
@@ -54,7 +54,7 @@ User
 Organiser
     user UserId
     name Text
-    created UTCTime Maybe default=NULL -- TODO make this non-null
+    created UTCTime
     modified UTCTime Maybe default=NULL
 
     UniqueOrganiserUser user
@@ -85,7 +85,7 @@ Party
     homepage Text Maybe
     price Text Maybe default=NULL
 
-    created UTCTime Maybe default=NULL -- TODO make this non-null
+    created UTCTime
     modified UTCTime Maybe default=NULL
 
     place PlaceId

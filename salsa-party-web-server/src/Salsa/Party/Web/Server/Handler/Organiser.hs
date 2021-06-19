@@ -49,7 +49,7 @@ organiserFormPage mResult = do
             ( Organiser
                 { organiserUser = userId,
                   organiserName = organiserFormName,
-                  organiserCreated = Just now,
+                  organiserCreated = now,
                   organiserModified = Nothing
                 }
             )
@@ -82,5 +82,5 @@ getOrganiserR organiserId = do
   withNavBar $ do
     setTitle $ "Organiser profile: " <> toHtml organiserName
     setDescription $ mconcat ["The organiser profile of ", organiserName, ", and a list of their upcoming social dance parties"]
-    addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe now $ organiserCreated <|> organiserModified
+    addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe organiserCreated organiserModified
     $(widgetFile "organiser")

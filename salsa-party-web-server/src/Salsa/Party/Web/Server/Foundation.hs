@@ -233,7 +233,7 @@ postRegisterR = liftHandler $ do
                 { userEmailAddress = registerFormEmailAddress,
                   userPassphraseHash = passphraseHash,
                   userVerificationKey = Just verificationKey,
-                  userCreated = Just now
+                  userCreated = now
                 }
           sendVerificationEmail registerFormEmailAddress verificationKey
           setCredsRedirect Creds {credsPlugin = salsaAuthPluginName, credsIdent = registerFormEmailAddress, credsExtra = []}
