@@ -184,9 +184,7 @@ submitPartyPage mPartyId mResult = do
 
 postAccountPartyDeleteR :: PartyId -> Handler Html
 postAccountPartyDeleteR partyId = do
-  runDB $ do
-    deleteWhere [PosterParty ==. partyId]
-    delete partyId
+  runDB $ deletePartyCompletely partyId
   redirect $ AccountR AccountPartiesR
 
 getPartyR :: PartyId -> Handler Html

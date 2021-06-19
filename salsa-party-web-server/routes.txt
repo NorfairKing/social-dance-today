@@ -18,6 +18,8 @@
 
   /parties AccountPartiesR GET
 
+  /delete AccountDeleteR POST
+
 /admin AdminR:
   / PanelR GET
 

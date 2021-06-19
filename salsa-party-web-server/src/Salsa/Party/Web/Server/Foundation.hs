@@ -374,3 +374,20 @@ posterImageWidget Party {..} Organiser {..} posterKey =
       src=@{PosterR posterKey}
       alt="Poster for #{partyTitle} on #{formatTime defaultTimeLocale prettyDayFormat partyDay}, by #{organiserName}">
   |]
+
+deleteUserCompletely :: MonadIO m => UserId -> SqlPersistT m ()
+deleteUserCompletely userId = do
+  organiserIds <- selectKeysList [OrganiserUser ==. userId] [Asc OrganiserId]
+  mapM_ deleteOrganiserCompletely organiserIds
+  delete userId
+
+deleteOrganiserCompletely :: MonadIO m => OrganiserId -> SqlPersistT m ()
+deleteOrganiserCompletely organiserId = do
+  partyIds <- selectKeysList [PartyOrganiser ==. organiserId] [Asc PartyId]
+  mapM_ deletePartyCompletely partyIds
+  delete organiserId
+
+deletePartyCompletely :: MonadIO m => PartyId -> SqlPersistT m ()
+deletePartyCompletely partyId = do
+  deleteWhere [PosterParty ==. partyId]
+  delete partyId
