@@ -91,7 +91,13 @@ postAccountSubmitPartyR = do
 
 submitPartyPage :: Maybe PartyId -> Maybe (FormResult PartyForm) -> Handler Html
 submitPartyPage mPartyId mResult = do
-  userId <- requireAuthId
+  Entity userId User {..} <- requireAuth
+
+  requireVerification <- getsYesod appSendEmails
+  when (requireVerification && isJust userVerificationKey) $ do
+    addMessage "is-danger" "Your account needs to verified before you can submit parties."
+    redirect $ AccountR AccountOverviewR
+
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
   case mOrganiser of
     Nothing -> do
