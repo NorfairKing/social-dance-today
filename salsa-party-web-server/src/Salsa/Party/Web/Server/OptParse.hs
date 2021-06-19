@@ -210,12 +210,20 @@ parseFlags =
           )
       )
     <*> optional
-      ( switch
+      ( flag'
+          True
           ( mconcat
               [ long "send-emails",
-                help "Whether to send emails and require email verification"
+                help "Send emails and require email verification"
               ]
           )
+          <|> flag'
+            False
+            ( mconcat
+                [ long "nosend-emails",
+                  help "Don't send emails or require email verification"
+                ]
+            )
       )
     <*> optional
       ( strOption
