@@ -351,7 +351,9 @@ getVerifyR emailAddress verificationKey = liftHandler $ do
     case mUser of
       Nothing -> pure ()
       Just (Entity userId User {..}) ->
-        when (userVerificationKey == Just verificationKey) $ update userId [UserVerificationKey =. Nothing]
+        when (userVerificationKey == Just verificationKey) $ do
+          addMessageI "is-success" EmailVerified
+          update userId [UserVerificationKey =. Nothing]
   redirect $ AccountR AccountOverviewR
 
 getFaviconR :: Handler TypedContent
