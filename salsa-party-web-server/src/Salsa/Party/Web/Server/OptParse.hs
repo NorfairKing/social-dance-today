@@ -46,7 +46,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
   settingDbFile <- case flagDbFile <|> envDbFile <|> mc confDbFile of
     Nothing -> resolveFile' "salsa-parties.sqlite3"
     Just dbf -> resolveFile' dbf
-  let settingSendEmails = fromMaybe True $ flagSendEmails <|> envSendEmails <|> mc confSendEmails
+  let settingSendEmails = fromMaybe False $ flagSendEmails <|> envSendEmails <|> mc confSendEmails
   let settingAdmin = flagAdmin <|> envAdmin <|> mc confAdmin
   let settingGoogleAPIKey = flagGoogleAPIKey <|> envGoogleAPIKey <|> mc confGoogleAPIKey
   let settingGoogleAnalyticsTracking = flagGoogleAnalyticsTracking <|> envGoogleAnalyticsTracking <|> mc confGoogleAnalyticsTracking

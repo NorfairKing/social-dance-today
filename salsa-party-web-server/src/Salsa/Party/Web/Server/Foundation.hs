@@ -15,17 +15,23 @@
 module Salsa.Party.Web.Server.Foundation where
 
 import Control.Monad
+import Control.Monad.Logger
 import Data.FileEmbed
 import Data.Fixed
 import Data.Function
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Lazy as LT
+import qualified Data.Text.Lazy.Builder as LTB
 import Data.Time
 import Data.Validity
 import Data.Validity.Text ()
 import Data.Validity.Time ()
 import Database.Persist.Sql
 import GHC.Generics (Generic)
+import Lens.Micro
+import qualified Network.AWS as AWS
+import qualified Network.AWS.SES as SES
 import Network.HTTP.Client as HTTP
 import Path
 import Salsa.Party.Web.Server.Constants
@@ -34,7 +40,10 @@ import Salsa.Party.Web.Server.Poster
 import Salsa.Party.Web.Server.Static
 import Salsa.Party.Web.Server.Widget
 import System.Random
+import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet
+import Text.Shakespeare.Text
+import Text.Show.Pretty (ppShow)
 import Yesod
 import Yesod.Auth
 import Yesod.Auth.Message
@@ -170,6 +179,7 @@ salsaAuthPlugin = AuthPlugin salsaAuthPluginName dispatch salsaLoginHandler
     dispatch "GET" ["register"] = getRegisterR >>= sendResponse
     dispatch "POST" ["register"] = postRegisterR
     dispatch "POST" ["login"] = postLoginR
+    dispatch "GET" ["verify", userEmailAddress, verificationKey] = getVerifyR userEmailAddress verificationKey >>= sendResponse
     dispatch _ _ = notFound
 
 salsaAuthPluginName :: Text
@@ -214,22 +224,69 @@ postRegisterR = liftHandler $ do
       if unsafeShowPassword registerFormPassphrase == unsafeShowPassword registerFormConfirmPassphrase
         then do
           verificationKey <- liftIO $ T.pack <$> replicateM 32 (randomRIO ('a', 'z'))
-          -- TODO send email here.
-          -- addMessageI "is-success" ConfirmationEmailSentTitle
           passphraseHash <- liftIO $ hashPassword registerFormPassphrase
-          void $
-            runDB $
-              insertBy
-                ( User
-                    { userEmailAddress = registerFormEmailAddress,
-                      userPassphraseHash = passphraseHash,
-                      userVerificationKey = Just verificationKey
-                    }
-                )
+          runDB $
+            insert_
+              User
+                { userEmailAddress = registerFormEmailAddress,
+                  userPassphraseHash = passphraseHash,
+                  userVerificationKey = Just verificationKey
+                }
+          sendVerificationEmail registerFormEmailAddress verificationKey
           setCredsRedirect Creds {credsPlugin = salsaAuthPluginName, credsIdent = registerFormEmailAddress, credsExtra = []}
         else do
           addMessageI "is-danger" PassMismatch
           redirect $ AuthR registerR
+
+sendVerificationEmail :: Text -> Text -> Handler ()
+sendVerificationEmail userEmailAddress verificationKey = do
+  shouldSendEmail <- getsYesod appSendEmails
+  if shouldSendEmail
+    then do
+      logInfoN $ "Sending verification email to address: " <> userEmailAddress
+
+      renderUrl <- getUrlRenderParams
+
+      let subject = SES.content "Email Verification"
+
+      let textBody = SES.content $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/auth/email/verification-email.txt") renderUrl
+
+      let htmlBody = SES.content $ LT.toStrict $ renderHtml $ $(hamletFile "templates/auth/email/verification-email.hamlet") renderUrl
+
+      let body =
+            SES.body
+              & SES.bText ?~ textBody
+              & SES.bHTML ?~ htmlBody
+
+      let message = SES.message subject body
+
+      let fromEmail = "no-reply@salsa-parties.today"
+
+      let destination =
+            SES.destination
+              & SES.dBCCAddresses .~ [fromEmail]
+              & SES.dToAddresses .~ [userEmailAddress]
+      let request = SES.sendEmail fromEmail destination message
+
+      logFunc <- askLoggerIO
+      let logger :: AWS.Logger
+          logger awsLevel builder =
+            let ourLevel = case awsLevel of
+                  AWS.Info -> LevelInfo
+                  AWS.Error -> LevelError
+                  AWS.Debug -> LevelDebug
+                  AWS.Trace -> LevelDebug
+             in logFunc defaultLoc "aws-client" ourLevel $ toLogStr builder
+      awsEnv <- liftIO $ AWS.newEnv AWS.Discover
+      response <- AWS.runAWS awsEnv $ AWS.trying AWS._Error $ AWS.send request
+      case (^. SES.sersResponseStatus) <$> response of
+        Right 200 -> do
+          logInfoN $ "Succesfully send verification email to address: " <> userEmailAddress
+          addMessageI "is-success" (ConfirmationEmailSent userEmailAddress)
+        _ -> do
+          logErrorN $ T.unlines ["Failed to send verification email to address: " <> userEmailAddress, T.pack (ppShow response)]
+          addMessage "is-danger" "Failed te send verification email."
+    else logInfoN $ "Not sending verification email (because sendEmail is turned of), to address: " <> userEmailAddress
 
 loginR :: Route Auth
 loginR = PluginR salsaAuthPluginName ["login"]
@@ -265,6 +322,12 @@ postLoginR = do
       case checkPassword loginFormPassphrase userPassphraseHash of
         PasswordCheckSuccess -> setCredsRedirect Creds {credsPlugin = salsaAuthPluginName, credsIdent = loginFormEmailAddress, credsExtra = []}
         PasswordCheckFail -> loginFail
+
+verifyR :: Text -> Text -> Route Auth
+verifyR userEmailAddress verificationKey = PluginR salsaAuthPluginName ["register", userEmailAddress, verificationKey]
+
+getVerifyR :: Text -> Text -> AuthHandler App Html
+getVerifyR userEmailAddress verificationKey = undefined
 
 getFaviconR :: Handler TypedContent
 getFaviconR = redirect $ StaticR favicon_ico

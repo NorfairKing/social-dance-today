@@ -1,0 +1,19 @@
+<html>
+  <head>
+  <body>
+    <div
+      class="container-fluid">
+      <h1> Salsa Party Registrations
+      <p> Please verify your email address by clicking the link below.
+      <p>
+        <a
+          class="button is-primary"
+          href=@{AuthR $ verifyR userEmailAddress verificationKey}>
+          Verify Email
+      <p> We hope to see you soon.
+      <p>
+        You got this email because you tried to register at 
+        <a href=@{HomeR}>
+          Salsa Parties Today
+        .
+

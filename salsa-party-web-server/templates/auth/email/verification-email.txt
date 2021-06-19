@@ -1,0 +1,8 @@
+Salsa Party Registrations
+
+To verify your email address, please visit the following link:
+@{AuthR $ verifyR userEmailAddress verificationKey}
+
+We hope to see you soon.
+
+You got this email because you tried to register at @{HomeR}.
