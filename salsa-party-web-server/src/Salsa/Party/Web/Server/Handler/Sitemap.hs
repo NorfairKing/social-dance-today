@@ -15,7 +15,6 @@ getSitemapR :: Handler TypedContent
 getSitemapR = do
   acqOrganisers <- runDB $ selectSourceRes [] [Asc OrganiserId]
   acqParties <- runDB $ selectSourceRes [] [Asc PartyId]
-  now <- liftIO getCurrentTime
 
   sitemap $ do
     yield
