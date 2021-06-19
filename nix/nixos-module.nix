@@ -154,7 +154,15 @@ in
       web-server-host =
         with cfg.web-server;
 
-        optionalAttrs (enable && hosts != [ ]) {
+        let redirectHost = host: {
+          "www.${host}" = {
+            enableACME = true;
+            forceSSL = true;
+            globalRedirect = host;
+          };
+        };
+        in
+        optionalAttrs (enable && hosts != [ ]) ({
           "${head hosts}" =
             {
               enableACME = true;
@@ -162,16 +170,14 @@ in
               locations."/" = {
                 proxyPass = "http://localhost:${builtins.toString port}";
               };
-              serverAliases =
-                let andWWWHost = host: [ host "www.${host}" ];
-                in [ "www.${head hosts}" ] ++ concatMap andWWWHost (tail hosts);
+              serverAliases = tail hosts;
             };
-        };
+        } // mergeListRecursively (builtins.map redirectHost hosts));
       end-to-end-test-service =
         optionalAttrs (cfg.end-to-end-test.enable or false) {
           "salsa-party-end-to-end-test-${envname}" = {
             description = "Salsa Party End to end tests for ${envname} Service";
-            wantedBy = [ "multi-user.target" ];
+            after = [ "salsa-party-web-server-${envname}" ];
             environment =
               {
                 "SALSA_PARTY_SERVER_URL" = "${cfg.end-to-end-test.url}";
