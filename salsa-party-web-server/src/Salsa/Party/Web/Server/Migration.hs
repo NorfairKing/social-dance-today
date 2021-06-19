@@ -7,6 +7,7 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import qualified Data.Text as T
+import Data.Time
 import Database.Persist.Sql
 import Salsa.Party.Web.Server.DB
 import System.Exit
@@ -16,6 +17,11 @@ completeServerMigration :: (MonadUnliftIO m, MonadLogger m) => Bool -> SqlPersis
 completeServerMigration quiet = do
   logInfoN "Running automatic migrations"
   (if quiet then void . runMigrationQuiet else runMigration) automaticMigrations `catch` (\(PersistError t) -> liftIO $ die $ T.unpack t)
+  setUpPlaces
+  setCreationTimes
+
+setUpPlaces :: (MonadIO m, MonadLogger m) => SqlPersistT m ()
+setUpPlaces = do
   logInfoN "Setting up standard places in database"
   forM_ locations $ \location@Place {..} -> do
     mPlace <- getBy (UniquePlaceQuery placeQuery)
@@ -31,3 +37,13 @@ locations =
     Place {placeQuery = "New York", placeLat = 43.1561681, placeLon = -75.8449946},
     Place {placeQuery = "Sydney", placeLat = -33.8888621, placeLon = 151.204897861}
   ]
+
+setCreationTimes :: (MonadIO m, MonadLogger m) => SqlPersistT m ()
+setCreationTimes = do
+  now <- liftIO getCurrentTime
+  userIds <- selectKeysList [UserCreated ==. Nothing] [Asc UserId]
+  forM_ userIds $ \userId -> update userId [UserCreated =. Just now]
+  organiserIds <- selectKeysList [OrganiserCreated ==. Nothing] [Asc OrganiserId]
+  forM_ organiserIds $ \organiserId -> update organiserId [OrganiserCreated =. Just now]
+  partyIds <- selectKeysList [PartyCreated ==. Nothing] [Asc PartyId]
+  forM_ partyIds $ \partyId -> update partyId [PartyCreated =. Just now]
