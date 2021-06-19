@@ -10,6 +10,7 @@ import Salsa.Party.Web.Server.Handler.Import
 getAccountOverviewR :: Handler Html
 getAccountOverviewR = do
   Entity _ User {..} <- requireAuth
+  requireVerification <- getsYesod appSendEmails
   token <- genToken
   withNavBar $(widgetFile "account/overview")
 

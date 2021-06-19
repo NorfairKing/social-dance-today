@@ -5,8 +5,33 @@
     <p .content>
       Email Address: #{userEmailAddress}
 
+$if requireVerification
+  $maybe verificationKey <- userVerificationKey
+    <section .section>
+      <div .container>
+        <h2 .title .is-4>
+          Account Verification
 
-    <h2 .title .is-3>
+        <p .content>
+          Your account is not verified yet.
+
+
+        <form .form
+           method=post
+           action=@{AuthR resendVerificationEmailR}>
+          ^{token}
+          <div .field>
+            <div .control>
+              <button
+                .button .is-light
+                type=submit>
+                Resend Verification Email
+
+
+<section .section>
+  <div .container>
+
+    <h2 .title .is-4>
       Danger Zone
 
     <form .form

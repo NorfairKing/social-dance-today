@@ -179,6 +179,7 @@ salsaAuthPlugin = AuthPlugin salsaAuthPluginName dispatch salsaLoginHandler
     dispatch "GET" ["register"] = getRegisterR >>= sendResponse
     dispatch "POST" ["register"] = postRegisterR
     dispatch "POST" ["login"] = postLoginR
+    dispatch "POST" ["resend-verification-email"] = postResendVerificationEmailR
     dispatch "GET" ["verify", userEmailAddress, verificationKey] = getVerifyR userEmailAddress verificationKey >>= sendResponse
     dispatch _ _ = notFound
 
@@ -238,6 +239,52 @@ postRegisterR = liftHandler $ do
           addMessageI "is-danger" PassMismatch
           redirect $ AuthR registerR
 
+loginR :: Route Auth
+loginR = PluginR salsaAuthPluginName ["login"]
+
+salsaLoginHandler :: (Route Auth -> Route App) -> Widget
+salsaLoginHandler _toParentRoute = do
+  messages <- getMessages
+  token <- genToken
+  setTitle "Salsa Parties Today: Login"
+  setDescription "Log into your account at Salsa Parties Today"
+  $(widgetFile "auth/login")
+
+data LoginForm = LoginForm
+  { loginFormEmailAddress :: Text,
+    loginFormPassphrase :: Password
+  }
+  deriving (Show, Generic)
+
+loginForm :: FormInput Handler LoginForm
+loginForm =
+  LoginForm
+    <$> ireq emailField "email-address"
+    <*> (mkPassword <$> ireq passwordField "passphrase")
+
+postLoginR :: AuthHandler App TypedContent
+postLoginR = do
+  LoginForm {..} <- liftHandler $ runInputPost loginForm
+  mUser <- liftHandler $ runDB $ getBy (UniqueUserEmailAddress loginFormEmailAddress)
+  let loginFail = loginErrorMessageI LoginR InvalidLogin
+  case mUser of
+    Nothing -> loginFail
+    Just (Entity _ User {..}) ->
+      case checkPassword loginFormPassphrase userPassphraseHash of
+        PasswordCheckSuccess -> setCredsRedirect Creds {credsPlugin = salsaAuthPluginName, credsIdent = loginFormEmailAddress, credsExtra = []}
+        PasswordCheckFail -> loginFail
+
+resendVerificationEmailR :: Route Auth
+resendVerificationEmailR = PluginR salsaAuthPluginName ["resend-verification-email"]
+
+postResendVerificationEmailR :: AuthHandler App TypedContent
+postResendVerificationEmailR = do
+  Entity _ User {..} <- requireAuth
+  case userVerificationKey of
+    Nothing -> addMessage "" "Account is already verified."
+    Just verificationKey -> liftHandler $ sendVerificationEmail userEmailAddress verificationKey
+  redirect $ AccountR AccountOverviewR
+
 sendVerificationEmail :: Text -> Text -> Handler ()
 sendVerificationEmail userEmailAddress verificationKey = do
   shouldSendEmail <- getsYesod appSendEmails
@@ -278,7 +325,11 @@ sendVerificationEmail userEmailAddress verificationKey = do
                   AWS.Trace -> LevelDebug
              in logFunc defaultLoc "aws-client" ourLevel $ toLogStr builder
       awsEnv <- liftIO $ AWS.newEnv AWS.Discover
-      response <- AWS.runAWS awsEnv $ AWS.trying AWS._Error $ AWS.send request
+      let ourAwsEnv =
+            awsEnv
+              & AWS.envRegion .~ AWS.Ireland
+              & AWS.envLogger .~ logger
+      response <- AWS.runAWS ourAwsEnv $ AWS.trying AWS._Error $ AWS.send request
       case (^. SES.sersResponseStatus) <$> response of
         Right 200 -> do
           logInfoN $ "Succesfully send verification email to address: " <> userEmailAddress
@@ -287,41 +338,6 @@ sendVerificationEmail userEmailAddress verificationKey = do
           logErrorN $ T.unlines ["Failed to send verification email to address: " <> userEmailAddress, T.pack (ppShow response)]
           addMessage "is-danger" "Failed te send verification email."
     else logInfoN $ "Not sending verification email (because sendEmail is turned of), to address: " <> userEmailAddress
-
-loginR :: Route Auth
-loginR = PluginR salsaAuthPluginName ["login"]
-
-salsaLoginHandler :: (Route Auth -> Route App) -> Widget
-salsaLoginHandler _toParentRoute = do
-  messages <- getMessages
-  token <- genToken
-  setTitle "Salsa Parties Today: Login"
-  setDescription "Log into your account at Salsa Parties Today"
-  $(widgetFile "auth/login")
-
-data LoginForm = LoginForm
-  { loginFormEmailAddress :: Text,
-    loginFormPassphrase :: Password
-  }
-  deriving (Show, Generic)
-
-loginForm :: FormInput Handler LoginForm
-loginForm =
-  LoginForm
-    <$> ireq emailField "email-address"
-    <*> (mkPassword <$> ireq passwordField "passphrase")
-
-postLoginR :: AuthHandler App TypedContent
-postLoginR = do
-  LoginForm {..} <- liftHandler $ runInputPost loginForm
-  mUser <- liftHandler $ runDB $ getBy (UniqueUserEmailAddress loginFormEmailAddress)
-  let loginFail = loginErrorMessageI LoginR InvalidLogin
-  case mUser of
-    Nothing -> loginFail
-    Just (Entity _ User {..}) ->
-      case checkPassword loginFormPassphrase userPassphraseHash of
-        PasswordCheckSuccess -> setCredsRedirect Creds {credsPlugin = salsaAuthPluginName, credsIdent = loginFormEmailAddress, credsExtra = []}
-        PasswordCheckFail -> loginFail
 
 verifyR :: Text -> Text -> Route Auth
 verifyR userEmailAddress verificationKey = PluginR salsaAuthPluginName ["register", userEmailAddress, verificationKey]
