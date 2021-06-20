@@ -4,19 +4,13 @@
 
 module Google.Geocoding where
 
-import Control.Concurrent.TokenLimiter
 import Control.Exception
 import Data.Aeson as JSON
-import Data.Aeson.Types as JSON
 import Data.Fixed
-import Data.List
-import Data.Ord
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
 import GHC.Generics (Generic)
 import Network.HTTP.Client as HTTP
-import System.IO.Unsafe
-import Text.Read
 
 -- From https://nominatim.org/release-docs/develop/api/Search/#search-queries
 --

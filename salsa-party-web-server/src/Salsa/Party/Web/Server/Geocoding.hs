@@ -1,7 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Salsa.Party.Web.Server.Geocoding where
 
+import Control.Concurrent.TokenLimiter
+import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Data.Maybe
@@ -21,28 +24,53 @@ lookupPlace query = do
       pure pe
     Nothing -> do
       logDebugNS "geocoding" $ "Did not find place in cache, gecoding query: " <> query
-      man <- getsYesod appHTTPManager
-      let req = OSM.GeocodingRequest {OSM.geocodingRequestQuery = query}
-      resp <- liftIO $ OSM.makeGeocodingRequest man req
-      case listToMaybe $ OSM.geocodingResponsePlaces resp of
+      mOSMRateLimiter <- getsYesod appOSMRateLimiter
+      mGoogleAPIKey <- getsYesod appGoogleAPIKey
+      mCoordinates <- case (mOSMRateLimiter, mGoogleAPIKey) of
+        (Nothing, Nothing) -> invalidArgs ["No geocoding service configured, please contact the site administrators."]
+        (Just osmRateLimiter, Nothing) -> do
+          liftIO $ waitDebit OSM.limitConfig osmRateLimiter 1
+          geocodeviaOSM query
+        (Nothing, Just googleAPIKey) -> do
+          geocodeViaGoogle googleAPIKey query
+        (Just osmRateLimiter, Just googleAPIKey) -> do
+          debitSucceeded <- liftIO $ tryDebit OSM.limitConfig osmRateLimiter 1
+          mCoords <-
+            if debitSucceeded
+              then geocodeviaOSM query
+              else pure Nothing
+          case mCoords of
+            Just coords -> pure $ Just coords
+            Nothing -> geocodeViaGoogle googleAPIKey query
+
+      case mCoordinates of
         Nothing -> invalidArgs ["Place not found."]
-        Just p ->
+        Just Coordinates {..} ->
           runDB $
             upsertBy
               (UniquePlaceQuery query)
               ( Place
                   { placeQuery = query,
-                    placeLat = OSM.placeLat p,
-                    placeLon = OSM.placeLon p
+                    placeLat = coordinatesLat,
+                    placeLon = coordinatesLon
                   }
               )
-              [PlaceLat =. OSM.placeLat p, PlaceLon =. OSM.placeLon p]
+              [ PlaceLat =. coordinatesLat,
+                PlaceLon =. coordinatesLon
+              ]
 
-geocodeViaGoogle :: Text -> Handler Coordinates
-geocodeViaGoogle query = do
+geocodeviaOSM :: Text -> Handler (Maybe Coordinates)
+geocodeviaOSM query = do
   man <- getsYesod appHTTPManager
-  let req = Google.GeocodingRequest {Google.geocodingRequestQuery = query}
+  let req = OSM.GeocodingRequest {OSM.geocodingRequestQuery = query}
+  resp <- liftIO $ OSM.makeGeocodingRequest man req
+  forM (listToMaybe $ OSM.geocodingResponsePlaces resp) $ \p ->
+    pure Coordinates {coordinatesLat = OSM.placeLat p, coordinatesLon = OSM.placeLon p}
+
+geocodeViaGoogle :: Text -> Text -> Handler (Maybe Coordinates)
+geocodeViaGoogle key query = do
+  man <- getsYesod appHTTPManager
+  let req = Google.GeocodingRequest {Google.geocodingRequestAddress = query, Google.geocodingRequestKey = key}
   resp <- liftIO $ Google.makeGeocodingRequest man req
-  case listToMaybe $ google . geocodingResponseAddresses resp of
-    Nothing -> invalidArgs ["Place not found."]
-    Just a -> pure a
+  forM (listToMaybe $ Google.geocodingResponseAddresses resp) $ \a ->
+    pure Coordinates {coordinatesLat = Google.addressLat a, coordinatesLon = Google.addressLon a}

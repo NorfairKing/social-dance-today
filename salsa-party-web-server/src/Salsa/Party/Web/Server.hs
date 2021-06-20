@@ -2,6 +2,7 @@
 
 module Salsa.Party.Web.Server where
 
+import Control.Concurrent.TokenLimiter
 import Control.Monad
 import Control.Monad.Logger
 import qualified Data.Text as T
@@ -10,6 +11,7 @@ import Lens.Micro
 import Network.HTTP.Client.TLS as HTTP
 import qualified Network.Wai.Handler.Warp as Warp
 import Network.Wai.Middleware.RequestLogger
+import qualified OpenStreetMaps.Geocoding as OSM
 import Path
 import Path.IO
 import Salsa.Party.Web.Server.Application ()
@@ -35,6 +37,9 @@ runSalsaPartyWebServer Settings {..} = do
       runSqlPool (completeServerMigration False) pool
       sessionKeyFile <- resolveFile' "client_session_key.aes"
       man <- HTTP.newTlsManager
+
+      rateLimiter <- liftIO $ newRateLimiter OSM.limitConfig
+
       let app =
             App
               { appLogLevel = settingLogLevel,
@@ -44,7 +49,12 @@ runSalsaPartyWebServer Settings {..} = do
                 appSessionKeyFile = sessionKeyFile,
                 appSendEmails = settingSendEmails,
                 appAdmin = settingAdmin,
-                appGoogleAPIKey = settingGoogleAPIKey,
+                appOSMRateLimiter = do
+                  guard settingEnableOSMGeocoding
+                  pure rateLimiter,
+                appGoogleAPIKey = do
+                  guard settingEnableGoogleGeocoding
+                  settingGoogleAPIKey,
                 appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
                 appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
               }

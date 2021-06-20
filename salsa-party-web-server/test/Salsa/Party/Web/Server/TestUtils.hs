@@ -51,6 +51,7 @@ serverSetupFunc man = do
         appSessionKeyFile = sessionKeyFile,
         appSendEmails = False,
         appAdmin = Just adminEmail,
+        appOSMRateLimiter = Nothing,
         appGoogleAPIKey = Nothing,
         appGoogleAnalyticsTracking = Nothing,
         appGoogleSearchConsoleVerification = Nothing

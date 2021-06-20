@@ -7,6 +7,7 @@
 module Salsa.Party.Web.Server.OptParse where
 
 import Control.Applicative
+import Control.Monad
 import Control.Monad.Logger
 import Data.Maybe
 import Data.Text (Text)
@@ -18,6 +19,7 @@ import Options.Applicative as OptParse
 import qualified Options.Applicative.Help as OptParse (string)
 import Path
 import Path.IO
+import System.Exit
 import YamlParse.Applicative as YamlParse
 
 getSettings :: IO Settings
@@ -33,6 +35,8 @@ data Settings = Settings
     settingDbFile :: !(Path Abs File),
     settingSendEmails :: !Bool,
     settingAdmin :: !(Maybe Text),
+    settingEnableOSMGeocoding :: !Bool,
+    settingEnableGoogleGeocoding :: !Bool,
     settingGoogleAPIKey :: !(Maybe Text),
     settingGoogleAnalyticsTracking :: !(Maybe Text),
     settingGoogleSearchConsoleVerification :: !(Maybe Text)
@@ -48,6 +52,10 @@ combineToSettings Flags {..} Environment {..} mConf = do
     Just dbf -> resolveFile' dbf
   let settingSendEmails = fromMaybe False $ flagSendEmails <|> envSendEmails <|> mc confSendEmails
   let settingAdmin = flagAdmin <|> envAdmin <|> mc confAdmin
+  let settingEnableOSMGeocoding = fromMaybe True $ flagEnableOSMGeocoding <|> envEnableOSMGeocoding <|> mc confEnableOSMGeocoding
+  let settingEnableGoogleGeocoding = fromMaybe True $ flagEnableGoogleGeocoding <|> envEnableGoogleGeocoding <|> mc confEnableGoogleGeocoding
+  when (not (settingEnableOSMGeocoding || settingEnableGoogleGeocoding)) $
+    die "The service needs at least one Geocoding service"
   let settingGoogleAPIKey = flagGoogleAPIKey <|> envGoogleAPIKey <|> mc confGoogleAPIKey
   let settingGoogleAnalyticsTracking = flagGoogleAnalyticsTracking <|> envGoogleAnalyticsTracking <|> mc confGoogleAnalyticsTracking
   let settingGoogleSearchConsoleVerification = flagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification
@@ -62,6 +70,8 @@ data Configuration = Configuration
     confDbFile :: !(Maybe FilePath),
     confSendEmails :: !(Maybe Bool),
     confAdmin :: !(Maybe Text),
+    confEnableOSMGeocoding :: !(Maybe Bool),
+    confEnableGoogleGeocoding :: !(Maybe Bool),
     confGoogleAPIKey :: !(Maybe Text),
     confGoogleAnalyticsTracking :: !(Maybe Text),
     confGoogleSearchConsoleVerification :: !(Maybe Text)
@@ -80,6 +90,8 @@ instance YamlSchema Configuration where
         <*> optionalField "database" "The path to the database file"
         <*> optionalField "send-emails" "Whether to send emails and require email verification"
         <*> optionalField "admin" "The email address of the admin user"
+        <*> optionalField "enable-osm-geocoding" "Enable OpenStreetMaps Geocoding"
+        <*> optionalField "enable-google-geocoding" "Enable Google Geocoding"
         <*> optionalField "google-api-key" "Google API key"
         <*> optionalField "google-analytics-tracking" "Google analytics tracking code"
         <*> optionalField "google-search-console-verification" "Google search console html element verification code"
@@ -104,6 +116,8 @@ data Environment = Environment
     envDbFile :: !(Maybe FilePath),
     envSendEmails :: !(Maybe Bool),
     envAdmin :: !(Maybe Text),
+    envEnableOSMGeocoding :: !(Maybe Bool),
+    envEnableGoogleGeocoding :: !(Maybe Bool),
     envGoogleAPIKey :: !(Maybe Text),
     envGoogleAnalyticsTracking :: !(Maybe Text),
     envGoogleSearchConsoleVerification :: !(Maybe Text)
@@ -124,6 +138,8 @@ environmentParser =
       <*> Env.var (fmap Just . Env.auto) "DATABASE" (mE <> Env.help "The path to the database file")
       <*> Env.var (fmap Just . Env.auto) "SEND_EMAILS" (mE <> Env.help "Whether to send emails and require email verification")
       <*> Env.var (fmap Just . Env.str) "ADMIN" (mE <> Env.help "The email address of the admin user")
+      <*> Env.var (fmap Just . Env.auto) "ENABLE_OSM_GEOCODING" (mE <> Env.help "Enable OpenStreetMaps Geocoding")
+      <*> Env.var (fmap Just . Env.auto) "ENABLE_GOOGLE_GEOCODING" (mE <> Env.help "Enable Google Geocoding")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_API_KEY" (mE <> Env.help "Google api key")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_ANALYTICS_TRACKING" (mE <> Env.help "Google analytics tracking code")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (mE <> Env.help "Google search console html element verification code")
@@ -161,6 +177,8 @@ data Flags = Flags
     flagDbFile :: !(Maybe FilePath),
     flagSendEmails :: !(Maybe Bool),
     flagAdmin :: !(Maybe Text),
+    flagEnableOSMGeocoding :: !(Maybe Bool),
+    flagEnableGoogleGeocoding :: !(Maybe Bool),
     flagGoogleAPIKey :: !(Maybe Text),
     flagGoogleAnalyticsTracking :: !(Maybe Text),
     flagGoogleSearchConsoleVerification :: !(Maybe Text)
@@ -232,6 +250,38 @@ parseFlags =
                 help "Email address of the admin user"
               ]
           )
+      )
+    <*> optional
+      ( flag'
+          True
+          ( mconcat
+              [ long "enable-osm-geocoding",
+                help "Enable OpenStreetMaps Geocoding"
+              ]
+          )
+          <|> flag'
+            False
+            ( mconcat
+                [ long "disable-osm-geocoding",
+                  help "Disable OpenStreetMaps Geocoding"
+                ]
+            )
+      )
+    <*> optional
+      ( flag'
+          True
+          ( mconcat
+              [ long "enable-google-geocoding",
+                help "Enable Google Geocoding"
+              ]
+          )
+          <|> flag'
+            False
+            ( mconcat
+                [ long "disable-google-geocoding",
+                  help "Disable Google Geocoding"
+                ]
+            )
       )
     <*> optional
       ( strOption

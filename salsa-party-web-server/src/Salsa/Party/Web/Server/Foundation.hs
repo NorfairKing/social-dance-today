@@ -14,6 +14,7 @@
 
 module Salsa.Party.Web.Server.Foundation where
 
+import Control.Concurrent.TokenLimiter
 import Control.Monad
 import Control.Monad.Logger
 import Data.FileEmbed
@@ -59,9 +60,10 @@ data App = App
     appSessionKeyFile :: !(Path Abs File),
     appSendEmails :: !Bool,
     appAdmin :: !(Maybe Text),
-    appGoogleAPIKey :: !(Maybe Text),
-    appGoogleAnalyticsTracking :: !(Maybe Text),
-    appGoogleSearchConsoleVerification :: !(Maybe Text)
+    appOSMRateLimiter :: !(Maybe RateLimiter), -- Nothing means disabled.
+    appGoogleAPIKey :: !(Maybe Text), -- Nothing means disabled.
+    appGoogleAnalyticsTracking :: !(Maybe Text), -- Nothing means disabled.
+    appGoogleSearchConsoleVerification :: !(Maybe Text) -- Nothing means disabled.
   }
 
 mkYesodData "App" $(makeRelativeToProject "routes.txt" >>= parseRoutesFile)

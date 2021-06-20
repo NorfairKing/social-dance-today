@@ -15,7 +15,6 @@ import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
 import GHC.Generics (Generic)
 import Network.HTTP.Client as HTTP
-import System.IO.Unsafe
 import Text.Read
 
 -- From https://nominatim.org/release-docs/develop/api/Search/#search-queries
@@ -73,12 +72,6 @@ limitConfig =
       bucketRefillTokensPerSecond = 1
     }
 
-{-# NOINLINE rateLimiter #-}
-rateLimiter :: RateLimiter
-rateLimiter =
-  unsafePerformIO $
-    newRateLimiter limitConfig
-
 makeGeocodingRequest :: HTTP.Manager -> GeocodingRequest -> IO GeocodingResponse
 makeGeocodingRequest manager GeocodingRequest {..} = do
   requestPrototype <- parseRequest "https://nominatim.openstreetmap.org/search"
@@ -88,7 +81,6 @@ makeGeocodingRequest manager GeocodingRequest {..} = do
           requestPrototype
             { requestHeaders = [("User-Agent", "salsa-parties.today")]
             }
-  waitDebit limitConfig rateLimiter 1
   response <- httpLbs request manager
   case eitherDecode' (responseBody response) of
     -- We throw this exception because it should not happen and we can't fix it.
