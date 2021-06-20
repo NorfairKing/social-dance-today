@@ -6,6 +6,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Data.Maybe
 import Data.Text (Text)
+import qualified Google.Geocoding as Google
 import qualified OpenStreetMaps.Geocoding as OSM
 import Salsa.Party.Web.Server.DB
 import Salsa.Party.Web.Server.Foundation
@@ -36,3 +37,12 @@ lookupPlace query = do
                   }
               )
               [PlaceLat =. OSM.placeLat p, PlaceLon =. OSM.placeLon p]
+
+geocodeViaGoogle :: Text -> Handler Coordinates
+geocodeViaGoogle query = do
+  man <- getsYesod appHTTPManager
+  let req = Google.GeocodingRequest {Google.geocodingRequestQuery = query}
+  resp <- liftIO $ Google.makeGeocodingRequest man req
+  case listToMaybe $ google . geocodingResponseAddresses resp of
+    Nothing -> invalidArgs ["Place not found."]
+    Just a -> pure a
