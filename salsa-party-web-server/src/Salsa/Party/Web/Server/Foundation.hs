@@ -84,6 +84,10 @@ instance Yesod App where
 
   shouldLogIO app _ ll = pure $ ll >= appLogLevel app
 
+  maximumContentLengthIO _ route = pure $ case route of
+    Just (AccountR AccountSubmitPartyR) -> Nothing -- No limit on the images.
+    _ -> Just $ 2 * 1024 * 1024 -- 2 megabytes
+
   authRoute _ = Just $ AuthR LoginR
 
   errorHandler NotFound = fmap toTypedContent $
