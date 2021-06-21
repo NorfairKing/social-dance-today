@@ -30,6 +30,8 @@ pkgs.nixosTest (
           web-server = {
             enable = true;
             inherit port;
+            enable-osm-geocoding = false;
+            enable-google-geocoding = false;
           };
         };
       };

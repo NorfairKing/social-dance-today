@@ -53,6 +53,18 @@ in
                     default = null;
                     description = "Whether to require email verifications and send emails";
                   };
+                  enable-osm-geocoding = mkOption {
+                    type = types.nullOr types.bool;
+                    example = true;
+                    default = null;
+                    description = "Whether to enable OpenStreetMaps-based geocoding";
+                  };
+                  enable-google-geocoding = mkOption {
+                    type = types.nullOr types.bool;
+                    example = true;
+                    default = null;
+                    description = "Whether to enable Google-based geocoding";
+                  };
                   google-api-key = mkOption {
                     type = types.nullOr types.str;
                     example = "XXXXXXXXXXXXXXXXXXXXXXXXX-XXXXXXXXXXXXX";
@@ -111,6 +123,8 @@ in
           (nullOrOption "port" port)
           (nullOrOption "admin" admin)
           (nullOrOption "send-emails" send-emails)
+          (nullOrOption "enable-osm-geocoding" enable-osm-geocoding)
+          (nullOrOption "enable-google-geocoding" enable-google-geocoding)
           (nullOrOption "google-api-key" google-api-key)
           (nullOrOption "google-analytics-tracking" google-analytics-tracking)
           (nullOrOption "google-search-console-verification" google-search-console-verification)

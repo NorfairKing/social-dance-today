@@ -7,7 +7,6 @@
 module Salsa.Party.Web.Server.OptParse where
 
 import Control.Applicative
-import Control.Monad
 import Control.Monad.Logger
 import Data.Maybe
 import Data.Text (Text)
@@ -19,7 +18,6 @@ import Options.Applicative as OptParse
 import qualified Options.Applicative.Help as OptParse (string)
 import Path
 import Path.IO
-import System.Exit
 import YamlParse.Applicative as YamlParse
 
 getSettings :: IO Settings
@@ -54,8 +52,6 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingAdmin = flagAdmin <|> envAdmin <|> mc confAdmin
   let settingEnableOSMGeocoding = fromMaybe True $ flagEnableOSMGeocoding <|> envEnableOSMGeocoding <|> mc confEnableOSMGeocoding
   let settingEnableGoogleGeocoding = fromMaybe True $ flagEnableGoogleGeocoding <|> envEnableGoogleGeocoding <|> mc confEnableGoogleGeocoding
-  when (not (settingEnableOSMGeocoding || settingEnableGoogleGeocoding)) $
-    die "The service needs at least one Geocoding service"
   let settingGoogleAPIKey = flagGoogleAPIKey <|> envGoogleAPIKey <|> mc confGoogleAPIKey
   let settingGoogleAnalyticsTracking = flagGoogleAnalyticsTracking <|> envGoogleAnalyticsTracking <|> mc confGoogleAnalyticsTracking
   let settingGoogleSearchConsoleVerification = flagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification
