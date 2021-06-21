@@ -9,6 +9,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Data.Maybe
 import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Google.Geocoding as Google
 import qualified OpenStreetMaps.Geocoding as OSM
 import Salsa.Party.Web.Server.DB
@@ -24,8 +25,10 @@ lookupPlace query = do
       pure pe
     Nothing -> do
       logDebugNS "geocoding" $ "Did not find place in cache, gecoding query: " <> query
+
       mOSMRateLimiter <- getsYesod appOSMRateLimiter
       mGoogleAPIKey <- getsYesod appGoogleAPIKey
+
       mCoordinates <- case (mOSMRateLimiter, mGoogleAPIKey) of
         (Nothing, Nothing) -> invalidArgs ["No geocoding service configured, please contact the site administrators."]
         (Just osmRateLimiter, Nothing) -> do
@@ -45,7 +48,8 @@ lookupPlace query = do
 
       case mCoordinates of
         Nothing -> invalidArgs ["Place not found."]
-        Just Coordinates {..} ->
+        Just coordinates@Coordinates {..} -> do
+          logInfoNS "geocoding" $ "Geocoded " <> query <> " to " <> T.pack (show coordinates)
           runDB $
             upsertBy
               (UniquePlaceQuery query)
@@ -61,6 +65,7 @@ lookupPlace query = do
 
 geocodeviaOSM :: Text -> Handler (Maybe Coordinates)
 geocodeviaOSM query = do
+  logDebugNS "geocoding" $ "Geocoding using OpenStreetMaps: " <> query
   man <- getsYesod appHTTPManager
   let req = OSM.GeocodingRequest {OSM.geocodingRequestQuery = query}
   resp <- liftIO $ OSM.makeGeocodingRequest man req
@@ -69,6 +74,7 @@ geocodeviaOSM query = do
 
 geocodeViaGoogle :: Text -> Text -> Handler (Maybe Coordinates)
 geocodeViaGoogle key query = do
+  logDebugNS "geocoding" $ "Geocoding using Google: " <> query
   man <- getsYesod appHTTPManager
   let req = Google.GeocodingRequest {Google.geocodingRequestAddress = query, Google.geocodingRequestKey = key}
   resp <- liftIO $ Google.makeGeocodingRequest man req
