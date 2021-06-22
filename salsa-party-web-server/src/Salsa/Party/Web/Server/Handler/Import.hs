@@ -18,6 +18,7 @@ import GHC.Generics as X (Generic)
 import Network.HTTP.Date as X
 import Salsa.Party.Web.Server.DB as X
 import Salsa.Party.Web.Server.Foundation as X
+import Salsa.Party.Web.Server.Static as X
 import Salsa.Party.Web.Server.Widget as X
 import Text.Show.Pretty as X (pPrint, ppShow)
 import Text.Time.Pretty as X

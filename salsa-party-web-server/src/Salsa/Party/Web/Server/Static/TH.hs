@@ -21,6 +21,7 @@ import Salsa.Party.Web.Server.Poster
 import System.Directory
 import System.Exit
 import System.FilePath
+import System.Process
 import Yesod.EmbeddedStatic
 import Yesod.EmbeddedStatic.Remote
 import Yesod.EmbeddedStatic.Types
@@ -33,7 +34,6 @@ mkStatic = do
     development
     "salsaPartyWebServerStatic"
     [ remoteStatic "bulma.css" "https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css",
-      remoteStatic "favicon.ico" "https://cs-syd.eu/logo/res/favicon.ico",
       embedDir "assets",
       locationPicturesGenerator
     ]

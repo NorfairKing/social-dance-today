@@ -1,5 +1,7 @@
 <nav .navbar role="navigation" aria-label="main navigation">
   <div .navbar-brand>
+    <a .navbar-item href=@{HomeR}>
+      <img src=@{StaticR logo_svg} width=50 height=60>
     <a .navbar-burger role="button" aria-label="menu" aria-expanded="false" data-target="navMenu">
       <span aria-hidden="true">
       <span aria-hidden="true">
@@ -9,10 +11,9 @@
 
   <div #navMenu .navbar-menu>
     <div .navbar-start>
-      $if currentRoute /= Just HomeR
-        <a .navbar-item href=@{HomeR}>
-          <strong>
-            Find a party
+      <a .navbar-item href=@{HomeR}>
+        <strong>
+          Find a party
       $maybe _ <- mAuth
         <a .navbar-item href=@{AccountR AccountOverviewR}>
           Account
