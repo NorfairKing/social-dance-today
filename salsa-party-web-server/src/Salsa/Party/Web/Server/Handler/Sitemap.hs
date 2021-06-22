@@ -74,7 +74,7 @@ getSitemapR = do
       ( \(Entity _ Poster {..}) ->
           SitemapUrl
             { sitemapLoc = PosterR posterKey,
-              sitemapLastMod = posterCreated <|> posterModified,
+              sitemapLastMod = Just $ fromMaybe posterCreated posterModified,
               sitemapChangeFreq = Nothing,
               sitemapPriority = Just 0.2
             }

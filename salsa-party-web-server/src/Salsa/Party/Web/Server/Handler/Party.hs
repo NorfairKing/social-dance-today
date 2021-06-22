@@ -156,7 +156,7 @@ submitPartyPage mPartyId mResult = do
                           posterKey = casKey,
                           posterImage = convertedImageBlob,
                           posterImageType = convertedImageType,
-                          posterCreated = Just now,
+                          posterCreated = now,
                           posterModified = Nothing
                         }
                     )
@@ -282,5 +282,5 @@ getPosterR key = do
       -- Cache forever because of CAS
       addHeader "Cache-Control" "max-age=31536000, public, immutable"
       addHeader "Content-Disposition" "inline"
-      addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe now $ posterCreated <|> posterModified
+      setEtag $ toPathPiece key
       respond (TE.encodeUtf8 posterImageType) posterImage
