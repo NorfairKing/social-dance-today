@@ -76,7 +76,6 @@ library
     , persistent-template
     , pretty-relative-time
     , pretty-show
-    , process
     , random
     , resourcet
     , shakespeare

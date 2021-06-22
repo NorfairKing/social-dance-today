@@ -171,7 +171,6 @@ withNavBar = withFormFailureNavBar []
 
 withFormFailureNavBar :: [Text] -> Widget -> Handler Html
 withFormFailureNavBar errorMessages body = do
-  currentRoute <- getCurrentRoute
   mAuth <- maybeAuth
   mAdmin <- getsYesod appAdmin
   let isAdmin = case mAuth of

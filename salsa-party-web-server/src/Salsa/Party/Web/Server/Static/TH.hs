@@ -21,7 +21,6 @@ import Salsa.Party.Web.Server.Poster
 import System.Directory
 import System.Exit
 import System.FilePath
-import System.Process
 import Yesod.EmbeddedStatic
 import Yesod.EmbeddedStatic.Remote
 import Yesod.EmbeddedStatic.Types
