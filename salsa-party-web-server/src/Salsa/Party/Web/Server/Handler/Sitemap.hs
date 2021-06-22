@@ -32,13 +32,6 @@ getSitemapR = do
           sitemapChangeFreq = Nothing,
           sitemapPriority = Just 0.8
         }
-    yield
-      SitemapUrl
-        { sitemapLoc = QueryR,
-          sitemapLastMod = Nothing,
-          sitemapChangeFreq = Nothing,
-          sitemapPriority = Just 0.7
-        }
     forM_ locations $ \location ->
       yield
         SitemapUrl

@@ -1,7 +1,7 @@
 <section .section .is-large>
   <div .container>
     <figure .image .container .is-centered .is-128x128 .mb-6>
-      <img src=@{StaticR logo_svg}>
+      <img src=@{StaticR logo_svg} alt="Salsa Parties Logo">
     <h1 .title .is-3 .has-text-centered .mt-6>
       Where can I go dance today?
     <div .columns .is-centered>
