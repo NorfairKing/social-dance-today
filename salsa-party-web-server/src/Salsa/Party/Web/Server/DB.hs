@@ -100,6 +100,8 @@ Poster
     key CASKey
     imageType Text
     image ByteString
+    created UTCTime Maybe default=NULL -- TODO get rid of this after the next deployment.
+    modified UTCTime Maybe default=NULL
 
     UniquePosterParty party
     UniquePosterKey key

@@ -155,12 +155,15 @@ submitPartyPage mPartyId mResult = do
                         { posterParty = partyId,
                           posterKey = casKey,
                           posterImage = convertedImageBlob,
-                          posterImageType = convertedImageType
+                          posterImageType = convertedImageType,
+                          posterCreated = Just now,
+                          posterModified = Nothing
                         }
                     )
                     [ PosterKey =. casKey,
                       PosterImage =. convertedImageBlob,
-                      PosterImageType =. convertedImageType
+                      PosterImageType =. convertedImageType,
+                      PosterModified =. Just now
                     ]
           redirect $ AccountR $ AccountPartyR partyId
         _ -> do
@@ -275,7 +278,9 @@ getPosterR key = do
   case mPoster of
     Nothing -> notFound
     Just (Entity _ Poster {..}) -> do
+      now <- liftIO getCurrentTime
       -- Cache forever because of CAS
       addHeader "Cache-Control" "max-age=31536000, public, immutable"
       addHeader "Content-Disposition" "inline"
+      addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe now $ posterCreated <|> posterModified
       respond (TE.encodeUtf8 posterImageType) posterImage

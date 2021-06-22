@@ -7,6 +7,7 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import qualified Data.Text as T
+import Data.Time
 import Database.Persist.Sql
 import Salsa.Party.Web.Server.DB
 import System.Exit
@@ -17,6 +18,7 @@ completeServerMigration quiet = do
   logInfoN "Running automatic migrations"
   (if quiet then void . runMigrationQuiet else runMigration) automaticMigrations `catch` (\(PersistError t) -> liftIO $ die $ T.unpack t)
   setUpPlaces
+  migratePosterCreation
 
 setUpPlaces :: (MonadIO m, MonadLogger m) => SqlPersistT m ()
 setUpPlaces = do
@@ -35,3 +37,9 @@ locations =
     Place {placeQuery = "New York", placeLat = 43.1561681, placeLon = -75.8449946},
     Place {placeQuery = "Sydney", placeLat = -33.8888621, placeLon = 151.204897861}
   ]
+
+migratePosterCreation :: MonadIO m => SqlPersistT m ()
+migratePosterCreation = do
+  ps <- selectKeysList [PosterCreated ==. Nothing] [Asc PosterId]
+  now <- liftIO getCurrentTime
+  forM_ ps $ \p -> update p [PosterCreated =. Just now]
