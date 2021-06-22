@@ -2,7 +2,7 @@
 
 /explore ExploreR GET
 
-/query QueryR GET
+/query QueryR POST
 
 /party/#PartyId PartyR GET
 /poster/#CASKey PosterR GET

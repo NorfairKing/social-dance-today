@@ -30,9 +30,9 @@ queryForm =
         )
     <*> iopt dayField "day"
 
-getQueryR :: Handler Html
-getQueryR = do
-  QueryForm {..} <- runInputGet queryForm
+postQueryR :: Handler Html
+postQueryR = do
+  QueryForm {..} <- runInputPost queryForm
   case queryFormAddress of
     Just address -> do
       redirect

@@ -13,7 +13,7 @@
 
     <nav .pagination role="navigation" aria-label="pagination">
       <form .form
-        method=get
+        method=post
         action=@{QueryR}>
         <input name="day" type="hidden" value="#{formatTime defaultTimeLocale "%F" prevDay}">
         $maybe address <- mAddress
@@ -24,7 +24,7 @@
           Previous day
       
       <form .form
-        method=get
+        method=post
         action=@{QueryR}>
         <input name="day" type="hidden" value="#{formatTime defaultTimeLocale "%F" nextDay}">
         $maybe address <- mAddress

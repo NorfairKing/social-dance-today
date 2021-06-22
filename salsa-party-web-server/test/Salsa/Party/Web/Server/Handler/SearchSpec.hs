@@ -13,7 +13,7 @@ spec = do
   serverSpec $ do
     describe "QueryR" $ do
       yit "Can GET a 400 query page for an empty query" $ do
-        get QueryR
+        post QueryR
         statusIs 400
       it "Can GET a 200 query page for a nonempty query" $ \yc ->
         forAll (genValid `suchThat` (not . T.null)) $ \query ->
@@ -21,9 +21,9 @@ spec = do
             runYesodClientM yc $ do
               _ <- testSubmitPlace query location
               request $ do
-                setMethod methodGet
+                setMethod methodPost
                 setUrl QueryR
-                addGetParam "address" query
+                addPostParam "address" query
               statusIs 303
     describe "SearchR" $ do
       it "Can GET a 200 place page for a place" $ \yc ->

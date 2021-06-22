@@ -7,7 +7,7 @@
     <div .columns .is-centered>
       <div .column .is-half>
         <form
-          method=get
+          method=post
           action=@{QueryR}>
           <div .field .has-text-centered>
             <label .label>

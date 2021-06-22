@@ -7,7 +7,6 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import qualified Data.Text as T
-import Data.Time
 import Database.Persist.Sql
 import Salsa.Party.Web.Server.DB
 import System.Exit
