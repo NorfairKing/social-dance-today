@@ -15,6 +15,7 @@ getSitemapR :: Handler TypedContent
 getSitemapR = do
   acqOrganisers <- runDB $ selectSourceRes [] [Asc OrganiserId]
   acqParties <- runDB $ selectSourceRes [] [Asc PartyId]
+  acqPosters <- runDB $ selectSourceRes [] [Asc PosterId]
 
   sitemap $ do
     yield
@@ -73,6 +74,16 @@ getSitemapR = do
               sitemapLastMod = Just $ fromMaybe partyCreated partyModified,
               sitemapChangeFreq = Nothing,
               sitemapPriority = Just 0.4
+            }
+      )
+    dbAcq
+      acqPosters
+      ( \(Entity _ Poster {..}) ->
+          SitemapUrl
+            { sitemapLoc = PosterR posterKey,
+              sitemapLastMod = posterCreated <|> posterModified,
+              sitemapChangeFreq = Nothing,
+              sitemapPriority = Just 0.2
             }
       )
 
