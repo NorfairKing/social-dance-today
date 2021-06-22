@@ -13,12 +13,16 @@ library
   exposed-modules:
       Google.Geocoding
       OpenStreetMaps.Geocoding
+      Salsa.Party.Importer.Env
+      Salsa.Party.Importer.Import
+      Salsa.Party.Importer.SalsaCH
       Salsa.Party.Web.Server
       Salsa.Party.Web.Server.Application
       Salsa.Party.Web.Server.Constants
       Salsa.Party.Web.Server.DB
       Salsa.Party.Web.Server.DB.CASKey
       Salsa.Party.Web.Server.DB.Password
+      Salsa.Party.Web.Server.DB.URI
       Salsa.Party.Web.Server.Distance
       Salsa.Party.Web.Server.Foundation
       Salsa.Party.Web.Server.Geocoding
@@ -46,6 +50,7 @@ library
       JuicyPixels
     , JuicyPixels-extra
     , aeson
+    , aeson-pretty
     , amazonka
     , amazonka-ses
     , base >=4.7 && <5
@@ -58,6 +63,7 @@ library
     , directory
     , envparse
     , esqueleto
+    , exceptions
     , file-embed
     , filepath
     , http-client
@@ -66,6 +72,8 @@ library
     , http-types
     , microlens
     , monad-logger
+    , mtl
+    , network-uri
     , optparse-applicative
     , password
     , path

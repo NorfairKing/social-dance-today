@@ -11,6 +11,7 @@ library:
   - JuicyPixels
   - JuicyPixels-extra
   - aeson
+  - aeson-pretty
   - amazonka
   - amazonka-ses
   - base64-bytestring
@@ -22,6 +23,7 @@ library:
   - directory
   - envparse
   - esqueleto
+  - exceptions
   - file-embed
   - filepath
   - http-client
@@ -30,6 +32,8 @@ library:
   - http-types
   - microlens
   - monad-logger
+  - mtl
+  - network-uri
   - optparse-applicative
   - password
   - path

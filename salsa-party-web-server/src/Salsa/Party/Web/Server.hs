@@ -14,6 +14,8 @@ import Network.Wai.Middleware.RequestLogger
 import qualified OpenStreetMaps.Geocoding as OSM
 import Path
 import Path.IO
+import Salsa.Party.Importer.Env
+import Salsa.Party.Importer.SalsaCH
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.Foundation
@@ -38,29 +40,32 @@ runSalsaPartyWebServer Settings {..} = do
       sessionKeyFile <- resolveFile' "client_session_key.aes"
       man <- HTTP.newTlsManager
 
-      rateLimiter <- liftIO $ newRateLimiter OSM.limitConfig
+      let env = Env {envManager = man, envConnectionPool = pool}
+      runImporter env runSalsaCHImporter
 
-      let app =
-            App
-              { appLogLevel = settingLogLevel,
-                appStatic = salsaPartyWebServerStatic,
-                appConnectionPool = pool,
-                appHTTPManager = man,
-                appSessionKeyFile = sessionKeyFile,
-                appSendEmails = settingSendEmails,
-                appAdmin = settingAdmin,
-                appOSMRateLimiter = do
-                  guard settingEnableOSMGeocoding
-                  pure rateLimiter,
-                appGoogleAPIKey = do
-                  guard settingEnableGoogleGeocoding
-                  settingGoogleAPIKey,
-                appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
-                appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
-              }
-      liftIO $ do
-        waiApp <- Yesod.toWaiAppPlain app
-        let loggerMiddle = if development then logStdoutDev else logStdout
-        let middles = loggerMiddle . defaultMiddlewaresNoLogging
-        let salsaApp = middles waiApp
-        Warp.run settingPort salsaApp
+-- rateLimiter <- liftIO $ newRateLimiter OSM.limitConfig
+
+-- let app =
+--       App
+--         { appLogLevel = settingLogLevel,
+--           appStatic = salsaPartyWebServerStatic,
+--           appConnectionPool = pool,
+--           appHTTPManager = man,
+--           appSessionKeyFile = sessionKeyFile,
+--           appSendEmails = settingSendEmails,
+--           appAdmin = settingAdmin,
+--           appOSMRateLimiter = do
+--             guard settingEnableOSMGeocoding
+--             pure rateLimiter,
+--           appGoogleAPIKey = do
+--             guard settingEnableGoogleGeocoding
+--             settingGoogleAPIKey,
+--           appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
+--           appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
+--         }
+-- liftIO $ do
+--   waiApp <- Yesod.toWaiAppPlain app
+--   let loggerMiddle = if development then logStdoutDev else logStdout
+--   let middles = loggerMiddle . defaultMiddlewaresNoLogging
+--   let salsaApp = middles waiApp
+--   Warp.run settingPort salsaApp

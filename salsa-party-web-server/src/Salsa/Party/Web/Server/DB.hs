@@ -31,8 +31,10 @@ import Data.Validity.Time ()
 import Database.Persist.Sql
 import Database.Persist.TH
 import GHC.Generics (Generic)
+import Network.URI
 import Salsa.Party.Web.Server.DB.CASKey
 import Salsa.Party.Web.Server.DB.Password
+import Salsa.Party.Web.Server.DB.URI
 
 share
   [mkPersist sqlSettings, mkMigrate "automaticMigrations"]
@@ -110,6 +112,29 @@ Poster
     deriving Eq
     deriving Generic
 
+
+ExternalEvent
+    key Text
+
+    title Text
+    description Text Maybe
+    organiser Text Maybe
+    day Day
+    start TimeOfDay Maybe
+    homepage Text Maybe
+
+    created UTCTime
+    modified UTCTime Maybe default=NULL
+
+    place PlaceId
+
+    origin URI
+
+    UniqueExternalEventKey key
+
+    deriving Show
+    deriving Eq
+    deriving Generic
 |]
 
 instance Validity Place
