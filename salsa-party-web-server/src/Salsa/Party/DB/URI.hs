@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Salsa.Party.Web.Server.DB.URI where
+module Salsa.Party.DB.URI where
 
 import Data.Aeson
 import Data.Proxy

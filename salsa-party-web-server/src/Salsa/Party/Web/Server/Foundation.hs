@@ -35,8 +35,8 @@ import qualified Network.AWS as AWS
 import qualified Network.AWS.SES as SES
 import Network.HTTP.Client as HTTP
 import Path
+import Salsa.Party.DB
 import Salsa.Party.Web.Server.Constants
-import Salsa.Party.Web.Server.DB
 import Salsa.Party.Web.Server.Poster
 import Salsa.Party.Web.Server.Static
 import Salsa.Party.Web.Server.Widget

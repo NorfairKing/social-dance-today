@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Salsa.Party.Web.Server.DB.Password
+module Salsa.Party.DB.Password
   ( module Data.Password.Bcrypt,
   )
 where

@@ -15,13 +15,13 @@ import Database.Persist.Sqlite (fkEnabled, mkSqliteConnectionInfo, walEnabled, w
 import Lens.Micro
 import Network.HTTP.Client as HTTP
 import Path.IO
+import Salsa.Party.DB
+import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Application ()
-import Salsa.Party.Web.Server.DB
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Gen
 import Salsa.Party.Web.Server.Handler.Organiser
 import Salsa.Party.Web.Server.Handler.Party
-import Salsa.Party.Web.Server.Migration
 import Salsa.Party.Web.Server.Static
 import Test.QuickCheck
 import Test.Syd

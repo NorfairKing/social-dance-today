@@ -8,6 +8,6 @@ import Data.Text as X (Text)
 import Data.Time as X
 import Database.Persist as X
 import Network.HTTP.Client as X
+import Salsa.Party.DB as X
 import Salsa.Party.Importer.Env as X
-import Salsa.Party.Web.Server.DB as X
 import Text.Show.Pretty as X (pPrint, ppShow)

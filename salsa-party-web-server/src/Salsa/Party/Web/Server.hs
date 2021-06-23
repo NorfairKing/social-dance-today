@@ -14,12 +14,12 @@ import Network.Wai.Middleware.RequestLogger
 import qualified OpenStreetMaps.Geocoding as OSM
 import Path
 import Path.IO
+import Salsa.Party.DB.Migration
 import Salsa.Party.Importer.Env
 import Salsa.Party.Importer.SalsaCH
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.Foundation
-import Salsa.Party.Web.Server.Migration
 import Salsa.Party.Web.Server.OptParse
 import Salsa.Party.Web.Server.Static
 import Text.Show.Pretty

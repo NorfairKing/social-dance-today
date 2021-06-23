@@ -12,7 +12,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Google.Geocoding as Google
 import qualified OpenStreetMaps.Geocoding as OSM
-import Salsa.Party.Web.Server.DB
+import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation
 import Yesod
 

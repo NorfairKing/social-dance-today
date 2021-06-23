@@ -13,16 +13,17 @@ library
   exposed-modules:
       Google.Geocoding
       OpenStreetMaps.Geocoding
+      Salsa.Party.DB
+      Salsa.Party.DB.CASKey
+      Salsa.Party.DB.Migration
+      Salsa.Party.DB.Password
+      Salsa.Party.DB.URI
       Salsa.Party.Importer.Env
       Salsa.Party.Importer.Import
       Salsa.Party.Importer.SalsaCH
       Salsa.Party.Web.Server
       Salsa.Party.Web.Server.Application
       Salsa.Party.Web.Server.Constants
-      Salsa.Party.Web.Server.DB
-      Salsa.Party.Web.Server.DB.CASKey
-      Salsa.Party.Web.Server.DB.Password
-      Salsa.Party.Web.Server.DB.URI
       Salsa.Party.Web.Server.Distance
       Salsa.Party.Web.Server.Foundation
       Salsa.Party.Web.Server.Geocoding
@@ -36,7 +37,6 @@ library
       Salsa.Party.Web.Server.Handler.Party
       Salsa.Party.Web.Server.Handler.Search
       Salsa.Party.Web.Server.Handler.Sitemap
-      Salsa.Party.Web.Server.Migration
       Salsa.Party.Web.Server.OptParse
       Salsa.Party.Web.Server.Poster
       Salsa.Party.Web.Server.Static

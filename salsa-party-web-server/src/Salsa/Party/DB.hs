@@ -12,10 +12,10 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans -fno-warn-dodgy-exports #-}
 
-module Salsa.Party.Web.Server.DB
-  ( module Salsa.Party.Web.Server.DB,
-    module Salsa.Party.Web.Server.DB.CASKey,
-    module Salsa.Party.Web.Server.DB.Password,
+module Salsa.Party.DB
+  ( module Salsa.Party.DB,
+    module Salsa.Party.DB.CASKey,
+    module Salsa.Party.DB.Password,
   )
 where
 
@@ -32,9 +32,9 @@ import Database.Persist.Sql
 import Database.Persist.TH
 import GHC.Generics (Generic)
 import Network.URI
-import Salsa.Party.Web.Server.DB.CASKey
-import Salsa.Party.Web.Server.DB.Password
-import Salsa.Party.Web.Server.DB.URI
+import Salsa.Party.DB.CASKey
+import Salsa.Party.DB.Password
+import Salsa.Party.DB.URI
 
 share
   [mkPersist sqlSettings, mkMigrate "automaticMigrations"]

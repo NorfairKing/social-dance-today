@@ -1,14 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Salsa.Party.Web.Server.Migration where
+module Salsa.Party.DB.Migration where
 
 import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import qualified Data.Text as T
 import Database.Persist.Sql
-import Salsa.Party.Web.Server.DB
+import Salsa.Party.DB
 import System.Exit
 import UnliftIO
 

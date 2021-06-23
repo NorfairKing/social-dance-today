@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Salsa.Party.Web.Server.DB.CASKey where
+module Salsa.Party.DB.CASKey where
 
 import qualified Crypto.Hash.SHA256 as SHA256
 import Data.ByteString (ByteString)
