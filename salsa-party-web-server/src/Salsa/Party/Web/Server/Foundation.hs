@@ -17,6 +17,7 @@ module Salsa.Party.Web.Server.Foundation where
 import Control.Concurrent.TokenLimiter
 import Control.Monad
 import Control.Monad.Logger
+import Control.Monad.Reader
 import Data.FileEmbed
 import Data.Fixed
 import Data.Function
@@ -425,3 +426,9 @@ deletePartyCompletely :: MonadIO m => PartyId -> SqlPersistT m ()
 deletePartyCompletely partyId = do
   deleteWhere [PosterParty ==. partyId]
   delete partyId
+
+appDB :: (MonadReader App m, MonadLoggerIO m) => SqlPersistT (LoggingT IO) a -> m a
+appDB func = do
+  pool <- asks appConnectionPool
+  logFunc <- askLoggerIO
+  liftIO $ runLoggingT (runSqlPool func pool) logFunc

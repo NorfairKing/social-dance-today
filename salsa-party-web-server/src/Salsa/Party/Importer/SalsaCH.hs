@@ -97,7 +97,8 @@ makeEventPageRequest identifier = do
   pure $ requestPrototype {requestHeaders = ("Accept", "application/json") : requestHeaders requestPrototype}
 
 data EventDetails = EventDetails
-  { eventDetailsName :: !Text,
+  { eventDetailsId :: !Text,
+    eventDetailsName :: !Text,
     eventDetailsDescription :: !(Maybe Text),
     eventDetailsStart :: !ZonedTime,
     eventDetailsVenue :: !EventVenue,
@@ -108,14 +109,15 @@ data EventDetails = EventDetails
 instance FromJSON EventDetails where
   parseJSON = withObject "EventDetails" $ \o ->
     EventDetails
-      <$> o .: "name"
+      <$> o .: "id"
+      <*> o .: "name"
       <*> o .:? "description"
       <*> o .: "start_datetime"
       <*> o .: "venue"
       <*> o .:? "images" .!= []
 
 data EventVenue = EventVenue
-  { eventVenueName :: !Text,
+  { eventVenueName :: !(Maybe Text),
     eventVenueLocation :: !VenueLocation
   }
   deriving (Show, Eq)
@@ -123,7 +125,7 @@ data EventVenue = EventVenue
 instance FromJSON EventVenue where
   parseJSON = withObject "EventVenue" $ \o ->
     EventVenue
-      <$> o .: "name"
+      <$> o .:? "name"
       <*> o .: "location"
 
 data VenueLocation = VenueLocation
@@ -181,13 +183,34 @@ jsonRequestConduit = do
           Right a -> yield a
 
 toExternalEvent :: ConduitT EventDetails ExternalEvent Import ()
-toExternalEvent = undefined
+toExternalEvent = awaitForever $ \EventDetails {..} -> do
+  let externalEventKey = eventDetailsId
+  let externalEventTitle = eventDetailsName
+  let externalEventDescription = eventDetailsDescription
+  let externalEventOrganiser = eventVenueName eventDetailsVenue
+  let LocalTime externalEventDay tod = zonedTimeToLocalTime eventDetailsStart
+  let externalEventStart = Just tod
+  let externalEventHomepage = Nothing
+  now <- liftIO getCurrentTime
+  let externalEventCreated = now
+  let externalEventModified = Nothing
+  let VenueLocation {..} = eventVenueLocation eventDetailsVenue
+  let address = T.unwords [venueLocationStreet, venueLocationCity]
+  Entity externalEventPlace _ <-
+    appDB $
+      upsertBy
+        (UniquePlaceQuery address)
+        (Place {placeQuery = address, placeLat = venueLocationLat, placeLon = venueLocationLon})
+        [] -- Don't change if it's already there, so that they can't fill our page with junk.
+  case parseAbsoluteURI $ "https://events.info/events/" <> T.unpack eventDetailsId of
+    Nothing -> pure ()
+    Just externalEventOrigin -> yield ExternalEvent {..}
 
 externalEventSink :: ConduitT ExternalEvent Void Import ()
 externalEventSink = awaitForever $ \ee@ExternalEvent {..} -> do
   now <- liftIO getCurrentTime
   lift $
-    importDB $ do
+    appDB $ do
       mee <- getBy (UniqueExternalEventKey externalEventKey)
       if (entityVal <$> mee) == Just ee
         then pure () -- No need to update
