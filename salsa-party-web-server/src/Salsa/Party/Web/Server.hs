@@ -39,30 +39,28 @@ runSalsaPartyWebServer Settings {..} = do
       runSqlPool (completeServerMigration False) pool
       sessionKeyFile <- resolveFile' "client_session_key.aes"
       man <- HTTP.newTlsManager
+      rateLimiter <- liftIO $ newRateLimiter OSM.limitConfig
 
-      let env = Env {envManager = man, envConnectionPool = pool}
-      runImporter env runSalsaCHImporter
+      let app =
+            App
+              { appLogLevel = settingLogLevel,
+                appStatic = salsaPartyWebServerStatic,
+                appConnectionPool = pool,
+                appHTTPManager = man,
+                appSessionKeyFile = sessionKeyFile,
+                appSendEmails = settingSendEmails,
+                appAdmin = settingAdmin,
+                appOSMRateLimiter = do
+                  guard settingEnableOSMGeocoding
+                  pure rateLimiter,
+                appGoogleAPIKey = do
+                  guard settingEnableGoogleGeocoding
+                  settingGoogleAPIKey,
+                appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
+                appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
+              }
+      runImporter app runSalsaCHImporter
 
--- rateLimiter <- liftIO $ newRateLimiter OSM.limitConfig
-
--- let app =
---       App
---         { appLogLevel = settingLogLevel,
---           appStatic = salsaPartyWebServerStatic,
---           appConnectionPool = pool,
---           appHTTPManager = man,
---           appSessionKeyFile = sessionKeyFile,
---           appSendEmails = settingSendEmails,
---           appAdmin = settingAdmin,
---           appOSMRateLimiter = do
---             guard settingEnableOSMGeocoding
---             pure rateLimiter,
---           appGoogleAPIKey = do
---             guard settingEnableGoogleGeocoding
---             settingGoogleAPIKey,
---           appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
---           appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
---         }
 -- liftIO $ do
 --   waiApp <- Yesod.toWaiAppPlain app
 --   let loggerMiddle = if development then logStdoutDev else logStdout

@@ -6,9 +6,7 @@ module Salsa.Party.Importer.SalsaCH where
 
 import Conduit
 import Data.Aeson as JSON
-import Data.Aeson.Encode.Pretty as JSON
 import Data.Aeson.Types as JSON
-import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
 import Data.Fixed
 import qualified Data.Text as T
@@ -41,7 +39,6 @@ runSalsaCHImporter =
 -- After that, you can look up events.info/events/:id to get the info about a specific event.
 func :: Import ()
 func = do
-  man <- asks envManager
   today <- liftIO $ utctDay <$> getCurrentTime
   let days = [today, addDays 2 today .. addDays 5 today]
   runConduit $
@@ -161,7 +158,7 @@ instance FromJSON EventImage where
 jsonRequestConduit :: FromJSON a => ConduitT Request a Import ()
 jsonRequestConduit = do
   liftIO $ threadDelay 1_000_000 -- Let's be sneaky
-  man <- asks envManager
+  man <- asks appHTTPManager
   awaitForever $ \request -> do
     logInfoN $ "Fetching: " <> T.pack (show (getUri request))
     response <- liftIO $ httpLbs request man -- TODO this can fail, make that ok.

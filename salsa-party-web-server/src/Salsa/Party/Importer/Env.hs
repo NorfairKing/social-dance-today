@@ -8,10 +8,9 @@ import Control.Monad.Catch
 import Control.Monad.Logger
 import Control.Monad.Reader
 import Data.Text (Text)
-import Database.Persist
 import Database.Persist.Sql
 import GHC.Generics (Generic)
-import Network.HTTP.Client as HTTP
+import Salsa.Party.Web.Server.Foundation
 
 data Importer = Importer
   { importerName :: Text,
@@ -19,30 +18,24 @@ data Importer = Importer
   }
   deriving (Generic)
 
-runImporter :: Env -> Importer -> LoggingT IO ()
-runImporter e Importer {..} = runReaderT (unImport importerFunc) e
+runImporter :: App -> Importer -> LoggingT IO ()
+runImporter a Importer {..} = runReaderT (unImport importerFunc) a
 
-newtype Import a = Import {unImport :: ReaderT Env (LoggingT IO) a}
+newtype Import a = Import {unImport :: ReaderT App (LoggingT IO) a}
   deriving
     ( Generic,
       Functor,
       Applicative,
       Monad,
-      MonadReader Env,
+      MonadReader App,
       MonadLoggerIO,
       MonadLogger,
       MonadIO,
       MonadThrow
     )
 
-data Env = Env
-  { envManager :: HTTP.Manager,
-    envConnectionPool :: ConnectionPool
-  }
-  deriving (Generic)
-
 importDB :: SqlPersistT (LoggingT IO) a -> Import a
 importDB func = do
-  pool <- asks envConnectionPool
+  pool <- asks appConnectionPool
   logFunc <- askLoggerIO
   liftIO $ runLoggingT (runSqlPool func pool) logFunc

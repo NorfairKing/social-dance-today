@@ -34,7 +34,7 @@ import GHC.Generics (Generic)
 import Network.URI
 import Salsa.Party.DB.CASKey
 import Salsa.Party.DB.Password
-import Salsa.Party.DB.URI
+import Salsa.Party.DB.URI ()
 
 share
   [mkPersist sqlSettings, mkMigrate "automaticMigrations"]
