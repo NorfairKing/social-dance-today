@@ -10,7 +10,8 @@ import Salsa.Party.Web.Server.Distance
 import Salsa.Party.Web.Server.Handler.Import
 
 data SearchResults = SearchResults
-  { searchResultsParties :: [(Entity Party, Entity Place, Maybe CASKey)]
+  { searchResultsParties :: [(Entity Party, Entity Place, Maybe CASKey)],
+    searchResultsExternalEvents :: [(Entity ExternalEvent, Entity Place)]
   }
   deriving (Show, Eq)
 
@@ -43,7 +44,7 @@ searchQuery day coordinates@Coordinates {..} = do
       E.orderBy [E.asc distSquared]
       pure (party, p, mPoster E.?. PosterKey)
 
-  pure SearchResults {searchResultsParties = postProcessParties coordinates rawResults}
+  pure SearchResults {searchResultsParties = postProcessParties coordinates rawResults, searchResultsExternalEvents = []}
 
 -- One degree longitude is 111km
 roughMaxLatDistance :: Nano
