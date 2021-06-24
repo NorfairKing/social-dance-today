@@ -41,7 +41,7 @@ runSalsaCHImporter =
 func :: Import ()
 func = do
   today <- liftIO $ utctDay <$> getCurrentTime
-  let days = [today, addDays 2 today .. addDays 5 today]
+  let days = [today, addDays 2 today .. addDays 30 today] -- One month ahead
   runConduit $
     yieldMany days
       .| homePageConduit
