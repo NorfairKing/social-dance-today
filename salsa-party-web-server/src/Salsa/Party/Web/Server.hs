@@ -5,10 +5,10 @@ module Salsa.Party.Web.Server where
 import Control.Monad.Logger
 import qualified Network.Wai.Handler.Warp as Warp
 import Network.Wai.Middleware.RequestLogger
+import Salsa.Party.OptParse
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.Foundation
-import Salsa.Party.Web.Server.OptParse
 import UnliftIO
 import Yesod
 

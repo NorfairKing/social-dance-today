@@ -10,9 +10,9 @@ import GHC.Clock (getMonotonicTimeNSec)
 import Looper
 import Salsa.Party.Importer.Env
 import Salsa.Party.Importer.SalsaCH
+import Salsa.Party.OptParse
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
-import Salsa.Party.Web.Server.OptParse
 import Text.Printf
 import UnliftIO
 

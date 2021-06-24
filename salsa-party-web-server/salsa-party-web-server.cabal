@@ -22,6 +22,7 @@ library
       Salsa.Party.Importer.Env
       Salsa.Party.Importer.Import
       Salsa.Party.Importer.SalsaCH
+      Salsa.Party.OptParse
       Salsa.Party.Server
       Salsa.Party.Web.Server
       Salsa.Party.Web.Server.Application
@@ -39,7 +40,6 @@ library
       Salsa.Party.Web.Server.Handler.Party
       Salsa.Party.Web.Server.Handler.Search
       Salsa.Party.Web.Server.Handler.Sitemap
-      Salsa.Party.Web.Server.OptParse
       Salsa.Party.Web.Server.Poster
       Salsa.Party.Web.Server.Static
       Salsa.Party.Web.Server.Static.TH

@@ -4,7 +4,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Salsa.Party.Web.Server.OptParse where
+module Salsa.Party.OptParse where
 
 import Control.Applicative
 import Control.Monad.Logger
