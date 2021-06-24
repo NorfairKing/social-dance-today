@@ -101,8 +101,6 @@ searchQuery day coordinates@Coordinates {..} = do
       E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
       E.on (E.just (party E.^. PartyId) E.==. mPoster E.?. PosterParty)
       E.where_ (party E.^. PartyDay E.==. E.val day)
-      let latDiff = p E.^. PlaceLat E.-. E.val coordinatesLat
-      let lonDiff = p E.^. PlaceLon E.-. E.val coordinatesLon
       -- We want a very rough filter of parties by distance.
       -- What follows here is a rough estimate
       E.where_ $
@@ -113,6 +111,9 @@ searchQuery day coordinates@Coordinates {..} = do
         E.between
           (p E.^. PlaceLon)
           (E.val (coordinatesLon - roughMaxLonDistance), E.val (coordinatesLon + roughMaxLonDistance))
+
+      let latDiff = p E.^. PlaceLat E.-. E.val coordinatesLat
+      let lonDiff = p E.^. PlaceLon E.-. E.val coordinatesLon
       let latDiffSquared = latDiff E.*. latDiff
       let lonDiffSquared = lonDiff E.*. lonDiff
       -- Luckily the square function is monotone so we don't need to sqrt here
