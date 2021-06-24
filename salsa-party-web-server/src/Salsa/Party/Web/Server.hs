@@ -1,3 +1,5 @@
+{-# LANGUAGE NumericUnderscores #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Salsa.Party.Web.Server where
@@ -7,7 +9,9 @@ import Control.Monad
 import Control.Monad.Logger
 import qualified Data.Text as T
 import Database.Persist.Sqlite
+import GHC.Clock (getMonotonicTimeNSec)
 import Lens.Micro
+import Looper
 import Network.HTTP.Client.TLS as HTTP
 import qualified Network.Wai.Handler.Warp as Warp
 import Network.Wai.Middleware.RequestLogger
@@ -22,7 +26,9 @@ import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.OptParse
 import Salsa.Party.Web.Server.Static
+import Text.Printf
 import Text.Show.Pretty
+import UnliftIO
 import Yesod
 
 salsaPartyWebServer :: IO ()
@@ -59,11 +65,18 @@ runSalsaPartyWebServer Settings {..} = do
                 appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
                 appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
               }
-      runImporter app runSalsaCHImporter
-
--- liftIO $ do
---   waiApp <- Yesod.toWaiAppPlain app
---   let loggerMiddle = if development then logStdoutDev else logStdout
---   let middles = loggerMiddle . defaultMiddlewaresNoLogging
---   let salsaApp = middles waiApp
---   Warp.run settingPort salsaApp
+      let looperDefs = [mkLooperDef "importer-events.info" settingEventsInfoImportLooperSettings (runImporter app runSalsaCHImporter)]
+          looperRunner LooperDef {..} = do
+            logInfoNS looperDefName "Starting"
+            begin <- liftIO getMonotonicTimeNSec
+            looperDefFunc
+            end <- liftIO getMonotonicTimeNSec
+            logInfoNS looperDefName $ T.pack $ printf "Done, took %.2f seconds" (fromIntegral (end - begin) / (1_000_000_000 :: Double))
+      let runTheLoopers = runLoopersIgnoreOverrun looperRunner looperDefs
+      let runTheServer = liftIO $ do
+            waiApp <- Yesod.toWaiAppPlain app
+            let loggerMiddle = if development then logStdoutDev else logStdout
+            let middles = loggerMiddle . defaultMiddlewaresNoLogging
+            let salsaApp = middles waiApp
+            Warp.run settingPort salsaApp
+      concurrently_ runTheLoopers runTheServer
