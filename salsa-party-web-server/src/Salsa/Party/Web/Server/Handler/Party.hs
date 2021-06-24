@@ -285,7 +285,7 @@ partyJSONLDData renderUrl Party {..} (Entity organiserId Organiser {..}) Place {
                 .= object
                   [ "@type" .= ("Organization" :: Text),
                     "name" .= htmlEscapedText organiserName,
-                    "url" .= renderUrl (OrganiserR organiserId)
+                    "url" .= renderUrl (OrganiserR organiserUuid)
                   ]
             ],
             ["description" .= htmlEscapedText description | description <- maybeToList partyDescription]

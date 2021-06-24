@@ -25,8 +25,8 @@
           <button .button .is-primary type="submit">
             Submit
 
-          $maybe Entity organiserId _ <- mOrganiser
+          $maybe Entity _ organiser <- mOrganiser
             <a .button .is-light
-              href=@{OrganiserR organiserId}>
+              href=@{OrganiserR $ organiserUuid organiser}>
               View Public profile
 

@@ -17,7 +17,7 @@
 
     <h4 .title .is-6>
       Organiser: 
-      <a href=@{OrganiserR partyOrganiser}>
+      <a href=@{OrganiserR organiserUuid}>
         #{organiserName}
 
     $maybe description <- partyDescription

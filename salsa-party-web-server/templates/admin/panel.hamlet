@@ -39,12 +39,12 @@
           <th width=50px>
             Profile
       <tbody>
-        $forall Entity organiserId organiser <- organisers
+        $forall Entity _ organiser <- organisers
           <tr>
             <td>
               #{organiserName organiser}
             <td>
-              <a .button href=@{OrganiserR organiserId}>
+              <a .button href=@{OrganiserR $ organiserUuid organiser}>
                 Profile
 
 <section .section>

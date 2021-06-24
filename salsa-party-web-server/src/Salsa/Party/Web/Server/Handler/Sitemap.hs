@@ -51,9 +51,9 @@ getSitemapR = do
           release rk
     dbAcq
       acqOrganisers
-      ( \(Entity organiserId Organiser {..}) ->
+      ( \(Entity _ Organiser {..}) ->
           SitemapUrl
-            { sitemapLoc = OrganiserR organiserId,
+            { sitemapLoc = OrganiserR organiserUuid,
               sitemapLastMod = Just $ fromMaybe organiserCreated organiserModified,
               sitemapChangeFreq = Nothing,
               sitemapPriority = Just 0.5

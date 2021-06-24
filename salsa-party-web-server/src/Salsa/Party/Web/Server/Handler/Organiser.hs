@@ -67,22 +67,30 @@ organiserFormPage mResult = do
           tv = mv ""
       withMFormResultNavBar mResult $(widgetFile "account/organiser")
 
-getOrganiserR :: OrganiserId -> Handler Html
-getOrganiserR organiserId = do
-  organiser@Organiser {..} <- runDB $ get404 organiserId
-  now <- liftIO getCurrentTime
-  let today = utctDay now
-  parties <- runDB $
-    E.select $
-      E.from $ \(party `E.InnerJoin` p `E.LeftOuterJoin` mPoster) -> do
-        E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
-        E.on (E.just (party E.^. PartyId) E.==. mPoster E.?. PosterParty)
-        E.where_ (party E.^. PartyOrganiser E.==. E.val organiserId)
-        E.where_ (party E.^. PartyDay E.>=. E.val today)
-        E.orderBy [E.asc $ party E.^. PartyDay]
-        pure (party, p, mPoster E.?. PosterKey)
-  withNavBar $ do
-    setTitle $ "Organiser profile: " <> toHtml organiserName
-    setDescription $ mconcat ["The organiser profile of ", organiserName, ", and a list of their upcoming social dance parties"]
-    addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe organiserCreated organiserModified
-    $(widgetFile "organiser")
+getOrganiserOldR :: OrganiserId -> Handler Html
+getOrganiserOldR organiserId = do
+  Organiser {..} <- runDB $ get404 organiserId
+  redirect $ OrganiserR organiserUuid
+
+getOrganiserR :: OrganiserUUID -> Handler Html
+getOrganiserR organiserUuid = do
+  mOrganiser <- runDB $ getBy $ UniqueOrganiserUUID organiserUuid
+  case mOrganiser of
+    Nothing -> notFound
+    Just (Entity organiserId organiser@Organiser {..}) -> do
+      now <- liftIO getCurrentTime
+      let today = utctDay now
+      parties <- runDB $
+        E.select $
+          E.from $ \(party `E.InnerJoin` p `E.LeftOuterJoin` mPoster) -> do
+            E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
+            E.on (E.just (party E.^. PartyId) E.==. mPoster E.?. PosterParty)
+            E.where_ (party E.^. PartyOrganiser E.==. E.val organiserId)
+            E.where_ (party E.^. PartyDay E.>=. E.val today)
+            E.orderBy [E.asc $ party E.^. PartyDay]
+            pure (party, p, mPoster E.?. PosterKey)
+      withNavBar $ do
+        setTitle $ "Organiser profile: " <> toHtml organiserName
+        setDescription $ mconcat ["The organiser profile of ", organiserName, ", and a list of their upcoming social dance parties"]
+        addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe organiserCreated organiserModified
+        $(widgetFile "organiser")
