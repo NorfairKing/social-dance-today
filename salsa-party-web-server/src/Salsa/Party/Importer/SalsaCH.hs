@@ -1,10 +1,10 @@
-{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Salsa.Party.Importer.SalsaCH where
 
 import Conduit
+import Control.Concurrent.TokenLimiter
 import Data.Aeson as JSON
 import Data.Aeson.Types as JSON
 import qualified Data.Conduit.Combinators as C
@@ -162,17 +162,24 @@ instance FromJSON EventImage where
 
 jsonRequestConduit :: FromJSON a => ConduitT Request a Import ()
 jsonRequestConduit = do
-  liftIO $ threadDelay 1_000_000 -- Let's be sneaky
   man <- asks appHTTPManager
+  let limitConfig =
+        defaultLimitConfig
+          { maxBucketTokens = 10, -- Ten tokens maximum, represents one request
+            initialBucketTokens = 10,
+            bucketRefillTokensPerSecond = 1
+          }
+  rateLimiter <- liftIO $ newRateLimiter limitConfig
   awaitForever $ \requestPrototype -> do
+    liftIO $ waitDebit limitConfig rateLimiter 10 -- Need 10 tokens
     userAgent <- liftIO chooseUserAgent
     let request = requestPrototype {requestHeaders = ("User-Agent", userAgent) : requestHeaders requestPrototype}
-    logInfoN $ "Fetching: " <> T.pack (show (getUri request))
+    logInfoNS "Importer" $ "fetching: " <> T.pack (show (getUri request))
     response <- liftIO $ httpLbs request man -- TODO this can fail, make that ok.
     let body = responseBody response
     case JSON.eitherDecode body of
       Left err ->
-        logErrorN $
+        logErrorNS "Importer" $
           T.unlines
             [ "Invalid JSON:" <> T.pack err,
               T.pack (show body)
@@ -180,7 +187,7 @@ jsonRequestConduit = do
       Right jsonValue ->
         case JSON.parseEither parseJSON jsonValue of
           Left err ->
-            logErrorN $
+            logErrorNS "Importer" $
               T.unlines
                 [ "Unable to parse JSON:" <> T.pack err,
                   T.pack $ ppShow jsonValue
