@@ -40,6 +40,7 @@ library
       Salsa.Party.Web.Server.Handler.Organiser
       Salsa.Party.Web.Server.Handler.Party
       Salsa.Party.Web.Server.Handler.Search
+      Salsa.Party.Web.Server.Handler.Search.Query
       Salsa.Party.Web.Server.Handler.Sitemap
       Salsa.Party.Web.Server.Poster
       Salsa.Party.Web.Server.Static
@@ -158,6 +159,7 @@ test-suite salsa-party-web-server-test
       Salsa.Party.Web.Server.Handler.HomeSpec
       Salsa.Party.Web.Server.Handler.OrganiserSpec
       Salsa.Party.Web.Server.Handler.PartySpec
+      Salsa.Party.Web.Server.Handler.Search.QuerySpec
       Salsa.Party.Web.Server.Handler.SearchSpec
       Salsa.Party.Web.Server.Handler.TestImport
       Salsa.Party.Web.Server.TestUtils
