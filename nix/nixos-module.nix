@@ -1,12 +1,18 @@
-{ envname, salsaPartyPackages ? (import ./pkgs.nix { }).salsaPartyPackages }:
+{ envname
+, sources ? import ./sources.nix
+, salsaPartyPackages ? (import ./pkgs.nix { }).salsaPartyPackages
+}:
 { lib, pkgs, config, ... }:
 with lib;
 
 let
   cfg = config.services.salsa-party."${envname}";
+
   mergeListRecursively = pkgs.callPackage ./merge-lists-recursively.nix { };
 
   toYamlFile = pkgs.callPackage ./to-yaml.nix { };
+
+  mkLooperOption = pkgs.callPackage (sources.looper + "/nix/looper-option.nix") { };
 in
 {
   options.services.salsa-party."${envname}" =
@@ -83,6 +89,7 @@ in
                     default = null;
                     description = "The google Search Console verification code";
                   };
+                  events-info-importer = mkLooperOption "events-info-importer";
                 };
             });
           default = null;
@@ -128,6 +135,7 @@ in
           (nullOrOption "google-api-key" google-api-key)
           (nullOrOption "google-analytics-tracking" google-analytics-tracking)
           (nullOrOption "google-search-console-verification" google-search-console-verification)
+          (nullOrOption "events-info-importer" events-info-importer)
           cfg.web-server.config
         ];
       web-server-config-file = toYamlFile "salsa-web-server-config" web-server-config;

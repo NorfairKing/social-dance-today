@@ -4,7 +4,7 @@ packages:
 allow-newer: true # Because of token-limiter
 extra-deps:
 - github: NorfairKing/looper
-  commit: c2fc013d2da2ab2528ac49739e8faefa47212e66
+  commit: 8f9f944e8cf3cd8883a5600c115461ecea285c62
   subdirs:
     - looper
 - github: NorfairKing/linkcheck

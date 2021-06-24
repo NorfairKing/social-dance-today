@@ -96,7 +96,7 @@ instance YamlSchema Configuration where
         <*> optionalField "google-api-key" "Google API key"
         <*> optionalField "google-analytics-tracking" "Google analytics tracking code"
         <*> optionalField "google-search-console-verification" "Google search console html element verification code"
-        <*> optionalField "events.info" "The events.info import looper"
+        <*> optionalField "events-info-importer" "The events.info import looper"
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} =

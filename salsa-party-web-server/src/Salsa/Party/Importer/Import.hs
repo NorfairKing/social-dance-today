@@ -4,6 +4,7 @@ import Control.Concurrent as X (threadDelay)
 import Control.Monad.IO.Class as X
 import Control.Monad.Logger as X
 import Control.Monad.Reader as X
+import Data.ByteString as X (ByteString)
 import Data.Text as X (Text)
 import Data.Time as X
 import Database.Persist as X

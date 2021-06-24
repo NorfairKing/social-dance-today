@@ -2,7 +2,11 @@
 , pkgs ? import ./pkgs.nix { inherit sources; }
 }:
 let
-  salsa-party-production = import (./nixos-module.nix) { envname = "production"; salsaPartyPackages = pkgs.salsaPartyPackages; };
+  salsa-party-production = import (./nixos-module.nix) {
+    envname = "production";
+    inherit sources;
+    salsaPartyPackages = pkgs.salsaPartyPackages;
+  };
   port = 8001;
 in
 pkgs.nixosTest (
@@ -32,6 +36,7 @@ pkgs.nixosTest (
             inherit port;
             enable-osm-geocoding = false;
             enable-google-geocoding = false;
+            events-info-importer.enable = false;
           };
         };
       };
