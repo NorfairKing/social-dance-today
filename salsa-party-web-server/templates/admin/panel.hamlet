@@ -88,7 +88,7 @@
           <th width=50px>
             Details
       <tbody>
-        $forall Entity externalEventId externalEvent <- externalEvents
+        $forall Entity _ externalEvent <- externalEvents
           <tr>
             <td>
               #{externalEventTitle externalEvent}

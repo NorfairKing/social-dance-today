@@ -118,6 +118,7 @@ tests:
     - genvalidity-sydtest
     - genvalidity-text
     - genvalidity-time
+    - genvalidity-typed-uuid
     - http-client
     - http-types
     - microlens
@@ -137,5 +138,3 @@ tests:
     - yesod
     - yesod-auth
     - yesod-core
-
-

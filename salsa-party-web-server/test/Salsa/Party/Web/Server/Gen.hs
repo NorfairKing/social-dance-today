@@ -9,6 +9,7 @@ import Data.GenValidity.ByteString ()
 import Data.GenValidity.Persist ()
 import Data.GenValidity.Text ()
 import Data.GenValidity.Time ()
+import Data.GenValidity.UUID.Typed ()
 import qualified Data.Text as T
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Organiser
