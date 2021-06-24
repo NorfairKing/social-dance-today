@@ -50,6 +50,10 @@ instance GenValid Party where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
+instance GenValid Organiser where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
 -- FIXME this isn't very general
 genValidEmailAddress :: Gen Text
 genValidEmailAddress = do

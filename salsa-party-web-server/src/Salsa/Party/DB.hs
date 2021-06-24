@@ -175,6 +175,8 @@ instance Validity Place
 
 instance Validity Party
 
+instance Validity Organiser
+
 hasChangedComparedTo :: ExternalEvent -> ExternalEvent -> Bool
 hasChangedComparedTo ee1 ee2 =
   let changed :: Eq a => (ExternalEvent -> a) -> Bool

@@ -73,8 +73,8 @@ getOrganiserOldR organiserId = do
   redirect $ OrganiserR organiserUuid
 
 getOrganiserR :: OrganiserUUID -> Handler Html
-getOrganiserR organiserUuid = do
-  mOrganiser <- runDB $ getBy $ UniqueOrganiserUUID organiserUuid
+getOrganiserR uuid = do
+  mOrganiser <- runDB $ getBy $ UniqueOrganiserUUID uuid
   case mOrganiser of
     Nothing -> notFound
     Just (Entity organiserId organiser@Organiser {..}) -> do

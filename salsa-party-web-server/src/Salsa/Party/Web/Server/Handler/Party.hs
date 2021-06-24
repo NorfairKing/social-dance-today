@@ -247,7 +247,7 @@ getPartyR eventUuid = do
       withNavBar $ do
         setTitle $ toHtml partyTitle
         setDescription $ fromMaybe "Party without description" partyDescription
-        toWidgetHead $ toJSONLDData $ partyJSONLDData renderUrl party (Entity partyOrganiser organiser) place posterKeys
+        toWidgetHead $ toJSONLDData $ partyJSONLDData renderUrl party organiser place posterKeys
         addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified
         $(widgetFile "party")
 
@@ -262,8 +262,8 @@ instance ToWidgetHead App JSONLDData where
       H.script ! HA.type_ "application/ld+json" $
         H.preEscapedLazyText $ renderJavascript $ toJavascript v
 
-partyJSONLDData :: (Route App -> Text) -> Party -> Entity Organiser -> Place -> [E.Value CASKey] -> JSON.Value
-partyJSONLDData renderUrl Party {..} (Entity organiserId Organiser {..}) Place {..} posterKeys =
+partyJSONLDData :: (Route App -> Text) -> Party -> Organiser -> Place -> [E.Value CASKey] -> JSON.Value
+partyJSONLDData renderUrl Party {..} Organiser {..} Place {..} posterKeys =
   let htmlEscapedText :: Text -> Text
       htmlEscapedText = LT.toStrict . HT.renderHtml . toHtml
    in object $
