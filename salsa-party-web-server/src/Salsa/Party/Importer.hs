@@ -9,7 +9,7 @@ import qualified Data.Text as T
 import GHC.Clock (getMonotonicTimeNSec)
 import Looper
 import Salsa.Party.Importer.Env
-import Salsa.Party.Importer.SalsaCH
+import Salsa.Party.Importer.EventsInfo
 import Salsa.Party.OptParse
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
@@ -18,7 +18,12 @@ import UnliftIO
 
 runImporterLoopers :: Settings -> App -> LoggingT IO ()
 runImporterLoopers Settings {..} app = do
-  let looperDefs = [mkLooperDef "importer-events.info" settingEventsInfoImportLooperSettings (runImporter app runSalsaCHImporter)]
+  let looperDefs =
+        [ mkLooperDef
+            "importer-events.info"
+            settingEventsInfoImportLooperSettings
+            (runImporter app runEventsInfoImporter)
+        ]
       looperRunner LooperDef {..} = do
         logInfoNS looperDefName "Starting"
         begin <- liftIO getMonotonicTimeNSec

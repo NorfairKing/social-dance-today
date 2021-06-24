@@ -1,27 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Salsa.Party.Importer.SalsaCH where
-
-import Conduit
-import Control.Concurrent.TokenLimiter
-import Data.Aeson as JSON
-import Data.Aeson.Types as JSON
-import qualified Data.Conduit.Combinators as C
-import Data.Fixed
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
-import Network.URI as URI
-import Salsa.Party.Importer.Import
-import System.Random
-
-runSalsaCHImporter :: Importer
-runSalsaCHImporter =
-  Importer
-    { importerName = "events.info",
-      importerFunc = func
-    }
-
+-- | https://events.info
+--
 -- There are events on https://events.info (the same events as on salsa.ch, it seems.
 --
 -- These events can be either parties or courses.
@@ -38,6 +19,27 @@ runSalsaCHImporter =
 -- and whether it's been cancelled under "is_cancelled".
 --
 -- After that, you can look up events.info/events/:id to get the info about a specific event.
+module Salsa.Party.Importer.EventsInfo where
+
+import Conduit
+import Control.Concurrent.TokenLimiter
+import Data.Aeson as JSON
+import Data.Aeson.Types as JSON
+import qualified Data.Conduit.Combinators as C
+import Data.Fixed
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
+import Network.URI as URI
+import Salsa.Party.Importer.Import
+import System.Random
+
+runEventsInfoImporter :: Importer
+runEventsInfoImporter =
+  Importer
+    { importerName = "events.info",
+      importerFunc = func
+    }
+
 func :: Import ()
 func = do
   today <- liftIO $ utctDay <$> getCurrentTime

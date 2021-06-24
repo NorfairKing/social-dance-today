@@ -20,8 +20,8 @@ library
       Salsa.Party.DB.URI
       Salsa.Party.Importer
       Salsa.Party.Importer.Env
+      Salsa.Party.Importer.EventsInfo
       Salsa.Party.Importer.Import
-      Salsa.Party.Importer.SalsaCH
       Salsa.Party.OptParse
       Salsa.Party.Server
       Salsa.Party.Web.Server
