@@ -113,7 +113,7 @@ Poster
     deriving Generic
 
 
-ExternalEvent
+ExternalEvent -- Make sure to change 'hasChangedComparedTo' below.
     key Text
 
     title Text
@@ -141,3 +141,18 @@ ExternalEvent
 instance Validity Place
 
 instance Validity Party
+
+hasChangedComparedTo :: ExternalEvent -> ExternalEvent -> Bool
+hasChangedComparedTo ee1 ee2 =
+  let changed :: Eq a => (ExternalEvent -> a) -> Bool
+      changed func = func ee1 /= func ee2
+   in or
+        [ changed externalEventTitle,
+          changed externalEventDescription,
+          changed externalEventOrganiser,
+          changed externalEventDay,
+          changed externalEventStart,
+          changed externalEventHomepage,
+          changed externalEventCancelled,
+          changed externalEventPlace
+        ]

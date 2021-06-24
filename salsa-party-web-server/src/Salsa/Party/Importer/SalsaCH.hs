@@ -210,25 +210,27 @@ toExternalEvent = awaitForever $ \EventDetails {..} -> do
     Just externalEventOrigin -> yield ExternalEvent {..}
 
 externalEventSink :: ConduitT ExternalEvent Void Import ()
-externalEventSink = awaitForever $ \ee@ExternalEvent {..} -> do
+externalEventSink = awaitForever $ \externalEvent@ExternalEvent {..} -> do
   now <- liftIO getCurrentTime
   lift $
     appDB $ do
-      mee <- getBy (UniqueExternalEventKey externalEventKey)
-      if (entityVal <$> mee) == Just ee
-        then pure () -- No need to update
-        else
-          void $
-            upsertBy
-              (UniqueExternalEventKey externalEventKey)
-              ee
-              [ ExternalEventTitle =. externalEventTitle,
-                ExternalEventDescription =. externalEventDescription,
-                ExternalEventOrganiser =. externalEventOrganiser,
-                ExternalEventDay =. externalEventDay,
-                ExternalEventStart =. externalEventStart,
-                ExternalEventHomepage =. externalEventHomepage,
-                ExternalEventModified =. Just now,
-                ExternalEventPlace =. externalEventPlace,
-                ExternalEventOrigin =. externalEventOrigin
-              ]
+      mExternalEvent <- getBy (UniqueExternalEventKey externalEventKey)
+      case mExternalEvent of
+        Nothing -> insert_ externalEvent
+        Just (Entity externalEventId oldExternalEvent) ->
+          if externalEvent `hasChangedComparedTo` oldExternalEvent
+            then
+              void $
+                update
+                  externalEventId
+                  [ ExternalEventTitle =. externalEventTitle,
+                    ExternalEventDescription =. externalEventDescription,
+                    ExternalEventOrganiser =. externalEventOrganiser,
+                    ExternalEventDay =. externalEventDay,
+                    ExternalEventStart =. externalEventStart,
+                    ExternalEventHomepage =. externalEventHomepage,
+                    ExternalEventModified =. Just now,
+                    ExternalEventPlace =. externalEventPlace,
+                    ExternalEventOrigin =. externalEventOrigin
+                  ]
+            else pure ()
