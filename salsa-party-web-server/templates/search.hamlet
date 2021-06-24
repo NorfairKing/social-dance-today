@@ -34,7 +34,7 @@
         <button .pagination-next type="submit">
           Next day
 
-    $if null searchResultsParties
+    $if null searchResultsParties && null searchResultsExternalEvents
       <p>
         No parties found
     $else
@@ -56,5 +56,16 @@
                   <div .card-content>
                     <h2 .title .is-4>
                       #{partyTitle party}
+                    <h3 .subtitle .is-5>
+                      #{placeQuery p}
+
+        $forall (Entity _ externalEvent, Entity _ p) <- searchResultsExternalEvents
+          <div .column .is-two-thirds-tablet .is-half-desktop>
+            <div .zoom-without-container>
+              <a  href=@{PartyR $ externalEventUuid externalEvent}>
+                <div .card>
+                  <div .card-content>
+                    <h2 .title .is-4>
+                      #{externalEventTitle externalEvent}
                     <h3 .subtitle .is-5>
                       #{placeQuery p}
