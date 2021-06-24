@@ -17,6 +17,7 @@ completeServerMigration quiet = do
   logInfoN "Running automatic migrations"
   (if quiet then void . runMigrationQuiet else runMigration) automaticMigrations `catch` (\(PersistError t) -> liftIO $ die $ T.unpack t)
   setUpPlaces
+  setupUUIDs
 
 setUpPlaces :: (MonadIO m, MonadLogger m) => SqlPersistT m ()
 setUpPlaces = do

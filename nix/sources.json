@@ -107,6 +107,18 @@
         "url": "https://github.com/NorfairKing/sydtest/archive/bbc7dcb69d8189a1b832cb5c7f57b27c21d59411.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "typed-uuid": {
+        "branch": "master",
+        "description": "UUID with a phantom type",
+        "homepage": null,
+        "owner": "NorfairKing",
+        "repo": "typed-uuid",
+        "rev": "ec82b82a545d06094ac355bd65a03f25f86c0a48",
+        "sha256": "034g3ciyd7khn98n8ii1gpjynkl15in5i4b7d4i2sy6075hi4987",
+        "type": "tarball",
+        "url": "https://github.com/NorfairKing/typed-uuid/archive/ec82b82a545d06094ac355bd65a03f25f86c0a48.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "validity": {
         "branch": "master",
         "description": "Validity and validity-based testing",

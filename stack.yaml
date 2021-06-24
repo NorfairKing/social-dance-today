@@ -7,6 +7,10 @@ extra-deps:
   commit: 8f9f944e8cf3cd8883a5600c115461ecea285c62
   subdirs:
     - looper
+- github: NorfairKing/typed-uuid
+  commit: ec82b82a545d06094ac355bd65a03f25f86c0a48
+  subdirs:
+    - typed-uuid
 - github: NorfairKing/linkcheck
   commit: 88a325e3a6c8610d1ca380457cd267d87ab2c0ab
   subdirs:

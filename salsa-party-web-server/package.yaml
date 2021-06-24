@@ -53,6 +53,8 @@ library:
   - time
   - token-limiter
   - unliftio
+  - uuid
+  - typed-uuid
   - validity
   - validity-persistent
   - validity-text

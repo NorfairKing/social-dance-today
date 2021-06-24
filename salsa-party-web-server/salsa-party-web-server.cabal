@@ -18,6 +18,7 @@ library
       Salsa.Party.DB.Migration
       Salsa.Party.DB.Password
       Salsa.Party.DB.URI
+      Salsa.Party.DB.UUID
       Salsa.Party.Importer
       Salsa.Party.Importer.Env
       Salsa.Party.Importer.EventsInfo
@@ -94,7 +95,9 @@ library
     , text
     , time
     , token-limiter
+    , typed-uuid
     , unliftio
+    , uuid
     , validity
     , validity-persistent
     , validity-text

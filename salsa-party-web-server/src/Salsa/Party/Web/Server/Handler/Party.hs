@@ -112,9 +112,11 @@ submitPartyPage mPartyId mResult = do
           partyId <- runDB $ case partyFormId of
             Nothing -> do
               addMessage "is-success" "Succesfully submitted party"
+              uuid <- nextRandomUUID
               insert
                 ( Party
-                    { partyOrganiser = organiserId,
+                    { partyUuid = Just uuid,
+                      partyOrganiser = organiserId,
                       partyTitle = partyFormTitle,
                       partyDescription = unTextarea <$> partyFormDescription,
                       partyDay = partyFormDay,

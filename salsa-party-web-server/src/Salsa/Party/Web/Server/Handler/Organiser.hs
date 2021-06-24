@@ -42,12 +42,14 @@ organiserFormPage mResult = do
   case mResult of
     Just (FormSuccess OrganiserForm {..}) -> do
       now <- liftIO getCurrentTime
-      _ <-
+      _ <- do
+        uuid <- nextRandomUUID
         runDB $
           upsertBy
             (UniqueOrganiserUser userId)
             ( Organiser
                 { organiserUser = userId,
+                  organiserUuid = Just uuid,
                   organiserName = organiserFormName,
                   organiserCreated = now,
                   organiserModified = Nothing

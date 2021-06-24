@@ -16,6 +16,9 @@ module Salsa.Party.DB
   ( module Salsa.Party.DB,
     module Salsa.Party.DB.CASKey,
     module Salsa.Party.DB.Password,
+    module Salsa.Party.DB.URI,
+    module Salsa.Party.DB.UUID,
+    module Data.UUID.Typed,
   )
 where
 
@@ -24,6 +27,7 @@ import Data.Fixed
 import Data.Password.Bcrypt
 import Data.Text (Text)
 import Data.Time
+import Data.UUID.Typed
 import Data.Validity
 import Data.Validity.Persist ()
 import Data.Validity.Text ()
@@ -35,6 +39,11 @@ import Network.URI
 import Salsa.Party.DB.CASKey
 import Salsa.Party.DB.Password
 import Salsa.Party.DB.URI ()
+import Salsa.Party.DB.UUID ()
+
+data Event
+
+type EventUUID = UUID Event
 
 share
   [mkPersist sqlSettings, mkMigrate "automaticMigrations"]
@@ -54,11 +63,15 @@ User
 
 
 Organiser
+    -- UUID, for external usage
+    uuid EventUUID Maybe default=null -- TODO make this non-maybe, also get rid of the !force below
+
     user UserId
     name Text
     created UTCTime
     modified UTCTime Maybe default=NULL
 
+    UniqueOrganiserUUID uuid !force
     UniqueOrganiserUser user
 
     deriving Show
@@ -79,6 +92,9 @@ Place
 
 
 Party
+    -- UUID, for external usage in a shared namespace with the external event table
+    uuid EventUUID Maybe default=null -- TODO make this non-maybe, also get rid of the !force below
+
     organiser OrganiserId
     title Text
     description Text Maybe
@@ -91,6 +107,8 @@ Party
     modified UTCTime Maybe default=NULL
 
     place PlaceId
+
+    UniquePartyUUID uuid !force
 
     deriving Show
     deriving Eq
@@ -113,9 +131,14 @@ Poster
     deriving Generic
 
 
-ExternalEvent -- Make sure to change 'hasChangedComparedTo' below.
+ExternalEvent
+    -- UUID, for external usage in a shared namespace with the Party table
+    uuid EventUUID Maybe default=null -- TODO make this non-maybe, also get rid of the !force below
+    -- Unique key for party so that we don't duplicate parties
+    -- and we don't update the wrong party when parties get updated
     key Text
 
+    -- Make sure to change 'hasChangedComparedTo' below if you change any of these fields
     title Text
     description Text Maybe
     organiser Text Maybe
@@ -124,13 +147,16 @@ ExternalEvent -- Make sure to change 'hasChangedComparedTo' below.
     homepage Text Maybe
     cancelled Bool default=0 -- False
 
+    -- For diagnostics
     created UTCTime
     modified UTCTime Maybe default=NULL
 
     place PlaceId
 
+    -- Where we got the event from, externally
     origin URI
 
+    UniqueExternalEventUUID uuid !force
     UniqueExternalEventKey key
 
     deriving Show
