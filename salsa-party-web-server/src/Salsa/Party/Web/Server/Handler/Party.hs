@@ -258,34 +258,33 @@ partyPage (Entity partyId party@Party {..}) = do
     addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified
     $(widgetFile "party")
 
+-- https://developers.google.com/search/docs/data-types/event
 partyJSONLDData :: (Route App -> Text) -> Party -> Organiser -> Place -> [E.Value CASKey] -> JSON.Value
 partyJSONLDData renderUrl Party {..} Organiser {..} Place {..} posterKeys =
-  let htmlEscapedText :: Text -> Text
-      htmlEscapedText = LT.toStrict . HT.renderHtml . toHtml
-   in object $
-        concat
-          [ [ "@context" .= ("https://schema.org" :: Text),
-              "@type" .= ("Event" :: Text),
-              "name" .= htmlEscapedText partyTitle,
-              "startDate" .= partyDay,
-              "eventAttendanceMode" .= ("https://schema.org/OfflineEventAttendanceMode" :: Text),
-              "eventStatus" .= ("https://schema.org/EventScheduled" :: Text), -- TODO mark this as CANCELLED when we implement cancellation.
-              "location"
-                .= object
-                  [ "@type" .= ("Place" :: Text),
-                    "address" .= htmlEscapedText placeQuery
-                  ],
-              "image"
-                .= [renderUrl (PosterR posterKey) | E.Value posterKey <- posterKeys],
-              "organizer"
-                .= object
-                  [ "@type" .= ("Organization" :: Text),
-                    "name" .= htmlEscapedText organiserName,
-                    "url" .= renderUrl (OrganiserR organiserUuid)
-                  ]
-            ],
-            ["description" .= htmlEscapedText description | description <- maybeToList partyDescription]
-          ]
+  object $
+    concat
+      [ [ "@context" .= ("https://schema.org" :: Text),
+          "@type" .= ("Event" :: Text),
+          "name" .= htmlEscapedText partyTitle,
+          "startDate" .= partyDay,
+          "eventAttendanceMode" .= ("https://schema.org/OfflineEventAttendanceMode" :: Text),
+          "eventStatus" .= ("https://schema.org/EventScheduled" :: Text), -- TODO mark this as CANCELLED when we implement cancellation.
+          "location"
+            .= object
+              [ "@type" .= ("Place" :: Text),
+                "address" .= htmlEscapedText placeQuery
+              ],
+          "image"
+            .= [renderUrl (PosterR posterKey) | E.Value posterKey <- posterKeys],
+          "organizer"
+            .= object
+              [ "@type" .= ("Organization" :: Text),
+                "name" .= htmlEscapedText organiserName,
+                "url" .= renderUrl (OrganiserR organiserUuid)
+              ]
+        ],
+        ["description" .= htmlEscapedText description | description <- maybeToList partyDescription]
+      ]
 
 getPosterR :: CASKey -> Handler TypedContent
 getPosterR key = do
@@ -300,8 +299,8 @@ getPosterR key = do
       respond (TE.encodeUtf8 posterImageType) posterImage
 
 externalEventPage :: Entity ExternalEvent -> Handler Html
-externalEventPage (Entity _ ExternalEvent {..}) = do
-  Place {..} <- runDB $ get404 externalEventPlace
+externalEventPage (Entity _ externalEvent@ExternalEvent {..}) = do
+  place@Place {..} <- runDB $ get404 externalEventPlace
   mGoogleAPIKey <- getsYesod appGoogleAPIKey
   let mGoogleMapsEmbedUrl = do
         apiKey <- mGoogleAPIKey
@@ -316,11 +315,45 @@ externalEventPage (Entity _ ExternalEvent {..}) = do
         pure googleMapsEmbedUrl
   now <- liftIO getCurrentTime
   let today = utctDay now
+  renderUrl <- getUrlRender
   withNavBar $ do
     setTitle $ toHtml externalEventTitle
     setDescription $ fromMaybe "Party without description" externalEventDescription
+    toWidgetHead $ toJSONLDData $ externalEventJSONLDData renderUrl externalEvent place
     addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe externalEventCreated externalEventModified
     $(widgetFile "external-event")
+
+externalEventJSONLDData :: (Route App -> Text) -> ExternalEvent -> Place -> JSON.Value
+externalEventJSONLDData renderUrl ExternalEvent {..} Place {..} =
+  object $
+    concat
+      [ [ "@context" .= ("https://schema.org" :: Text),
+          "@type" .= ("Event" :: Text),
+          "name" .= htmlEscapedText externalEventTitle,
+          "startDate" .= externalEventDay,
+          "eventAttendanceMode" .= ("https://schema.org/OfflineEventAttendanceMode" :: Text),
+          "eventStatus"
+            .= if externalEventCancelled
+              then ("https://schema.org/EventCancelled" :: Text)
+              else ("https://schema.org/EventScheduled" :: Text),
+          "location"
+            .= object
+              [ "@type" .= ("Place" :: Text),
+                "address" .= htmlEscapedText placeQuery
+              ]
+        ],
+        [ "organizer"
+            .= object
+              [ "@type" .= ("Organization" :: Text),
+                "name" .= htmlEscapedText organizer
+              ]
+          | organizer <- maybeToList externalEventOrganiser
+        ],
+        ["description" .= htmlEscapedText description | description <- maybeToList externalEventDescription]
+      ]
+
+htmlEscapedText :: Text -> Text
+htmlEscapedText = LT.toStrict . HT.renderHtml . toHtml
 
 newtype JSONLDData = JSONLDData Value
 
