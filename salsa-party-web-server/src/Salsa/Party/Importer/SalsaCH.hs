@@ -60,8 +60,8 @@ homePageConduit =
     .| C.concatMap
       ( map eventFromHomepageId
           . filter
-            -- No cancelled parties and no courses.
-            (\e -> not (eventFromHomepageIsCancelled e) && not (eventFromHomepageIsCourse e))
+            -- No courses.
+            (not . eventFromHomepageIsCourse)
       )
 
 makeHomepageRequest :: Day -> Import Request
@@ -100,6 +100,7 @@ data EventDetails = EventDetails
   { eventDetailsId :: !Text,
     eventDetailsName :: !Text,
     eventDetailsDescription :: !(Maybe Text),
+    eventDetailsCancelled :: !Bool,
     eventDetailsStart :: !ZonedTime,
     eventDetailsVenue :: !EventVenue,
     eventDetailsImages :: ![EventImage]
@@ -112,6 +113,7 @@ instance FromJSON EventDetails where
       <$> o .: "id"
       <*> o .: "name"
       <*> o .:? "description"
+      <*> o .: "is_cancelled"
       <*> o .: "start_datetime"
       <*> o .: "venue"
       <*> o .:? "images" .!= []
@@ -191,6 +193,7 @@ toExternalEvent = awaitForever $ \EventDetails {..} -> do
   let LocalTime externalEventDay tod = zonedTimeToLocalTime eventDetailsStart
   let externalEventStart = Just tod
   let externalEventHomepage = Nothing
+  let externalEventCancelled = eventDetailsCancelled
   now <- liftIO getCurrentTime
   let externalEventCreated = now
   let externalEventModified = Nothing

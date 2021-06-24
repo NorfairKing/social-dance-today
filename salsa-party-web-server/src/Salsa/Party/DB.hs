@@ -122,6 +122,7 @@ ExternalEvent
     day Day
     start TimeOfDay Maybe
     homepage Text Maybe
+    cancelled Bool default=0 -- False
 
     created UTCTime
     modified UTCTime Maybe default=NULL
