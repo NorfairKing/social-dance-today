@@ -163,6 +163,7 @@ instance FromJSON EventImage where
 jsonRequestConduit :: FromJSON a => ConduitT Request a Import ()
 jsonRequestConduit = do
   man <- asks appHTTPManager
+  userAgent <- liftIO chooseUserAgent
   let limitConfig =
         defaultLimitConfig
           { maxBucketTokens = 10, -- Ten tokens maximum, represents one request
@@ -172,7 +173,6 @@ jsonRequestConduit = do
   rateLimiter <- liftIO $ newRateLimiter limitConfig
   awaitForever $ \requestPrototype -> do
     liftIO $ waitDebit limitConfig rateLimiter 10 -- Need 10 tokens
-    userAgent <- liftIO chooseUserAgent
     let request = requestPrototype {requestHeaders = ("User-Agent", userAgent) : requestHeaders requestPrototype}
     logInfoNS "Importer" $ "fetching: " <> T.pack (show (getUri request))
     response <- liftIO $ httpLbs request man -- TODO this can fail, make that ok.

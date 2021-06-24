@@ -1,6 +1,6 @@
 module Main where
 
-import Salsa.Party.Web.Server
+import Salsa.Party.Server
 
 main :: IO ()
-main = salsaPartyWebServer
+main = salsaPartyServer

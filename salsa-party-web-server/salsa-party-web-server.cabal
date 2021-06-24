@@ -18,9 +18,11 @@ library
       Salsa.Party.DB.Migration
       Salsa.Party.DB.Password
       Salsa.Party.DB.URI
+      Salsa.Party.Importer
       Salsa.Party.Importer.Env
       Salsa.Party.Importer.Import
       Salsa.Party.Importer.SalsaCH
+      Salsa.Party.Server
       Salsa.Party.Web.Server
       Salsa.Party.Web.Server.Application
       Salsa.Party.Web.Server.Constants
