@@ -38,7 +38,8 @@ spec = serverSpec $ do
 
   describe "PartyR" $
     yit "GETs a 404 for a nonexistent party" $ do
-      get $ PartyR $ toSqlKey 666
+      uuid <- nextRandomUUID
+      get $ PartyR uuid
       statusIs 404
 
   describe "GetAccountPartiesR" $

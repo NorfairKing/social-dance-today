@@ -160,7 +160,7 @@ testSubmitOrganiser OrganiserForm {..} = do
   _ <- followRedirect
   statusIs 200
 
-testSubmitParty :: PartyForm -> Coordinates -> YesodClientM App PartyId
+testSubmitParty :: PartyForm -> Coordinates -> YesodClientM App EventUUID
 testSubmitParty PartyForm {..} loc = do
   -- Put the address in the database already so we don't need to use an external service for geocoding
   _ <- testSubmitPlace partyFormAddress loc
@@ -180,7 +180,7 @@ testSubmitParty PartyForm {..} loc = do
   case errOrLoc of
     Left err -> liftIO $ expectationFailure $ T.unpack err
     Right redirectLocation -> case redirectLocation of
-      AccountR (AccountPartyR partyId) -> pure partyId
+      AccountR (AccountPartyR partyUuid) -> pure partyUuid
       _ -> liftIO $ expectationFailure $ "Coordinates should have been some AccountR AccountPartyR after submitting a party, was this instead: " <> show redirectLocation
 
 testDB :: DB.SqlPersistT IO a -> YesodClientM App a

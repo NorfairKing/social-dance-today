@@ -34,30 +34,31 @@ runSalsaPartyServer :: Settings -> IO ()
 runSalsaPartyServer settings@Settings {..} = do
   let info = mkSqliteConnectionInfo (T.pack (fromAbsFile settingDbFile)) & walEnabled .~ False & fkEnabled .~ False
   runStderrLoggingT $
-    withSqlitePoolInfo info 1 $ \pool -> do
-      runSqlPool (completeServerMigration False) pool
-      sessionKeyFile <- resolveFile' "client_session_key.aes"
-      man <- HTTP.newTlsManager
-      rateLimiter <- liftIO $ newRateLimiter OSM.limitConfig
+    filterLogger (\_ ll -> ll >= settingLogLevel) $
+      withSqlitePoolInfo info 1 $ \pool -> do
+        runSqlPool (completeServerMigration False) pool
+        sessionKeyFile <- resolveFile' "client_session_key.aes"
+        man <- HTTP.newTlsManager
+        rateLimiter <- liftIO $ newRateLimiter OSM.limitConfig
 
-      let app =
-            App
-              { appLogLevel = settingLogLevel,
-                appStatic = salsaPartyWebServerStatic,
-                appConnectionPool = pool,
-                appHTTPManager = man,
-                appSessionKeyFile = sessionKeyFile,
-                appSendEmails = settingSendEmails,
-                appAdmin = settingAdmin,
-                appOSMRateLimiter = do
-                  guard settingEnableOSMGeocoding
-                  pure rateLimiter,
-                appGoogleAPIKey = do
-                  guard settingEnableGoogleGeocoding
-                  settingGoogleAPIKey,
-                appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
-                appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
-              }
-      concurrently_
-        (runImporterLoopers settings app)
-        (runSalsaPartyWebServer settings app)
+        let app =
+              App
+                { appLogLevel = settingLogLevel,
+                  appStatic = salsaPartyWebServerStatic,
+                  appConnectionPool = pool,
+                  appHTTPManager = man,
+                  appSessionKeyFile = sessionKeyFile,
+                  appSendEmails = settingSendEmails,
+                  appAdmin = settingAdmin,
+                  appOSMRateLimiter = do
+                    guard settingEnableOSMGeocoding
+                    pure rateLimiter,
+                  appGoogleAPIKey = do
+                    guard settingEnableGoogleGeocoding
+                    settingGoogleAPIKey,
+                  appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
+                  appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
+                }
+        concurrently_
+          (runImporterLoopers settings app)
+          (runSalsaPartyWebServer settings app)

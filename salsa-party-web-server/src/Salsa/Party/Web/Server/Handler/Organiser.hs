@@ -48,8 +48,8 @@ organiserFormPage mResult = do
           upsertBy
             (UniqueOrganiserUser userId)
             ( Organiser
-                { organiserUser = userId,
-                  organiserUuid = Just uuid,
+                { organiserUuid = uuid,
+                  organiserUser = userId,
                   organiserName = organiserFormName,
                   organiserCreated = now,
                   organiserModified = Nothing

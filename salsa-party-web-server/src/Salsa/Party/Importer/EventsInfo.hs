@@ -161,7 +161,7 @@ instance FromJSON EventImage where
 
 toExternalEvent :: ConduitT EventDetails ExternalEvent Import ()
 toExternalEvent = awaitForever $ \EventDetails {..} -> do
-  externalEventUuid <- Just <$> nextRandomUUID
+  externalEventUuid <- nextRandomUUID
   let externalEventKey = eventDetailsId
   let externalEventTitle = eventDetailsName
   let externalEventDescription = eventDetailsDescription

@@ -61,9 +61,9 @@ getSitemapR = do
       )
     dbAcq
       acqParties
-      ( \(Entity partyId Party {..}) ->
+      ( \(Entity _ Party {..}) ->
           SitemapUrl
-            { sitemapLoc = PartyR partyId,
+            { sitemapLoc = PartyR partyUuid,
               sitemapLastMod = Just $ fromMaybe partyCreated partyModified,
               sitemapChangeFreq = Nothing,
               sitemapPriority = Just 0.4

@@ -44,7 +44,7 @@ getAccountPartiesR = do
       withNavBar $(widgetFile "account/parties")
 
 data PartyForm = PartyForm
-  { partyFormId :: Maybe PartyId,
+  { partyFormUuid :: Maybe EventUUID,
     partyFormTitle :: Text,
     partyFormDay :: Day,
     partyFormAddress :: Text,
@@ -67,7 +67,7 @@ instance Validity PartyForm where
 partyForm :: FormInput Handler PartyForm
 partyForm =
   PartyForm
-    <$> iopt hiddenField "id"
+    <$> iopt hiddenField "uuid"
     <*> ireq textField "title"
     <*> ireq dayField "day"
     <*> ireq textField "address"
@@ -77,9 +77,9 @@ partyForm =
     <*> iopt textField "price"
     <*> iopt fileField "poster"
 
-getAccountPartyR :: PartyId -> Handler Html
-getAccountPartyR partyId =
-  submitPartyPage (Just partyId) Nothing
+getAccountPartyR :: EventUUID -> Handler Html
+getAccountPartyR partyUuid =
+  submitPartyPage (Just partyUuid) Nothing
 
 getAccountSubmitPartyR :: Handler Html
 getAccountSubmitPartyR = submitPartyPage Nothing Nothing
@@ -89,8 +89,8 @@ postAccountSubmitPartyR = do
   res <- runInputPostResult partyForm
   submitPartyPage Nothing $ Just res
 
-submitPartyPage :: Maybe PartyId -> Maybe (FormResult PartyForm) -> Handler Html
-submitPartyPage mPartyId mResult = do
+submitPartyPage :: Maybe EventUUID -> Maybe (FormResult PartyForm) -> Handler Html
+submitPartyPage mPartyUuid mResult = do
   Entity userId User {..} <- requireAuth
 
   requireVerification <- getsYesod appSendEmails
@@ -109,39 +109,45 @@ submitPartyPage mPartyId mResult = do
           Entity placeId _ <- lookupPlace partyFormAddress
           now <- liftIO getCurrentTime
           -- Insert or update the party
-          partyId <- runDB $ case partyFormId of
+          (partyId, partyUuid) <- runDB $ case partyFormUuid of
             Nothing -> do
               addMessage "is-success" "Succesfully submitted party"
               uuid <- nextRandomUUID
-              insert
-                ( Party
-                    { partyUuid = Just uuid,
-                      partyOrganiser = organiserId,
-                      partyTitle = partyFormTitle,
-                      partyDescription = unTextarea <$> partyFormDescription,
-                      partyDay = partyFormDay,
-                      partyStart = partyFormStart,
-                      partyHomepage = partyFormHomepage,
-                      partyPrice = partyFormPrice,
-                      partyCreated = now,
-                      partyModified = Nothing,
-                      partyPlace = placeId
-                    }
-                )
-            Just partyId -> do
-              addMessage "is-success" "Succesfully edited party"
-              update
-                partyId
-                [ PartyTitle =. partyFormTitle,
-                  PartyDescription =. unTextarea <$> partyFormDescription,
-                  PartyDay =. partyFormDay,
-                  PartyStart =. partyFormStart,
-                  PartyHomepage =. partyFormHomepage,
-                  PartyPrice =. partyFormPrice,
-                  PartyPlace =. placeId,
-                  PartyModified =. Just now
-                ]
-              pure partyId
+              partyId <-
+                insert
+                  ( Party
+                      { partyUuid = uuid,
+                        partyOrganiser = organiserId,
+                        partyTitle = partyFormTitle,
+                        partyDescription = unTextarea <$> partyFormDescription,
+                        partyDay = partyFormDay,
+                        partyStart = partyFormStart,
+                        partyHomepage = partyFormHomepage,
+                        partyPrice = partyFormPrice,
+                        partyCreated = now,
+                        partyModified = Nothing,
+                        partyPlace = placeId
+                      }
+                  )
+              pure (partyId, uuid)
+            Just partyUuid -> do
+              mParty <- getBy $ UniquePartyUUID partyUuid
+              case mParty of
+                Nothing -> notFound
+                Just (Entity partyId _) -> do
+                  addMessage "is-success" "Succesfully edited party"
+                  update
+                    partyId
+                    [ PartyTitle =. partyFormTitle,
+                      PartyDescription =. unTextarea <$> partyFormDescription,
+                      PartyDay =. partyFormDay,
+                      PartyStart =. partyFormStart,
+                      PartyHomepage =. partyFormHomepage,
+                      PartyPrice =. partyFormPrice,
+                      PartyPlace =. placeId,
+                      PartyModified =. Just now
+                    ]
+                  pure (partyId, partyUuid)
           -- Update the poster if a new one has been submitted
           forM_ partyFormPoster $ \posterFileInfo -> do
             imageBlob <- fileSourceByteString posterFileInfo
@@ -167,12 +173,11 @@ submitPartyPage mPartyId mResult = do
                       PosterImageType =. convertedImageType,
                       PosterModified =. Just now
                     ]
-          redirect $ AccountR $ AccountPartyR partyId
+          redirect $ AccountR $ AccountPartyR partyUuid
         _ -> do
           mPartyEntity <- fmap join $
-            forM mPartyId $ \partyId -> do
-              mParty <- runDB $ get partyId
-              pure $ Entity partyId <$> mParty
+            forM mPartyUuid $ \partyUuid -> do
+              runDB $ getBy $ UniquePartyUUID partyUuid
           mPlace <- forM mPartyEntity $ \(Entity _ party) -> runDB $ get404 $ partyPlace party
           posterWidgets <- fmap (fromMaybe []) $
             forM mPartyEntity $ \(Entity partyId party) -> do
@@ -197,42 +202,54 @@ submitPartyPage mPartyId mResult = do
           -- mtv :: (Party -> Maybe Text) ->
           withMFormResultNavBar mResult $(widgetFile "account/submit-party")
 
-postAccountPartyDeleteR :: PartyId -> Handler Html
-postAccountPartyDeleteR partyId = do
-  runDB $ deletePartyCompletely partyId
-  redirect $ AccountR AccountPartiesR
+postAccountPartyDeleteR :: EventUUID -> Handler Html
+postAccountPartyDeleteR partyUuid = do
+  mParty <- runDB $ getBy $ UniquePartyUUID partyUuid
+  case mParty of
+    Nothing -> notFound
+    Just (Entity partyId _) -> do
+      runDB $ deletePartyCompletely partyId
+      redirect $ AccountR AccountPartiesR
 
-getPartyR :: PartyId -> Handler Html
-getPartyR partyId = do
-  party@Party {..} <- runDB $ get404 partyId
-  place@Place {..} <- runDB $ get404 partyPlace
-  organiser@Organiser {..} <- runDB $ get404 partyOrganiser
-  posterKeys <- runDB $
-    E.select $
-      E.from $ \poster -> do
-        E.where_ $ poster E.^. PosterParty E.==. E.val partyId
-        pure (poster E.^. PosterKey)
-  mGoogleAPIKey <- getsYesod appGoogleAPIKey
-  let mGoogleMapsEmbedUrl = do
-        apiKey <- mGoogleAPIKey
-        let mapsAPI = "https://www.google.com/maps/embed/v1/place"
-        let googleMapsEmbedQuery =
-              renderQuery
-                True
-                [ ("key", Just $ TE.encodeUtf8 apiKey),
-                  ("q", Just $ TE.encodeUtf8 placeQuery)
-                ]
-        let googleMapsEmbedUrl = mapsAPI <> TE.decodeUtf8 googleMapsEmbedQuery
-        pure googleMapsEmbedUrl
-  now <- liftIO getCurrentTime
-  let today = utctDay now
-  renderUrl <- getUrlRender
-  withNavBar $ do
-    setTitle $ toHtml partyTitle
-    setDescription $ fromMaybe "Party without description" partyDescription
-    toWidgetHead $ toJSONLDData $ partyJSONLDData renderUrl party (Entity partyOrganiser organiser) place posterKeys
-    addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified
-    $(widgetFile "party")
+getPartyOldR :: PartyId -> Handler Html
+getPartyOldR partyId = do
+  Party {..} <- runDB $ get404 partyId
+  redirect $ PartyR partyUuid
+
+getPartyR :: EventUUID -> Handler Html
+getPartyR eventUuid = do
+  mParty <- runDB $ getBy $ UniquePartyUUID eventUuid
+  case mParty of
+    Nothing -> notFound
+    Just (Entity partyId party@Party {..}) -> do
+      place@Place {..} <- runDB $ get404 partyPlace
+      organiser@Organiser {..} <- runDB $ get404 partyOrganiser
+      posterKeys <- runDB $
+        E.select $
+          E.from $ \poster -> do
+            E.where_ $ poster E.^. PosterParty E.==. E.val partyId
+            pure (poster E.^. PosterKey)
+      mGoogleAPIKey <- getsYesod appGoogleAPIKey
+      let mGoogleMapsEmbedUrl = do
+            apiKey <- mGoogleAPIKey
+            let mapsAPI = "https://www.google.com/maps/embed/v1/place"
+            let googleMapsEmbedQuery =
+                  renderQuery
+                    True
+                    [ ("key", Just $ TE.encodeUtf8 apiKey),
+                      ("q", Just $ TE.encodeUtf8 placeQuery)
+                    ]
+            let googleMapsEmbedUrl = mapsAPI <> TE.decodeUtf8 googleMapsEmbedQuery
+            pure googleMapsEmbedUrl
+      now <- liftIO getCurrentTime
+      let today = utctDay now
+      renderUrl <- getUrlRender
+      withNavBar $ do
+        setTitle $ toHtml partyTitle
+        setDescription $ fromMaybe "Party without description" partyDescription
+        toWidgetHead $ toJSONLDData $ partyJSONLDData renderUrl party (Entity partyOrganiser organiser) place posterKeys
+        addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified
+        $(widgetFile "party")
 
 newtype JSONLDData = JSONLDData Value
 

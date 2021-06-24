@@ -41,9 +41,16 @@ import Salsa.Party.DB.Password
 import Salsa.Party.DB.URI ()
 import Salsa.Party.DB.UUID ()
 
-data Event
+-- We use new phantom types instead of the ones belowe because of a circular
+-- dependency of definition created by TH.
 
-type EventUUID = UUID Event
+data P -- Phantom type anyway
+
+type EventUUID = UUID P
+
+data O -- Phantom type anyway
+
+type OrganiserUUID = UUID O
 
 share
   [mkPersist sqlSettings, mkMigrate "automaticMigrations"]
@@ -64,7 +71,7 @@ User
 
 Organiser
     -- UUID, for external usage
-    uuid EventUUID Maybe default=null -- TODO make this non-maybe, also get rid of the !force below
+    uuid OrganiserUUID
 
     user UserId
     name Text
@@ -92,8 +99,8 @@ Place
 
 
 Party
-    -- UUID, for external usage in a shared namespace with the external event table
-    uuid EventUUID Maybe default=null -- TODO make this non-maybe, also get rid of the !force below
+    -- UUID, for external usage in a shared namespace with the ExternalEvent table
+    uuid EventUUID
 
     organiser OrganiserId
     title Text
@@ -133,7 +140,7 @@ Poster
 
 ExternalEvent
     -- UUID, for external usage in a shared namespace with the Party table
-    uuid EventUUID Maybe default=null -- TODO make this non-maybe, also get rid of the !force below
+    uuid EventUUID
     -- Unique key for party so that we don't duplicate parties
     -- and we don't update the wrong party when parties get updated
     key Text

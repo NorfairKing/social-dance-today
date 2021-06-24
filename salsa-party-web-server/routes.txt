@@ -4,7 +4,8 @@
 
 /query QueryR POST
 
-/party/#PartyId PartyR GET
+/party/#EventUUID PartyR GET
+!/party/#PartyId PartyOldR GET -- TODO get rid of this eventually
 /poster/#CASKey PosterR GET
 /organiser/#OrganiserId OrganiserR GET
 
@@ -13,8 +14,8 @@
   /organiser AccountOrganiserR GET POST
 
   /submit-party AccountSubmitPartyR GET POST
-  /party/#PartyId AccountPartyR GET
-  /party/#PartyId/delete AccountPartyDeleteR POST
+  /party/#EventUUID AccountPartyR GET
+  /party/#EventUUID/delete AccountPartyDeleteR POST
 
   /parties AccountPartiesR GET
 

@@ -62,7 +62,7 @@
           <th width=50px>
             Details
       <tbody>
-        $forall Entity partyId party <- parties
+        $forall Entity _ party <- parties
           <tr>
             <td>
               #{partyTitle party}
@@ -70,7 +70,7 @@
               #{formatTime defaultTimeLocale "%F" $ partyDay party}
               (#{prettyDayAuto today $ partyDay party})
             <td>
-              <a .button href=@{PartyR partyId}>
+              <a .button href=@{PartyR $ partyUuid party}>
                 Details
 
 <section .section>
@@ -96,4 +96,5 @@
               #{formatTime defaultTimeLocale "%F" $ externalEventDay externalEvent}
               (#{prettyDayAuto today $ externalEventDay externalEvent})
             <td>
-              TODO: button
+              <a .button href=@{PartyR $ externalEventUuid externalEvent}>
+                Details

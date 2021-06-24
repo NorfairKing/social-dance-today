@@ -17,7 +17,6 @@ completeServerMigration quiet = do
   logInfoN "Running automatic migrations"
   (if quiet then void . runMigrationQuiet else runMigration) automaticMigrations `catch` (\(PersistError t) -> liftIO $ die $ T.unpack t)
   setUpPlaces
-  setupUUIDs
 
 setUpPlaces :: (MonadIO m, MonadLogger m) => SqlPersistT m ()
 setUpPlaces = do
@@ -36,18 +35,3 @@ locations =
     Place {placeQuery = "New York", placeLat = 43.1561681, placeLon = -75.8449946},
     Place {placeQuery = "Sydney", placeLat = -33.8888621, placeLon = 151.204897861}
   ]
-
-setupUUIDs :: (MonadIO m, MonadLogger m) => SqlPersistT m ()
-setupUUIDs = do
-  partyIds <- selectKeysList [PartyUuid ==. Nothing] [Asc PartyId]
-  forM_ partyIds $ \partyId -> do
-    uuid <- nextRandomUUID
-    update partyId [PartyUuid =. Just uuid]
-  organiserIds <- selectKeysList [OrganiserUuid ==. Nothing] [Asc OrganiserId]
-  forM_ organiserIds $ \organiserId -> do
-    uuid <- nextRandomUUID
-    update organiserId [OrganiserUuid =. Just uuid]
-  externalEventIds <- selectKeysList [ExternalEventUuid ==. Nothing] [Asc ExternalEventId]
-  forM_ externalEventIds $ \externalEventId -> do
-    uuid <- nextRandomUUID
-    update externalEventId [ExternalEventUuid =. Just uuid]

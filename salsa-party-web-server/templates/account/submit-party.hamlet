@@ -1,7 +1,7 @@
 <section .section>
   <div .container>
     <h1 .title .is-3>
-      $maybe _ <- mPartyId
+      $maybe _ <- mPartyUuid
         Edit Party
       $nothing
         Submit Party
@@ -97,10 +97,10 @@
         ^{posterWidget}
 
 
-      $maybe partyId <- mPartyId
+      $maybe partyUuid <- mPartyUuid
         <div .field>
           <div .control>
-            <input name="id" type="hidden" value=#{fromSqlKey partyId}>
+            <input name="uuid" type="hidden" value=#{uuidText partyUuid}>
 
       <div .field>
         <div .control>
@@ -113,6 +113,6 @@
               Submit
             <a .button href=@{AccountR AccountPartiesR}>
               Back
-            $maybe partyId <- mPartyId
-              <a .button href=@{PartyR partyId}>
+            $maybe partyUuid <- mPartyUuid
+              <a .button href=@{PartyR partyUuid}>
                 Public party profile

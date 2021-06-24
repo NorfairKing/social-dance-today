@@ -49,7 +49,7 @@
 
 <!-- Facebook Open Graph metadata -->
 <meta property="og:type" content="website">
-<meta property="og:url" content=@{PartyR partyId}>
+<meta property="og:url" content=@{PartyR partyUuid}>
 <meta property="og:title" content=#{partyTitle}>
 $forall E.Value posterKey <- posterKeys
   <meta property="og:image" content=@{PosterR posterKey}>
@@ -59,7 +59,7 @@ $maybe description <- partyDescription
 <!-- Twitter Meta tags -->
 <meta name="twitter:site" content="@kerckhove_ts">
 <meta property="twitter:domain" content=@{HomeR}>
-<meta property="twitter:url" content=@{PartyR partyId}>
+<meta property="twitter:url" content=@{PartyR partyUuid}>
 <meta name="twitter:title" content=#{partyTitle}>
 $maybe description <- partyDescription
   <meta property="twitter:description" content=#{description}>
