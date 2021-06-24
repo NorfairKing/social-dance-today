@@ -5,7 +5,7 @@
 
 <section .section>
   <div .container>
-    <h2 .title .is-2>
+    <h2 .title .is-4>
       Users
 
     <table .table .is-fullwidth .is-striped>
@@ -28,7 +28,7 @@
 
 <section .section>
   <div .container>
-    <h2 .title .is-2>
+    <h2 .title .is-4>
       Organisers
 
     <table .table .is-fullwidth .is-striped>
@@ -49,7 +49,7 @@
 
 <section .section>
   <div .container>
-    <h2 .title .is-2>
+    <h2 .title .is-4>
       Parties
 
     <table .table .is-fullwidth .is-striped>
@@ -57,7 +57,7 @@
         <tr>
           <th>
             Title
-          <th width=150px>
+          <th width=250px>
             Day
           <th width=50px>
             Details
@@ -71,4 +71,29 @@
               (#{prettyDayAuto today $ partyDay party})
             <td>
               <a .button href=@{PartyR partyId}>
-                Profile
+                Details
+
+<section .section>
+  <div .container>
+    <h2 .title .is-4>
+      External Events
+
+    <table .table .is-fullwidth .is-striped>
+      <thead>
+        <tr>
+          <th>
+            Title
+          <th width=250px>
+            Day
+          <th width=50px>
+            Details
+      <tbody>
+        $forall Entity externalEventId externalEvent <- externalEvents
+          <tr>
+            <td>
+              #{externalEventTitle externalEvent}
+            <td>
+              #{formatTime defaultTimeLocale "%F" $ externalEventDay externalEvent}
+              (#{prettyDayAuto today $ externalEventDay externalEvent})
+            <td>
+              TODO: button

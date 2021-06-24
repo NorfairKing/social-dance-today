@@ -12,6 +12,7 @@ getPanelR = do
   users <- runDB $ selectList [] [Asc UserId]
   organisers <- runDB $ selectList [] [Asc OrganiserId]
   parties <- runDB $ selectList [] [Asc PartyDay, Asc PartyId]
+  externalEvents <- runDB $ selectList [] [Asc ExternalEventDay, Asc ExternalEventId]
   today <- liftIO $ utctDay <$> getCurrentTime
   withNavBar $ do
     setTitle "Salsa Parties Admin Panel"
