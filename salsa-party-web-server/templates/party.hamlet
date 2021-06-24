@@ -31,20 +31,22 @@
           Price: #{price}
   
     $maybe homepage <- partyHomepage
-      <p>
-        <a .button .is-light href=#{homepage}>
-          Homepage
+      <div .content>
+        <p>
+          <a .button .is-light href=#{homepage}>
+            Homepage
   
 
     $maybe googleMapsEmbedUrl <- mGoogleMapsEmbedUrl
-      <p>
-        <iframe
-          width="600"
-          height="450"
-          style="border:0"
-          loading="lazy"
-          allowfullscreen
-          src=#{googleMapsEmbedUrl}>
+      <div .content>
+        <p>
+          <iframe
+            width="600"
+            height="450"
+            style="border:0"
+            loading="lazy"
+            allowfullscreen
+            src=#{googleMapsEmbedUrl}>
 
 
 <!-- Facebook Open Graph metadata -->
