@@ -9,9 +9,14 @@ import qualified Database.Esqueleto as E
 import Salsa.Party.Web.Server.Distance
 import Salsa.Party.Web.Server.Handler.Import
 
+data SearchResults = SearchResults
+  { searchResultsParties :: [(Entity Party, Entity Place, Maybe CASKey)]
+  }
+  deriving (Show, Eq)
+
 -- For a given day and a given place,
 -- find all parties sorted by distance.
-searchQuery :: MonadIO m => Day -> Coordinates -> SqlPersistT m [(Entity Party, Entity Place, Maybe CASKey)]
+searchQuery :: MonadIO m => Day -> Coordinates -> SqlPersistT m SearchResults
 searchQuery day coordinates@Coordinates {..} = do
   rawResults <- E.select $
     E.from $ \(party `E.InnerJoin` p `E.LeftOuterJoin` mPoster) -> do
@@ -38,7 +43,7 @@ searchQuery day coordinates@Coordinates {..} = do
       E.orderBy [E.asc distSquared]
       pure (party, p, mPoster E.?. PosterKey)
 
-  pure $ postProcess coordinates rawResults
+  pure SearchResults {searchResultsParties = postProcessParties coordinates rawResults}
 
 -- One degree longitude is 111km
 roughMaxLatDistance :: Nano
@@ -48,11 +53,11 @@ roughMaxLatDistance = realToFrac maximumDistance / 111_000
 roughMaxLonDistance :: Nano
 roughMaxLonDistance = 5 * realToFrac maximumDistance / 111_000
 
-postProcess ::
+postProcessParties ::
   Coordinates ->
   [(Entity Party, Entity Place, E.Value (Maybe CASKey))] ->
   [(Entity Party, Entity Place, Maybe CASKey)]
-postProcess coordinates = mapMaybe $ \(party, place, E.Value mCasKey) -> do
+postProcessParties coordinates = mapMaybe $ \(party, place, E.Value mCasKey) -> do
   guard $
     coordinates `distanceTo` placeCoordinates (entityVal place)
       <= maximumDistance

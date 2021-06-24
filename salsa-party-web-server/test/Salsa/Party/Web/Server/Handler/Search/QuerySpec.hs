@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeApplications #-}
 
 module Salsa.Party.Web.Server.Handler.Search.QuerySpec (spec) where
@@ -15,8 +16,8 @@ spec = do
         forAllValid $ \day ->
           forAllValid $ \place ->
             flip runSqlPool pool $ do
-              ps <- searchQuery @IO day place
-              liftIO $ ps `shouldBe` []
+              SearchResults {..} <- searchQuery @IO day place
+              liftIO $ searchResultsParties `shouldBe` []
       it "runs correctly with these three parties where one is on a different day" $ \pool ->
         forAllValid $ \party1Prototype ->
           forAllValid $ \party2Prototype ->
@@ -50,12 +51,15 @@ spec = do
                             partyPlace = place3Id
                           }
                   _ <- DB.insert party3
-                  ps <- searchQuery @IO day (placeCoordinates queryPlace)
+                  sr <- searchQuery @IO day (placeCoordinates queryPlace)
                   liftIO $
-                    ps
-                      `shouldBe` [ (Entity party1Id party1, Entity place1Id place1, Nothing),
-                                   (Entity party2Id party2, Entity place2Id place2, Nothing)
-                                 ]
+                    sr
+                      `shouldBe` SearchResults
+                        { searchResultsParties =
+                            [ (Entity party1Id party1, Entity place1Id place1, Nothing),
+                              (Entity party2Id party2, Entity place2Id place2, Nothing)
+                            ]
+                        }
       it "runs correctly with these three parties where one is too far away" $ \pool ->
         forAllValid $ \party1Prototype ->
           forAllValid $ \party2Prototype ->
@@ -89,9 +93,12 @@ spec = do
                             partyPlace = place3Id
                           }
                   _ <- DB.insert party3
-                  ps <- searchQuery @IO day (placeCoordinates queryPlace)
+                  sr <- searchQuery @IO day (placeCoordinates queryPlace)
                   liftIO $
-                    ps
-                      `shouldBe` [ (Entity party1Id party1, Entity place1Id place1, Nothing),
-                                   (Entity party2Id party2, Entity place2Id place2, Nothing)
-                                 ]
+                    sr
+                      `shouldBe` SearchResults
+                        { searchResultsParties =
+                            [ (Entity party1Id party1, Entity place1Id place1, Nothing),
+                              (Entity party2Id party2, Entity place2Id place2, Nothing)
+                            ]
+                        }

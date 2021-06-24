@@ -62,7 +62,7 @@ searchResultPage mDay mAddress coordinates = do
   let nextDay = addDays 1 day
   let toDouble :: Nano -> Double
       toDouble = realToFrac
-  parties <- runDB $ searchQuery day coordinates
+  SearchResults {..} <- runDB $ searchQuery day coordinates
   withNavBar $ do
     setTitle $
       mconcat

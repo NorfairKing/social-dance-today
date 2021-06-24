@@ -34,12 +34,12 @@
         <button .pagination-next type="submit">
           Next day
 
-    $if null parties
+    $if null searchResultsParties
       <p>
         No parties found
     $else
       <div .columns .is-multiline .is-centered>
-        $forall (Entity _ party, Entity _ p, mPosterVal) <- parties
+        $forall (Entity _ party, Entity _ p, mPosterVal) <- searchResultsParties
           <div .column .is-two-thirds-tablet .is-half-desktop>
             <div .zoom-without-container>
               <a  href=@{PartyR $ partyUuid party}>
