@@ -7,9 +7,13 @@ import Data.Aeson
 import Data.Proxy
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Validity
 import Database.Persist
 import Database.Persist.Sql
 import Network.URI
+
+instance Validity URI where
+  validate = trivialValidation -- Not really true, but fine.
 
 instance FromJSON URI where
   parseJSON = withText "URI" $ \t -> case parseURI (T.unpack t) of

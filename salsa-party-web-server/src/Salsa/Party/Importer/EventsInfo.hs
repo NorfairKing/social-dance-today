@@ -25,6 +25,7 @@ import Conduit
 import Data.Aeson as JSON
 import qualified Data.Conduit.Combinators as C
 import Data.Fixed
+import Data.Scientific
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Network.URI as URI
@@ -101,6 +102,7 @@ data EventDetails = EventDetails
     eventDetailsName :: !Text,
     eventDetailsDescription :: !(Maybe Text),
     eventDetailsCancelled :: !Bool,
+    eventDetailsPrice :: !(Maybe EventPrice),
     eventDetailsStart :: !ZonedTime,
     eventDetailsVenue :: !EventVenue,
     eventDetailsImages :: ![EventImage]
@@ -114,9 +116,22 @@ instance FromJSON EventDetails where
       <*> o .: "name"
       <*> o .:? "description"
       <*> o .: "is_cancelled"
+      <*> o .:? "price"
       <*> o .: "start_datetime"
       <*> o .: "venue"
       <*> o .:? "images" .!= []
+
+data EventPrice = EventPrice
+  { eventPriceCurrency :: Text,
+    eventPriceAmount :: Scientific
+  }
+  deriving (Show, Eq)
+
+instance FromJSON EventPrice where
+  parseJSON = withObject "EventPrice" $ \o ->
+    EventPrice
+      <$> o .: "currency"
+      <*> o .: "amount"
 
 data EventVenue = EventVenue
   { eventVenueName :: !(Maybe Text),
@@ -169,6 +184,14 @@ toExternalEvent = awaitForever $ \EventDetails {..} -> do
   let LocalTime externalEventDay tod = zonedTimeToLocalTime eventDetailsStart
   let externalEventStart = Just tod
   let externalEventHomepage = Nothing
+  let externalEventPrice =
+        ( \EventPrice {..} ->
+            T.unwords
+              [ T.pack $ formatScientific Generic Nothing eventPriceAmount,
+                eventPriceCurrency
+              ]
+        )
+          <$> eventDetailsPrice
   let externalEventCancelled = eventDetailsCancelled
   now <- liftIO getCurrentTime
   let externalEventCreated = now

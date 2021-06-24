@@ -2,6 +2,7 @@
 
 module Salsa.Party.Web.Server.Handler.PartySpec (spec) where
 
+import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Handler.TestImport
 
 spec :: Spec
@@ -24,17 +25,28 @@ spec = serverSpec $ do
                   partyForm_
                   location
     it "Can get the party page for an existing party" $ \yc ->
+      -- TODO use a logged-out user and a insert-in-db test here.
       forAllValid $ \organiserForm_ ->
         forAllValid $ \partyForm_ ->
           forAllValid $ \location ->
             withAnyLoggedInUser_ yc $ do
               testSubmitOrganiser organiserForm_
-              partyId <-
+              uuid <-
                 testSubmitParty
                   partyForm_
                   location
-              get $ PartyR partyId
+              get $ PartyR uuid
               statusIs 200
+
+    it "Can get the party page for an existing external event" $ \yc ->
+      forAllValid $ \place ->
+        forAllValid $ \externalEvent ->
+          runYesodClientM yc $ do
+            testDB $ do
+              placeId <- DB.insert place
+              DB.insert_ $ externalEvent {externalEventPlace = placeId}
+            get $ PartyR $ externalEventUuid externalEvent
+            statusIs 200
 
   describe "PartyR" $
     yit "GETs a 404 for a nonexistent party" $ do

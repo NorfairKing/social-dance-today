@@ -90,6 +90,7 @@ library
     , pretty-show
     , random
     , resourcet
+    , scientific
     , shakespeare
     , template-haskell
     , text
@@ -183,6 +184,7 @@ test-suite salsa-party-web-server-test
     , microlens
     , monad-logger
     , mtl
+    , network-uri
     , path
     , path-io
     , persistent

@@ -220,47 +220,43 @@ getPartyR :: EventUUID -> Handler Html
 getPartyR eventUuid = do
   mParty <- runDB $ getBy $ UniquePartyUUID eventUuid
   case mParty of
-    Nothing -> notFound
-    Just (Entity partyId party@Party {..}) -> do
-      place@Place {..} <- runDB $ get404 partyPlace
-      organiser@Organiser {..} <- runDB $ get404 partyOrganiser
-      posterKeys <- runDB $
-        E.select $
-          E.from $ \poster -> do
-            E.where_ $ poster E.^. PosterParty E.==. E.val partyId
-            pure (poster E.^. PosterKey)
-      mGoogleAPIKey <- getsYesod appGoogleAPIKey
-      let mGoogleMapsEmbedUrl = do
-            apiKey <- mGoogleAPIKey
-            let mapsAPI = "https://www.google.com/maps/embed/v1/place"
-            let googleMapsEmbedQuery =
-                  renderQuery
-                    True
-                    [ ("key", Just $ TE.encodeUtf8 apiKey),
-                      ("q", Just $ TE.encodeUtf8 placeQuery)
-                    ]
-            let googleMapsEmbedUrl = mapsAPI <> TE.decodeUtf8 googleMapsEmbedQuery
-            pure googleMapsEmbedUrl
-      now <- liftIO getCurrentTime
-      let today = utctDay now
-      renderUrl <- getUrlRender
-      withNavBar $ do
-        setTitle $ toHtml partyTitle
-        setDescription $ fromMaybe "Party without description" partyDescription
-        toWidgetHead $ toJSONLDData $ partyJSONLDData renderUrl party organiser place posterKeys
-        addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified
-        $(widgetFile "party")
+    Just partyEntity -> partyPage partyEntity
+    Nothing -> do
+      mExternalEvent <- runDB $ getBy $ UniqueExternalEventUUID eventUuid
+      case mExternalEvent of
+        Nothing -> notFound
+        Just externalEventEntity -> externalEventPage externalEventEntity
 
-newtype JSONLDData = JSONLDData Value
-
-toJSONLDData :: ToJSON a => a -> JSONLDData
-toJSONLDData = JSONLDData . toJSON
-
-instance ToWidgetHead App JSONLDData where
-  toWidgetHead (JSONLDData v) =
-    toWidgetHead $
-      H.script ! HA.type_ "application/ld+json" $
-        H.preEscapedLazyText $ renderJavascript $ toJavascript v
+partyPage :: Entity Party -> Handler Html
+partyPage (Entity partyId party@Party {..}) = do
+  place@Place {..} <- runDB $ get404 partyPlace
+  organiser@Organiser {..} <- runDB $ get404 partyOrganiser
+  posterKeys <- runDB $
+    E.select $
+      E.from $ \poster -> do
+        E.where_ $ poster E.^. PosterParty E.==. E.val partyId
+        pure (poster E.^. PosterKey)
+  mGoogleAPIKey <- getsYesod appGoogleAPIKey
+  let mGoogleMapsEmbedUrl = do
+        apiKey <- mGoogleAPIKey
+        let mapsAPI = "https://www.google.com/maps/embed/v1/place"
+        let googleMapsEmbedQuery =
+              renderQuery
+                True
+                [ ("key", Just $ TE.encodeUtf8 apiKey),
+                  ("q", Just $ TE.encodeUtf8 placeQuery)
+                ]
+        let googleMapsEmbedUrl = mapsAPI <> TE.decodeUtf8 googleMapsEmbedQuery
+        pure googleMapsEmbedUrl
+  now <- liftIO getCurrentTime
+  let today = utctDay now
+  renderUrl <- getUrlRender
+  withNavBar $ do
+    setTitle $ toHtml partyTitle
+    setDescription $ fromMaybe "Party without description" partyDescription
+    toWidgetHead $ toJSONLDData $ partyJSONLDData renderUrl party organiser place posterKeys
+    addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified
+    $(widgetFile "party")
 
 partyJSONLDData :: (Route App -> Text) -> Party -> Organiser -> Place -> [E.Value CASKey] -> JSON.Value
 partyJSONLDData renderUrl Party {..} Organiser {..} Place {..} posterKeys =
@@ -302,3 +298,37 @@ getPosterR key = do
       addHeader "Content-Disposition" "inline"
       setEtag $ toPathPiece key
       respond (TE.encodeUtf8 posterImageType) posterImage
+
+externalEventPage :: Entity ExternalEvent -> Handler Html
+externalEventPage (Entity _ ExternalEvent {..}) = do
+  Place {..} <- runDB $ get404 externalEventPlace
+  mGoogleAPIKey <- getsYesod appGoogleAPIKey
+  let mGoogleMapsEmbedUrl = do
+        apiKey <- mGoogleAPIKey
+        let mapsAPI = "https://www.google.com/maps/embed/v1/place"
+        let googleMapsEmbedQuery =
+              renderQuery
+                True
+                [ ("key", Just $ TE.encodeUtf8 apiKey),
+                  ("q", Just $ TE.encodeUtf8 placeQuery)
+                ]
+        let googleMapsEmbedUrl = mapsAPI <> TE.decodeUtf8 googleMapsEmbedQuery
+        pure googleMapsEmbedUrl
+  now <- liftIO getCurrentTime
+  let today = utctDay now
+  withNavBar $ do
+    setTitle $ toHtml externalEventTitle
+    setDescription $ fromMaybe "Party without description" externalEventDescription
+    addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe externalEventCreated externalEventModified
+    $(widgetFile "external-event")
+
+newtype JSONLDData = JSONLDData Value
+
+toJSONLDData :: ToJSON a => a -> JSONLDData
+toJSONLDData = JSONLDData . toJSON
+
+instance ToWidgetHead App JSONLDData where
+  toWidgetHead (JSONLDData v) =
+    toWidgetHead $
+      H.script ! HA.type_ "application/ld+json" $
+        H.preEscapedLazyText $ renderJavascript $ toJavascript v

@@ -47,14 +47,15 @@ library:
   - pretty-show
   - random
   - resourcet
+  - scientific
   - shakespeare
   - template-haskell
   - text
   - time
   - token-limiter
+  - typed-uuid
   - unliftio
   - uuid
-  - typed-uuid
   - validity
   - validity-persistent
   - validity-text
@@ -124,6 +125,7 @@ tests:
     - microlens
     - monad-logger
     - mtl
+    - network-uri
     - path
     - path-io
     - persistent

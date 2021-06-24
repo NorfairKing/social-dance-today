@@ -152,6 +152,7 @@ ExternalEvent
     day Day
     start TimeOfDay Maybe
     homepage Text Maybe
+    price Text Maybe default=NULL
     cancelled Bool default=0 -- False
 
     -- For diagnostics
@@ -173,9 +174,11 @@ ExternalEvent
 
 instance Validity Place
 
+instance Validity Organiser
+
 instance Validity Party
 
-instance Validity Organiser
+instance Validity ExternalEvent
 
 hasChangedComparedTo :: ExternalEvent -> ExternalEvent -> Bool
 hasChangedComparedTo ee1 ee2 =
@@ -188,6 +191,7 @@ hasChangedComparedTo ee1 ee2 =
           changed externalEventDay,
           changed externalEventStart,
           changed externalEventHomepage,
+          changed externalEventPrice,
           changed externalEventCancelled,
           changed externalEventPlace
         ]

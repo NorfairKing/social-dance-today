@@ -1,0 +1,59 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      #{externalEventTitle}
+
+    <h2 .title .is-4>
+      Address: #{placeQuery}
+    
+    <h3 .subtitle .is-5>
+      #{formatTime defaultTimeLocale prettyDayFormat externalEventDay} 
+      $maybe start <- externalEventStart
+        #{formatTime defaultTimeLocale "%H:%M" start} 
+      (#{prettyDayAuto today externalEventDay})
+
+    $maybe description <- externalEventDescription
+      <div .content>
+        <p>
+          #{description}
+
+    $maybe price <- externalEventPrice
+      <div .content>
+        <p>
+          Price: #{price}
+  
+    $maybe homepage <- externalEventHomepage
+      <p>
+        <a .button .is-light href=#{homepage}>
+          Homepage
+  
+
+    $maybe googleMapsEmbedUrl <- mGoogleMapsEmbedUrl
+      <p>
+        <iframe
+          width="600"
+          height="450"
+          style="border:0"
+          loading="lazy"
+          allowfullscreen
+          src=#{googleMapsEmbedUrl}>
+
+    <p .help>
+      Event found via web search, trust with caution.
+
+
+<!-- Facebook Open Graph metadata -->
+<meta property="og:type" content="website">
+<meta property="og:url" content=@{PartyR externalEventUuid}>
+<meta property="og:title" content=#{externalEventTitle}>
+$maybe description <- externalEventDescription
+  <meta property="og:description" content=#{description}>
+
+<!-- Twitter Meta tags -->
+<meta name="twitter:site" content="@kerckhove_ts">
+<meta property="twitter:domain" content=@{HomeR}>
+<meta property="twitter:url" content=@{PartyR externalEventUuid}>
+<meta name="twitter:title" content=#{externalEventTitle}>
+$maybe description <- externalEventDescription
+  <meta property="twitter:description" content=#{description}>
+
