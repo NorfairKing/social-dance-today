@@ -16,6 +16,7 @@ getSitemapR = do
   acqOrganisers <- runDB $ selectSourceRes [] [Asc OrganiserId]
   acqParties <- runDB $ selectSourceRes [] [Asc PartyId]
   acqPosters <- runDB $ selectSourceRes [] [Asc PosterId]
+  acqExternalEvents <- runDB $ selectSourceRes [] [Asc ExternalEventId]
 
   sitemap $ do
     yield
@@ -77,6 +78,16 @@ getSitemapR = do
               sitemapLastMod = Just $ fromMaybe posterCreated posterModified,
               sitemapChangeFreq = Nothing,
               sitemapPriority = Just 0.2
+            }
+      )
+    dbAcq
+      acqExternalEvents
+      ( \(Entity _ ExternalEvent {..}) ->
+          SitemapUrl
+            { sitemapLoc = PartyR externalEventUuid,
+              sitemapLastMod = Just $ fromMaybe externalEventCreated externalEventModified,
+              sitemapChangeFreq = Nothing,
+              sitemapPriority = Just 0.1
             }
       )
 
