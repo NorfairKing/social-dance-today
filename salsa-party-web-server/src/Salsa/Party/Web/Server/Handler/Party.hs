@@ -315,16 +315,15 @@ externalEventPage (Entity _ externalEvent@ExternalEvent {..}) = do
         pure googleMapsEmbedUrl
   now <- liftIO getCurrentTime
   let today = utctDay now
-  renderUrl <- getUrlRender
   withNavBar $ do
     setTitle $ toHtml externalEventTitle
     setDescription $ fromMaybe "Party without description" externalEventDescription
-    toWidgetHead $ toJSONLDData $ externalEventJSONLDData renderUrl externalEvent place
+    toWidgetHead $ toJSONLDData $ externalEventJSONLDData externalEvent place
     addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe externalEventCreated externalEventModified
     $(widgetFile "external-event")
 
-externalEventJSONLDData :: (Route App -> Text) -> ExternalEvent -> Place -> JSON.Value
-externalEventJSONLDData renderUrl ExternalEvent {..} Place {..} =
+externalEventJSONLDData :: ExternalEvent -> Place -> JSON.Value
+externalEventJSONLDData ExternalEvent {..} Place {..} =
   object $
     concat
       [ [ "@context" .= ("https://schema.org" :: Text),
