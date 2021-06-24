@@ -14,6 +14,7 @@ import qualified Data.Text as T
 import Data.Yaml
 import qualified Env
 import GHC.Generics (Generic)
+import Looper
 import Options.Applicative as OptParse
 import qualified Options.Applicative.Help as OptParse (string)
 import Path
@@ -37,7 +38,9 @@ data Settings = Settings
     settingEnableGoogleGeocoding :: !Bool,
     settingGoogleAPIKey :: !(Maybe Text),
     settingGoogleAnalyticsTracking :: !(Maybe Text),
-    settingGoogleSearchConsoleVerification :: !(Maybe Text)
+    settingGoogleSearchConsoleVerification :: !(Maybe Text),
+    -- https://events.info
+    settingEventsInfoImportLooperSettings :: !LooperSettings
   }
   deriving (Show, Eq, Generic)
 
@@ -55,6 +58,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingGoogleAPIKey = flagGoogleAPIKey <|> envGoogleAPIKey <|> mc confGoogleAPIKey
   let settingGoogleAnalyticsTracking = flagGoogleAnalyticsTracking <|> envGoogleAnalyticsTracking <|> mc confGoogleAnalyticsTracking
   let settingGoogleSearchConsoleVerification = flagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification
+  let settingEventsInfoImportLooperSettings = deriveLooperSettings (minutes 1) (hours 24) flagEventsInfoImportLooperFlags envEventsInfoImportLooperEnvironment (mc confEventsInfoImportLooperConfiguration)
   pure Settings {..}
   where
     mc :: (Configuration -> Maybe a) -> Maybe a
@@ -70,7 +74,8 @@ data Configuration = Configuration
     confEnableGoogleGeocoding :: !(Maybe Bool),
     confGoogleAPIKey :: !(Maybe Text),
     confGoogleAnalyticsTracking :: !(Maybe Text),
-    confGoogleSearchConsoleVerification :: !(Maybe Text)
+    confGoogleSearchConsoleVerification :: !(Maybe Text),
+    confEventsInfoImportLooperConfiguration :: !(Maybe LooperConfiguration)
   }
   deriving (Show, Eq, Generic)
 
@@ -91,6 +96,7 @@ instance YamlSchema Configuration where
         <*> optionalField "google-api-key" "Google API key"
         <*> optionalField "google-analytics-tracking" "Google analytics tracking code"
         <*> optionalField "google-search-console-verification" "Google search console html element verification code"
+        <*> optionalField "events.info" "The events.info import looper"
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} =
@@ -116,7 +122,8 @@ data Environment = Environment
     envEnableGoogleGeocoding :: !(Maybe Bool),
     envGoogleAPIKey :: !(Maybe Text),
     envGoogleAnalyticsTracking :: !(Maybe Text),
-    envGoogleSearchConsoleVerification :: !(Maybe Text)
+    envGoogleSearchConsoleVerification :: !(Maybe Text),
+    envEventsInfoImportLooperEnvironment :: !LooperEnvironment
   }
   deriving (Show, Eq, Generic)
 
@@ -139,6 +146,7 @@ environmentParser =
       <*> Env.var (fmap Just . Env.str) "GOOGLE_API_KEY" (mE <> Env.help "Google api key")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_ANALYTICS_TRACKING" (mE <> Env.help "Google analytics tracking code")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (mE <> Env.help "Google search console html element verification code")
+      <*> looperEnvironmentParser "EVENTS_INFO_IMPORTER"
   where
     mE = Env.def Nothing
 
@@ -177,7 +185,8 @@ data Flags = Flags
     flagEnableGoogleGeocoding :: !(Maybe Bool),
     flagGoogleAPIKey :: !(Maybe Text),
     flagGoogleAnalyticsTracking :: !(Maybe Text),
-    flagGoogleSearchConsoleVerification :: !(Maybe Text)
+    flagGoogleSearchConsoleVerification :: !(Maybe Text),
+    flagEventsInfoImportLooperFlags :: !LooperFlags
   }
   deriving (Show, Eq, Generic)
 
@@ -306,3 +315,4 @@ parseFlags =
               ]
           )
       )
+    <*> getLooperFlags "events-info-importer"

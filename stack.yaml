@@ -3,6 +3,10 @@ packages:
 - salsa-party-web-server
 allow-newer: true # Because of token-limiter
 extra-deps:
+- github: NorfairKing/looper
+  commit: c2fc013d2da2ab2528ac49739e8faefa47212e66
+  subdirs:
+    - looper
 - github: NorfairKing/linkcheck
   commit: 88a325e3a6c8610d1ca380457cd267d87ab2c0ab
   subdirs:

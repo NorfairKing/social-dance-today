@@ -23,6 +23,18 @@
         "url": "https://github.com/NorfairKing/linkcheck/archive/88a325e3a6c8610d1ca380457cd267d87ab2c0ab.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "looper": {
+        "branch": "master",
+        "description": "Run actions periodically",
+        "homepage": "http://hackage.haskell.org/package/looper",
+        "owner": "NorfairKing",
+        "repo": "looper",
+        "rev": "c2fc013d2da2ab2528ac49739e8faefa47212e66",
+        "sha256": "17nxwfqc0jn4cpkq485fxf7asmv7a1ld31jwr5mpq9qgkfmfjslk",
+        "type": "tarball",
+        "url": "https://github.com/NorfairKing/looper/archive/c2fc013d2da2ab2528ac49739e8faefa47212e66.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "niv": {
         "branch": "master",
         "description": "Easy dependency management for Nix projects",

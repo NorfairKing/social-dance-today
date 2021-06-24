@@ -9,6 +9,7 @@ pkgsf {
       (import (sources.validity + "/nix/overlay.nix"))
       (import (sources.yamlparse-applicative + "/nix/overlay.nix"))
       (import (sources.safe-coloured-text + "/nix/overlay.nix"))
+      (import (sources.looper + "/nix/overlay.nix"))
       (import (sources.sydtest + "/nix/overlay.nix"))
       (import (sources.linkcheck + "/nix/overlay.nix"))
       (import (sources.seocheck + "/nix/overlay.nix"))

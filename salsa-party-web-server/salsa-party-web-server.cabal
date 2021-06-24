@@ -70,6 +70,7 @@ library
     , http-client-tls
     , http-date
     , http-types
+    , looper
     , microlens
     , monad-logger
     , mtl
