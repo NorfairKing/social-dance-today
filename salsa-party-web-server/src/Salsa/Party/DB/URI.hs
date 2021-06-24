@@ -15,6 +15,9 @@ import Network.URI
 instance Validity URI where
   validate = trivialValidation -- Not really true, but fine.
 
+instance Validity URIAuth where
+  validate = trivialValidation -- Not really true, but fine.
+
 instance FromJSON URI where
   parseJSON = withText "URI" $ \t -> case parseURI (T.unpack t) of
     Nothing -> fail $ "Invalid URI: " <> T.unpack t

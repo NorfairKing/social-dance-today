@@ -78,7 +78,7 @@ instance GenValid URI where
   shrinkValid _ = [] -- No point yet
   genValid = do
     let uriScheme = "https:"
-    let uriAuthority = Nothing
+    uriAuthority <- genValid
     pathLen <- upTo 10
     p <- replicateM (max 1 pathLen) $ elements $ '/' : ['a' .. 'z']
     let uriPath = if not (null p) then '/' : p else ""
@@ -89,3 +89,15 @@ instance GenValid URI where
     f <- replicateM (max 1 fragLen) $ elements ['a' .. 'z']
     let uriFragment = if not (null f) then '#' : f else ""
     pure URI {..}
+
+instance GenValid URIAuth where
+  shrinkValid _ = [] -- No point yet.
+  genValid = do
+    let uriUserInfo = ""
+    domainLen <- upTo 10
+    domain <- replicateM (max 1 domainLen) $ choose ('a', 'z')
+    tldLen <- upTo 10
+    tld <- replicateM (max 1 tldLen) $ choose ('a', 'z')
+    let uriRegName = concat [domain, ".", tld]
+    let uriPort = ""
+    pure URIAuth {..}
