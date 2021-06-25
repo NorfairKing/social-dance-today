@@ -21,6 +21,10 @@ instance GenValid Textarea where
   genValid = Textarea <$> genValid
   shrinkValid = fmap Textarea . shrinkValid . unTextarea
 
+instance GenValid CASKey where
+  shrinkValid _ = [] -- No point, it's a hash.
+  genValid = mkCASKey <$> genValid <*> genValid
+
 instance GenValid OrganiserForm where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
@@ -46,6 +50,14 @@ instance GenValid Party where
   shrinkValid = shrinkValidStructurally
 
 instance GenValid ExternalEvent where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid PartyPoster where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid Image where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 

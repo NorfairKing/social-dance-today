@@ -75,6 +75,19 @@ spec = serverSpec $ do
             get $ PartyR $ externalEventUuid externalEvent
             statusIs 200
 
+  describe "PosterR" $ do
+    it "GETS a 404 for a nonexistent poster" $ \yc -> do
+      forAllValid $ \casKey ->
+        runYesodClientM yc $ do
+          get $ PosterR casKey
+          statusIs 404
+
+    it "Can GET the poster for a party with a poster" $ \yc ->
+      forAllValid $ \image -> runYesodClientM yc $ do
+        testDB $ DB.insert_ image
+        get $ PosterR $ imageKey image
+        statusIs 200
+
   describe "GetAccountPartiesR" $
     it "GETS a 200 for any account with a party" $ \yc -> do
       forAllValid $ \organiserForm_ ->

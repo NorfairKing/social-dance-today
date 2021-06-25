@@ -58,6 +58,7 @@ library:
   - unliftio
   - uuid
   - validity
+  - validity-bytestring
   - validity-persistent
   - validity-text
   - validity-time

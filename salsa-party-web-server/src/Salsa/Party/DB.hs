@@ -200,9 +200,13 @@ instance Validity Place
 
 instance Validity Organiser
 
+instance Validity PartyPoster
+
 instance Validity Party
 
 instance Validity ExternalEvent
+
+instance Validity Image
 
 hasChangedComparedTo :: ExternalEvent -> ExternalEvent -> Bool
 hasChangedComparedTo ee1 ee2 =

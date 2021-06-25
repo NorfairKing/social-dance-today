@@ -14,6 +14,8 @@ import Data.Proxy
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import Data.Validity
+import Data.Validity.ByteString ()
 import Database.Persist
 import Database.Persist.Sql
 import GHC.Generics (Generic)
@@ -23,6 +25,8 @@ import Web.PathPieces
 
 newtype CASKey = CASKey {unCASKey :: ByteString}
   deriving (Eq, Ord, Generic)
+
+instance Validity CASKey
 
 instance Show CASKey where
   show = T.unpack . renderCASKey
