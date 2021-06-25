@@ -1,4 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Salsa.Party.Web.Server.Gen where
@@ -11,7 +10,6 @@ import Data.GenValidity.Text ()
 import Data.GenValidity.Time ()
 import Data.GenValidity.UUID.Typed ()
 import qualified Data.Text as T
-import Network.URI
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Organiser
 import Salsa.Party.Web.Server.Handler.Party
@@ -74,31 +72,3 @@ genValidEmailAddress = do
 
 genValidPassword :: Gen Text
 genValidPassword = genValid `suchThat` (not . T.null)
-
-instance GenValid URI where
-  shrinkValid _ = [] -- No point yet
-  genValid = do
-    let uriScheme = "https:"
-    uriAuthority <- genValid
-    pathLen <- upTo 10
-    p <- replicateM (max 1 pathLen) $ elements $ '/' : ['a' .. 'z']
-    let uriPath = if not (null p) then '/' : p else ""
-    queryLen <- upTo 10
-    q <- replicateM (max 1 queryLen) $ elements ['a' .. 'z']
-    let uriQuery = if not (null q) then '?' : q else ""
-    fragLen <- upTo 10
-    f <- replicateM (max 1 fragLen) $ elements ['a' .. 'z']
-    let uriFragment = if not (null f) then '#' : f else ""
-    pure URI {..}
-
-instance GenValid URIAuth where
-  shrinkValid _ = [] -- No point yet.
-  genValid = do
-    let uriUserInfo = ""
-    domainLen <- upTo 10
-    domain <- replicateM (max 1 domainLen) $ choose ('a', 'z')
-    tldLen <- upTo 10
-    tld <- replicateM (max 1 tldLen) $ choose ('a', 'z')
-    let uriRegName = concat [domain, ".", tld]
-    let uriPort = ""
-    pure URIAuth {..}

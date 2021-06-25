@@ -204,6 +204,5 @@ toExternalEvent = awaitForever $ \EventDetails {..} -> do
         (UniquePlaceQuery address)
         (Place {placeQuery = address, placeLat = venueLocationLat, placeLon = venueLocationLon})
         [] -- Don't change if it's already there, so that they can't fill our page with junk.
-  case parseAbsoluteURI $ "https://events.info/events/" <> T.unpack eventDetailsId of
-    Nothing -> pure ()
-    Just externalEventOrigin -> yield ExternalEvent {..}
+  let externalEventOrigin = "https://events.info/events/" <> eventDetailsId
+  yield ExternalEvent {..}

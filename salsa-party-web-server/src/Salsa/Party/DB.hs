@@ -35,7 +35,6 @@ import Data.Validity.Time ()
 import Database.Persist.Sql
 import Database.Persist.TH
 import GHC.Generics (Generic)
-import Network.URI
 import Salsa.Party.DB.CASKey
 import Salsa.Party.DB.Password
 import Salsa.Party.DB.URI ()
@@ -171,7 +170,7 @@ ExternalEvent sql=external_event
     place PlaceId
 
     -- Where we got the event from, externally
-    origin URI
+    origin Text
 
     UniqueExternalEventUUID uuid !force
     UniqueExternalEventKey key
