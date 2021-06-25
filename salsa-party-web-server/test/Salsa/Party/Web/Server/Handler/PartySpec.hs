@@ -32,16 +32,18 @@ spec = serverSpec $ do
           forAllValid $ \partyForm2_ ->
             forAllValid $ \location -> do
               withAnyLoggedInUser_ yc $ do
-                -- TODO not done yet.
                 testSubmitOrganiser organiserForm_
+                poster <- readTestFile "static/locations/Sydney.jpg"
                 void $
-                  testSubmitParty
+                  testSubmitPartyWithPoster
                     partyForm1_
                     location
+                    poster
                 void $
-                  testSubmitParty
+                  testSubmitPartyWithPoster
                     partyForm2_
                     location
+                    poster
 
   describe "PartyR" $ do
     yit "GETs a 404 for a nonexistent party" $ do

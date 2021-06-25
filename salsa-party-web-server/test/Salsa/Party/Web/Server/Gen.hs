@@ -3,7 +3,6 @@
 
 module Salsa.Party.Web.Server.Gen where
 
-import Conduit
 import Control.Monad
 import Data.GenValidity
 import Data.GenValidity.ByteString ()
@@ -17,20 +16,10 @@ import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Organiser
 import Salsa.Party.Web.Server.Handler.Party
 import Test.QuickCheck
-import Yesod.Core.Types
 
 instance GenValid Textarea where
   genValid = Textarea <$> genValid
   shrinkValid = fmap Textarea . shrinkValid . unTextarea
-
-instance GenValid FileInfo where
-  shrinkValid _ = [] -- No point
-  genValid = do
-    FileInfo
-      <$> genValid
-      <*> genValid
-      <*> (yield <$> genValid)
-      <*> pure (\_ -> pure ()) -- We really shouldn't be generating this ..?
 
 instance GenValid OrganiserForm where
   genValid = genValidStructurally

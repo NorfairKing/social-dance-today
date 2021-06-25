@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -5,6 +6,8 @@ module Salsa.Party.Web.Server.TestUtils where
 
 import Control.Monad.Logger
 import Control.Monad.Reader
+import Data.ByteString (ByteString)
+import qualified Data.ByteString as SB
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
@@ -12,6 +15,7 @@ import Database.Persist (Entity (..), (=.))
 import qualified Database.Persist as DB
 import qualified Database.Persist.Sql as DB
 import Database.Persist.Sqlite (fkEnabled, mkSqliteConnectionInfo, walEnabled, withSqlitePoolInfo)
+import GHC.Generics (Generic)
 import Lens.Micro
 import Network.HTTP.Client as HTTP
 import Path.IO
@@ -23,6 +27,7 @@ import Salsa.Party.Web.Server.Gen
 import Salsa.Party.Web.Server.Handler.Organiser
 import Salsa.Party.Web.Server.Handler.Party
 import Salsa.Party.Web.Server.Static
+import System.FilePath
 import Test.QuickCheck
 import Test.Syd
 import Test.Syd.Path
@@ -160,8 +165,31 @@ testSubmitOrganiser OrganiserForm {..} = do
   _ <- followRedirect
   statusIs 200
 
+data TestFile = TestFile
+  { testFilePath :: !FilePath,
+    testFileContents :: !ByteString,
+    testFileType :: !(Maybe Text)
+  }
+  deriving (Show, Eq, Generic)
+
+readTestFile :: MonadIO m => FilePath -> m TestFile
+readTestFile testFilePath = do
+  testFileContents <- liftIO $ SB.readFile testFilePath
+  let testFileType = case takeExtension testFilePath of
+        ".jpg" -> Just "image/jpeg"
+        ".jpeg" -> Just "image/jpeg"
+        ".png" -> Just "image/png"
+        _ -> Nothing
+  pure TestFile {..}
+
 testSubmitParty :: PartyForm -> Coordinates -> YesodClientM App EventUUID
-testSubmitParty PartyForm {..} loc = do
+testSubmitParty partyForm_ coordinates_ = testSubmitPartyHelper partyForm_ coordinates_ Nothing
+
+testSubmitPartyWithPoster :: PartyForm -> Coordinates -> TestFile -> YesodClientM App EventUUID
+testSubmitPartyWithPoster partyForm_ coordinates_ posterFile = testSubmitPartyHelper partyForm_ coordinates_ (Just posterFile)
+
+testSubmitPartyHelper :: PartyForm -> Coordinates -> Maybe TestFile -> YesodClientM App EventUUID
+testSubmitPartyHelper PartyForm {..} loc mPosterFile = do
   -- Put the address in the database already so we don't need to use an external service for geocoding
   _ <- testSubmitPlace partyFormAddress loc
   get $ AccountR AccountSubmitPartyR
@@ -175,6 +203,7 @@ testSubmitParty PartyForm {..} loc = do
     addPostParam "address" partyFormAddress
     forM_ partyFormDescription $ \description -> addPostParam "description" $ unTextarea description
     forM_ partyFormStart $ \start -> addPostParam "start" $ T.pack $ formatTime defaultTimeLocale "%H:%M" start
+    forM_ mPosterFile $ \TestFile {..} -> addFileWith "poster" testFilePath testFileContents testFileType
   statusIs 303
   errOrLoc <- getLocation
   case errOrLoc of

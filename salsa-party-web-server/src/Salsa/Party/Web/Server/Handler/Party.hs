@@ -51,8 +51,7 @@ data PartyForm = PartyForm
     partyFormDescription :: Maybe Textarea,
     partyFormStart :: Maybe TimeOfDay,
     partyFormHomepage :: Maybe Text,
-    partyFormPrice :: Maybe Text,
-    partyFormPoster :: Maybe FileInfo
+    partyFormPrice :: Maybe Text
   }
   deriving (Show, Eq, Generic)
 
@@ -75,7 +74,6 @@ partyForm =
     <*> iopt timeField "start"
     <*> iopt urlField "homepage"
     <*> iopt textField "price"
-    <*> iopt fileField "poster"
 
 getAccountPartyR :: EventUUID -> Handler Html
 getAccountPartyR partyUuid =
@@ -86,10 +84,10 @@ getAccountSubmitPartyR = submitPartyPage Nothing Nothing
 
 postAccountSubmitPartyR :: Handler Html
 postAccountSubmitPartyR = do
-  res <- runInputPostResult partyForm
+  res <- runInputPostResult $ (,) <$> partyForm <*> iopt fileField "poster"
   submitPartyPage Nothing $ Just res
 
-submitPartyPage :: Maybe EventUUID -> Maybe (FormResult PartyForm) -> Handler Html
+submitPartyPage :: Maybe EventUUID -> Maybe (FormResult (PartyForm, Maybe FileInfo)) -> Handler Html
 submitPartyPage mPartyUuid mResult = do
   Entity userId User {..} <- requireAuth
 
@@ -105,7 +103,7 @@ submitPartyPage mPartyUuid mResult = do
       redirect $ AccountR AccountOrganiserR
     Just (Entity organiserId _) ->
       case mResult of
-        Just (FormSuccess PartyForm {..}) -> do
+        Just (FormSuccess (PartyForm {..}, partyFormPoster)) -> do
           Entity placeId _ <- lookupPlace partyFormAddress
           now <- liftIO getCurrentTime
           -- Insert or update the party

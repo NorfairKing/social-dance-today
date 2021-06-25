@@ -111,8 +111,10 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - QuickCheck
+    - bytestring
     - conduit
     - esqueleto
+    - filepath
     - genvalidity
     - genvalidity-bytestring
     - genvalidity-persistent

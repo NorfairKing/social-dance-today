@@ -50,7 +50,6 @@ import Yesod
 import Yesod.Auth
 import Yesod.Auth.Message
 import Yesod.AutoReload
-import Yesod.Core.Types
 import Yesod.EmbeddedStatic (EmbeddedStatic)
 
 data App = App
@@ -377,17 +376,6 @@ instance Validity Coordinates
 
 instance Validity Textarea where
   validate = validate . unTextarea
-
-instance Validity FileInfo where
-  validate = trivialValidation
-
-instance Show FileInfo where
-  show fileInfo = show ("File with name: " <> fileName fileInfo)
-
-instance Eq FileInfo where
-  (==) = (==) `on` fileName
-
-deriving instance Generic FileInfo
 
 -- This could potentially be dangerous if a type is read than written
 instance HasResolution a => PathPiece (Fixed a) where
