@@ -11,7 +11,7 @@
         <label .label>
           Display Name
         <div .control>
-          <input
+          <input .input
             type=text
             name="name"
             value=#{tv organiserName}

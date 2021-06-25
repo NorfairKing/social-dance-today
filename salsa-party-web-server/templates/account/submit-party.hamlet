@@ -15,7 +15,7 @@
         <label .label>
           Title
         <div .control>
-          <input
+          <input .input
             type=text
             name="title"
             value=#{tv partyTitle}
@@ -25,7 +25,7 @@
         <label .label>
           Day
         <div .control>
-          <input
+          <input .input
             type=date
             required
             value=#{mt "%F" partyDay}
@@ -35,7 +35,7 @@
         <label .label>
           Address
         <div .control>
-          <input
+          <input .input
             type=text
             value=#{maybe "" placeQuery mPlace}
             required
@@ -53,7 +53,7 @@
         <label .label>
           Start
         <div .control>
-          <input
+          <input .input
             type=time
             value=#{mmt "%H:%M" partyStart}
             name="start">
@@ -62,7 +62,7 @@
         <label .label>
           Homepage
         <div .control>
-          <input
+          <input .input
             type=url
             value=#{mtv partyHomepage}
             name="homepage">
@@ -71,7 +71,7 @@
         <label .label>
           Price
         <div .control>
-          <input
+          <input .input
             type=text
             value=#{mtv partyPrice}
             name="price">
@@ -84,7 +84,7 @@
         <div .control>
           <div #posterInput .file .has-name>
             <label .file-label>
-              <input .file-input name="poster" type="file">
+              <input .input .file-input .input name="poster" type="file">
               <span .file-cta>
                 <span .file-icon>
                   <i .fas .fa-upload>
@@ -100,7 +100,7 @@
       $maybe partyUuid <- mPartyUuid
         <div .field>
           <div .control>
-            <input name="uuid" type="hidden" value=#{uuidText partyUuid}>
+            <input .input name="uuid" type="hidden" value=#{uuidText partyUuid}>
 
       <div .field>
         <div .control>

@@ -15,8 +15,7 @@
             <div .control>
               <div .field .has-text-centered .has-addons .has-addons-centered>
                 <p .control>
-                  <input
-                    .input
+                  <input .input
                     #queryInput
                     type=text
                     name="address"
