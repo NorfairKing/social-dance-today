@@ -292,7 +292,10 @@ partyJSONLDData renderUrl Party {..} Organiser {..} Place {..} posterKeys =
       ]
 
 getPosterR :: CASKey -> Handler TypedContent
-getPosterR key = do
+getPosterR key = redirect $ ImageR key
+
+getImageR :: CASKey -> Handler TypedContent
+getImageR key = do
   mImage <- runDB $ getBy $ UniqueImageKey key
   case mImage of
     Nothing -> notFound

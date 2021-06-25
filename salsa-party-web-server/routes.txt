@@ -6,9 +6,13 @@
 
 /party/#EventUUID PartyR GET
 !/party/#PartyId PartyOldR GET -- TODO get rid of this eventually
+
 /poster/#CASKey PosterR GET
+
 /organiser/#OrganiserUUID OrganiserR GET
 !/organiser/#OrganiserId OrganiserOldR GET -- TODO get rid of this eventually
+
+/image/#CASKey ImageR GET
 
 /account AccountR:
   / AccountOverviewR GET
