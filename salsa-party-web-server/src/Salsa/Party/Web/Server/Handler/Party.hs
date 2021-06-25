@@ -218,11 +218,6 @@ postAccountPartyDeleteR partyUuid = do
       runDB $ deletePartyCompletely partyId
       redirect $ AccountR AccountPartiesR
 
-getPartyOldR :: PartyId -> Handler Html
-getPartyOldR partyId = do
-  Party {..} <- runDB $ get404 partyId
-  redirect $ PartyR partyUuid
-
 getPartyR :: EventUUID -> Handler Html
 getPartyR eventUuid = do
   mParty <- runDB $ getBy $ UniquePartyUUID eventUuid
@@ -288,9 +283,6 @@ partyJSONLDData renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
         ],
         ["description" .= htmlEscapedText description | description <- maybeToList partyDescription]
       ]
-
-getPosterOldR :: CASKey -> Handler TypedContent
-getPosterOldR key = redirect $ ImageR key
 
 getImageR :: CASKey -> Handler TypedContent
 getImageR key = do

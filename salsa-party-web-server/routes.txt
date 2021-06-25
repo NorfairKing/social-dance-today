@@ -5,12 +5,8 @@
 /query QueryR POST
 
 /party/#EventUUID PartyR GET
-!/party/#PartyId PartyOldR GET -- TODO get rid of this eventually
-
-/poster/#CASKey PosterOldR GET -- TODO get rid of this eventually
 
 /organiser/#OrganiserUUID OrganiserR GET
-!/organiser/#OrganiserId OrganiserOldR GET -- TODO get rid of this eventually
 
 /image/#CASKey ImageR GET
 

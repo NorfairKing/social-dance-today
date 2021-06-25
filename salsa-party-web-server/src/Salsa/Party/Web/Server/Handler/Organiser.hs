@@ -67,11 +67,6 @@ organiserFormPage mResult = do
           tv = mv ""
       withMFormResultNavBar mResult $(widgetFile "account/organiser")
 
-getOrganiserOldR :: OrganiserId -> Handler Html
-getOrganiserOldR organiserId = do
-  Organiser {..} <- runDB $ get404 organiserId
-  redirect $ OrganiserR organiserUuid
-
 getOrganiserR :: OrganiserUUID -> Handler Html
 getOrganiserR uuid = do
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUUID uuid
