@@ -121,21 +121,6 @@ Party sql=party
     deriving Eq
     deriving Generic
 
-PosterOld sql=poster -- TODO get rid of this table
-    party PartyId
-    key CASKey
-    imageType Text
-    image ByteString
-    created UTCTime
-    modified UTCTime Maybe default=NULL
-
-    UniquePosterParty party
-    UniquePosterKey key
-
-    deriving Show
-    deriving Eq
-    deriving Generic
-
 PartyPoster sql=party_poster
     party PartyId
     image ImageId
