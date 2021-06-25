@@ -139,6 +139,8 @@ Poster
 PartyPoster
     party PartyId
     image ImageId
+    created UTCTime
+    modified UTCTime Maybe default=NULL
 
     UniquePartyPoster party image
 
