@@ -14,7 +14,13 @@ getPanelR = do
   parties <- runDB $ selectList [] [Asc PartyDay, Asc PartyId]
   externalEvents <- runDB $ selectList [] [Asc ExternalEventDay, Asc ExternalEventId]
   today <- liftIO $ utctDay <$> getCurrentTime
+  token <- genToken
   withNavBar $ do
     setTitle "Salsa Parties Admin Panel"
     setDescription "Admin panel for the salsa parties admin"
     $(widgetFile "admin/panel")
+
+postAdminDeleteEventR :: EventUUID -> Handler Html
+postAdminDeleteEventR uuid = do
+  runDB $ deleteWhere [ExternalEventUuid ==. uuid]
+  redirect $ AdminR PanelR
