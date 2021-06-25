@@ -7,7 +7,7 @@
 /party/#EventUUID PartyR GET
 !/party/#PartyId PartyOldR GET -- TODO get rid of this eventually
 
-/poster/#CASKey PosterR GET
+/poster/#CASKey PosterOldR GET -- TODO get rid of this eventually
 
 /organiser/#OrganiserUUID OrganiserR GET
 !/organiser/#OrganiserId OrganiserOldR GET -- TODO get rid of this eventually

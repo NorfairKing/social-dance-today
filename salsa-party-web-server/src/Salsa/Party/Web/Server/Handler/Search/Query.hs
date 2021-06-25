@@ -29,12 +29,7 @@ searchQuery day coordinates@Coordinates {..} = do
   -- Post-process the distance before we fetch images so we don't fetch too many images.
   let partyResultsWithoutImages = postProcessParties coordinates rawPartyResults
   partyResultsWithImages <- forM partyResultsWithoutImages $ \(partyEntity@(Entity partyId _), placeEntity) -> do
-    keys <- E.select $
-      E.from $ \(partyPoster `E.InnerJoin` image) -> do
-        E.on (partyPoster E.^. PartyPosterImage E.==. image E.^. ImageId)
-        E.where_ (partyPoster E.^. PartyPosterParty E.==. E.val partyId)
-        pure (image E.^. ImageKey)
-    let mKey = E.unValue <$> listToMaybe keys
+    mKey <- getPosterForParty partyId
     pure (partyEntity, placeEntity, mKey)
 
   rawExternalEventResults <- E.select $
@@ -49,6 +44,15 @@ searchQuery day coordinates@Coordinates {..} = do
       { searchResultsParties = partyResultsWithImages,
         searchResultsExternalEvents = postProcessExternalEvents coordinates rawExternalEventResults
       }
+
+getPosterForParty :: MonadIO m => PartyId -> SqlPersistT m (Maybe CASKey)
+getPosterForParty partyId = do
+  keys <- E.select $
+    E.from $ \(partyPoster `E.InnerJoin` image) -> do
+      E.on (partyPoster E.^. PartyPosterImage E.==. image E.^. ImageId)
+      E.where_ (partyPoster E.^. PartyPosterParty E.==. E.val partyId)
+      pure (image E.^. ImageKey)
+  pure $ E.unValue <$> listToMaybe keys
 
 distanceEstimationQuery :: Coordinates -> E.SqlExpr (Entity Place) -> E.SqlQuery ()
 distanceEstimationQuery Coordinates {..} p = do

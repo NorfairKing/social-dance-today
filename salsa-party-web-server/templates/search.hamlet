@@ -50,7 +50,7 @@
                         <img
                           width=640
                           height=360
-                          src=@{PosterR posterKey}
+                          src=@{ImageR posterKey}
                           alt="Poster for #{partyTitle party} on #{formatTime defaultTimeLocale prettyDayFormat $ partyDay party}">
 
                   <div .card-content>

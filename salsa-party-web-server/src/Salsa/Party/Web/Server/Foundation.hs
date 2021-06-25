@@ -394,7 +394,7 @@ posterImageWidget Party {..} Organiser {..} posterKey =
     <img
       width=#{desiredWidth}
       height=#{desiredHeight}
-      src=@{PosterR posterKey}
+      src=@{ImageR posterKey}
       alt="Poster for #{partyTitle} on #{formatTime defaultTimeLocale prettyDayFormat partyDay}, by #{organiserName}">
   |]
 

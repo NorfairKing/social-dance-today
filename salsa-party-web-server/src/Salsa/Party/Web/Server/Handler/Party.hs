@@ -280,7 +280,7 @@ partyJSONLDData renderUrl Party {..} Organiser {..} Place {..} posterKeys =
                 "address" .= htmlEscapedText placeQuery
               ],
           "image"
-            .= [renderUrl (PosterR posterKey) | E.Value posterKey <- posterKeys],
+            .= [renderUrl (ImageR posterKey) | E.Value posterKey <- posterKeys],
           "organizer"
             .= object
               [ "@type" .= ("Organization" :: Text),
@@ -291,8 +291,8 @@ partyJSONLDData renderUrl Party {..} Organiser {..} Place {..} posterKeys =
         ["description" .= htmlEscapedText description | description <- maybeToList partyDescription]
       ]
 
-getPosterR :: CASKey -> Handler TypedContent
-getPosterR key = redirect $ ImageR key
+getPosterOldR :: CASKey -> Handler TypedContent
+getPosterOldR key = redirect $ ImageR key
 
 getImageR :: CASKey -> Handler TypedContent
 getImageR key = do

@@ -75,18 +75,18 @@ spec = serverSpec $ do
             get $ PartyR $ externalEventUuid externalEvent
             statusIs 200
 
-  describe "PosterR" $ do
-    it "GETS a 404 for a nonexistent poster" $ \yc -> do
+  describe "ImageR" $ do
+    it "GETS a 404 for a nonexistent image" $ \yc -> do
       forAllValid $ \casKey ->
         runYesodClientM yc $ do
-          get $ PosterR casKey
+          get $ ImageR casKey
           statusIs 404
 
-    it "Can GET the poster for a party with a poster" $ \yc ->
+    it "Can GET the poster for an existent image" $ \yc ->
       forAllValid $ \image ->
         runYesodClientM yc $ do
           testDB $ DB.insert_ image
-          get $ PosterR $ imageKey image
+          get $ ImageR $ imageKey image
           statusIs 200
 
   describe "GetAccountPartiesR" $

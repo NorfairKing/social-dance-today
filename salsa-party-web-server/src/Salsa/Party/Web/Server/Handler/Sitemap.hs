@@ -74,7 +74,7 @@ getSitemapR = do
       acqImages
       ( \(Entity _ Image {..}) ->
           SitemapUrl
-            { sitemapLoc = PosterR imageKey,
+            { sitemapLoc = ImageR imageKey,
               sitemapLastMod = Just imageCreated,
               sitemapChangeFreq = Just Never,
               sitemapPriority = Just 0.3

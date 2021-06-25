@@ -54,7 +54,7 @@
 <meta property="og:url" content=@{PartyR partyUuid}>
 <meta property="og:title" content=#{partyTitle}>
 $forall E.Value posterKey <- posterKeys
-  <meta property="og:image" content=@{PosterR posterKey}>
+  <meta property="og:image" content=@{ImageR posterKey}>
 $maybe description <- partyDescription
   <meta property="og:description" content=#{description}>
 
@@ -67,5 +67,5 @@ $maybe description <- partyDescription
   <meta property="twitter:description" content=#{description}>
 $forall E.Value posterKey <- posterKeys
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content=@{PosterR posterKey}>
+  <meta name="twitter:image" content=@{ImageR posterKey}>
 
