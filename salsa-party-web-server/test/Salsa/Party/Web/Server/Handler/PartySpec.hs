@@ -14,6 +14,7 @@ spec = serverSpec $ do
           testSubmitOrganiser organiserForm_
           get $ AccountR AccountSubmitPartyR
           statusIs 200
+
     it "Can create a party by POSTing to SubmitPartyR" $ \yc ->
       forAllValid $ \organiserForm_ ->
         forAllValid $ \partyForm_ ->
@@ -24,6 +25,30 @@ spec = serverSpec $ do
                 testSubmitParty
                   partyForm_
                   location
+
+    it "Can create two parties with the same poster" $ \yc ->
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm1_ ->
+          forAllValid $ \partyForm2_ ->
+            forAllValid $ \location -> do
+              withAnyLoggedInUser_ yc $ do
+                -- TODO not done yet.
+                testSubmitOrganiser organiserForm_
+                void $
+                  testSubmitParty
+                    partyForm1_
+                    location
+                void $
+                  testSubmitParty
+                    partyForm2_
+                    location
+
+  describe "PartyR" $ do
+    yit "GETs a 404 for a nonexistent party" $ do
+      uuid <- nextRandomUUID
+      get $ PartyR uuid
+      statusIs 404
+
     it "Can get the party page for an existing party" $ \yc ->
       -- TODO use a logged-out user and a insert-in-db test here.
       forAllValid $ \organiserForm_ ->
@@ -47,12 +72,6 @@ spec = serverSpec $ do
               DB.insert_ $ externalEvent {externalEventPlace = placeId}
             get $ PartyR $ externalEventUuid externalEvent
             statusIs 200
-
-  describe "PartyR" $
-    yit "GETs a 404 for a nonexistent party" $ do
-      uuid <- nextRandomUUID
-      get $ PartyR uuid
-      statusIs 404
 
   describe "GetAccountPartiesR" $
     it "GETS a 200 for any account with a party" $ \yc -> do
