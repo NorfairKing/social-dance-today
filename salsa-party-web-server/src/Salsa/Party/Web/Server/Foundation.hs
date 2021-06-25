@@ -412,7 +412,7 @@ deleteOrganiserCompletely organiserId = do
 
 deletePartyCompletely :: MonadIO m => PartyId -> SqlPersistT m ()
 deletePartyCompletely partyId = do
-  deleteWhere [PosterParty ==. partyId]
+  deleteWhere [PartyPosterParty ==. partyId]
   delete partyId
 
 appDB :: (MonadReader App m, MonadLoggerIO m) => SqlPersistT (LoggingT IO) a -> m a

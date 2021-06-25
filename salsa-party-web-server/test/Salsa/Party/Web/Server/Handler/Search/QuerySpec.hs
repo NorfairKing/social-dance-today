@@ -103,6 +103,47 @@ spec = do
                             ],
                           searchResultsExternalEvents = []
                         }
+      it "runs correctly with these two parties with a poster earch" $ \pool ->
+        forAllValid $ \party1Prototype ->
+          forAllValid $ \party2Prototype ->
+            forAllValid $ \partyPoster1Prototype ->
+              forAllValid $ \partyPoster2Prototype ->
+                forAllValid $ \image1Prototype ->
+                  forAll (genValid `suchThat` (\i -> imageKey image1Prototype /= imageKey i)) $ \image2Prototype ->
+                    forAllValid $ \day ->
+                      flip runSqlPool pool $ do
+                        let queryPlace = Place {placeQuery = "Search Place", placeLat = 0, placeLon = 0}
+                        _ <- DB.insert queryPlace
+                        let place1 = Place {placeQuery = "Place 1", placeLat = 0, placeLon = 0.1}
+                        place1Id <- DB.insert place1
+                        let place2 = Place {placeQuery = "Place 2", placeLat = 0.1, placeLon = 0}
+                        place2Id <- DB.insert place2
+                        let party1 =
+                              party1Prototype
+                                { partyDay = day,
+                                  partyPlace = place1Id
+                                }
+                        party1Id <- DB.insert party1
+                        let party2 =
+                              party2Prototype
+                                { partyDay = day,
+                                  partyPlace = place2Id
+                                }
+                        party2Id <- DB.insert party2
+                        image1Id <- DB.insert image1Prototype
+                        DB.insert_ partyPoster1Prototype {partyPosterParty = party1Id, partyPosterImage = image1Id}
+                        image2Id <- DB.insert image2Prototype
+                        DB.insert_ partyPoster2Prototype {partyPosterParty = party2Id, partyPosterImage = image2Id}
+                        sr <- searchQuery @IO day (placeCoordinates queryPlace)
+                        liftIO $
+                          sr
+                            `shouldBe` SearchResults
+                              { searchResultsParties =
+                                  [ (Entity party1Id party1, Entity place1Id place1, Just $ imageKey image1Prototype),
+                                    (Entity party2Id party2, Entity place2Id place2, Just $ imageKey image2Prototype)
+                                  ],
+                                searchResultsExternalEvents = []
+                              }
       it "runs correctly with this complex case" $ \pool ->
         forAllValid $ \party1Prototype ->
           forAllValid $ \party2Prototype ->

@@ -33,7 +33,7 @@ spec = serverSpec $ do
             forAllValid $ \location -> do
               withAnyLoggedInUser_ yc $ do
                 testSubmitOrganiser organiserForm_
-                poster <- readTestFile "static/locations/Sydney.jpg"
+                poster <- readTestFile "test_resources/poster.png"
                 void $
                   testSubmitPartyWithPoster
                     partyForm1_
