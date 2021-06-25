@@ -83,10 +83,11 @@ spec = serverSpec $ do
           statusIs 404
 
     it "Can GET the poster for a party with a poster" $ \yc ->
-      forAllValid $ \image -> runYesodClientM yc $ do
-        testDB $ DB.insert_ image
-        get $ PosterR $ imageKey image
-        statusIs 200
+      forAllValid $ \image ->
+        runYesodClientM yc $ do
+          testDB $ DB.insert_ image
+          get $ PosterR $ imageKey image
+          statusIs 200
 
   describe "GetAccountPartiesR" $
     it "GETS a 200 for any account with a party" $ \yc -> do

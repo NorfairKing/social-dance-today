@@ -154,22 +154,29 @@ submitPartyPage mPartyUuid mResult = do
             case posterCropImage contentType imageBlob of
               Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
               Right (convertedImageType, convertedImageBlob) -> do
-                runDB $
+                runDB $ do
+                  Entity imageId _ <-
+                    upsertBy
+                      (UniqueImageKey casKey)
+                      ( Image
+                          { imageKey = casKey,
+                            imageTyp = convertedImageType,
+                            imageBlob = convertedImageBlob,
+                            imageCreated = now
+                          }
+                      )
+                      [] -- No need to update anything, the casKey makes the image unique.
                   upsertBy
-                    (UniquePosterParty partyId)
-                    ( Poster
-                        { posterParty = partyId,
-                          posterKey = casKey,
-                          posterImage = convertedImageBlob,
-                          posterImageType = convertedImageType,
-                          posterCreated = now,
-                          posterModified = Nothing
+                    (UniquePartyPoster partyId imageId)
+                    ( PartyPoster
+                        { partyPosterParty = partyId,
+                          partyPosterImage = imageId,
+                          partyPosterCreated = now,
+                          partyPosterModified = Nothing
                         }
                     )
-                    [ PosterKey =. casKey,
-                      PosterImage =. convertedImageBlob,
-                      PosterImageType =. convertedImageType,
-                      PosterModified =. Just now
+                    [ PartyPosterImage =. imageId,
+                      PartyPosterModified =. Just now
                     ]
           redirect $ AccountR $ AccountPartyR partyUuid
         _ -> do
