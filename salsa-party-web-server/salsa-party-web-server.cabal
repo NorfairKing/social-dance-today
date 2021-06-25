@@ -70,6 +70,7 @@ library
     , exceptions
     , file-embed
     , filepath
+    , http-api-data
     , http-client
     , http-client-tls
     , http-date

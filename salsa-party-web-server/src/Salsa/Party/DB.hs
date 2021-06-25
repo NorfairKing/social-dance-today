@@ -121,7 +121,6 @@ Party
     deriving Eq
     deriving Generic
 
-
 Poster
     party PartyId
     key CASKey
@@ -132,6 +131,29 @@ Poster
 
     UniquePosterParty party
     UniquePosterKey key
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
+PartyPoster
+    party PartyId
+    image ImageId
+
+    UniquePartyPoster party image
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
+
+Image
+    key CASKey
+    typ Text sql=type -- type is not an acceptable identifier in haskell.
+    blob ByteString
+    created UTCTime
+
+    UniqueImageKey key
 
     deriving Show
     deriving Eq
