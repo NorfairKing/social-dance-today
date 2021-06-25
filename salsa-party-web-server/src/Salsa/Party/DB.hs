@@ -56,7 +56,7 @@ share
   [mkPersist sqlSettings, mkMigrate "automaticMigrations"]
   [persistLowerCase|
 
-User
+User sql=user
     emailAddress Text
     passphraseHash (PasswordHash Bcrypt)
     verificationKey Text Maybe -- Nothing means verified
@@ -69,7 +69,7 @@ User
     deriving Generic
 
 
-Organiser
+Organiser sql=organiser
     -- UUID, for external usage
     uuid OrganiserUUID
 
@@ -86,7 +86,7 @@ Organiser
     deriving Generic
 
 
-Place
+Place sql=place
     query Text
     lat Nano
     lon Nano
@@ -98,7 +98,7 @@ Place
     deriving Generic
 
 
-Party
+Party sql=party
     -- UUID, for external usage in a shared namespace with the ExternalEvent table
     uuid EventUUID
 
@@ -121,7 +121,7 @@ Party
     deriving Eq
     deriving Generic
 
-Poster
+PosterOld sql=poster -- TODO get rid of this table
     party PartyId
     key CASKey
     imageType Text
@@ -136,7 +136,7 @@ Poster
     deriving Eq
     deriving Generic
 
-PartyPoster
+PartyPoster sql=party_poster
     party PartyId
     image ImageId
     created UTCTime
@@ -149,7 +149,7 @@ PartyPoster
     deriving Generic
 
 
-Image
+Image sql=image
     key CASKey
     typ Text sql=type -- type is not an acceptable identifier in haskell.
     blob ByteString
@@ -162,7 +162,7 @@ Image
     deriving Generic
 
 
-ExternalEvent
+ExternalEvent sql=external_event
     -- UUID, for external usage in a shared namespace with the Party table
     uuid EventUUID
     -- Unique key for party so that we don't duplicate parties

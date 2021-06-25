@@ -12,12 +12,12 @@
     $if null parties
       No parties submitted yet
     $else
-      $forall (Entity _ party, Entity _ p, mPosterVal) <- parties
+      $forall (Entity _ party, Entity _ p, mPosterKey) <- parties
         <h2 .title .is-4>
           #{formatTime defaultTimeLocale prettyDayFormat $ partyDay party}: #{partyTitle party}
         <h3 .subtitle .is-5>
           #{placeQuery p}
-        $maybe posterKey <- E.unValue mPosterVal
+        $maybe posterKey <- mPosterKey
           ^{posterImageWidget party organiser posterKey}
         <p>
           <div .buttons>

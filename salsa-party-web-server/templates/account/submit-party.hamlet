@@ -93,7 +93,7 @@
               <span .file-name>
                 No poster selected
 
-      $forall posterWidget <- posterWidgets
+      $maybe posterWidget <- mPosterWidget
         ^{posterWidget}
 
 

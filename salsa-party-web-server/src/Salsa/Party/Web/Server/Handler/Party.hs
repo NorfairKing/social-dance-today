@@ -32,16 +32,22 @@ getAccountPartiesR = do
       addMessage "is-danger" "You must set up an organiser profile in the account overview before you can submit a party."
       redirect $ AccountR AccountOrganiserR
     Just (Entity organiserId organiser) -> do
-      parties <- runDB $
-        E.select $
-          E.from $ \(party `E.InnerJoin` p `E.LeftOuterJoin` mPoster) -> do
-            E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
-            E.on (E.just (party E.^. PartyId) E.==. mPoster E.?. PosterParty)
-            E.where_ (party E.^. PartyOrganiser E.==. E.val organiserId)
-            E.orderBy [E.desc $ party E.^. PartyDay]
-            pure (party, p, mPoster E.?. PosterKey)
+      parties <- runDB $ getPartiesOfOrganiser organiserId
       token <- genToken
       withNavBar $(widgetFile "account/parties")
+
+getPartiesOfOrganiser :: MonadIO m => OrganiserId -> SqlPersistT m [(Entity Party, Entity Place, Maybe CASKey)]
+getPartiesOfOrganiser organiserId = do
+  partyTups <- E.select $
+    E.from $ \(party `E.InnerJoin` p) -> do
+      E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
+      E.where_ (party E.^. PartyOrganiser E.==. E.val organiserId)
+      E.orderBy [E.asc $ party E.^. PartyDay]
+      pure (party, p)
+  forM partyTups $ \(partyEntity@(Entity partyId _), placeEntity) -> do
+    -- TODO this is potentially expensive, can we do it in one query?
+    mKey <- getPosterForParty partyId
+    pure (partyEntity, placeEntity, mKey)
 
 data PartyForm = PartyForm
   { partyFormUuid :: Maybe EventUUID,
@@ -184,15 +190,11 @@ submitPartyPage mPartyUuid mResult = do
             forM mPartyUuid $ \partyUuid -> do
               runDB $ getBy $ UniquePartyUUID partyUuid
           mPlace <- forM mPartyEntity $ \(Entity _ party) -> runDB $ get404 $ partyPlace party
-          posterWidgets <- fmap (fromMaybe []) $
+          mPosterWidget <- fmap join $
             forM mPartyEntity $ \(Entity partyId party) -> do
               organiser <- runDB $ get404 $ partyOrganiser party
-              posterKeys <- runDB $
-                E.select $
-                  E.from $ \poster -> do
-                    E.where_ $ poster E.^. PosterParty E.==. E.val partyId
-                    pure (poster E.^. PosterKey)
-              pure $ map (posterImageWidget party organiser . E.unValue) posterKeys
+              mPosterKey <- runDB $ getPosterForParty partyId
+              pure $ posterImageWidget party organiser <$> mPosterKey
           token <- genToken
           let mv :: a -> (Party -> a) -> a
               mv defaultValue func = maybe defaultValue (func . entityVal) mPartyEntity
@@ -236,11 +238,7 @@ partyPage :: Entity Party -> Handler Html
 partyPage (Entity partyId party@Party {..}) = do
   place@Place {..} <- runDB $ get404 partyPlace
   organiser@Organiser {..} <- runDB $ get404 partyOrganiser
-  posterKeys <- runDB $
-    E.select $
-      E.from $ \poster -> do
-        E.where_ $ poster E.^. PosterParty E.==. E.val partyId
-        pure (poster E.^. PosterKey)
+  mPosterKey <- runDB $ getPosterForParty partyId
   mGoogleAPIKey <- getsYesod appGoogleAPIKey
   let mGoogleMapsEmbedUrl = do
         apiKey <- mGoogleAPIKey
@@ -259,13 +257,13 @@ partyPage (Entity partyId party@Party {..}) = do
   withNavBar $ do
     setTitle $ toHtml partyTitle
     setDescription $ fromMaybe "Party without description" partyDescription
-    toWidgetHead $ toJSONLDData $ partyJSONLDData renderUrl party organiser place posterKeys
+    toWidgetHead $ toJSONLDData $ partyJSONLDData renderUrl party organiser place mPosterKey
     addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified
     $(widgetFile "party")
 
 -- https://developers.google.com/search/docs/data-types/event
-partyJSONLDData :: (Route App -> Text) -> Party -> Organiser -> Place -> [E.Value CASKey] -> JSON.Value
-partyJSONLDData renderUrl Party {..} Organiser {..} Place {..} posterKeys =
+partyJSONLDData :: (Route App -> Text) -> Party -> Organiser -> Place -> Maybe CASKey -> JSON.Value
+partyJSONLDData renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
   object $
     concat
       [ [ "@context" .= ("https://schema.org" :: Text),
@@ -280,7 +278,7 @@ partyJSONLDData renderUrl Party {..} Organiser {..} Place {..} posterKeys =
                 "address" .= htmlEscapedText placeQuery
               ],
           "image"
-            .= [renderUrl (ImageR posterKey) | E.Value posterKey <- posterKeys],
+            .= [renderUrl (ImageR posterKey) | posterKey <- maybeToList mPosterKey],
           "organizer"
             .= object
               [ "@type" .= ("Organization" :: Text),

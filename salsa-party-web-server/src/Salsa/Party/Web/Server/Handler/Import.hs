@@ -4,6 +4,7 @@ module Salsa.Party.Web.Server.Handler.Import (module X) where
 
 import Control.Applicative as X
 import Control.Arrow as X (first, second)
+import Control.Monad as X
 import Data.ByteString as X (ByteString)
 import Data.Fixed as X (Nano)
 import Data.Maybe as X

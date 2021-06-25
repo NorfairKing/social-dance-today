@@ -12,7 +12,7 @@
         #{formatTime defaultTimeLocale "%H:%M" start} 
       (#{prettyDayAuto today partyDay})
 
-    $forall E.Value posterKey <- posterKeys
+    $maybe posterKey <- mPosterKey
       ^{posterImageWidget party organiser posterKey}
 
     <h4 .title .is-6>
@@ -53,7 +53,7 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content=@{PartyR partyUuid}>
 <meta property="og:title" content=#{partyTitle}>
-$forall E.Value posterKey <- posterKeys
+$maybe posterKey <- mPosterKey
   <meta property="og:image" content=@{ImageR posterKey}>
 $maybe description <- partyDescription
   <meta property="og:description" content=#{description}>
@@ -65,7 +65,7 @@ $maybe description <- partyDescription
 <meta name="twitter:title" content=#{partyTitle}>
 $maybe description <- partyDescription
   <meta property="twitter:description" content=#{description}>
-$forall E.Value posterKey <- posterKeys
+$maybe posterKey <- mPosterKey
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content=@{ImageR posterKey}>
 

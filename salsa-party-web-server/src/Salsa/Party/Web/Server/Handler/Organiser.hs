@@ -80,17 +80,25 @@ getOrganiserR uuid = do
     Just (Entity organiserId organiser@Organiser {..}) -> do
       now <- liftIO getCurrentTime
       let today = utctDay now
-      parties <- runDB $
-        E.select $
-          E.from $ \(party `E.InnerJoin` p `E.LeftOuterJoin` mPoster) -> do
-            E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
-            E.on (E.just (party E.^. PartyId) E.==. mPoster E.?. PosterParty)
-            E.where_ (party E.^. PartyOrganiser E.==. E.val organiserId)
-            E.where_ (party E.^. PartyDay E.>=. E.val today)
-            E.orderBy [E.asc $ party E.^. PartyDay]
-            pure (party, p, mPoster E.?. PosterKey)
+      parties <- runDB $ getUpcomingPartiesOfOrganiser organiserId
       withNavBar $ do
         setTitle $ "Organiser profile: " <> toHtml organiserName
         setDescription $ mconcat ["The organiser profile of ", organiserName, ", and a list of their upcoming social dance parties"]
         addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe organiserCreated organiserModified
         $(widgetFile "organiser")
+
+getUpcomingPartiesOfOrganiser :: MonadIO m => OrganiserId -> SqlPersistT m [(Entity Party, Entity Place, Maybe CASKey)]
+getUpcomingPartiesOfOrganiser organiserId = do
+  now <- liftIO getCurrentTime
+  let today = utctDay now
+  partyTups <- E.select $
+    E.from $ \(party `E.InnerJoin` p) -> do
+      E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
+      E.where_ (party E.^. PartyOrganiser E.==. E.val organiserId)
+      E.where_ (party E.^. PartyDay E.>=. E.val today)
+      E.orderBy [E.asc $ party E.^. PartyDay]
+      pure (party, p)
+  forM partyTups $ \(partyEntity@(Entity partyId _), placeEntity) -> do
+    -- TODO this is potentially expensive, can we do it in one query?
+    mKey <- getPosterForParty partyId
+    pure (partyEntity, placeEntity, mKey)

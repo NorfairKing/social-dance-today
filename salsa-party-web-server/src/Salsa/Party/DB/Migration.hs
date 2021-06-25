@@ -44,29 +44,29 @@ locations =
 setUpImages :: (MonadUnliftIO m, MonadLogger m) => SqlPersistT m ()
 setUpImages = do
   logInfoN "Migrating images to new database format."
-  ackPosters <- selectSourceRes [] [Asc PosterId]
+  ackPosters <- selectSourceRes [] [Asc PosterOldId]
   withAcquire ackPosters $ \posterSource ->
     runConduit $ do
-      let createPartyPoster (Entity _ Poster {..}) = do
+      let createPartyPoster (Entity _ PosterOld {..}) = do
             Entity imageId _ <-
               upsertBy
-                (UniqueImageKey posterKey)
+                (UniqueImageKey posterOldKey)
                 ( Image
-                    { imageKey = posterKey,
-                      imageTyp = posterImageType,
-                      imageBlob = posterImage,
-                      imageCreated = posterCreated
+                    { imageKey = posterOldKey,
+                      imageTyp = posterOldImageType,
+                      imageBlob = posterOldImage,
+                      imageCreated = posterOldCreated
                     }
                 )
                 [] -- No need to update anything if it's already migrated.
             void $
               upsertBy
-                (UniquePartyPoster posterParty imageId)
+                (UniquePartyPoster posterOldParty imageId)
                 ( PartyPoster
-                    { partyPosterParty = posterParty,
+                    { partyPosterParty = posterOldParty,
                       partyPosterImage = imageId,
-                      partyPosterCreated = posterCreated,
-                      partyPosterModified = posterModified
+                      partyPosterCreated = posterOldCreated,
+                      partyPosterModified = posterOldModified
                     }
                 )
                 [] -- No need to update anything if it's already migrated.

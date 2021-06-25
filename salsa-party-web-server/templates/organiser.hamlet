@@ -10,12 +10,12 @@
         No parties found
     $else
       <div .columns .is-multiline .is-centered>
-        $forall (Entity _ party, Entity _ p, mPosterVal) <- parties
+        $forall (Entity _ party, Entity _ p, mPosterKey) <- parties
           <div .column .is-three-quarters-mobile .is-two-thirds-tablet .is-half-desktop>
             <div .zoom-without-container>
               <a href=@{PartyR (partyUuid party)}>
                 <div .card>
-                  $maybe posterKey <- E.unValue mPosterVal
+                  $maybe posterKey <- mPosterKey
                     <div .card-image .has-text-centered>
                       <figure .image .is-16by9>
                         ^{posterImageWidget party organiser posterKey}

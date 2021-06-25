@@ -21,6 +21,7 @@ import Control.Monad.Reader
 import Data.FileEmbed
 import Data.Fixed
 import Data.Function
+import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
@@ -29,6 +30,7 @@ import Data.Time
 import Data.Validity
 import Data.Validity.Text ()
 import Data.Validity.Time ()
+import qualified Database.Esqueleto as E
 import Database.Persist.Sql
 import GHC.Generics (Generic)
 import Lens.Micro
@@ -397,6 +399,15 @@ posterImageWidget Party {..} Organiser {..} posterKey =
       src=@{ImageR posterKey}
       alt="Poster for #{partyTitle} on #{formatTime defaultTimeLocale prettyDayFormat partyDay}, by #{organiserName}">
   |]
+
+getPosterForParty :: MonadIO m => PartyId -> SqlPersistT m (Maybe CASKey)
+getPosterForParty partyId = do
+  keys <- E.select $
+    E.from $ \(partyPoster `E.InnerJoin` image) -> do
+      E.on (partyPoster E.^. PartyPosterImage E.==. image E.^. ImageId)
+      E.where_ (partyPoster E.^. PartyPosterParty E.==. E.val partyId)
+      pure (image E.^. ImageKey)
+  pure $ E.unValue <$> listToMaybe keys
 
 deleteUserCompletely :: MonadIO m => UserId -> SqlPersistT m ()
 deleteUserCompletely userId = do
