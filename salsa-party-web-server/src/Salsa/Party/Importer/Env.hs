@@ -107,7 +107,7 @@ jsonRequestConduit = do
 
 chooseUserAgent :: IO ByteString
 chooseUserAgent = do
-  index <- randomRIO (0, length userAgentList)
+  index <- randomRIO (0, length userAgentList - 1)
   pure $ userAgentList !! index
 
 userAgentList :: [ByteString]
