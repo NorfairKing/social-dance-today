@@ -108,6 +108,7 @@ Party sql=party
     start TimeOfDay Maybe
     homepage Text Maybe
     price Text Maybe default=NULL
+    cancelled Bool default=0 -- False
 
     created UTCTime
     modified UTCTime Maybe default=NULL

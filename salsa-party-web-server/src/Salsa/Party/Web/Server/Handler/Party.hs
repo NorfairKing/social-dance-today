@@ -128,6 +128,7 @@ submitPartyPage mPartyUuid mResult = do
                         partyStart = partyFormStart,
                         partyHomepage = partyFormHomepage,
                         partyPrice = partyFormPrice,
+                        partyCancelled = False,
                         partyCreated = now,
                         partyModified = Nothing,
                         partyPlace = placeId
