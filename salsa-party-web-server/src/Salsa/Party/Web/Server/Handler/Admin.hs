@@ -20,6 +20,13 @@ getPanelR = do
     setDescription "Admin panel for the salsa parties admin"
     $(widgetFile "admin/panel")
 
+postAdminUserImpersonateR :: UserId -> Handler Html
+postAdminUserImpersonateR userId = do
+  User {..} <- runDB $ get404 userId
+  setCreds False Creds {credsPlugin = "impersonation", credsIdent = userEmailAddress, credsExtra = []}
+  addMessage "is-success" $ "You are now impersonating user " <> toHtml userEmailAddress
+  redirect $ AccountR AccountOverviewR
+
 postAdminDeleteEventR :: EventUUID -> Handler Html
 postAdminDeleteEventR uuid = do
   runDB $ deleteWhere [ExternalEventUuid ==. uuid]

@@ -13,10 +13,12 @@
         <tr>
           <th>
             Email address
-          <th>
+          <th width=50px>
             Verified
+          <th width=50px>
+            Impersonate
       <tbody>
-        $forall Entity _ user <- users
+        $forall Entity userId user <- users
           <tr>
             <td>
               #{userEmailAddress user}
@@ -25,6 +27,13 @@
                 No
               $nothing
                 Yes
+            <td>
+              <form
+                method=post
+                action=@{AdminR $ AdminUserImpersonateR userId}>
+                ^{token}
+                <button .button .is-danger type=submit>
+                  Impersonate
 
 <section .section>
   <div .container>

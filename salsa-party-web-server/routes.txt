@@ -26,6 +26,7 @@
   / PanelR GET
 
   /party/#EventUUID/delete AdminDeleteEventR POST
+  /user/#UserId/impersonate AdminUserImpersonateR POST
 
 /favicon.ico FaviconR GET
 /sitemap.xml SitemapR GET

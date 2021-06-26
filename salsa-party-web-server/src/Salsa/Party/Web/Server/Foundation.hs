@@ -133,13 +133,16 @@ instance YesodAuth App where
   type AuthId App = UserId
   loginDest _ = AccountR AccountOverviewR
   logoutDest _ = HomeR
-  authenticate Creds {..} = case credsPlugin of
-    "salsa" -> do
-      mUser <- liftHandler $ runDB $ getBy (UniqueUserEmailAddress credsIdent)
-      pure $ case mUser of
-        Nothing -> UserError $ IdentifierNotFound credsIdent
-        Just (Entity userId _) -> Authenticated userId
-    _ -> pure $ ServerError "Unknown auth plugin"
+  authenticate Creds {..} =
+    let byEmail = do
+          mUser <- liftHandler $ runDB $ getBy (UniqueUserEmailAddress credsIdent)
+          pure $ case mUser of
+            Nothing -> UserError $ IdentifierNotFound credsIdent
+            Just (Entity userId _) -> Authenticated userId
+     in case credsPlugin of
+          "impersonation" -> byEmail
+          "salsa" -> byEmail
+          _ -> pure $ ServerError "Unknown auth plugin"
   onLogin = addMessageI "is-success" NowLoggedIn
   authPlugins _ = [salsaAuthPlugin]
 
