@@ -4,6 +4,7 @@ module Main where
 
 import Control.Monad
 import Control.Monad.Logger
+import Data.Text (Text)
 import qualified Data.Text as T
 import LinkCheck (runLinkCheck)
 import qualified LinkCheck.OptParse.Types as LinkCheck (Settings (..))
@@ -18,6 +19,7 @@ import System.Exit
 import Test.Syd
 import Test.Syd.Yesod
 import Test.Syd.Yesod.E2E
+import Yesod.Auth
 
 main :: IO ()
 main = do
@@ -64,14 +66,79 @@ spec uri = do
       it "RobotsR" $ do
         get RobotsR
         statusIs 200
-      forM_ locations $ \p ->
-        describe (T.unpack (placeQuery p)) $
-          it "QueryR" $ do
-            request $ do
-              setUrl QueryR
-              setMethod methodPost
-              addPostParam "address" $ placeQuery p
-            statusIs 303
-            locationShouldBe $ SearchR $ placeQuery p
-            _ <- followRedirect
-            statusIs 200
+      describe "Search" $
+        forM_ locations $ \p ->
+          describe (T.unpack (placeQuery p)) $
+            it "QueryR" $ do
+              request $ do
+                setUrl QueryR
+                setMethod methodPost
+                addPostParam "address" $ placeQuery p
+              statusIs 303
+              locationShouldBe $ SearchR $ placeQuery p
+              _ <- followRedirect
+              statusIs 200
+      doNotRandomiseExecutionOrder $
+        sequential $ do
+          let testUserEmailAddress = "test-user@example.com"
+              testUserPassphrase = "example-password"
+          describe "RegisterR" $ do
+            yit "can GET the registration page" $ do
+              get $ AuthR registerR
+              statusIs 200
+            yit "can succesfully POST to the registration page" $ do
+              testRegister testUserEmailAddress testUserPassphrase
+          describe "LoginR" $ do
+            yit "can GET the login page" $ do
+              get $ AuthR LoginR
+              statusIs 200
+            yit "can POST the login page after registering" $ do
+              testLogin testUserEmailAddress testUserPassphrase
+          describe "AccountDeleteR" $
+            yit "Can delete the test account" $ do
+              testLogin testUserEmailAddress testUserPassphrase
+              post $ AccountR AccountDeleteR
+              statusIs 303
+              locationShouldBe HomeR
+              _ <- followRedirect
+              statusIs 200
+
+testRegister ::
+  Text -> Text -> YesodExample (E2E App) ()
+testRegister emailAddress passphrase = do
+  get $ AuthR registerR
+  statusIs 200
+  request $ do
+    setMethod methodPost
+    setUrl $ AuthR registerR
+    addToken
+    addPostParam "email-address" emailAddress
+    addPostParam "passphrase" passphrase
+    addPostParam "passphrase-confirm" passphrase
+  statusIs 303
+  locationShouldBe $ AccountR AccountOverviewR
+  _ <- followRedirect
+  statusIs 200
+
+testLogin :: Text -> Text -> YesodExample (E2E App) ()
+testLogin emailAddress passphrase = do
+  get $ AuthR LoginR
+  statusIs 200
+  request $ do
+    setMethod methodPost
+    setUrl $ AuthR loginR
+    addToken
+    addPostParam "email-address" emailAddress
+    addPostParam "passphrase" passphrase
+  statusIs 303
+  locationShouldBe $ AccountR AccountOverviewR
+  _ <- followRedirect
+  statusIs 200
+
+testLogout :: YesodExample (E2E App) ()
+testLogout = do
+  post $ AuthR LogoutR
+  statusIs 303
+  locationShouldBe HomeR
+  _ <- followRedirect
+  statusIs 200
