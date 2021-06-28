@@ -1,14 +1,23 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
+import Control.Monad
 import Control.Monad.Logger
+import qualified Data.Text as T
 import LinkCheck (runLinkCheck)
 import qualified LinkCheck.OptParse.Types as LinkCheck (Settings (..))
 import Network.URI
+import Salsa.Party.DB
+import Salsa.Party.DB.Migration
+import Salsa.Party.Web.Server.Foundation
 import SeoCheck (runSeoCheck)
 import qualified SeoCheck.OptParse.Types as SeoCheck (Settings (..))
 import System.Environment
 import System.Exit
 import Test.Syd
+import Test.Syd.Yesod
+import Test.Syd.Yesod.E2E
 
 main :: IO ()
 main = do
@@ -40,3 +49,29 @@ spec uri = do
             SeoCheck.setLogLevel = LevelWarn,
             SeoCheck.setFetchers = Nothing
           }
+  yesodE2ESpec uri $ do
+    pure () :: YesodSpec (E2E App)
+    describe "E2E yesod" $ do
+      it "HomeR" $ do
+        get HomeR
+        statusIs 200
+      it "ExploreR" $ do
+        get ExploreR
+        statusIs 200
+      it "SitemapR" $ do
+        get SitemapR
+        statusIs 200
+      it "RobotsR" $ do
+        get RobotsR
+        statusIs 200
+      forM_ locations $ \p ->
+        describe (T.unpack (placeQuery p)) $
+          it "QueryR" $ do
+            request $ do
+              setUrl QueryR
+              setMethod methodPost
+              addPostParam "address" $ placeQuery p
+            statusIs 303
+            locationShouldBe $ SearchR $ placeQuery p
+            _ <- followRedirect
+            statusIs 200
