@@ -18,7 +18,6 @@ import System.Environment
 import System.Exit
 import Test.Syd
 import Test.Syd.Yesod
-import Test.Syd.Yesod.E2E
 import Yesod.Auth
 
 main :: IO ()
