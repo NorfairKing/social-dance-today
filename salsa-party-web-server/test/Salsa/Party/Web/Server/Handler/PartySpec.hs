@@ -103,7 +103,7 @@ spec = serverSpec $ do
               get $ AccountR AccountPartiesR
               statusIs 200
 
-  describe "AccountPartyDeleteR" $
+  describe "AccountPartyDeleteR" $ do
     it "can delete a party" $ \yc -> do
       forAllValid $ \organiserForm_ ->
         forAllValid $ \partyForm_ ->
@@ -126,8 +126,33 @@ spec = serverSpec $ do
               statusIs 200
               mParty <- testDB (DB.getBy (UniquePartyUUID partyId))
               liftIO $ mParty `shouldBe` Nothing
+    it "cannot delete another users' party" $ \yc -> do
+      let username1 = "testuser1@example.com"
+      let password1 = "testpassword1"
+      let username2 = "testuser2@example.com"
+      let password2 = "testpassword2"
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm_ ->
+          forAllValid $ \location -> runYesodClientM yc $ do
+            testRegister username1 password1
+            testLogout
+            testRegister username2 password2
+            testLogout
+            testLogin username1 password1
+            testSubmitOrganiser organiserForm_
+            partyId <-
+              testSubmitParty
+                partyForm_
+                location
+            testLogout
+            testLogin username2 password2
+            request $ do
+              setMethod methodPost
+              setUrl $ AccountR $ AccountPartyDeleteR partyId
+              addToken
+            statusIs 403
 
-  describe "AccountPartyCancelR" $
+  describe "AccountPartyCancelR" $ do
     it "can cancel a party" $ \yc -> do
       forAllValid $ \organiserForm_ ->
         forAllValid $ \partyForm_ ->
@@ -153,8 +178,34 @@ spec = serverSpec $ do
                 Nothing -> expectationFailure "Should have gotten a party."
                 Just (Entity _ party) -> partyCancelled party `shouldBe` True
 
-  describe "AccountPartyUnCancelR" $
-    it "can cancel a party" $ \yc -> do
+    it "cannot cancel another users' party" $ \yc -> do
+      let username1 = "testuser1@example.com"
+      let password1 = "testpassword1"
+      let username2 = "testuser2@example.com"
+      let password2 = "testpassword2"
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm_ ->
+          forAllValid $ \location -> runYesodClientM yc $ do
+            testRegister username1 password1
+            testLogout
+            testRegister username2 password2
+            testLogout
+            testLogin username1 password1
+            testSubmitOrganiser organiserForm_
+            partyId <-
+              testSubmitParty
+                partyForm_
+                location
+            testLogout
+            testLogin username2 password2
+            request $ do
+              setMethod methodPost
+              setUrl $ AccountR $ AccountPartyCancelR partyId
+              addToken
+            statusIs 403
+
+  describe "AccountPartyUnCancelR" $ do
+    it "can un-cancel a party" $ \yc -> do
       forAllValid $ \organiserForm_ ->
         forAllValid $ \partyForm_ ->
           forAllValid $ \location ->
@@ -186,3 +237,39 @@ spec = serverSpec $ do
               liftIO $ case mParty of
                 Nothing -> expectationFailure "Should have gotten a party."
                 Just (Entity _ party) -> partyCancelled party `shouldBe` False
+
+    it "cannot un-cancel another users' party" $ \yc -> do
+      let username1 = "testuser1@example.com"
+      let password1 = "testpassword1"
+      let username2 = "testuser2@example.com"
+      let password2 = "testpassword2"
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm_ ->
+          forAllValid $ \location -> runYesodClientM yc $ do
+            testRegister username1 password1
+            testLogout
+            testRegister username2 password2
+            testLogout
+            testLogin username1 password1
+            testSubmitOrganiser organiserForm_
+            partyId <-
+              testSubmitParty
+                partyForm_
+                location
+            get $ AccountR $ AccountPartyR partyId
+            statusIs 200
+            request $ do
+              setMethod methodPost
+              setUrl $ AccountR $ AccountPartyCancelR partyId
+              addToken
+            statusIs 303
+            locationShouldBe $ AccountR AccountPartiesR
+            _ <- followRedirect
+            statusIs 200
+            testLogout
+            testLogin username2 password2
+            request $ do
+              setMethod methodPost
+              setUrl $ AccountR $ AccountPartyCancelR partyId
+              addToken
+            statusIs 403

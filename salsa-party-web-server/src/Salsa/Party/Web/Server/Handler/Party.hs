@@ -215,27 +215,42 @@ postAccountPartyDeleteR partyUuid = do
   mParty <- runDB $ getBy $ UniquePartyUUID partyUuid
   case mParty of
     Nothing -> notFound
-    Just (Entity partyId _) -> do
-      runDB $ deletePartyCompletely partyId
-      redirect $ AccountR AccountPartiesR
+    Just (Entity partyId party) -> do
+      userId <- requireAuthId
+      mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
+      if Just (partyOrganiser party) == (entityKey <$> mOrganiser)
+        then do
+          runDB $ deletePartyCompletely partyId
+          redirect $ AccountR AccountPartiesR
+        else permissionDenied "Not your party to delete."
 
 postAccountPartyCancelR :: EventUUID -> Handler Html
 postAccountPartyCancelR partyUuid = do
   mParty <- runDB $ getBy $ UniquePartyUUID partyUuid
   case mParty of
     Nothing -> notFound
-    Just (Entity partyId _) -> do
-      runDB $ update partyId [PartyCancelled =. True]
-      redirect $ AccountR AccountPartiesR
+    Just (Entity partyId party) -> do
+      userId <- requireAuthId
+      mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
+      if Just (partyOrganiser party) == (entityKey <$> mOrganiser)
+        then do
+          runDB $ update partyId [PartyCancelled =. True]
+          redirect $ AccountR AccountPartiesR
+        else permissionDenied "Not your party to cancel."
 
 postAccountPartyUnCancelR :: EventUUID -> Handler Html
 postAccountPartyUnCancelR partyUuid = do
   mParty <- runDB $ getBy $ UniquePartyUUID partyUuid
   case mParty of
     Nothing -> notFound
-    Just (Entity partyId _) -> do
-      runDB $ update partyId [PartyCancelled =. False]
-      redirect $ AccountR AccountPartiesR
+    Just (Entity partyId party) -> do
+      userId <- requireAuthId
+      mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
+      if Just (partyOrganiser party) == (entityKey <$> mOrganiser)
+        then do
+          runDB $ update partyId [PartyCancelled =. False]
+          redirect $ AccountR AccountPartiesR
+        else permissionDenied "Not your party to un-cancel."
 
 getPartyR :: EventUUID -> Handler Html
 getPartyR eventUuid = do
