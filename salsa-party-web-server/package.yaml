@@ -18,6 +18,7 @@ library:
   - blaze-html
   - bytestring
   - conduit
+  - containers
   - cryptohash-sha256
   - data-default
   - directory
@@ -119,6 +120,7 @@ tests:
     - QuickCheck
     - bytestring
     - conduit
+    - containers
     - esqueleto
     - filepath
     - genvalidity

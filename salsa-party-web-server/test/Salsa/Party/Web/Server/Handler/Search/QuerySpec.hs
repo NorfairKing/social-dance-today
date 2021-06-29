@@ -3,6 +3,7 @@
 
 module Salsa.Party.Web.Server.Handler.Search.QuerySpec (spec) where
 
+import qualified Data.Map as M
 import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Handler.Search.Query
 import Salsa.Party.Web.Server.Handler.TestImport
@@ -11,12 +12,13 @@ spec :: Spec
 spec = do
   dbSpec $ do
     describe "searchQuery" $ do
-      it "runs without results" $ \pool ->
-        forAllValid $ \day ->
-          forAllValid $ \place ->
-            flip runSqlPool pool $ do
-              sr <- searchQuery @IO day place
-              liftIO $ sr `shouldBe` SearchResults {searchResultsParties = [], searchResultsExternalEvents = []}
+      it "runs without results, and returns a map with empty days (and not an empty map)" $ \pool ->
+        forAllValid $ \begin ->
+          forAllValid $ \end ->
+            forAllValid $ \place ->
+              flip runSqlPool pool $ do
+                sr <- searchQuery @IO begin end place
+                liftIO $ sr `shouldBe` M.fromList [(day, []) | day <- [begin .. end]]
       it "runs correctly with these three parties where one is on a different day" $ \pool ->
         forAllValid $ \party1Prototype ->
           forAllValid $ \party2Prototype ->
@@ -50,16 +52,16 @@ spec = do
                             partyPlace = place3Id
                           }
                   DB.insert_ party3
-                  sr <- searchQuery @IO day (placeCoordinates queryPlace)
+                  sr <- searchQuery @IO day day (placeCoordinates queryPlace)
                   liftIO $
                     sr
-                      `shouldBe` SearchResults
-                        { searchResultsParties =
-                            [ (Entity party1Id party1, Entity place1Id place1, Nothing),
-                              (Entity party2Id party2, Entity place2Id place2, Nothing)
-                            ],
-                          searchResultsExternalEvents = []
-                        }
+                      `shouldBe` M.fromList
+                        [ ( day,
+                            [ Internal (Entity party1Id party1) (Entity place1Id place1) Nothing,
+                              Internal (Entity party2Id party2) (Entity place2Id place2) Nothing
+                            ]
+                          )
+                        ]
       it "runs correctly with these three parties where one is too far away" $ \pool ->
         forAllValid $ \party1Prototype ->
           forAllValid $ \party2Prototype ->
@@ -93,16 +95,16 @@ spec = do
                             partyPlace = place3Id
                           }
                   DB.insert_ party3
-                  sr <- searchQuery @IO day (placeCoordinates queryPlace)
+                  sr <- searchQuery @IO day day (placeCoordinates queryPlace)
                   liftIO $
                     sr
-                      `shouldBe` SearchResults
-                        { searchResultsParties =
-                            [ (Entity party1Id party1, Entity place1Id place1, Nothing),
-                              (Entity party2Id party2, Entity place2Id place2, Nothing)
-                            ],
-                          searchResultsExternalEvents = []
-                        }
+                      `shouldBe` M.fromList
+                        [ ( day,
+                            [ Internal (Entity party1Id party1) (Entity place1Id place1) Nothing,
+                              Internal (Entity party2Id party2) (Entity place2Id place2) Nothing
+                            ]
+                          )
+                        ]
       it "runs correctly with these two parties with a poster earch" $ \pool ->
         forAllValid $ \party1Prototype ->
           forAllValid $ \party2Prototype ->
@@ -134,16 +136,16 @@ spec = do
                         DB.insert_ partyPoster1Prototype {partyPosterParty = party1Id, partyPosterImage = image1Id}
                         image2Id <- DB.insert image2Prototype
                         DB.insert_ partyPoster2Prototype {partyPosterParty = party2Id, partyPosterImage = image2Id}
-                        sr <- searchQuery @IO day (placeCoordinates queryPlace)
+                        sr <- searchQuery @IO day day (placeCoordinates queryPlace)
                         liftIO $
                           sr
-                            `shouldBe` SearchResults
-                              { searchResultsParties =
-                                  [ (Entity party1Id party1, Entity place1Id place1, Just $ imageKey image1Prototype),
-                                    (Entity party2Id party2, Entity place2Id place2, Just $ imageKey image2Prototype)
-                                  ],
-                                searchResultsExternalEvents = []
-                              }
+                            `shouldBe` M.fromList
+                              [ ( day,
+                                  [ Internal (Entity party1Id party1) (Entity place1Id place1) (Just (imageKey image1Prototype)),
+                                    Internal (Entity party2Id party2) (Entity place2Id place2) (Just (imageKey image2Prototype))
+                                  ]
+                                )
+                              ]
       it "runs correctly with this complex case" $ \pool ->
         forAllValid $ \party1Prototype ->
           forAllValid $ \party2Prototype ->
@@ -175,15 +177,14 @@ spec = do
                       externalEvent1Id <- DB.insert externalEvent1
                       let externalEvent2 = externalEvent2Prototype {externalEventDay = day, externalEventPlace = place5Id}
                       externalEvent2Id <- DB.insert externalEvent2
-                      sr <- searchQuery @IO day (placeCoordinates queryPlace)
+                      sr <- searchQuery @IO day day (placeCoordinates queryPlace)
                       liftIO $
                         sr
-                          `shouldBe` SearchResults
-                            { searchResultsParties =
-                                [ (Entity party1Id party1, Entity place1Id place1, Nothing)
-                                ],
-                              searchResultsExternalEvents =
-                                [ (Entity externalEvent1Id externalEvent1, Entity place4Id place4),
-                                  (Entity externalEvent2Id externalEvent2, Entity place5Id place5)
+                          `shouldBe` M.fromList
+                            [ ( day,
+                                [ Internal (Entity party1Id party1) (Entity place1Id place1) Nothing,
+                                  External (Entity externalEvent1Id externalEvent1) (Entity place4Id place4),
+                                  External (Entity externalEvent2Id externalEvent2) (Entity place5Id place5)
                                 ]
-                            }
+                              )
+                            ]

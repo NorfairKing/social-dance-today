@@ -62,6 +62,7 @@ library
     , blaze-html
     , bytestring
     , conduit
+    , containers
     , cryptohash-sha256
     , data-default
     , directory
@@ -180,6 +181,7 @@ test-suite salsa-party-web-server-test
     , base >=4.7 && <5
     , bytestring
     , conduit
+    , containers
     , esqueleto
     , filepath
     , genvalidity

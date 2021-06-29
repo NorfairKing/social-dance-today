@@ -6,6 +6,7 @@
 
 module Salsa.Party.Web.Server.Handler.Search where
 
+import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
@@ -58,11 +59,14 @@ searchResultPage :: Maybe Day -> Maybe Text -> Coordinates -> Handler Html
 searchResultPage mDay mAddress coordinates = do
   today <- liftIO $ utctDay <$> getCurrentTime -- today
   let day = fromMaybe today mDay
-  let prevDay = addDays (- 1) day
-  let nextDay = addDays 1 day
+  let daysAhead = 7
+  let begin = day
+  let end = addDays daysAhead begin
+      prevDay = addDays (negate daysAhead) begin
+      nextDay = addDays daysAhead begin
   let toDouble :: Nano -> Double
       toDouble = realToFrac
-  SearchResults {..} <- runDB $ searchQuery day coordinates
+  searchResults <- runDB $ searchQuery begin end coordinates
   withNavBar $ do
     setTitle $
       mconcat

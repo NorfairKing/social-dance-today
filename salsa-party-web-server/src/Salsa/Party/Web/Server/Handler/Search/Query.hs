@@ -1,49 +1,65 @@
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Salsa.Party.Web.Server.Handler.Search.Query where
 
 import Control.Monad
+import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as M
 import qualified Database.Esqueleto as E
 import Salsa.Party.Web.Server.Distance
 import Salsa.Party.Web.Server.Handler.Import
 
-data SearchResults = SearchResults
-  { searchResultsParties :: [(Entity Party, Entity Place, Maybe CASKey)],
-    searchResultsExternalEvents :: [(Entity ExternalEvent, Entity Place)]
-  }
+data Result
+  = External (Entity ExternalEvent) (Entity Place)
+  | Internal (Entity Party) (Entity Place) (Maybe CASKey)
   deriving (Show, Eq)
 
--- For a given day and a given place,
--- find all parties sorted by distance.
-searchQuery :: MonadIO m => Day -> Coordinates -> SqlPersistT m SearchResults
-searchQuery day coordinates@Coordinates {..} = do
+-- For a begin day end day (inclusive) and a given place, find all parties per
+-- day sorted by distance, and with external parties at the end in any case.
+searchQuery :: MonadIO m => Day -> Day -> Coordinates -> SqlPersistT m (Map Day [Result])
+searchQuery begin end coordinates@Coordinates {..} = do
   rawPartyResults <- E.select $
     E.from $ \((party `E.InnerJoin` p)) -> do
       E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
-      E.where_ (party E.^. PartyDay E.==. E.val day)
+      E.where_ $ dayLimit (party E.^. PartyDay) begin end
       distanceEstimationQuery coordinates p
       pure (party, p)
 
   -- Post-process the distance before we fetch images so we don't fetch too many images.
   let partyResultsWithoutImages = postProcessParties coordinates rawPartyResults
-  partyResultsWithImages <- forM partyResultsWithoutImages $ \(partyEntity@(Entity partyId _), placeEntity) -> do
-    mKey <- getPosterForParty partyId
-    pure (partyEntity, placeEntity, mKey)
+  partyResultsWithImages <-
+    forM partyResultsWithoutImages $ \(partyEntity@(Entity partyId _), placeEntity) -> do
+      mKey <- getPosterForParty partyId
+      pure (partyDay $ entityVal partyEntity, (partyEntity, placeEntity, mKey))
 
   rawExternalEventResults <- E.select $
     E.from $ \(externalEvent `E.InnerJoin` p) -> do
       E.on (externalEvent E.^. ExternalEventPlace E.==. p E.^. PlaceId)
-      E.where_ (externalEvent E.^. ExternalEventDay E.==. E.val day)
+      E.where_ $ dayLimit (externalEvent E.^. ExternalEventDay) begin end
       distanceEstimationQuery coordinates p
       pure (externalEvent, p)
 
-  pure
-    SearchResults
-      { searchResultsParties = partyResultsWithImages,
-        searchResultsExternalEvents = postProcessExternalEvents coordinates rawExternalEventResults
-      }
+  let internalResults = makeGroupedByDay partyResultsWithImages
+      externalResults = makeGroupedByDay $ postProcessExternalEvents coordinates rawExternalEventResults
+
+  pure $
+    M.unionsWith
+      (++)
+      [ M.map (map makeInternalResult) internalResults,
+        M.map (map makeExternalResult) externalResults,
+        M.fromList $ [(d, []) | d <- [begin .. end]] -- Just to make sure there are no missing days.
+      ]
+
+dayLimit :: E.SqlExpr (E.Value Day) -> Day -> Day -> E.SqlExpr (E.Value Bool)
+dayLimit dayExp begin end =
+  E.between
+    dayExp
+    ( E.val begin,
+      E.val end
+    )
 
 distanceEstimationQuery :: Coordinates -> E.SqlExpr (Entity Place) -> E.SqlQuery ()
 distanceEstimationQuery Coordinates {..} p = do
@@ -80,21 +96,41 @@ postProcessParties ::
   Coordinates ->
   [(Entity Party, Entity Place)] ->
   [(Entity Party, Entity Place)]
-postProcessParties coordinates = mapMaybe $ \(party, place) -> do
-  guard $
-    coordinates `distanceTo` placeCoordinates (entityVal place)
-      <= maximumDistance
-  pure (party, place)
+postProcessParties coordinates =
+  mapMaybe $
+    \(party, place) -> do
+      guard $
+        coordinates `distanceTo` placeCoordinates (entityVal place)
+          <= maximumDistance
+      pure (party, place)
+
+makeInternalResult :: (Entity Party, Entity Place, Maybe CASKey) -> Result
+makeInternalResult (party, place, mCasKey) = Internal party place mCasKey
 
 postProcessExternalEvents ::
   Coordinates ->
   [(Entity ExternalEvent, Entity Place)] ->
-  [(Entity ExternalEvent, Entity Place)]
-postProcessExternalEvents coordinates = mapMaybe $ \(externalEvent, place) -> do
-  guard $
-    coordinates `distanceTo` placeCoordinates (entityVal place)
-      <= maximumDistance
-  pure (externalEvent, place)
+  [(Day, (Entity ExternalEvent, Entity Place))]
+postProcessExternalEvents coordinates =
+  mapMaybe $
+    \(externalEvent, place) -> do
+      guard $
+        coordinates `distanceTo` placeCoordinates (entityVal place)
+          <= maximumDistance
+      pure (externalEventDay $ entityVal externalEvent, (externalEvent, place))
+
+makeExternalResult :: (Entity ExternalEvent, Entity Place) -> Result
+makeExternalResult (externalEvent, place) = External externalEvent place
 
 maximumDistance :: Double
 maximumDistance = 100_000 -- 100 km
+
+makeGroupedByDay :: forall eTup. [(Day, eTup)] -> Map Day [eTup]
+makeGroupedByDay = foldr go M.empty -- This could be falter with a fold
+  where
+    go :: (Day, eTup) -> Map Day [eTup] -> Map Day [eTup]
+    go (d, eTup) = M.alter go' d
+      where
+        go' :: Maybe [eTup] -> Maybe [eTup]
+        go' Nothing = Just [eTup]
+        go' (Just tups) = Just $ eTup : tups
