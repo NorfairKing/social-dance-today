@@ -12,10 +12,12 @@ function geoFindMe() {
     address.placeholder = 'My Location';
     status.textContent = 'Located';
     status.classList.add("is-success");
+    status.disabled = true;
 
     document.querySelector('#queryInput').required = false;
     document.querySelector('#latitudeInput').value = latitude;
     document.querySelector('#longitudeInput').value = longitude;
+    document.querySelector('#help').innerText = "Press the search button to search around your current location.";
   }
 
   function error(err) {
