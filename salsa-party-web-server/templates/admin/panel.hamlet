@@ -74,6 +74,8 @@
         $forall Entity _ party <- parties
           <tr>
             <td>
+              $if partyCancelled party
+                CANCELLED: 
               #{partyTitle party}
             <td>
               #{formatTime defaultTimeLocale "%F" $ partyDay party}
@@ -102,6 +104,8 @@
         $forall Entity _ externalEvent <- externalEvents
           <tr>
             <td>
+              $if externalEventCancelled externalEvent
+                CANCELLED: 
               #{externalEventTitle externalEvent}
             <td>
               #{formatTime defaultTimeLocale "%F" $ externalEventDay externalEvent}

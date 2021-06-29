@@ -103,7 +103,7 @@ spec = serverSpec $ do
               get $ AccountR AccountPartiesR
               statusIs 200
 
-  describe "DeleteAccountPartyR" $
+  describe "AccountPartyDeleteR" $
     it "can delete a party" $ \yc -> do
       forAllValid $ \organiserForm_ ->
         forAllValid $ \partyForm_ ->
@@ -124,3 +124,65 @@ spec = serverSpec $ do
               locationShouldBe $ AccountR AccountPartiesR
               _ <- followRedirect
               statusIs 200
+              mParty <- testDB (DB.getBy (UniquePartyUUID partyId))
+              liftIO $ mParty `shouldBe` Nothing
+
+  describe "AccountPartyCancelR" $
+    it "can cancel a party" $ \yc -> do
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm_ ->
+          forAllValid $ \location ->
+            withAnyLoggedInUser_ yc $ do
+              testSubmitOrganiser organiserForm_
+              partyId <-
+                testSubmitParty
+                  partyForm_
+                  location
+              get $ AccountR $ AccountPartyR partyId
+              statusIs 200
+              request $ do
+                setMethod methodPost
+                setUrl $ AccountR $ AccountPartyCancelR partyId
+                addToken
+              statusIs 303
+              locationShouldBe $ AccountR AccountPartiesR
+              _ <- followRedirect
+              statusIs 200
+              mParty <- testDB (DB.getBy (UniquePartyUUID partyId))
+              liftIO $ case mParty of
+                Nothing -> expectationFailure "Should have gotten a party."
+                Just (Entity _ party) -> partyCancelled party `shouldBe` True
+
+  describe "AccountPartyUnCancelR" $
+    it "can cancel a party" $ \yc -> do
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm_ ->
+          forAllValid $ \location ->
+            withAnyLoggedInUser_ yc $ do
+              testSubmitOrganiser organiserForm_
+              partyId <-
+                testSubmitParty
+                  partyForm_
+                  location
+              get $ AccountR $ AccountPartyR partyId
+              statusIs 200
+              request $ do
+                setMethod methodPost
+                setUrl $ AccountR $ AccountPartyCancelR partyId
+                addToken
+              statusIs 303
+              locationShouldBe $ AccountR AccountPartiesR
+              _ <- followRedirect
+              statusIs 200
+              request $ do
+                setMethod methodPost
+                setUrl $ AccountR $ AccountPartyUnCancelR partyId
+                addToken
+              statusIs 303
+              locationShouldBe $ AccountR AccountPartiesR
+              _ <- followRedirect
+              statusIs 200
+              mParty <- testDB (DB.getBy (UniquePartyUUID partyId))
+              liftIO $ case mParty of
+                Nothing -> expectationFailure "Should have gotten a party."
+                Just (Entity _ party) -> partyCancelled party `shouldBe` False

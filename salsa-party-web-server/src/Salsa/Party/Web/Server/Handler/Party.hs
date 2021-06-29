@@ -219,6 +219,24 @@ postAccountPartyDeleteR partyUuid = do
       runDB $ deletePartyCompletely partyId
       redirect $ AccountR AccountPartiesR
 
+postAccountPartyCancelR :: EventUUID -> Handler Html
+postAccountPartyCancelR partyUuid = do
+  mParty <- runDB $ getBy $ UniquePartyUUID partyUuid
+  case mParty of
+    Nothing -> notFound
+    Just (Entity partyId _) -> do
+      runDB $ update partyId [PartyCancelled =. True]
+      redirect $ AccountR AccountPartiesR
+
+postAccountPartyUnCancelR :: EventUUID -> Handler Html
+postAccountPartyUnCancelR partyUuid = do
+  mParty <- runDB $ getBy $ UniquePartyUUID partyUuid
+  case mParty of
+    Nothing -> notFound
+    Just (Entity partyId _) -> do
+      runDB $ update partyId [PartyCancelled =. False]
+      redirect $ AccountR AccountPartiesR
+
 getPartyR :: EventUUID -> Handler Html
 getPartyR eventUuid = do
   mParty <- runDB $ getBy $ UniquePartyUUID eventUuid
@@ -267,7 +285,10 @@ partyJSONLDData renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
           "name" .= htmlEscapedText partyTitle,
           "startDate" .= partyDay,
           "eventAttendanceMode" .= ("https://schema.org/OfflineEventAttendanceMode" :: Text),
-          "eventStatus" .= ("https://schema.org/EventScheduled" :: Text), -- TODO mark this as CANCELLED when we implement cancellation.
+          "eventStatus"
+            .= if partyCancelled
+              then ("https://schema.org/EventCancelled" :: Text)
+              else ("https://schema.org/EventScheduled" :: Text),
           "location"
             .= object
               [ "@type" .= ("Place" :: Text),

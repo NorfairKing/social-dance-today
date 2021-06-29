@@ -1,6 +1,8 @@
 <section .section>
   <div .container>
     <h1 .title .is-3>
+      $if externalEventCancelled
+        CANCELLED: 
       #{externalEventTitle}
 
     <h2 .title .is-4>

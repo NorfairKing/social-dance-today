@@ -1,6 +1,8 @@
 <section .section>
   <div .container>
     <h1 .title .is-3>
+      $if partyCancelled
+        CANCELLED: 
       #{partyTitle}
 
     <h2 .title .is-4>

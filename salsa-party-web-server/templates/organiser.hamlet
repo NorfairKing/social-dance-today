@@ -21,6 +21,8 @@
                         ^{posterImageWidget party organiser posterKey}
                   <div .card-content>
                     <h3 .title .is-5>
+                      $if partyCancelled party
+                        CANCELLED: 
                       #{formatTime defaultTimeLocale prettyDayFormat $ partyDay party}
                       (#{prettyDayAuto today $ partyDay party})
                     <h4 .title .is-6>
