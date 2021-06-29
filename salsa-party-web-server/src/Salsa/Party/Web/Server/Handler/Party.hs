@@ -110,49 +110,55 @@ submitPartyPage mPartyUuid mResult = do
     Just (Entity organiserId _) ->
       case mResult of
         Just (FormSuccess (PartyForm {..}, partyFormPoster)) -> do
-          Entity placeId _ <- lookupPlace partyFormAddress
           now <- liftIO getCurrentTime
           -- Insert or update the party
-          (partyId, partyUuid) <- runDB $ case partyFormUuid of
+          (partyId, partyUuid) <- case partyFormUuid of
             Nothing -> do
               addMessage "is-success" "Succesfully submitted party"
               uuid <- nextRandomUUID
+              Entity placeId _ <- lookupPlace partyFormAddress
               partyId <-
-                insert
-                  ( Party
-                      { partyUuid = uuid,
-                        partyOrganiser = organiserId,
-                        partyTitle = partyFormTitle,
-                        partyDescription = unTextarea <$> partyFormDescription,
-                        partyDay = partyFormDay,
-                        partyStart = partyFormStart,
-                        partyHomepage = partyFormHomepage,
-                        partyPrice = partyFormPrice,
-                        partyCancelled = False,
-                        partyCreated = now,
-                        partyModified = Nothing,
-                        partyPlace = placeId
-                      }
-                  )
+                runDB $
+                  insert
+                    ( Party
+                        { partyUuid = uuid,
+                          partyOrganiser = organiserId,
+                          partyTitle = partyFormTitle,
+                          partyDescription = unTextarea <$> partyFormDescription,
+                          partyDay = partyFormDay,
+                          partyStart = partyFormStart,
+                          partyHomepage = partyFormHomepage,
+                          partyPrice = partyFormPrice,
+                          partyCancelled = False,
+                          partyCreated = now,
+                          partyModified = Nothing,
+                          partyPlace = placeId
+                        }
+                    )
               pure (partyId, uuid)
             Just partyUuid -> do
-              mParty <- getBy $ UniquePartyUUID partyUuid
+              mParty <- runDB $ getBy $ UniquePartyUUID partyUuid
               case mParty of
                 Nothing -> notFound
-                Just (Entity partyId _) -> do
-                  addMessage "is-success" "Succesfully edited party"
-                  update
-                    partyId
-                    [ PartyTitle =. partyFormTitle,
-                      PartyDescription =. unTextarea <$> partyFormDescription,
-                      PartyDay =. partyFormDay,
-                      PartyStart =. partyFormStart,
-                      PartyHomepage =. partyFormHomepage,
-                      PartyPrice =. partyFormPrice,
-                      PartyPlace =. placeId,
-                      PartyModified =. Just now
-                    ]
-                  pure (partyId, partyUuid)
+                Just (Entity partyId party) ->
+                  if partyOrganiser party == organiserId
+                    then do
+                      addMessage "is-success" "Succesfully edited party"
+                      Entity placeId _ <- lookupPlace partyFormAddress
+                      runDB $
+                        update
+                          partyId
+                          [ PartyTitle =. partyFormTitle,
+                            PartyDescription =. unTextarea <$> partyFormDescription,
+                            PartyDay =. partyFormDay,
+                            PartyStart =. partyFormStart,
+                            PartyHomepage =. partyFormHomepage,
+                            PartyPrice =. partyFormPrice,
+                            PartyPlace =. placeId,
+                            PartyModified =. Just now
+                          ]
+                      pure (partyId, partyUuid)
+                    else permissionDenied "Not your party to edit."
           -- Update the poster if a new one has been submitted
           forM_ partyFormPoster $ \posterFileInfo -> do
             imageBlob <- fileSourceByteString posterFileInfo

@@ -1,8 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Salsa.Party.Web.Server.Handler.PartySpec (spec) where
 
+import qualified Data.Text as T
 import qualified Database.Persist as DB
+import Salsa.Party.Web.Server.Handler.Party
 import Salsa.Party.Web.Server.Handler.TestImport
 
 spec :: Spec
@@ -44,6 +47,60 @@ spec = serverSpec $ do
                     partyForm2_
                     location
                     poster
+
+    it "Cannot submit to a nonexistent party" $ \yc ->
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \PartyForm {..} ->
+          forAllValid $ \location ->
+            withAnyLoggedInUser_ yc $ do
+              testSubmitOrganiser organiserForm_
+              _ <- testSubmitPlace partyFormAddress location
+              get $ AccountR AccountSubmitPartyR
+              statusIs 200
+              uuid <- nextRandomUUID
+              request $ do
+                setMethod methodPost
+                setUrl $ AccountR AccountSubmitPartyR
+                addToken
+                addPostParam "uuid" $ uuidText uuid -- Nonexistent party
+                addPostParam "title" partyFormTitle
+                addPostParam "day" $ T.pack $ formatTime defaultTimeLocale "%F" partyFormDay
+                addPostParam "address" partyFormAddress
+              statusIs 404
+
+    it "Cannot edit another organiser's party" $ \yc -> do
+      let username1 = "testuser1@example.com"
+      let password1 = "testpassword1"
+      let username2 = "testuser2@example.com"
+      let password2 = "testpassword2"
+      forAllValid $ \organiser1Form_ ->
+        forAllValid $ \organiser2Form_ ->
+          forAllValid $ \partyForm_ ->
+            forAllValid $ \PartyForm {..} ->
+              forAllValid $ \location -> runYesodClientM yc $ do
+                testRegister username1 password1
+                testLogout
+                testRegister username2 password2
+                testLogout
+                testLogin username1 password1
+                testSubmitOrganiser organiser1Form_
+                partyId <-
+                  testSubmitParty
+                    partyForm_
+                    location
+                testLogout
+                testLogin username2 password2
+                testSubmitOrganiser organiser2Form_
+                _ <- testSubmitPlace partyFormAddress location
+                request $ do
+                  setMethod methodPost
+                  setUrl $ AccountR AccountSubmitPartyR
+                  addToken
+                  addPostParam "uuid" $ uuidText partyId
+                  addPostParam "title" partyFormTitle
+                  addPostParam "day" $ T.pack $ formatTime defaultTimeLocale "%F" partyFormDay
+                  addPostParam "address" partyFormAddress
+                statusIs 403
 
   describe "PartyR" $ do
     yit "GETs a 404 for a nonexistent party" $ do

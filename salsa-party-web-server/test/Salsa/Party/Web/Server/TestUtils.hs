@@ -188,6 +188,8 @@ testSubmitParty partyForm_ coordinates_ = testSubmitPartyHelper partyForm_ coord
 testSubmitPartyWithPoster :: PartyForm -> Coordinates -> TestFile -> YesodClientM App EventUUID
 testSubmitPartyWithPoster partyForm_ coordinates_ posterFile = testSubmitPartyHelper partyForm_ coordinates_ (Just posterFile)
 
+-- For submitting a new party.
+-- This doesn't let you do edits using the UUID field.
 testSubmitPartyHelper :: PartyForm -> Coordinates -> Maybe TestFile -> YesodClientM App EventUUID
 testSubmitPartyHelper PartyForm {..} loc mPosterFile = do
   -- Put the address in the database already so we don't need to use an external service for geocoding
