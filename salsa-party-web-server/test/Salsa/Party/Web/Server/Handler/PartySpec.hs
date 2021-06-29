@@ -103,6 +103,53 @@ spec = serverSpec $ do
               get $ AccountR AccountPartiesR
               statusIs 200
 
+  describe "AccountPartyR" $ do
+    it "can GET a party" $ \yc -> do
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm_ ->
+          forAllValid $ \location ->
+            withAnyLoggedInUser_ yc $ do
+              testSubmitOrganiser organiserForm_
+              partyId <-
+                testSubmitParty
+                  partyForm_
+                  location
+              get $ AccountR $ AccountPartyR partyId
+              statusIs 200
+
+    it "cannot GET a party that does't exist" $ \yc -> do
+      forAllValid $ \organiserForm_ ->
+        withAnyLoggedInUser_ yc $ do
+          testSubmitOrganiser organiserForm_
+          uuid <- nextRandomUUID
+          get $ AccountR $ AccountPartyR uuid
+          statusIs 404
+
+    it "cannot GET another organiser's party" $ \yc -> do
+      let username1 = "testuser1@example.com"
+      let password1 = "testpassword1"
+      let username2 = "testuser2@example.com"
+      let password2 = "testpassword2"
+      forAllValid $ \organiser1Form_ ->
+        forAllValid $ \organiser2Form_ ->
+          forAllValid $ \partyForm_ ->
+            forAllValid $ \location -> runYesodClientM yc $ do
+              testRegister username1 password1
+              testLogout
+              testRegister username2 password2
+              testLogout
+              testLogin username1 password1
+              testSubmitOrganiser organiser1Form_
+              partyId <-
+                testSubmitParty
+                  partyForm_
+                  location
+              testLogout
+              testLogin username2 password2
+              testSubmitOrganiser organiser2Form_
+              get $ AccountR $ AccountPartyR partyId
+              statusIs 403
+
   describe "AccountPartyDeleteR" $ do
     it "can delete a party" $ \yc -> do
       forAllValid $ \organiserForm_ ->
@@ -126,6 +173,7 @@ spec = serverSpec $ do
               statusIs 200
               mParty <- testDB (DB.getBy (UniquePartyUUID partyId))
               liftIO $ mParty `shouldBe` Nothing
+
     it "cannot delete another users' party" $ \yc -> do
       let username1 = "testuser1@example.com"
       let password1 = "testpassword1"

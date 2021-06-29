@@ -187,9 +187,16 @@ submitPartyPage mPartyUuid mResult = do
                     ]
           redirect $ AccountR $ AccountPartyR partyUuid
         _ -> do
-          mPartyEntity <- fmap join $
-            forM mPartyUuid $ \partyUuid -> do
-              runDB $ getBy $ UniquePartyUUID partyUuid
+          mPartyEntity <- case mPartyUuid of
+            Nothing -> pure Nothing
+            Just partyUuid -> do
+              mPartyEntity <- runDB $ getBy $ UniquePartyUUID partyUuid
+              case mPartyEntity of
+                Nothing -> notFound
+                Just partyEntity@(Entity _ party) ->
+                  if partyOrganiser party == organiserId
+                    then pure $ Just partyEntity
+                    else permissionDenied "Not your party to edit."
           mPlace <- forM mPartyEntity $ \(Entity _ party) -> runDB $ get404 $ partyPlace party
           mPosterWidget <- fmap join $
             forM mPartyEntity $ \(Entity partyId party) -> do
