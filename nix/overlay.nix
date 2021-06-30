@@ -20,7 +20,11 @@ in
             (old: {
               doHaddock = false;
               doBenchmark = true;
-              doCoverage = true;
+              doCoverage = false;
+              doHoogle = false;
+              hyperlinkSource = false;
+              enableLibraryProfiling = false;
+              enableExecutableProfiling = false;
               buildDepends = (old.buildInputs or [ ]) ++ [ final.haskellPackages.autoexporter ];
             })
         );

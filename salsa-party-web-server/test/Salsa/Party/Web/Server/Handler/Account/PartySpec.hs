@@ -239,7 +239,14 @@ spec = serverSpec $ do
                 Nothing -> expectationFailure "Should have gotten a party."
                 Just (Entity _ party) -> partyCancelled party `shouldBe` True
 
-    pending "cannot cancel a party that doesn't exist."
+    it "cannot cancel a party that doesn't exist." $ \yc -> do
+      withAnyLoggedInUser_ yc $ do
+        uuid <- nextRandomUUID
+        request $ do
+          setMethod methodPost
+          setUrl $ AccountR $ AccountPartyCancelR uuid
+          addToken
+        statusIs 404
 
     it "cannot cancel another users' party" $ \yc -> do
       let username1 = "testuser1@example.com"
@@ -301,7 +308,14 @@ spec = serverSpec $ do
                 Nothing -> expectationFailure "Should have gotten a party."
                 Just (Entity _ party) -> partyCancelled party `shouldBe` False
 
-    pending "cannot un-cancel a party that doesn't exist."
+    it "cannot uncancel a party that doesn't exist." $ \yc -> do
+      withAnyLoggedInUser_ yc $ do
+        uuid <- nextRandomUUID
+        request $ do
+          setMethod methodPost
+          setUrl $ AccountR $ AccountPartyUnCancelR uuid
+          addToken
+        statusIs 404
 
     it "cannot un-cancel another users' party" $ \yc -> do
       let username1 = "testuser1@example.com"
