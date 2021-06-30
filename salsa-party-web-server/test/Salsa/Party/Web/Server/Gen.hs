@@ -10,9 +10,9 @@ import Data.GenValidity.Text ()
 import Data.GenValidity.Time ()
 import Data.GenValidity.UUID.Typed ()
 import qualified Data.Text as T
+import Salsa.Party.Web.Server.Handler.Account.Organiser
 import Salsa.Party.Web.Server.Handler.Account.Party
 import Salsa.Party.Web.Server.Handler.Import
-import Salsa.Party.Web.Server.Handler.Organiser
 import Test.QuickCheck
 
 instance GenValid Textarea where

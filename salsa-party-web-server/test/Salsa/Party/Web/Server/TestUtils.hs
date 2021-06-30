@@ -24,8 +24,8 @@ import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Gen
+import Salsa.Party.Web.Server.Handler.Account.Organiser
 import Salsa.Party.Web.Server.Handler.Account.Party
-import Salsa.Party.Web.Server.Handler.Organiser
 import Salsa.Party.Web.Server.Static
 import System.FilePath
 import Test.QuickCheck
