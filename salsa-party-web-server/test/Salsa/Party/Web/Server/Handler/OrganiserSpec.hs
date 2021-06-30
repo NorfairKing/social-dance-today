@@ -13,6 +13,7 @@ spec = serverSpec $ do
         uuid <- nextRandomUUID
         get $ OrganiserR uuid -- Won't exist
         statusIs 404
+
     it "GETs a 200 for an existent organiser" $ \yc ->
       forAllValid $ \organiser ->
         runYesodClientM yc $ do

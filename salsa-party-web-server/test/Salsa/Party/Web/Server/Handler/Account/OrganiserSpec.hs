@@ -11,6 +11,7 @@ spec = serverSpec $ do
       withAnyLoggedInUser_ yc $ do
         get $ AccountR AccountOrganiserR
         statusIs 200
+
     it "Can create a party by POSTing to OrganiserR" $ \yc ->
       forAllValid $ \organiserForm_ ->
         withAnyLoggedInUser_ yc $

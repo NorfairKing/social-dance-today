@@ -5,22 +5,19 @@
 /query QueryR POST
 
 /party/#EventUUID PartyR GET
-
 /organiser/#OrganiserUUID OrganiserR GET
-
 /image/#CASKey ImageR GET
 
 /account AccountR:
   / AccountOverviewR GET
   /organiser AccountOrganiserR GET POST
 
+  /parties AccountPartiesR GET
   /submit-party AccountSubmitPartyR GET POST
   /party/#EventUUID AccountPartyR GET
   /party/#EventUUID/delete AccountPartyDeleteR POST
   /party/#EventUUID/cancel AccountPartyCancelR POST
   /party/#EventUUID/un-cancel AccountPartyUnCancelR POST
-
-  /parties AccountPartiesR GET
 
   /delete AccountDeleteR POST
 

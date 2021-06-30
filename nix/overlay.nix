@@ -10,18 +10,19 @@ in
     let
       salsaPartyPkg =
         name:
-        doBenchmark (
-          addBuildDepend
+        failOnAllWarnings (
+          overrideCabal
             (
-              dontHaddock (failOnAllWarnings (
-                disableLibraryProfiling (
-                  final.haskellPackages.callCabal2nixWithOptions name (final.gitignoreSource (../. + "/${name}"))
-                    "--no-hpack"
-                    { }
-                )
-              ))
+              final.haskellPackages.callCabal2nixWithOptions name (final.gitignoreSource (../. + "/${name}"))
+                "--no-hpack"
+                { }
             )
-            (final.haskellPackages.autoexporter)
+            (old: {
+              doHaddock = false;
+              doBenchmark = true;
+              doCoverage = true;
+              buildDepends = (old.buildInputs or [ ]) ++ [ final.haskellPackages.autoexporter ];
+            })
         );
       salsaPartyPkgWithComp =
         exeName: name:

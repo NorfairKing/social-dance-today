@@ -164,8 +164,8 @@ test-suite salsa-party-web-server-test
       Salsa.Party.Web.Server.DistanceSpec
       Salsa.Party.Web.Server.Gen
       Salsa.Party.Web.Server.Handler.Account.OrganiserSpec
+      Salsa.Party.Web.Server.Handler.Account.OverviewSpec
       Salsa.Party.Web.Server.Handler.Account.PartySpec
-      Salsa.Party.Web.Server.Handler.AccountSpec
       Salsa.Party.Web.Server.Handler.AdminSpec
       Salsa.Party.Web.Server.Handler.AuthSpec
       Salsa.Party.Web.Server.Handler.ExploreSpec

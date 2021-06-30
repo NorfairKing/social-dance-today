@@ -9,9 +9,10 @@ spec :: Spec
 spec = do
   serverSpec $ do
     describe "QueryR" $ do
-      yit "Can GET a 400 query page for an empty query" $ do
+      it "Can GET a 400 query page for an empty query" $ do
         post QueryR
         statusIs 400
+
       it "Can GET a 200 query page for a nonempty query" $ \yc ->
         forAll (genValid `suchThat` (not . T.null)) $ \query ->
           forAllValid $ \location ->
@@ -22,6 +23,7 @@ spec = do
                 setUrl QueryR
                 addPostParam "address" query
               statusIs 303
+
     describe "SearchR" $ do
       it "Can GET a 200 place page for a place" $ \yc ->
         forAll (genValid `suchThat` (not . T.null)) $ \query ->

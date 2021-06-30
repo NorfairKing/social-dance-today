@@ -10,6 +10,20 @@ import Salsa.Party.Web.Server.Handler.TestImport
 
 spec :: Spec
 spec = serverSpec $ do
+  describe "GetAccountPartiesR" $
+    it "GETS a 200 for any account with a party" $ \yc -> do
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm_ ->
+          forAllValid $ \location ->
+            withAnyLoggedInUser_ yc $ do
+              testSubmitOrganiser organiserForm_
+              _ <-
+                testSubmitParty
+                  partyForm_
+                  location
+              get $ AccountR AccountPartiesR
+              statusIs 200
+
   describe "SubmitPartyR" $ do
     it "GETs a 200 for SubmitPartyR" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -102,20 +116,6 @@ spec = serverSpec $ do
                   addPostParam "address" partyFormAddress
                 statusIs 403
 
-  describe "GetAccountPartiesR" $
-    it "GETS a 200 for any account with a party" $ \yc -> do
-      forAllValid $ \organiserForm_ ->
-        forAllValid $ \partyForm_ ->
-          forAllValid $ \location ->
-            withAnyLoggedInUser_ yc $ do
-              testSubmitOrganiser organiserForm_
-              _ <-
-                testSubmitParty
-                  partyForm_
-                  location
-              get $ AccountR AccountPartiesR
-              statusIs 200
-
   describe "AccountPartyR" $ do
     it "can GET a party" $ \yc -> do
       forAllValid $ \organiserForm_ ->
@@ -187,7 +187,7 @@ spec = serverSpec $ do
               mParty <- testDB (DB.getBy (UniquePartyUUID partyId))
               liftIO $ mParty `shouldBe` Nothing
 
-    it "cannot delete another users' party" $ \yc -> do
+    it "cannot delete another user's party" $ \yc -> do
       let username1 = "testuser1@example.com"
       let password1 = "testpassword1"
       let username2 = "testuser2@example.com"
@@ -238,6 +238,8 @@ spec = serverSpec $ do
               liftIO $ case mParty of
                 Nothing -> expectationFailure "Should have gotten a party."
                 Just (Entity _ party) -> partyCancelled party `shouldBe` True
+
+    pending "cannot cancel a party that doesn't exist."
 
     it "cannot cancel another users' party" $ \yc -> do
       let username1 = "testuser1@example.com"
@@ -298,6 +300,8 @@ spec = serverSpec $ do
               liftIO $ case mParty of
                 Nothing -> expectationFailure "Should have gotten a party."
                 Just (Entity _ party) -> partyCancelled party `shouldBe` False
+
+    pending "cannot un-cancel a party that doesn't exist."
 
     it "cannot un-cancel another users' party" $ \yc -> do
       let username1 = "testuser1@example.com"
