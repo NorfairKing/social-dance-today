@@ -191,21 +191,12 @@ testSubmitPartyWithPoster partyForm_ coordinates_ posterFile = testSubmitPartyHe
 -- For submitting a new party.
 -- This doesn't let you do edits using the UUID field.
 testSubmitPartyHelper :: PartyForm -> Coordinates -> Maybe TestFile -> YesodClientM App EventUUID
-testSubmitPartyHelper PartyForm {..} loc mPosterFile = do
+testSubmitPartyHelper partyForm_ loc mPosterFile = do
   -- Put the address in the database already so we don't need to use an external service for geocoding
-  _ <- testSubmitPlace partyFormAddress loc
+  _ <- testSubmitPlace (partyFormAddress partyForm_) loc
   get $ AccountR AccountSubmitPartyR
   statusIs 200
-  request $ do
-    setMethod methodPost
-    setUrl $ AccountR AccountSubmitPartyR
-    addToken
-    addPostParam "title" partyFormTitle
-    addPostParam "day" $ T.pack $ formatTime defaultTimeLocale "%F" partyFormDay
-    addPostParam "address" partyFormAddress
-    forM_ partyFormDescription $ \description -> addPostParam "description" $ unTextarea description
-    forM_ partyFormStart $ \start -> addPostParam "start" $ T.pack $ formatTime defaultTimeLocale "%H:%M" start
-    forM_ mPosterFile $ \TestFile {..} -> addFileWith "poster" testFilePath testFileContents testFileType
+  request $ partyFormRequestBuilder partyForm_ mPosterFile
   statusIs 303
   errOrLoc <- getLocation
   case errOrLoc of
@@ -213,6 +204,18 @@ testSubmitPartyHelper PartyForm {..} loc mPosterFile = do
     Right redirectLocation -> case redirectLocation of
       AccountR (AccountPartyR partyUuid) -> pure partyUuid
       _ -> liftIO $ expectationFailure $ "Coordinates should have been some AccountR AccountPartyR after submitting a party, was this instead: " <> show redirectLocation
+
+partyFormRequestBuilder :: PartyForm -> Maybe TestFile -> RequestBuilder App ()
+partyFormRequestBuilder PartyForm {..} mPosterFile = do
+  setMethod methodPost
+  setUrl $ AccountR AccountSubmitPartyR
+  addToken
+  addPostParam "title" partyFormTitle
+  addPostParam "day" $ T.pack $ formatTime defaultTimeLocale "%F" partyFormDay
+  addPostParam "address" partyFormAddress
+  forM_ partyFormDescription $ \description -> addPostParam "description" $ unTextarea description
+  forM_ partyFormStart $ \start -> addPostParam "start" $ T.pack $ formatTime defaultTimeLocale "%H:%M" start
+  forM_ mPosterFile $ \TestFile {..} -> addFileWith "poster" testFilePath testFileContents testFileType
 
 testDB :: DB.SqlPersistT IO a -> YesodClientM App a
 testDB func = do
