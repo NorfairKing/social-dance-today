@@ -33,6 +33,8 @@ library
       Salsa.Party.Web.Server.Geocoding
       Salsa.Party.Web.Server.Handler
       Salsa.Party.Web.Server.Handler.Account
+      Salsa.Party.Web.Server.Handler.Account.Overview
+      Salsa.Party.Web.Server.Handler.Account.Party
       Salsa.Party.Web.Server.Handler.Admin
       Salsa.Party.Web.Server.Handler.Explore
       Salsa.Party.Web.Server.Handler.Home
@@ -160,6 +162,7 @@ test-suite salsa-party-web-server-test
   other-modules:
       Salsa.Party.Web.Server.DistanceSpec
       Salsa.Party.Web.Server.Gen
+      Salsa.Party.Web.Server.Handler.Account.PartySpec
       Salsa.Party.Web.Server.Handler.AccountSpec
       Salsa.Party.Web.Server.Handler.AdminSpec
       Salsa.Party.Web.Server.Handler.AuthSpec
