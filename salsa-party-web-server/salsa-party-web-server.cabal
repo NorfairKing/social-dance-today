@@ -168,6 +168,7 @@ test-suite salsa-party-web-server-test
       Salsa.Party.Web.Server.Handler.AccountSpec
       Salsa.Party.Web.Server.Handler.AdminSpec
       Salsa.Party.Web.Server.Handler.AuthSpec
+      Salsa.Party.Web.Server.Handler.ExploreSpec
       Salsa.Party.Web.Server.Handler.HomeSpec
       Salsa.Party.Web.Server.Handler.OrganiserSpec
       Salsa.Party.Web.Server.Handler.PartySpec
