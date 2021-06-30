@@ -8,6 +8,7 @@ import Control.Monad.Logger
 import Control.Monad.Reader
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
+import Data.GenValidity
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
@@ -62,12 +63,6 @@ serverSetupFunc man = do
         appGoogleSearchConsoleVerification = Nothing
       }
 
-adminEmail :: Text
-adminEmail = "admin@example.com"
-
-adminPassword :: Text
-adminPassword = "dummy"
-
 type DBSpec = SpecWith DB.ConnectionPool
 
 dbSpec :: DBSpec -> Spec
@@ -81,6 +76,24 @@ salsaConnectionPoolSetupFunc =
        in withSqlitePoolInfo info 1 $ \pool -> do
             _ <- runSqlPool (completeServerMigration True) pool
             liftIO $ func pool
+
+data TestUser = TestUser {testUserEmail :: Text, testUserPassword :: Text}
+  deriving (Show, Eq, Generic)
+
+instance Validity TestUser
+
+instance GenValid TestUser where
+  genValid = TestUser <$> genValidEmailAddress <*> genValidPassword
+  shrinkValid _ = [] -- No point, shouldn't matter.
+
+adminUser :: TestUser
+adminUser = TestUser {testUserEmail = adminEmail, testUserPassword = adminPassword}
+
+adminEmail :: Text
+adminEmail = "admin@example.com"
+
+adminPassword :: Text
+adminPassword = "dummy"
 
 testRegister ::
   Text -> Text -> YesodExample App ()

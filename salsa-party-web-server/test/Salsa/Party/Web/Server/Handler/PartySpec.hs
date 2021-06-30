@@ -14,18 +14,14 @@ spec = serverSpec $ do
       statusIs 404
 
     it "Can get the party page for an existing party" $ \yc ->
-      -- TODO use a logged-out user and a insert-in-db test here.
-      forAllValid $ \organiserForm_ ->
-        forAllValid $ \partyForm_ ->
-          forAllValid $ \location ->
-            withAnyLoggedInUser_ yc $ do
-              testSubmitOrganiser organiserForm_
-              uuid <-
-                testSubmitParty
-                  partyForm_
-                  location
-              get $ PartyR uuid
-              statusIs 200
+      forAllValid $ \organiser ->
+        forAllValid $ \party ->
+          runYesodClientM yc $ do
+            testDB $ do
+              organiserId <- DB.insert organiser
+              DB.insert_ $ party {partyOrganiser = organiserId}
+            get $ PartyR $ partyUuid party
+            statusIs 200
 
     it "Can get the party page for an existing external event" $ \yc ->
       forAllValid $ \place ->
