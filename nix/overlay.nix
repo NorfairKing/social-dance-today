@@ -18,18 +18,18 @@ in
           )
           (old: {
             configureFlags = (old.configureFlags or [ ]) ++ [
-              "-Wall"
-              "-Wincomplete-uni-patterns"
-              "-Wincomplete-record-updates"
-              "-Wpartial-fields"
-              "-Widentities"
-              "-Wredundant-constraints"
-              "-Wcpp-undef"
-              "-Wcompat"
+              "--ghc-options=-Wall"
+              "--ghc-options=-Wincomplete-uni-patterns"
+              "--ghc-options=-Wincomplete-record-updates"
+              "--ghc-options=-Wpartial-fields"
+              "--ghc-options=-Widentities"
+              "--ghc-options=-Wredundant-constraints"
+              "--ghc-options=-Wcpp-undef"
+              "--ghc-options=-Wcompat"
               "--ghc-options=-Werror"
             ];
-            doHaddock = false;
             doBenchmark = true;
+            doHaddock = false;
             doCoverage = false;
             doHoogle = false;
             hyperlinkSource = false;

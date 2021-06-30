@@ -19,7 +19,7 @@ instance PersistField (UUID a) where
   fromPersistValue pv = do
     bs <- fromPersistValue pv
     case UUID.fromByteString $ LB.fromStrict bs of
-      Nothing -> Left "Invalidy Bytestring to convert to UUID"
+      Nothing -> Left "Invalid Bytestring to convert to UUID"
       Just uuid -> Right $ UUID uuid
 
 instance PersistFieldSql (UUID a) where
