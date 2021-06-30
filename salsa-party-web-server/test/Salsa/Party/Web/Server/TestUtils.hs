@@ -12,7 +12,7 @@ import Data.GenValidity
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
-import Database.Persist (Entity (..), (=.))
+import Database.Persist ((=.))
 import qualified Database.Persist as DB
 import qualified Database.Persist.Sql as DB
 import Database.Persist.Sqlite (fkEnabled, mkSqliteConnectionInfo, walEnabled, withSqlitePoolInfo)
@@ -155,9 +155,9 @@ withLoggedInAdmin func = do
   testRegister adminEmail adminPassword
   func
 
-testSubmitPlace :: Text -> Coordinates -> YesodClientM App (Entity Place)
-testSubmitPlace address Coordinates {..} =
-  testDB $
+insertPlace :: Text -> Coordinates -> DB.SqlPersistT IO ()
+insertPlace address Coordinates {..} =
+  void $
     DB.upsertBy
       (UniquePlaceQuery address)
       ( Place
@@ -212,7 +212,7 @@ testSubmitPartyWithPoster partyForm_ coordinates_ posterFile = testSubmitPartyHe
 testSubmitPartyHelper :: PartyForm -> Coordinates -> Maybe TestFile -> YesodClientM App EventUUID
 testSubmitPartyHelper partyForm_ loc mPosterFile = do
   -- Put the address in the database already so we don't need to use an external service for geocoding
-  _ <- testSubmitPlace (partyFormAddress partyForm_) loc
+  testDB $ insertPlace (partyFormAddress partyForm_) loc
   get $ AccountR AccountSubmitPartyR
   statusIs 200
   request $ partyFormRequestBuilder partyForm_ mPosterFile

@@ -17,7 +17,7 @@ spec = do
         forAll (genValid `suchThat` (not . T.null)) $ \query ->
           forAllValid $ \location ->
             runYesodClientM yc $ do
-              _ <- testSubmitPlace query location
+              testDB $ insertPlace query location
               request $ do
                 setMethod methodPost
                 setUrl QueryR
@@ -30,7 +30,7 @@ spec = do
           forAllValid $ \mDay ->
             forAllValid $ \location ->
               runYesodClientM yc $ do
-                _ <- testSubmitPlace query location
+                testDB $ insertPlace query location
                 request $ do
                   setMethod methodGet
                   setUrl $ SearchR query

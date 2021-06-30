@@ -11,7 +11,7 @@ spec = serverSpec $ do
     it "GETs a 404 for nonexistent organiser" $ \yc ->
       runYesodClientM yc $ do
         uuid <- nextRandomUUID
-        get $ OrganiserR uuid -- Won't exist
+        get $ OrganiserR uuid
         statusIs 404
 
     it "GETs a 200 for an existent organiser" $ \yc ->

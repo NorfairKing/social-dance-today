@@ -68,7 +68,7 @@ spec = serverSpec $ do
           forAllValid $ \location ->
             withAnyLoggedInUser_ yc $ do
               testSubmitOrganiser organiserForm_
-              _ <- testSubmitPlace partyFormAddress location
+              testDB $ insertPlace partyFormAddress location
               get $ AccountR AccountSubmitPartyR
               statusIs 200
               uuid <- nextRandomUUID
@@ -105,7 +105,7 @@ spec = serverSpec $ do
                 testLogout
                 testLogin username2 password2
                 testSubmitOrganiser organiser2Form_
-                _ <- testSubmitPlace partyFormAddress location
+                testDB $ insertPlace partyFormAddress location
                 request $ do
                   setMethod methodPost
                   setUrl $ AccountR AccountSubmitPartyR
