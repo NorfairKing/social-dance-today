@@ -95,6 +95,9 @@ adminEmail = "admin@example.com"
 adminPassword :: Text
 adminPassword = "dummy"
 
+testRegisterUser :: TestUser -> YesodExample App ()
+testRegisterUser TestUser {..} = testRegister testUserEmail testUserPassword
+
 testRegister ::
   Text -> Text -> YesodExample App ()
 testRegister emailAddress passphrase = do
@@ -111,6 +114,9 @@ testRegister emailAddress passphrase = do
   locationShouldBe $ AccountR AccountOverviewR
   _ <- followRedirect
   statusIs 200
+
+testLoginUser :: TestUser -> YesodExample App ()
+testLoginUser TestUser {..} = testLogin testUserEmail testUserPassword
 
 testLogin :: Text -> Text -> YesodExample App ()
 testLogin emailAddress passphrase = do

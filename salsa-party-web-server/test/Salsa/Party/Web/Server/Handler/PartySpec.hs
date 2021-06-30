@@ -15,13 +15,15 @@ spec = serverSpec $ do
 
     it "Can get the party page for an existing party" $ \yc ->
       forAllValid $ \organiser ->
-        forAllValid $ \party ->
-          runYesodClientM yc $ do
-            testDB $ do
-              organiserId <- DB.insert organiser
-              DB.insert_ $ party {partyOrganiser = organiserId}
-            get $ PartyR $ partyUuid party
-            statusIs 200
+        forAllValid $ \place ->
+          forAllValid $ \party ->
+            runYesodClientM yc $ do
+              testDB $ do
+                organiserId <- DB.insert organiser
+                placeId <- DB.insert place
+                DB.insert_ $ party {partyOrganiser = organiserId, partyPlace = placeId}
+              get $ PartyR $ partyUuid party
+              statusIs 200
 
     it "Can get the party page for an existing external event" $ \yc ->
       forAllValid $ \place ->
