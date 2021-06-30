@@ -97,39 +97,32 @@ spec = serverSpec $ do
                 addPostParam "address" partyFormAddress
               statusIs 404
 
-    it "Cannot edit another organiser's party" $ \yc -> do
-      let username1 = "testuser1@example.com"
-      let password1 = "testpassword1"
-      let username2 = "testuser2@example.com"
-      let password2 = "testpassword2"
-      forAllValid $ \organiser1Form_ ->
-        forAllValid $ \organiser2Form_ ->
-          forAllValid $ \partyForm_ ->
-            forAllValid $ \PartyForm {..} ->
-              forAllValid $ \location -> runYesodClientM yc $ do
-                testRegister username1 password1
-                testLogout
-                testRegister username2 password2
-                testLogout
-                testLogin username1 password1
-                testSubmitOrganiser organiser1Form_
-                partyId <-
-                  testSubmitParty
-                    partyForm_
-                    location
-                testLogout
-                testLogin username2 password2
-                testSubmitOrganiser organiser2Form_
-                testDB $ insertPlace partyFormAddress location
-                request $ do
-                  setMethod methodPost
-                  setUrl $ AccountR AccountSubmitPartyR
-                  addToken
-                  addPostParam "uuid" $ uuidText partyId
-                  addPostParam "title" partyFormTitle
-                  addPostParam "day" $ T.pack $ formatTime defaultTimeLocale "%F" partyFormDay
-                  addPostParam "address" partyFormAddress
-                statusIs 403
+    it "Cannot edit another organiser's party" $ \yc ->
+      forAllValid $ \testUser1 ->
+        forAllValid $ \testUser2 ->
+          forAllValid $ \organiser1Form_ ->
+            forAllValid $ \organiser2Form_ ->
+              forAllValid $ \partyForm_ ->
+                forAllValid $ \PartyForm {..} ->
+                  forAllValid $ \location -> runYesodClientM yc $ do
+                    partyId <- asNewUser testUser1 $ do
+                      testLoginUser testUser1
+                      testSubmitOrganiser organiser1Form_
+                      testSubmitParty
+                        partyForm_
+                        location
+                    asNewUser testUser2 $ do
+                      testSubmitOrganiser organiser2Form_
+                      testDB $ insertPlace partyFormAddress location
+                      request $ do
+                        setMethod methodPost
+                        setUrl $ AccountR AccountSubmitPartyR
+                        addToken
+                        addPostParam "uuid" $ uuidText partyId
+                        addPostParam "title" partyFormTitle
+                        addPostParam "day" $ T.pack $ formatTime defaultTimeLocale "%F" partyFormDay
+                        addPostParam "address" partyFormAddress
+                      statusIs 403
 
   describe "AccountPartyR" $ do
     it "can GET a party" $ \yc -> do
@@ -153,30 +146,20 @@ spec = serverSpec $ do
           get $ AccountR $ AccountPartyR uuid
           statusIs 404
 
-    it "cannot GET another organiser's party" $ \yc -> do
-      let username1 = "testuser1@example.com"
-      let password1 = "testpassword1"
-      let username2 = "testuser2@example.com"
-      let password2 = "testpassword2"
-      forAllValid $ \organiser1Form_ ->
-        forAllValid $ \organiser2Form_ ->
-          forAllValid $ \partyForm_ ->
-            forAllValid $ \location -> runYesodClientM yc $ do
-              testRegister username1 password1
-              testLogout
-              testRegister username2 password2
-              testLogout
-              testLogin username1 password1
-              testSubmitOrganiser organiser1Form_
-              partyId <-
-                testSubmitParty
-                  partyForm_
-                  location
-              testLogout
-              testLogin username2 password2
-              testSubmitOrganiser organiser2Form_
-              get $ AccountR $ AccountPartyR partyId
-              statusIs 403
+    it "cannot GET another organiser's party" $ \yc ->
+      forAllValid $ \testUser1 ->
+        forAllValid $ \testUser2 ->
+          forAllValid $ \organiser1Form_ ->
+            forAllValid $ \organiser2Form_ ->
+              forAllValid $ \partyForm_ ->
+                forAllValid $ \location -> runYesodClientM yc $ do
+                  partyId <- asNewUser testUser1 $ do
+                    testSubmitOrganiser organiser1Form_
+                    testSubmitParty partyForm_ location
+                  asNewUser testUser2 $ do
+                    testSubmitOrganiser organiser2Form_
+                    get $ AccountR $ AccountPartyR partyId
+                    statusIs 403
 
   describe "AccountPartyDeleteR" $ do
     it "can delete a party" $ \yc -> do
@@ -202,31 +185,21 @@ spec = serverSpec $ do
               mParty <- testDB (DB.getBy (UniquePartyUUID partyId))
               liftIO $ mParty `shouldBe` Nothing
 
-    it "cannot delete another user's party" $ \yc -> do
-      let username1 = "testuser1@example.com"
-      let password1 = "testpassword1"
-      let username2 = "testuser2@example.com"
-      let password2 = "testpassword2"
-      forAllValid $ \organiserForm_ ->
-        forAllValid $ \partyForm_ ->
-          forAllValid $ \location -> runYesodClientM yc $ do
-            testRegister username1 password1
-            testLogout
-            testRegister username2 password2
-            testLogout
-            testLogin username1 password1
-            testSubmitOrganiser organiserForm_
-            partyId <-
-              testSubmitParty
-                partyForm_
-                location
-            testLogout
-            testLogin username2 password2
-            request $ do
-              setMethod methodPost
-              setUrl $ AccountR $ AccountPartyDeleteR partyId
-              addToken
-            statusIs 403
+    it "cannot delete another user's party" $ \yc ->
+      forAllValid $ \testUser1 ->
+        forAllValid $ \testUser2 ->
+          forAllValid $ \organiserForm_ ->
+            forAllValid $ \partyForm_ ->
+              forAllValid $ \location -> runYesodClientM yc $ do
+                partyId <- asNewUser testUser1 $ do
+                  testSubmitOrganiser organiserForm_
+                  testSubmitParty partyForm_ location
+                asNewUser testUser2 $ do
+                  request $ do
+                    setMethod methodPost
+                    setUrl $ AccountR $ AccountPartyDeleteR partyId
+                    addToken
+                  statusIs 403
 
   describe "AccountPartyCancelR" $ do
     it "can cancel a party" $ \yc -> do
@@ -263,31 +236,23 @@ spec = serverSpec $ do
           addToken
         statusIs 404
 
-    it "cannot cancel another users' party" $ \yc -> do
-      let username1 = "testuser1@example.com"
-      let password1 = "testpassword1"
-      let username2 = "testuser2@example.com"
-      let password2 = "testpassword2"
-      forAllValid $ \organiserForm_ ->
-        forAllValid $ \partyForm_ ->
-          forAllValid $ \location -> runYesodClientM yc $ do
-            testRegister username1 password1
-            testLogout
-            testRegister username2 password2
-            testLogout
-            testLogin username1 password1
-            testSubmitOrganiser organiserForm_
-            partyId <-
-              testSubmitParty
-                partyForm_
-                location
-            testLogout
-            testLogin username2 password2
-            request $ do
-              setMethod methodPost
-              setUrl $ AccountR $ AccountPartyCancelR partyId
-              addToken
-            statusIs 403
+    it "cannot cancel another users' party" $ \yc ->
+      forAllValid $ \testUser1 ->
+        forAllValid $ \testUser2 ->
+          forAllValid $ \organiserForm_ ->
+            forAllValid $ \partyForm_ ->
+              forAllValid $ \location -> runYesodClientM yc $ do
+                partyId <- asNewUser testUser1 $ do
+                  testSubmitOrganiser organiserForm_
+                  testSubmitParty
+                    partyForm_
+                    location
+                asNewUser testUser2 $ do
+                  request $ do
+                    setMethod methodPost
+                    setUrl $ AccountR $ AccountPartyCancelR partyId
+                    addToken
+                  statusIs 403
 
   describe "AccountPartyUnCancelR" $ do
     it "can un-cancel a party" $ \yc -> do
@@ -332,38 +297,32 @@ spec = serverSpec $ do
           addToken
         statusIs 404
 
-    it "cannot un-cancel another users' party" $ \yc -> do
-      let username1 = "testuser1@example.com"
-      let password1 = "testpassword1"
-      let username2 = "testuser2@example.com"
-      let password2 = "testpassword2"
-      forAllValid $ \organiserForm_ ->
-        forAllValid $ \partyForm_ ->
-          forAllValid $ \location -> runYesodClientM yc $ do
-            testRegister username1 password1
-            testLogout
-            testRegister username2 password2
-            testLogout
-            testLogin username1 password1
-            testSubmitOrganiser organiserForm_
-            partyId <-
-              testSubmitParty
-                partyForm_
-                location
-            get $ AccountR $ AccountPartyR partyId
-            statusIs 200
-            request $ do
-              setMethod methodPost
-              setUrl $ AccountR $ AccountPartyCancelR partyId
-              addToken
-            statusIs 303
-            locationShouldBe $ AccountR AccountPartiesR
-            _ <- followRedirect
-            statusIs 200
-            testLogout
-            testLogin username2 password2
-            request $ do
-              setMethod methodPost
-              setUrl $ AccountR $ AccountPartyCancelR partyId
-              addToken
-            statusIs 403
+    it "cannot un-cancel another users' party" $ \yc ->
+      forAllValid $ \testUser1 ->
+        forAllValid $ \testUser2 ->
+          forAllValid $ \organiserForm_ ->
+            forAllValid $ \partyForm_ ->
+              forAllValid $ \location -> runYesodClientM yc $ do
+                partyId <- asNewUser testUser1 $ do
+                  testSubmitOrganiser organiserForm_
+                  partyId <-
+                    testSubmitParty
+                      partyForm_
+                      location
+                  get $ AccountR $ AccountPartyR partyId
+                  statusIs 200
+                  request $ do
+                    setMethod methodPost
+                    setUrl $ AccountR $ AccountPartyCancelR partyId
+                    addToken
+                  statusIs 303
+                  locationShouldBe $ AccountR AccountPartiesR
+                  _ <- followRedirect
+                  statusIs 200
+                  pure partyId
+                asNewUser testUser2 $ do
+                  request $ do
+                    setMethod methodPost
+                    setUrl $ AccountR $ AccountPartyCancelR partyId
+                    addToken
+                  statusIs 403
