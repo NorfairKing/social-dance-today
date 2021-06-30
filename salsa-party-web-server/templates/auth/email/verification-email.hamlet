@@ -7,7 +7,7 @@
       <p> Please verify your email address by clicking the link below.
       <p>
         <a
-          class="button is-primary"
+          class="button is-dark"
           href=@{AuthR $ verifyR userEmailAddress verificationKey}>
           Verify Email
       <p> We hope to see you soon.

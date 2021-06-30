@@ -22,7 +22,7 @@
       
       <div .field>
         <div .control .buttons>
-          <button .button .is-primary type="submit">
+          <button .button .is-dark type="submit">
             Submit
 
           $maybe Entity _ organiser <- mOrganiser

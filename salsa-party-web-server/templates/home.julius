@@ -11,7 +11,7 @@ function geoFindMe() {
 
     address.placeholder = 'My Location';
     status.textContent = 'Located';
-    status.classList.add("is-success");
+    status.classList.add("is-dark");
     status.disabled = true;
 
     document.querySelector('#queryInput').required = false;

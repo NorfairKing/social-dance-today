@@ -4,7 +4,7 @@
       Your parties
 
     <p>
-      <a .button .is-primary href=@{AccountR AccountSubmitPartyR}>
+      <a .button .is-dark href=@{AccountR AccountSubmitPartyR}>
         Submit party
 
 <section .section>

@@ -30,7 +30,7 @@
 
           <div .field .has-text-centered>
             <div .control>
-              <button .button .is-primary type="submit">
+              <button .button .is-dark type="submit">
                 Search
 
           <div .field .has-text-centered>
