@@ -1,4 +1,5 @@
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -17,7 +18,11 @@ import UnliftIO
 completeServerMigration :: (MonadUnliftIO m, MonadLogger m) => Bool -> SqlPersistT m ()
 completeServerMigration quiet = do
   logInfoN "Running automatic migrations"
-  (if quiet then void . runMigrationQuiet else runMigration) automaticMigrations `catch` (\(PersistError t) -> liftIO $ die $ T.unpack t)
+  (if quiet then void . runMigrationQuiet else runMigration) automaticMigrations
+    `catch` ( \case
+                PersistError t -> liftIO $ die $ T.unpack t
+                e -> throwIO e
+            )
   logInfoN "Autmatic migrations done, starting application-specific migrations."
   setUpPlaces
   logInfoN "Migrations done."

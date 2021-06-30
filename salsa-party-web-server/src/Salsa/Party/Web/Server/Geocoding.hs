@@ -27,7 +27,7 @@ lookupPlace query = do
     Nothing -> invalidArgs ["Place not found: " <> query]
     Just p -> pure p
 
-lookupPlaceRaw :: (MonadReader App m, MonadLoggerIO m, MonadIO m) => Text -> m (Maybe (Entity Place))
+lookupPlaceRaw :: (MonadReader App m, MonadLoggerIO m) => Text -> m (Maybe (Entity Place))
 lookupPlaceRaw query = do
   mPlace <- appDB $ getBy $ UniquePlaceQuery query
   case mPlace of

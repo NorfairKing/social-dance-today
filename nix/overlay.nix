@@ -10,24 +10,33 @@ in
     let
       salsaPartyPkg =
         name:
-        failOnAllWarnings (
-          overrideCabal
-            (
-              final.haskellPackages.callCabal2nixWithOptions name (final.gitignoreSource (../. + "/${name}"))
-                "--no-hpack"
-                { }
-            )
-            (old: {
-              doHaddock = false;
-              doBenchmark = true;
-              doCoverage = false;
-              doHoogle = false;
-              hyperlinkSource = false;
-              enableLibraryProfiling = false;
-              enableExecutableProfiling = false;
-              buildDepends = (old.buildInputs or [ ]) ++ [ final.haskellPackages.autoexporter ];
-            })
-        );
+        overrideCabal
+          (
+            final.haskellPackages.callCabal2nixWithOptions name (final.gitignoreSource (../. + "/${name}"))
+              "--no-hpack"
+              { }
+          )
+          (old: {
+            configureFlags = (old.configureFlags or [ ]) ++ [
+              "-Wall"
+              "-Wincomplete-uni-patterns"
+              "-Wincomplete-record-updates"
+              "-Wpartial-fields"
+              "-Widentities"
+              "-Wredundant-constraints"
+              "-Wcpp-undef"
+              "-Wcompat"
+              "--ghc-options=-Werror"
+            ];
+            doHaddock = false;
+            doBenchmark = true;
+            doCoverage = false;
+            doHoogle = false;
+            hyperlinkSource = false;
+            enableLibraryProfiling = false;
+            enableExecutableProfiling = false;
+            buildDepends = (old.buildInputs or [ ]) ++ [ final.haskellPackages.autoexporter ];
+          });
       salsaPartyPkgWithComp =
         exeName: name:
         generateOptparseApplicativeCompletion exeName (salsaPartyPkg name);
