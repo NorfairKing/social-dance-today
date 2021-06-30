@@ -79,22 +79,17 @@ spec = serverSpec $ do
 
     it "Cannot submit to a nonexistent party" $ \yc ->
       forAllValid $ \organiserForm_ ->
-        forAllValid $ \PartyForm {..} ->
+        forAllValid $ \partyForm_ ->
           forAllValid $ \location ->
             withAnyLoggedInUser_ yc $ do
               testSubmitOrganiser organiserForm_
-              testDB $ insertPlace partyFormAddress location
+              testDB $ insertPlace (partyFormAddress partyForm_) location
               get $ AccountR AccountSubmitPartyR
               statusIs 200
               uuid <- nextRandomUUID
               request $ do
-                setMethod methodPost
-                setUrl $ AccountR AccountSubmitPartyR
-                addToken
+                partyFormRequestBuilder partyForm_ Nothing
                 addPostParam "uuid" $ uuidText uuid -- Nonexistent party
-                addPostParam "title" partyFormTitle
-                addPostParam "day" $ T.pack $ formatTime defaultTimeLocale "%F" partyFormDay
-                addPostParam "address" partyFormAddress
               statusIs 404
 
     it "Cannot edit another organiser's party" $ \yc ->
