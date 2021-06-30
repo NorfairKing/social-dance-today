@@ -8,6 +8,7 @@ spec = serverSpec $ do
     yit "GETs a 200" $ do
       get SitemapR
       statusIs 200
+
   describe "RobotsR" $
     yit "GETs a 200" $ do
       get RobotsR

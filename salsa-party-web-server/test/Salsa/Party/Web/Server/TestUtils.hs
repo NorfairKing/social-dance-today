@@ -33,6 +33,7 @@ import Test.QuickCheck
 import Test.Syd
 import Test.Syd.Path
 import Test.Syd.Persistent.Sqlite
+import Test.Syd.Validity
 import Test.Syd.Wai (managerSpec)
 import Test.Syd.Yesod
 import Yesod (Textarea (..))
@@ -142,12 +143,14 @@ testLogout = do
   statusIs 200
 
 withAnyLoggedInUser_ :: YesodClient App -> YesodClientM App () -> Property
-withAnyLoggedInUser_ yc func =
-  forAll genValidEmailAddress $ \email ->
-    forAll genValidPassword $ \password -> do
-      runYesodClientM yc $ do
-        testRegister email password
-        func
+withAnyLoggedInUser_ yc func = withAnyLoggedInUser yc (\_ -> func)
+
+withAnyLoggedInUser :: YesodClient App -> (TestUser -> YesodClientM App ()) -> Property
+withAnyLoggedInUser yc func =
+  forAllValid $ \testUser ->
+    runYesodClientM yc $ do
+      testRegisterUser testUser
+      func testUser
 
 -- We use a withX function here instead of a login so we don't accidentally register as admin twice.
 withLoggedInAdmin :: YesodClientM App () -> YesodClientM App ()

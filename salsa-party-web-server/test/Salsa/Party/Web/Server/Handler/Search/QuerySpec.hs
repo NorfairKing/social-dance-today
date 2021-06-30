@@ -19,6 +19,7 @@ spec = do
               flip runSqlPool pool $ do
                 sr <- searchQuery @IO begin end place
                 liftIO $ sr `shouldBe` M.fromList [(day, []) | day <- [begin .. end]]
+
       it "runs correctly with these three parties where one is on a different day" $ \pool ->
         forAllValid $ \party1Prototype ->
           forAllValid $ \party2Prototype ->
@@ -62,6 +63,7 @@ spec = do
                             ]
                           )
                         ]
+
       it "runs correctly with these three parties where one is too far away" $ \pool ->
         forAllValid $ \party1Prototype ->
           forAllValid $ \party2Prototype ->
@@ -105,6 +107,7 @@ spec = do
                             ]
                           )
                         ]
+
       it "runs correctly with these two parties with a poster earch" $ \pool ->
         forAllValid $ \party1Prototype ->
           forAllValid $ \party2Prototype ->
@@ -146,6 +149,7 @@ spec = do
                                   ]
                                 )
                               ]
+
       it "runs correctly with this complex case" $ \pool ->
         forAllValid $ \party1Prototype ->
           forAllValid $ \party2Prototype ->

@@ -2,6 +2,7 @@
 
 module Salsa.Party.Web.Server.Handler.Account.OverviewSpec (spec) where
 
+import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Handler.TestImport
 
 spec :: Spec
@@ -27,3 +28,6 @@ spec = serverSpec $ do
         locationShouldBe HomeR
         _ <- followRedirect
         statusIs 200
+        -- User doesn't exist anymore
+        count <- testDB $ DB.count ([] :: [DB.Filter User])
+        liftIO $ count `shouldBe` 0
