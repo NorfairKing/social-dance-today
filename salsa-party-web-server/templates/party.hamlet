@@ -25,7 +25,7 @@
     $maybe description <- partyDescription
       <div .content>
         <p>
-          #{description}
+          #{Textarea description}
 
     $maybe price <- partyPrice
       <div .content>
@@ -35,7 +35,7 @@
     $maybe homepage <- partyHomepage
       <div .content>
         <p>
-          <a .button .is-light href=#{homepage}>
+          <a .button .is-light href=#{homepage} rel="external nofollow">
             Homepage
   
 
