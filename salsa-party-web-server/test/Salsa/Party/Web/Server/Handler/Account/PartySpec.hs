@@ -80,17 +80,15 @@ spec = serverSpec $ do
     it "Cannot submit to a nonexistent party" $ \yc ->
       forAllValid $ \organiserForm_ ->
         forAllValid $ \partyForm_ ->
-          forAllValid $ \location ->
-            withAnyLoggedInUser_ yc $ do
-              testSubmitOrganiser organiserForm_
-              testDB $ insertPlace (partyFormAddress partyForm_) location
-              get $ AccountR AccountSubmitPartyR
-              statusIs 200
-              uuid <- nextRandomUUID
-              request $ do
-                partyFormRequestBuilder partyForm_ Nothing
-                addPostParam "uuid" $ uuidText uuid -- Nonexistent party
-              statusIs 404
+          withAnyLoggedInUser_ yc $ do
+            testSubmitOrganiser organiserForm_
+            get $ AccountR AccountSubmitPartyR
+            statusIs 200
+            uuid <- nextRandomUUID
+            request $ do
+              partyFormRequestBuilder partyForm_ Nothing
+              addPostParam "uuid" $ uuidText uuid -- Nonexistent party
+            statusIs 404
 
     it "Cannot edit another organiser's party" $ \yc ->
       forAllValid $ \testUser1 ->
@@ -155,6 +153,38 @@ spec = serverSpec $ do
                     testSubmitOrganiser organiser2Form_
                     get $ AccountR $ AccountPartyR partyId
                     statusIs 403
+
+  describe "AccountPartyDuplicateR" $ do
+    it "cannot duplicate a nonexistent party" $ \yc -> do
+      forAllValid $ \organiserForm_ ->
+        withAnyLoggedInUser_ yc $ do
+          testSubmitOrganiser organiserForm_
+          uuid <- nextRandomUUID
+          get $ AccountR $ AccountPartyDuplicateR uuid
+          statusIs 404
+
+    it "cannot duplicate another organiser's party" $ \yc -> do
+      forAllValid $ \testUser1 ->
+        forAllValid $ \testUser2 ->
+          forAllValid $ \organiserForm_ ->
+            forAllValid $ \partyForm_ ->
+              forAllValid $ \location -> runYesodClientM yc $ do
+                partyId <- asNewUser testUser1 $ do
+                  testSubmitOrganiser organiserForm_
+                  testSubmitParty partyForm_ location
+                asNewUser testUser2 $ do
+                  get $ AccountR $ AccountPartyDuplicateR partyId
+                  statusIs 403
+
+    it "can duplicate an own party" $ \yc -> do
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm_ ->
+          forAllValid $ \location ->
+            withAnyLoggedInUser_ yc $ do
+              testSubmitOrganiser organiserForm_
+              partyId <- testSubmitParty partyForm_ location
+              get $ AccountR $ AccountPartyDuplicateR partyId
+              statusIs 403
 
   describe "AccountPartyDeleteR" $ do
     it "can delete a party" $ \yc -> do

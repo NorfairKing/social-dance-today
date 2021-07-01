@@ -214,6 +214,9 @@ submitPartyPage mPartyUuid mResult = do
           -- mtv :: (Party -> Maybe Text) ->
           withMFormResultNavBar mResult $(widgetFile "account/submit-party")
 
+getAccountPartyDuplicateR :: EventUUID -> Handler Html
+getAccountPartyDuplicateR _ = undefined
+
 postAccountPartyDeleteR :: EventUUID -> Handler Html
 postAccountPartyDeleteR partyUuid = do
   mParty <- runDB $ getBy $ UniquePartyUUID partyUuid
