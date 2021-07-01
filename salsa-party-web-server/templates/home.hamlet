@@ -10,8 +10,6 @@
           method=post
           action=@{QueryR}>
           <div .field .has-text-centered>
-            <label .label>
-              Find parties near:
             <div .control>
               <div .field .has-text-centered .has-addons .has-addons-centered>
                 <p .control>
