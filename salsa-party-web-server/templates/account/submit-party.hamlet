@@ -93,7 +93,10 @@
               <span .file-name>
                 No poster selected
 
-      $maybe posterWidget <- mPosterWidget
+      $maybe (posterKey, posterWidget) <- mPosterTup
+        <div .field>
+          <div .control>
+            <input .input name="poster-key" type="hidden" value=#{renderCASKey posterKey}>
         ^{posterWidget}
 
 

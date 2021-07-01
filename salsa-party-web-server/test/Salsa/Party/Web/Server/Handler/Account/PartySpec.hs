@@ -166,15 +166,17 @@ spec = serverSpec $ do
     it "cannot duplicate another organiser's party" $ \yc -> do
       forAllValid $ \testUser1 ->
         forAllValid $ \testUser2 ->
-          forAllValid $ \organiserForm_ ->
-            forAllValid $ \partyForm_ ->
-              forAllValid $ \location -> runYesodClientM yc $ do
-                partyId <- asNewUser testUser1 $ do
-                  testSubmitOrganiser organiserForm_
-                  testSubmitParty partyForm_ location
-                asNewUser testUser2 $ do
-                  get $ AccountR $ AccountPartyDuplicateR partyId
-                  statusIs 403
+          forAllValid $ \organiser1Form_ ->
+            forAllValid $ \organiser2Form_ ->
+              forAllValid $ \partyForm_ ->
+                forAllValid $ \location -> runYesodClientM yc $ do
+                  partyId <- asNewUser testUser1 $ do
+                    testSubmitOrganiser organiser1Form_
+                    testSubmitParty partyForm_ location
+                  asNewUser testUser2 $ do
+                    testSubmitOrganiser organiser2Form_
+                    get $ AccountR $ AccountPartyDuplicateR partyId
+                    statusIs 403
 
     it "can duplicate an own party" $ \yc -> do
       forAllValid $ \organiserForm_ ->
@@ -184,7 +186,7 @@ spec = serverSpec $ do
               testSubmitOrganiser organiserForm_
               partyId <- testSubmitParty partyForm_ location
               get $ AccountR $ AccountPartyDuplicateR partyId
-              statusIs 403
+              statusIs 200
 
   describe "AccountPartyDeleteR" $ do
     it "can delete a party" $ \yc -> do

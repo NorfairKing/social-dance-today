@@ -27,6 +27,8 @@
               Edit
             <a .button href=@{PartyR $ partyUuid party}>
               Public Party Profile
+            <a .button href=@{AccountR $ AccountPartyDuplicateR $ partyUuid party}>
+              Duplicate
             $if partyCancelled party
               ^{token}
               <form
