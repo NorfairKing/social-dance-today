@@ -92,4 +92,5 @@ searchResultPage mDay mAddress coordinates = do
           ".",
           "Should you wish to see your parties featured here, please make an account and submit your party for free!"
         ]
+    let pagination = $(widgetFile "search-pagination")
     $(widgetFile "search")
