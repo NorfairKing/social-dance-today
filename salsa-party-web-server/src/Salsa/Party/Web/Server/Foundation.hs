@@ -78,6 +78,7 @@ instance Yesod App where
           if development
             then (<> autoReloadWidgetFor ReloadR)
             else id
+    currentRoute <- getCurrentRoute
     let body = withAutoReload $(widgetFile "default-body")
     pageContent <- widgetToPageContent body
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
