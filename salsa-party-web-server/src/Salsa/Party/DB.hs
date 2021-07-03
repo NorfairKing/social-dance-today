@@ -121,6 +121,7 @@ Party sql=party
     deriving Eq
     deriving Generic
 
+
 PartyPoster sql=party_poster
     party PartyId
     image ImageId
@@ -141,6 +142,17 @@ Image sql=image
     created UTCTime
 
     UniqueImageKey key
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
+
+ImporterMetadata sql=importer_metadata
+    name Text
+    lastRun UTCTime sql=last_run
+
+    UniqueImporterMetadataName name
 
     deriving Show
     deriving Eq
