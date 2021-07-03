@@ -18,10 +18,12 @@ import Data.Time
 import Database.Persist
 import GHC.Generics (Generic)
 import Network.HTTP.Client as HTTP
+import Network.HTTP.Client.Internal as HTTP
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation
 import System.Random (randomRIO)
 import Text.Show.Pretty (ppShow)
+import UnliftIO
 
 data Importer = Importer
   { importerName :: Text,
@@ -86,24 +88,40 @@ jsonRequestConduit = do
     liftIO $ waitDebit limitConfig rateLimiter 10 -- Need 10 tokens
     let request = requestPrototype {requestHeaders = ("User-Agent", userAgent) : requestHeaders requestPrototype}
     logInfoNS "Importer" $ "fetching: " <> T.pack (show (getUri request))
-    response <- liftIO $ httpLbs request man -- TODO this can fail, make that ok.
-    let body = responseBody response
-    case JSON.eitherDecode body of
-      Left err ->
+    errOrResponse <-
+      liftIO $
+        (Right <$> httpLbs request man)
+          `catches` [ Handler $ \e -> pure (Left (toHttpException request e)),
+                      Handler $ \e -> pure (Left (e :: HttpException))
+                    ]
+    case errOrResponse of
+      Left err -> do
         logErrorNS "Importer" $
           T.unlines
-            [ "Invalid JSON:" <> T.pack err,
-              T.pack (show body)
+            [ "HTTP Exception occurred.",
+              "request:",
+              T.pack (ppShow request),
+              "exception:",
+              T.pack (ppShow err)
             ]
-      Right jsonValue ->
-        case JSON.parseEither parseJSON jsonValue of
+      Right response -> do
+        let body = responseBody response
+        case JSON.eitherDecode body of
           Left err ->
             logErrorNS "Importer" $
               T.unlines
-                [ "Unable to parse JSON:" <> T.pack err,
-                  T.pack $ ppShow jsonValue
+                [ "Invalid JSON:" <> T.pack err,
+                  T.pack (show body)
                 ]
-          Right a -> yield a
+          Right jsonValue ->
+            case JSON.parseEither parseJSON jsonValue of
+              Left err ->
+                logErrorNS "Importer" $
+                  T.unlines
+                    [ "Unable to parse JSON:" <> T.pack err,
+                      T.pack $ ppShow jsonValue
+                    ]
+              Right a -> yield a
 
 chooseUserAgent :: IO ByteString
 chooseUserAgent = do

@@ -56,7 +56,7 @@ homePageConduit ::
     Import
     ()
 homePageConduit =
-  C.mapM makeHomepageRequest
+  C.concatMap makeHomepageRequest -- concatMap generalises mapMaybe
     .| jsonRequestConduit
     .| C.concatMap
       ( map eventFromHomepageId
@@ -65,10 +65,10 @@ homePageConduit =
             (not . eventFromHomepageIsCourse)
       )
 
-makeHomepageRequest :: Day -> Import Request
+makeHomepageRequest :: Day -> Maybe Request
 makeHomepageRequest day = do
   let baseUrl = "https://events.info/"
-  requestPrototype <- parseRequest baseUrl -- TODO this can fail, make that possible.
+  requestPrototype <- parseRequest baseUrl
   pure $
     setQueryString
       [("last_date", Just $ TE.encodeUtf8 $ T.pack $ formatTime defaultTimeLocale "%F" day)]
@@ -89,12 +89,14 @@ instance FromJSON EventFromHomepage where
       <*> o .: "id"
 
 eventPageConduit :: ConduitT Text EventDetails Import ()
-eventPageConduit = C.mapM makeEventPageRequest .| jsonRequestConduit
+eventPageConduit =
+  C.concatMap makeEventPageRequest -- concatMap generalises mapMaybe
+    .| jsonRequestConduit
 
-makeEventPageRequest :: Text -> Import Request
+makeEventPageRequest :: Text -> Maybe Request
 makeEventPageRequest identifier = do
   let baseUrl = "https://events.info/events/" <> T.unpack identifier
-  requestPrototype <- parseRequest baseUrl -- TODO this can fail, make that ok.
+  requestPrototype <- parseRequest baseUrl
   pure $ requestPrototype {requestHeaders = ("Accept", "application/json") : requestHeaders requestPrototype}
 
 data EventDetails = EventDetails
