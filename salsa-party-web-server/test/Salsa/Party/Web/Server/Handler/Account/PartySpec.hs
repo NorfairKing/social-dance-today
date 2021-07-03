@@ -58,6 +58,27 @@ spec = serverSpec $ do
                   partyForm_
                   location
 
+    it "Cannot edit an existing party's date" $ \yc ->
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm_ ->
+          forAll (genValid `suchThat` (\d -> d /= partyFormDay partyForm_)) $ \day ->
+            forAllValid $ \location ->
+              withAnyLoggedInUser_ yc $ do
+                testSubmitOrganiser organiserForm_
+                partyUuid <-
+                  testSubmitParty
+                    partyForm_
+                    location
+                get $ AccountR $ AccountPartyR partyUuid
+                statusIs 200
+                request $ do
+                  partyFormRequestBuilder (partyForm_ {partyFormDay = day}) Nothing
+                  addPostParam "uuid" $ uuidText partyUuid
+                mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid
+                liftIO $ case mParty of
+                  Nothing -> expectationFailure "expected the party to still exist."
+                  Just (Entity _ party) -> partyDay party `shouldBe` partyFormDay partyForm_
+
     it "Can create two parties with the same poster" $ \yc ->
       forAllValid $ \organiserForm_ ->
         forAllValid $ \partyForm1_ ->

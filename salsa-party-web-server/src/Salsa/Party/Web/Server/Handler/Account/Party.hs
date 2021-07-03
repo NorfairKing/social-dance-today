@@ -143,7 +143,8 @@ submitPartyPage mPartyUuid mResult = do
                           partyId
                           [ PartyTitle =. partyFormTitle,
                             PartyDescription =. unTextarea <$> partyFormDescription,
-                            PartyDay =. partyFormDay,
+                            -- Purposely don't update the day.
+                            -- PartyDay =. partyFormDay,
                             PartyStart =. partyFormStart,
                             PartyHomepage =. partyFormHomepage,
                             PartyPrice =. partyFormPrice,
@@ -250,6 +251,7 @@ submitPartyFormPageWithPrefilled partyFilling mResult = do
         NewParty -> Nothing
         DuplicateParty _ -> Nothing -- This will indicate a new party
         EditParty partyEntity -> Just $ partyUuid $ entityVal partyEntity
+      disableDateSetting = isJust mPartyUuid -- Only disallowed for editing
       mPartyEntity = case partyFilling of
         NewParty -> Nothing
         DuplicateParty partyEntity -> Just partyEntity
