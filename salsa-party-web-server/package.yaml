@@ -142,11 +142,13 @@ tests:
     - persistent-sqlite
     - salsa-party-web-server
     - sydtest
+    - sydtest-persistent
     - sydtest-persistent-sqlite
     - sydtest-wai
     - sydtest-yesod
     - text
     - time
+    - unliftio
     - yesod
     - yesod-auth
     - yesod-core

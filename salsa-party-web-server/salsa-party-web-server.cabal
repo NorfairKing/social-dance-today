@@ -161,6 +161,7 @@ test-suite salsa-party-web-server-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Salsa.Party.DBSpec
       Salsa.Party.Web.Server.DistanceSpec
       Salsa.Party.Web.Server.Gen
       Salsa.Party.Web.Server.Handler.Account.OrganiserSpec
@@ -210,11 +211,13 @@ test-suite salsa-party-web-server-test
     , persistent-sqlite
     , salsa-party-web-server
     , sydtest
+    , sydtest-persistent
     , sydtest-persistent-sqlite
     , sydtest-wai
     , sydtest-yesod
     , text
     , time
+    , unliftio
     , yesod
     , yesod-auth
     , yesod-core
