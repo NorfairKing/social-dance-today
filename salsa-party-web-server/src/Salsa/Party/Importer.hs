@@ -25,15 +25,15 @@ import UnliftIO
 
 runImporterLoopers :: Settings -> App -> LoggingT IO ()
 runImporterLoopers Settings {..} app = do
-  let looperDefs =
-        [ mkLooperDef
-            "importer-events.info"
-            settingEventsInfoImportLooperSettings
-            (runImporter app runEventsInfoImporter),
-          mkLooperDef
-            "importer-danceus.org"
-            settingDanceUsOrgImportLooperSettings
-            (runImporter app runDanceUsOrgImporter)
+  let importerLooper :: Importer -> LooperSettings -> LooperDef (LoggingT IO)
+      importerLooper importer sets =
+        mkLooperDef
+          ("importer-" <> importerName importer)
+          sets
+          (runImporter app importer)
+      looperDefs =
+        [ importerLooper eventsInfoImporter settingEventsInfoImportLooperSettings,
+          importerLooper danceUsOrgImporter settingDanceUsOrgImportLooperSettings
         ]
       runDBHere :: SqlPersistT (LoggingT IO) a -> LoggingT IO a
       runDBHere = flip runSqlPool (appConnectionPool app)
@@ -84,12 +84,6 @@ runImporterLoopers Settings {..} app = do
               Right () -> pure ()
               Left err -> logErrorNS looperDefName $ "Looper threw an exception:\n" <> T.pack (displayException err)
             logInfoNS looperDefName $ T.pack $ printf "Done, took %.2f seconds" (fromIntegral (end - begin) / (1_000_000_000 :: Double))
-            runDBHere $
-              void $
-                upsertBy
-                  (UniqueImporterMetadataName looperDefName)
-                  (ImporterMetadata {importerMetadataName = looperDefName, importerMetadataLastRun = now})
-                  [ImporterMetadataLastRun =. now]
           else pure ()
 
   runLoopersIgnoreOverrun looperRunner looperDefs

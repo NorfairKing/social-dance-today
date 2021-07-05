@@ -19,7 +19,7 @@
 -- and whether it's been cancelled under "is_cancelled".
 --
 -- After that, you can look up events.info/events/:id to get the info about a specific event.
-module Salsa.Party.Importer.EventsInfo where
+module Salsa.Party.Importer.EventsInfo (eventsInfoImporter) where
 
 import Conduit
 import Data.Aeson as JSON
@@ -31,8 +31,8 @@ import qualified Data.Text.Encoding as TE
 import Network.URI as URI
 import Salsa.Party.Importer.Import
 
-runEventsInfoImporter :: Importer
-runEventsInfoImporter =
+eventsInfoImporter :: Importer
+eventsInfoImporter =
   Importer
     { importerName = "events.info",
       importerFunc = func
@@ -201,10 +201,12 @@ toExternalEvent = awaitForever $ \EventDetails {..} -> do
   let VenueLocation {..} = eventVenueLocation eventDetailsVenue
   let address = T.unwords [venueLocationStreet, venueLocationCity]
   Entity externalEventPlace _ <-
-    appDB $
-      upsertBy
-        (UniquePlaceQuery address)
-        (Place {placeQuery = address, placeLat = venueLocationLat, placeLon = venueLocationLon})
-        [] -- Don't change if it's already there, so that they can't fill our page with junk.
+    lift $
+      importDB $
+        upsertBy
+          (UniquePlaceQuery address)
+          (Place {placeQuery = address, placeLat = venueLocationLat, placeLon = venueLocationLon})
+          [] -- Don't change if it's already there, so that they can't fill our page with junk.
   let externalEventOrigin = "https://events.info/events/" <> eventDetailsId
+  externalEventImporter <- Just <$> asks importEnvId
   yield ExternalEvent {..}

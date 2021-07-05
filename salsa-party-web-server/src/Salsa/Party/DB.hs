@@ -183,7 +183,7 @@ ExternalEvent sql=external_event
     place PlaceId
 
     -- The importer that imported this event
-    importer ImporterMetadataId default=1 -- The first importer
+    importer ImporterMetadataId Maybe default=NULL -- TODO remove the maybe once they all have ids.
 
     -- Where we got the event from, externally
     origin Text
@@ -221,5 +221,6 @@ hasChangedComparedTo ee1 ee2 =
           changed externalEventHomepage,
           changed externalEventPrice,
           changed externalEventCancelled,
-          changed externalEventPlace
+          changed externalEventPlace,
+          changed externalEventImporter
         ]

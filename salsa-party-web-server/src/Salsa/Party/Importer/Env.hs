@@ -16,6 +16,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
 import Database.Persist
+import Database.Persist.Sql
 import GHC.Generics (Generic)
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.Internal as HTTP
@@ -32,32 +33,58 @@ data Importer = Importer
   deriving (Generic)
 
 runImporter :: App -> Importer -> LoggingT IO ()
-runImporter a Importer {..} = runReaderT (unImport importerFunc) a
+runImporter a Importer {..} = do
+  let runDBHere :: SqlPersistT (LoggingT IO) a -> LoggingT IO a
+      runDBHere = flip runSqlPool (appConnectionPool a)
 
-newtype Import a = Import {unImport :: ReaderT App (LoggingT IO) a}
+  now <- liftIO getCurrentTime
+  Entity importerId _ <-
+    runDBHere $
+      upsertBy
+        (UniqueImporterMetadataName importerName)
+        (ImporterMetadata {importerMetadataName = importerName, importerMetadataLastRun = now})
+        [ImporterMetadataLastRun =. now]
+
+  let env = ImportEnv {importEnvApp = a, importEnvName = importerName, importEnvId = importerId}
+  runReaderT (unImport importerFunc) env
+
+newtype Import a = Import {unImport :: ReaderT ImportEnv (LoggingT IO) a}
   deriving
     ( Generic,
       Functor,
       Applicative,
       Monad,
-      MonadReader App,
+      MonadReader ImportEnv,
       MonadLoggerIO,
       MonadLogger,
       MonadIO,
       MonadThrow
     )
 
+data ImportEnv = ImportEnv
+  { importEnvApp :: !App,
+    importEnvName :: !Text,
+    importEnvId :: !ImporterMetadataId
+  }
+
+importDB :: SqlPersistT (LoggingT IO) a -> Import a
+importDB func = do
+  pool <- asks $ appConnectionPool . importEnvApp
+  logFunc <- askLoggerIO
+  liftIO $ runLoggingT (runSqlPool func pool) logFunc
+
 externalEventSink :: ConduitT ExternalEvent Void Import ()
 externalEventSink = awaitForever $ \externalEvent@ExternalEvent {..} -> do
   now <- liftIO getCurrentTime
+  importerId <- asks importEnvId
   lift $
-    appDB $ do
+    importDB $ do
       mExternalEvent <- getBy (UniqueExternalEventKey externalEventKey)
       case mExternalEvent of
         Nothing -> insert_ externalEvent
         Just (Entity externalEventId oldExternalEvent) ->
           if externalEvent `hasChangedComparedTo` oldExternalEvent
-            then
+            then do
               void $
                 update
                   externalEventId
@@ -69,13 +96,14 @@ externalEventSink = awaitForever $ \externalEvent@ExternalEvent {..} -> do
                     ExternalEventHomepage =. externalEventHomepage,
                     ExternalEventModified =. Just now,
                     ExternalEventPlace =. externalEventPlace,
-                    ExternalEventOrigin =. externalEventOrigin
+                    ExternalEventOrigin =. externalEventOrigin,
+                    ExternalEventImporter =. Just importerId
                   ]
             else pure ()
 
 jsonRequestConduit :: FromJSON a => ConduitT HTTP.Request a Import ()
 jsonRequestConduit = do
-  man <- asks appHTTPManager
+  man <- asks $ appHTTPManager . importEnvApp
   userAgent <- liftIO chooseUserAgent
   let limitConfig =
         defaultLimitConfig

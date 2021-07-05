@@ -24,7 +24,7 @@
 -- Luckily though, the <head> tag contains a JSONLD tag:
 -- <script type="application/ld+json">
 -- And this contains a "@type": "Event", which we can import.
-module Salsa.Party.Importer.DanceUsOrg (runDanceUsOrgImporter) where
+module Salsa.Party.Importer.DanceUsOrg (danceUsOrgImporter) where
 
 import Conduit
 import Data.Aeson as JSON
@@ -36,8 +36,8 @@ import qualified Data.Text.Encoding as TE
 import Network.URI as URI
 import Salsa.Party.Importer.Import
 
-runDanceUsOrgImporter :: Importer
-runDanceUsOrgImporter =
+danceUsOrgImporter :: Importer
+danceUsOrgImporter =
   Importer
     { importerName = "danceus.org",
       importerFunc = func
