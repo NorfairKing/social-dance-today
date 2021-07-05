@@ -182,6 +182,9 @@ ExternalEvent sql=external_event
 
     place PlaceId
 
+    -- The importer that imported this event
+    importer ImporterMetadataId default=1 -- The first importer
+
     -- Where we got the event from, externally
     origin Text
 
