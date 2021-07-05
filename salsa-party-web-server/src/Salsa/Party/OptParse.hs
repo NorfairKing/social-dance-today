@@ -40,7 +40,9 @@ data Settings = Settings
     settingGoogleAnalyticsTracking :: !(Maybe Text),
     settingGoogleSearchConsoleVerification :: !(Maybe Text),
     -- https://events.info
-    settingEventsInfoImportLooperSettings :: !LooperSettings
+    settingEventsInfoImportLooperSettings :: !LooperSettings,
+    -- https://www.danceus.org
+    settingDanceUsOrgImportLooperSettings :: !LooperSettings
   }
   deriving (Show, Eq, Generic)
 
@@ -59,6 +61,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingGoogleAnalyticsTracking = flagGoogleAnalyticsTracking <|> envGoogleAnalyticsTracking <|> mc confGoogleAnalyticsTracking
   let settingGoogleSearchConsoleVerification = flagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification
   let settingEventsInfoImportLooperSettings = deriveLooperSettings (minutes 1) (hours 24) flagEventsInfoImportLooperFlags envEventsInfoImportLooperEnvironment (mc confEventsInfoImportLooperConfiguration)
+  let settingDanceUsOrgImportLooperSettings = deriveLooperSettings (minutes 2) (hours 24) flagDanceUsOrgImportLooperFlags envDanceUsOrgImportLooperEnvironment (mc confDanceUsOrgImportLooperConfiguration)
   pure Settings {..}
   where
     mc :: (Configuration -> Maybe a) -> Maybe a
@@ -75,7 +78,8 @@ data Configuration = Configuration
     confGoogleAPIKey :: !(Maybe Text),
     confGoogleAnalyticsTracking :: !(Maybe Text),
     confGoogleSearchConsoleVerification :: !(Maybe Text),
-    confEventsInfoImportLooperConfiguration :: !(Maybe LooperConfiguration)
+    confEventsInfoImportLooperConfiguration :: !(Maybe LooperConfiguration),
+    confDanceUsOrgImportLooperConfiguration :: !(Maybe LooperConfiguration)
   }
   deriving (Show, Eq, Generic)
 
@@ -97,6 +101,7 @@ instance YamlSchema Configuration where
         <*> optionalField "google-analytics-tracking" "Google analytics tracking code"
         <*> optionalField "google-search-console-verification" "Google search console html element verification code"
         <*> optionalField "events-info-importer" "The events.info import looper"
+        <*> optionalField "danceus-org-importer" "The danceus.org import looper"
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} =
@@ -123,7 +128,8 @@ data Environment = Environment
     envGoogleAPIKey :: !(Maybe Text),
     envGoogleAnalyticsTracking :: !(Maybe Text),
     envGoogleSearchConsoleVerification :: !(Maybe Text),
-    envEventsInfoImportLooperEnvironment :: !LooperEnvironment
+    envEventsInfoImportLooperEnvironment :: !LooperEnvironment,
+    envDanceUsOrgImportLooperEnvironment :: !LooperEnvironment
   }
   deriving (Show, Eq, Generic)
 
@@ -147,6 +153,7 @@ environmentParser =
       <*> Env.var (fmap Just . Env.str) "GOOGLE_ANALYTICS_TRACKING" (mE <> Env.help "Google analytics tracking code")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (mE <> Env.help "Google search console html element verification code")
       <*> looperEnvironmentParser "EVENTS_INFO_IMPORTER"
+      <*> looperEnvironmentParser "DANCE_US_ORG_IMPORTER"
   where
     mE = Env.def Nothing
 
@@ -186,7 +193,8 @@ data Flags = Flags
     flagGoogleAPIKey :: !(Maybe Text),
     flagGoogleAnalyticsTracking :: !(Maybe Text),
     flagGoogleSearchConsoleVerification :: !(Maybe Text),
-    flagEventsInfoImportLooperFlags :: !LooperFlags
+    flagEventsInfoImportLooperFlags :: !LooperFlags,
+    flagDanceUsOrgImportLooperFlags :: !LooperFlags
   }
   deriving (Show, Eq, Generic)
 
@@ -316,3 +324,4 @@ parseFlags =
           )
       )
     <*> getLooperFlags "events-info-importer"
+    <*> getLooperFlags "dance-us-importer"
