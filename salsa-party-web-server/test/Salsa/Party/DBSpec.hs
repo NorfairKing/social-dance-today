@@ -22,12 +22,13 @@ automaticMigrationsSucceedsSpec currentMigration = do
     doNotRandomiseExecutionOrder $
       sequential $ do
         let migrationFile = "test_resources/migration.sql"
-        let renderStatements = T.concat . map (<> ";\n")
-        let unrenderStatements = filter (not . T.null . T.strip) . T.splitOn "\n"
-        it "Can automatically migrate the database from the previous version" $ \pool -> do
+        it "Golden test for the current migrations" $ \pool -> do
+          let renderStatements = T.concat . map (<> ";\n")
           goldenTextFile migrationFile $ do
             runSqlPool (renderStatements <$> runMigrationQuiet currentMigration) pool
+
         it "Can automatically migrate from the previous database schema" $ do
+          let unrenderStatements = filter (not . T.null . T.strip) . T.splitOn "\n"
           statements <- liftIO $ unrenderStatements <$> T.readFile migrationFile
           -- Set up the database with the old migrations
           forM_ statements $ \statement ->
