@@ -50,6 +50,7 @@ library
       Salsa.Party.Web.Server.Static
       Salsa.Party.Web.Server.Static.TH
       Salsa.Party.Web.Server.Widget
+      Web.JSONLD
   other-modules:
       Paths_salsa_party_web_server
   hs-source-dirs:
@@ -179,6 +180,8 @@ test-suite salsa-party-web-server-test
       Salsa.Party.Web.Server.Handler.SitemapSpec
       Salsa.Party.Web.Server.Handler.TestImport
       Salsa.Party.Web.Server.TestUtils
+      Web.JSONLD.Gen
+      Web.JSONLDSpec
       Paths_salsa_party_web_server
   hs-source-dirs:
       test
@@ -197,6 +200,7 @@ test-suite salsa-party-web-server-test
     , genvalidity-bytestring
     , genvalidity-persistent
     , genvalidity-sydtest
+    , genvalidity-sydtest-aeson
     , genvalidity-text
     , genvalidity-time
     , genvalidity-typed-uuid
@@ -212,6 +216,7 @@ test-suite salsa-party-web-server-test
     , persistent-sqlite
     , salsa-party-web-server
     , sydtest
+    , sydtest-aeson
     , sydtest-persistent
     , sydtest-persistent-sqlite
     , sydtest-wai

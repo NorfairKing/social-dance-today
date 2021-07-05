@@ -33,6 +33,7 @@ extra-deps:
     - genvalidity-containers
     - genvalidity-persistent
     - genvalidity-sydtest
+    - genvalidity-sydtest-aeson
     - genvalidity-text
     - genvalidity-time
     - validity
@@ -49,6 +50,7 @@ extra-deps:
   commit: 4b8c307ac0fd7bbe9a6bf26150f9982f82cf0a89
   subdirs:
     - sydtest
+    - sydtest-aeson
     - sydtest-discover
     - sydtest-persistent
     - sydtest-persistent-sqlite

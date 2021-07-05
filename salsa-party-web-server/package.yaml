@@ -139,9 +139,12 @@ tests:
     - path
     - path-io
     - persistent
+    - genvalidity-sydtest
+    - genvalidity-sydtest-aeson
     - persistent-sqlite
     - salsa-party-web-server
     - sydtest
+    - sydtest-aeson
     - sydtest-persistent
     - sydtest-persistent-sqlite
     - sydtest-wai

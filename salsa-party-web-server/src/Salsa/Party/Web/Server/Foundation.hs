@@ -45,7 +45,12 @@ import Salsa.Party.Web.Server.Static
 import Salsa.Party.Web.Server.Widget
 import System.Random
 import Text.Blaze.Html.Renderer.Text (renderHtml)
+import qualified Text.Blaze.Html.Renderer.Text as HT
+import Text.Blaze.Html5 ((!))
+import qualified Text.Blaze.Html5 as H
+import qualified Text.Blaze.Html5.Attributes as HA
 import Text.Hamlet
+import Text.Julius
 import Text.Shakespeare.Text
 import Text.Show.Pretty (ppShow)
 import Yesod
@@ -435,3 +440,14 @@ appDB func = do
   pool <- asks appConnectionPool
   logFunc <- askLoggerIO
   liftIO $ runLoggingT (runSqlPool func pool) logFunc
+
+newtype JSONLDData = JSONLDData Value
+
+toJSONLDData :: ToJSON a => a -> JSONLDData
+toJSONLDData = JSONLDData . toJSON
+
+instance ToWidgetHead App JSONLDData where
+  toWidgetHead (JSONLDData v) =
+    toWidgetHead $
+      H.script ! HA.type_ "application/ld+json" $
+        H.lazyText $ renderJavascript $ toJavascript v

@@ -17,6 +17,9 @@
 -- https://www.danceus.org/search-events/salsa/?q=Aachen,%20Germany&lat=50.775429&lng=6.08149&rad=30&order=distance
 -- So we may be able to do some searches as well, great!
 --
+-- Example event page:
+-- https://www.danceus.org/event/15830025762890/salsa-after-work-apollo-aachen-germany/
+--
 -- On each event page, there is a lot of information, but I don't think there is a way to see them in JSON format.
 -- Luckily though, the <head> tag contains a JSONLD tag:
 -- <script type="application/ld+json">

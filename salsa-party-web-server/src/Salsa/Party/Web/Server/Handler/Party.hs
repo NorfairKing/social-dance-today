@@ -17,6 +17,7 @@ import Text.Blaze.Html5 ((!))
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 import Text.Julius
+import qualified Web.JSONLD as LD
 
 getPartyR :: EventUUID -> Handler Html
 getPartyR eventUuid = do
@@ -63,7 +64,7 @@ partyJSONLDData renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
     concat
       [ [ "@context" .= ("https://schema.org" :: Text),
           "@type" .= ("Event" :: Text),
-          "name" .= htmlEscapedText partyTitle,
+          "name" .= partyTitle,
           "startDate" .= partyDay,
           "eventAttendanceMode" .= ("https://schema.org/OfflineEventAttendanceMode" :: Text),
           "eventStatus"
@@ -73,18 +74,18 @@ partyJSONLDData renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
           "location"
             .= object
               [ "@type" .= ("Place" :: Text),
-                "address" .= htmlEscapedText placeQuery
+                "address" .= placeQuery
               ],
           "image"
             .= [renderUrl (ImageR posterKey) | posterKey <- maybeToList mPosterKey],
           "organizer"
             .= object
               [ "@type" .= ("Organization" :: Text),
-                "name" .= htmlEscapedText organiserName,
+                "name" .= organiserName,
                 "url" .= renderUrl (OrganiserR organiserUuid)
               ]
         ],
-        ["description" .= htmlEscapedText description | description <- maybeToList partyDescription]
+        ["description" .= description | description <- maybeToList partyDescription]
       ]
 
 getImageR :: CASKey -> Handler TypedContent
@@ -129,7 +130,7 @@ externalEventJSONLDData ExternalEvent {..} Place {..} =
     concat
       [ [ "@context" .= ("https://schema.org" :: Text),
           "@type" .= ("Event" :: Text),
-          "name" .= htmlEscapedText externalEventTitle,
+          "name" .= externalEventTitle,
           "startDate" .= externalEventDay,
           "eventAttendanceMode" .= ("https://schema.org/OfflineEventAttendanceMode" :: Text),
           "eventStatus"
@@ -139,29 +140,15 @@ externalEventJSONLDData ExternalEvent {..} Place {..} =
           "location"
             .= object
               [ "@type" .= ("Place" :: Text),
-                "address" .= htmlEscapedText placeQuery
+                "address" .= placeQuery
               ]
         ],
         [ "organizer"
             .= object
               [ "@type" .= ("Organization" :: Text),
-                "name" .= htmlEscapedText organizer
+                "name" .= organizer
               ]
           | organizer <- maybeToList externalEventOrganiser
         ],
-        ["description" .= htmlEscapedText description | description <- maybeToList externalEventDescription]
+        ["description" .= description | description <- maybeToList externalEventDescription]
       ]
-
-htmlEscapedText :: Text -> Text
-htmlEscapedText = LT.toStrict . HT.renderHtml . toHtml
-
-newtype JSONLDData = JSONLDData Value
-
-toJSONLDData :: ToJSON a => a -> JSONLDData
-toJSONLDData = JSONLDData . toJSON
-
-instance ToWidgetHead App JSONLDData where
-  toWidgetHead (JSONLDData v) =
-    toWidgetHead $
-      H.script ! HA.type_ "application/ld+json" $
-        H.preEscapedLazyText $ renderJavascript $ toJavascript v
