@@ -127,6 +127,8 @@ tests:
     - genvalidity-bytestring
     - genvalidity-persistent
     - genvalidity-sydtest
+    - genvalidity-sydtest
+    - genvalidity-sydtest-aeson
     - genvalidity-text
     - genvalidity-time
     - genvalidity-typed-uuid
@@ -139,8 +141,6 @@ tests:
     - path
     - path-io
     - persistent
-    - genvalidity-sydtest
-    - genvalidity-sydtest-aeson
     - persistent-sqlite
     - salsa-party-web-server
     - sydtest
@@ -151,7 +151,9 @@ tests:
     - sydtest-yesod
     - text
     - time
+    - typed-uuid
     - unliftio
+    - uuid
     - yesod
     - yesod-auth
     - yesod-core

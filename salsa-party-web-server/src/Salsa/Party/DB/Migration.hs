@@ -13,6 +13,7 @@ import qualified Data.Text as T
 import Database.Persist.Sql
 import Salsa.Party.DB
 import System.Exit
+import Text.Show.Pretty (pPrint)
 import UnliftIO
 
 completeServerMigration :: (MonadUnliftIO m, MonadLogger m) => Bool -> SqlPersistT m ()
@@ -26,6 +27,9 @@ completeServerMigration quiet = do
   logInfoN "Autmatic migrations done, starting application-specific migrations."
   setUpPlaces
   logInfoN "Migrations done."
+
+  os <- selectList [] [Asc OrganiserId]
+  liftIO $ mapM_ pPrint os
 
 setUpPlaces :: (MonadIO m, MonadLogger m) => SqlPersistT m ()
 setUpPlaces = do

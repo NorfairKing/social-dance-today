@@ -163,6 +163,7 @@ test-suite salsa-party-web-server-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Salsa.Party.DB.PartySpec
       Salsa.Party.DBSpec
       Salsa.Party.Web.Server.DistanceSpec
       Salsa.Party.Web.Server.Gen
@@ -223,7 +224,9 @@ test-suite salsa-party-web-server-test
     , sydtest-yesod
     , text
     , time
+    , typed-uuid
     , unliftio
+    , uuid
     , yesod
     , yesod-auth
     , yesod-core

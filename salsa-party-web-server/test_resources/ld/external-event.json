@@ -1,0 +1,17 @@
+{
+    "@context": "https://schema.org",
+    "location": {
+        "address": "Bahnhofplatz 6207 Nottwil LU",
+        "@type": "Place"
+    },
+    "eventStatus": "https://schema.org/EventScheduled",
+    "startDate": "2021-07-16",
+    "name": "Suavemente Cuban Party",
+    "@type": "Event",
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "description": "Cuban Salsa Party\r\n\r\n20:00 Door open\r\n20:30 Cuban Salsa Workshop\r\n21:30 Cuban Party\r\n23:30 Animation\r\n\n\nhttps://salsaluca.ch/index.php/events",
+    "organizer": {
+        "name": "Kultur Bistro",
+        "@type": "Organization"
+    }
+}
