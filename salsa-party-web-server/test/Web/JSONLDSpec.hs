@@ -19,9 +19,15 @@ spec = do
   jsonSpecOnValid @Place
   genValidSpec @EventStartDate
   jsonSpecOnValid @EventStartDate
+  genValidSpec @EventEndDate
+  jsonSpecOnValid @EventEndDate
   genValidSpec @Date
   jsonSpecOnValid @Date
   eqSpecOnValid @Date
   genValidSpec @DateTime
   jsonSpecOnValid @DateTime
   eqSpecOnValid @DateTime
+  genValidSpec @EventAttendanceMode
+  jsonSpecOnValid @EventAttendanceMode
+  genValidSpec @EventStatus
+  jsonSpecOnValid @EventStatus

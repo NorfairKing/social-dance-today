@@ -25,6 +25,10 @@ instance GenValid EventStartDate where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
+instance GenValid EventEndDate where
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+
 instance GenValid DateTime where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
   genValid =
@@ -39,5 +43,13 @@ instance GenValid DateTime where
           )
 
 instance GenValid Date where
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+
+instance GenValid EventAttendanceMode where
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+
+instance GenValid EventStatus where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering

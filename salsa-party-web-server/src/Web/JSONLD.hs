@@ -9,6 +9,7 @@ module Web.JSONLD where
 import Control.Applicative
 import Data.Aeson as JSON
 import Data.Function
+import Data.Maybe
 import Data.Monoid
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -31,9 +32,13 @@ import Yesod
 -- Google: https://developers.google.com/search/docs/data-types/event#structured-data-type-definitions
 -- Schema.org: https://schema.org/Event
 data Event = Event
-  { eventLocation :: EventLocation,
-    eventName :: Text,
-    eventStartDate :: EventStartDate
+  { eventLocation :: !EventLocation,
+    eventName :: !Text,
+    eventStartDate :: !EventStartDate,
+    eventDescription :: !(Maybe Text),
+    eventEndDate :: !(Maybe EventEndDate),
+    eventAttendanceMode :: !(Maybe EventAttendanceMode),
+    eventStatus :: !(Maybe EventStatus)
   }
   deriving (Show, Eq, Generic)
 
@@ -41,13 +46,21 @@ instance Validity Event
 
 instance ToJSON Event where
   toJSON Event {..} =
-    object
-      [ "@context" .= ("https://schema.org" :: Text),
-        "@type" .= ("Event" :: Text),
-        "location" .= eventLocation,
-        "name" .= eventName,
-        "startDate" .= eventStartDate
-      ]
+    let mField :: ToJSON a => Text -> Maybe a -> [(Text, JSON.Value)]
+        mField k mv = [k .= v | v <- maybeToList mv]
+     in object $
+          concat
+            [ [ "@context" .= ("https://schema.org" :: Text),
+                "@type" .= ("Event" :: Text),
+                "location" .= eventLocation,
+                "name" .= eventName,
+                "startDate" .= eventStartDate
+              ],
+              mField "description" eventDescription,
+              mField "endDate" eventEndDate,
+              mField "eventAttendanceMode" eventAttendanceMode,
+              mField "eventStatus" eventStatus
+            ]
 
 instance FromJSON Event where
   parseJSON = withObject "Event" $ \o ->
@@ -55,6 +68,10 @@ instance FromJSON Event where
       <$> o .: "location"
       <*> o .: "name"
       <*> o .: "startDate"
+      <*> o .:? "description"
+      <*> o .:? "endDate"
+      <*> o .:? "eventAttendanceMode"
+      <*> o .:? "eventStatus"
 
 data EventLocation
   = EventLocationPlace Place
@@ -102,6 +119,26 @@ instance ToJSON EventStartDate where
     EventStartDate d -> toJSON d
     EventStartDateTime dt -> toJSON dt
 
+-- https://schema.org/endDate
+-- https://schema.org/Date
+-- https://schema.org/DateTime
+data EventEndDate
+  = EventEndDate Day
+  | EventEndDateTime DateTime
+  deriving (Show, Eq, Generic)
+
+instance Validity EventEndDate
+
+instance FromJSON EventEndDate where
+  parseJSON v =
+    EventEndDate <$> parseJSON v
+      <|> EventEndDateTime <$> parseJSON v
+
+instance ToJSON EventEndDate where
+  toJSON = \case
+    EventEndDate d -> toJSON d
+    EventEndDateTime dt -> toJSON dt
+
 newtype Date = Date {dateDay :: Day}
   deriving (Eq, Generic)
 
@@ -142,3 +179,53 @@ instance FromJSON DateTime where
 
 instance ToJSON DateTime where
   toJSON = toJSON . iso8601Show . dateTimeZonedTime
+
+data EventAttendanceMode
+  = OfflineEventAttendanceMode
+  | OnlineEventAttendanceMode
+  | MixedEventAttendanceMode
+  deriving (Show, Eq, Generic)
+
+instance Validity EventAttendanceMode
+
+instance FromJSON EventAttendanceMode where
+  parseJSON = withText "EventAttendanceMode" $ \t ->
+    case t of
+      "https://schema.org/OfflineEventAttendanceMode" -> pure OfflineEventAttendanceMode
+      "https://schema.org/OnlineEventAttendanceMode" -> pure OnlineEventAttendanceMode
+      "https://schema.org/MixedEventAttendanceMode" -> pure MixedEventAttendanceMode
+      _ -> fail $ "Unknown EventAttendanceMode: " <> show t
+
+instance ToJSON EventAttendanceMode where
+  toJSON = \case
+    OfflineEventAttendanceMode -> "https://schema.org/OfflineEventAttendanceMode"
+    OnlineEventAttendanceMode -> "https://schema.org/OnlineEventAttendanceMode"
+    MixedEventAttendanceMode -> "https://schema.org/MixedEventAttendanceMode"
+
+data EventStatus
+  = EventCancelled
+  | EventMovedOnline
+  | EventPostponed
+  | EventRescheduled
+  | EventScheduled
+  deriving (Show, Eq, Generic)
+
+instance Validity EventStatus
+
+instance FromJSON EventStatus where
+  parseJSON = withText "EventStatus" $ \t ->
+    case t of
+      "https://schema.org/EventCancelled" -> pure EventCancelled
+      "https://schema.org/EventMovedOnline" -> pure EventMovedOnline
+      "https://schema.org/EventPostponed" -> pure EventPostponed
+      "https://schema.org/EventRescheduled" -> pure EventRescheduled
+      "https://schema.org/EventScheduled" -> pure EventScheduled
+      _ -> fail $ "Unknown EventStatus: " <> show t
+
+instance ToJSON EventStatus where
+  toJSON = \case
+    EventCancelled -> "https://schema.org/EventCancelled"
+    EventMovedOnline -> "https://schema.org/EventMovedOnline"
+    EventPostponed -> "https://schema.org/EventPostponed"
+    EventRescheduled -> "https://schema.org/EventRescheduled"
+    EventScheduled -> "https://schema.org/EventScheduled"
