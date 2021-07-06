@@ -3,6 +3,9 @@
 
 -- | https://events.info
 --
+-- As of 2021-07-06, there is no copyright notice on this site, there are no
+-- terms of service, and there are no disallowed routes in the robots.txt.
+--
 -- There are events on https://events.info (the same events as on salsa.ch, it seems.
 --
 -- These events can be either parties or courses.
