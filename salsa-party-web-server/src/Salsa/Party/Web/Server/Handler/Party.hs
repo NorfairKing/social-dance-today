@@ -152,3 +152,44 @@ externalEventJSONLDData ExternalEvent {..} Place {..} =
         ],
         ["description" .= description | description <- maybeToList externalEventDescription]
       ]
+
+externalEventToLDEvent :: ExternalEvent -> Place -> LD.Event
+externalEventToLDEvent ExternalEvent {..} Place {..} =
+  LD.Event
+    { LD.eventName = externalEventTitle,
+      LD.eventLocation =
+        LD.EventLocationPlace $
+          LD.Place
+            { LD.placeName = Nothing,
+              LD.placeAddress = LD.PlaceAddressText placeQuery
+            },
+      LD.eventStartDate = case externalEventStart of
+        Nothing -> LD.EventStartDate externalEventDay
+        Just timeOfDay ->
+          LD.EventStartDateTime
+            LD.DateTime
+              { dateTimeLocalTime =
+                  LocalTime
+                    { localDay = externalEventDay,
+                      localTimeOfDay = timeOfDay
+                    }
+              },
+      LD.eventDescription = externalEventDescription,
+      LD.eventEndDate = Nothing,
+      LD.eventAttendanceMode = Just LD.OfflineEventAttendanceMode,
+      LD.eventStatus =
+        Just $
+          if externalEventCancelled
+            then LD.EventCancelled
+            else LD.EventScheduled,
+      LD.eventImages = [],
+      LD.eventOrganizer = case externalEventOrganiser of
+        Nothing -> Nothing
+        Just name ->
+          Just $
+            LD.EventOrganizerOrganization
+              LD.Organization
+                { LD.organizationName = name,
+                  organizationUrl = Nothing
+                }
+    }

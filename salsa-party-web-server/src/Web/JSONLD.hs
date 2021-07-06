@@ -33,8 +33,8 @@ import Yesod
 -- Google: https://developers.google.com/search/docs/data-types/event#structured-data-type-definitions
 -- Schema.org: https://schema.org/Event
 data Event = Event
-  { eventLocation :: !EventLocation,
-    eventName :: !Text,
+  { eventName :: !Text,
+    eventLocation :: !EventLocation,
     eventStartDate :: !EventStartDate,
     eventDescription :: !(Maybe Text),
     eventEndDate :: !(Maybe EventEndDate),
@@ -53,8 +53,8 @@ instance ToJSON Event where
       concat
         [ [ "@context" .= ("https://schema.org" :: Text),
             "@type" .= ("Event" :: Text),
-            "location" .= eventLocation,
             "name" .= eventName,
+            "location" .= eventLocation,
             "startDate" .= eventStartDate
           ],
           mField "description" eventDescription,
@@ -68,8 +68,8 @@ instance ToJSON Event where
 instance FromJSON Event where
   parseJSON = withObject "Event" $ \o ->
     Event
-      <$> o .: "location"
-      <*> o .: "name"
+      <$> o .: "name"
+      <*> o .: "location"
       <*> o .: "startDate"
       <*> o .:? "description"
       <*> o .:? "endDate"
@@ -95,7 +95,7 @@ instance ToJSON EventLocation where
 
 -- https://schema.org/Place
 data Place = Place
-  { placeName :: Text,
+  { placeName :: Maybe Text,
     placeAddress :: PlaceAddress
   }
   deriving (Show, Eq, Generic)
@@ -105,16 +105,18 @@ instance Validity Place
 instance FromJSON Place where
   parseJSON = withObject "Place" $ \o ->
     Place
-      <$> o .: "name"
+      <$> o .:? "name"
       <*> o .: "address"
 
 instance ToJSON Place where
   toJSON Place {..} =
-    object
-      [ "@type" .= ("Place" :: Text),
-        "name" .= placeName,
-        "address" .= placeAddress
-      ]
+    object $
+      concat
+        [ [ "@type" .= ("Place" :: Text),
+            "address" .= placeAddress
+          ],
+          mField "name" placeName
+        ]
 
 data PlaceAddress = PlaceAddressText !Text
   deriving (Show, Eq, Generic)
@@ -189,13 +191,13 @@ instance FromJSON Date where
 instance ToJSON Date where
   toJSON = toJSON . iso8601Show . dateDay
 
-newtype DateTime = DateTime {dateTimeZonedTime :: ZonedTime}
-  deriving (Generic)
+data DateTime = DateTime
+  { dateTimeLocalTime :: LocalTime,
+    dateTimeTimeZone :: Maybe TimeZone
+  }
+  deriving (Show, Generic)
 
 instance Validity DateTime
-
-instance Show DateTime where
-  show (DateTime zt) = iso8601Show zt
 
 instance Eq DateTime where
   (==) =
@@ -206,15 +208,33 @@ instance Eq DateTime where
             map
               (mapF2 All)
               -- We only care about the local time and minutes of the timezone.
-              [ (==) `on` (zonedTimeToLocalTime . dateTimeZonedTime),
-                (==) `on` (timeZoneMinutes . zonedTimeZone . dateTimeZonedTime)
+              [ (==) `on` dateTimeLocalTime,
+                (==) `on` (fmap timeZoneMinutes . dateTimeTimeZone)
               ]
 
 instance FromJSON DateTime where
-  parseJSON = withText "DateTime" $ \t -> DateTime <$> iso8601ParseM (T.unpack t)
+  parseJSON = withText "DateTime" $ \t ->
+    ( ( \localTime ->
+          DateTime
+            { dateTimeLocalTime = localTime,
+              dateTimeTimeZone = Nothing
+            }
+      )
+        <$> iso8601ParseM (T.unpack t)
+    )
+      <|> ( ( \ZonedTime {..} ->
+                DateTime
+                  { dateTimeLocalTime = zonedTimeToLocalTime,
+                    dateTimeTimeZone = Just zonedTimeZone
+                  }
+            )
+              <$> iso8601ParseM (T.unpack t)
+          )
 
 instance ToJSON DateTime where
-  toJSON = toJSON . iso8601Show . dateTimeZonedTime
+  toJSON DateTime {..} = toJSON $ case dateTimeTimeZone of
+    Nothing -> iso8601Show dateTimeLocalTime
+    Just tz -> iso8601Show $ ZonedTime dateTimeLocalTime tz
 
 data EventAttendanceMode
   = OfflineEventAttendanceMode

@@ -25,10 +25,8 @@ spec = do
   jsonSpecOnValid @EventEndDate
   genValidSpec @Date
   jsonSpecOnValid @Date
-  eqSpecOnValid @Date
   genValidSpec @DateTime
   jsonSpecOnValid @DateTime
-  eqSpecOnValid @DateTime
   genValidSpec @EventAttendanceMode
   jsonSpecOnValid @EventAttendanceMode
   genValidSpec @EventStatus

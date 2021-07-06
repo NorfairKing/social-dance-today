@@ -37,14 +37,16 @@ instance GenValid DateTime where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
   genValid =
     DateTime
-      <$> ( ZonedTime
-              <$> genValid
-              <*> ( TimeZone
-                      <$> choose (-5999, 5999)
-                      <*> genValid
-                      <*> genValid
-                  )
-          )
+      <$> genValid
+      <*> oneof
+        [ Just
+            <$> ( TimeZone
+                    <$> choose (-5999, 5999)
+                    <*> genValid
+                    <*> genValid
+                ),
+          pure Nothing
+        ]
 
 instance GenValid Date where
   genValid = genValidStructurallyWithoutExtraChecking
