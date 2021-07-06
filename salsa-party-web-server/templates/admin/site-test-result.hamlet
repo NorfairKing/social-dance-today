@@ -5,3 +5,22 @@
       <code>
         #{siteTestUrl}
 
+    <h2 .title .is-4>
+      <code>
+        /robots.txt
+    $case robotsTxtResult
+      $of NoRobotsTxt
+        No
+        <code>
+          /robots.txt
+        page found.
+      $of ErrRobotsTxt err
+        Error while fetching
+        <code>
+          /robots.txt
+        :
+        <pre>
+          #{err}
+      $of RobotsTxt t
+        <pre>
+          #{t}
