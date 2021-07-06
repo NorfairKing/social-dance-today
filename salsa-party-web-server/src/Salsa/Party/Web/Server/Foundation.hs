@@ -45,7 +45,6 @@ import Salsa.Party.Web.Server.Static
 import Salsa.Party.Web.Server.Widget
 import System.Random
 import Text.Blaze.Html.Renderer.Text (renderHtml)
-import qualified Text.Blaze.Html.Renderer.Text as HT
 import Text.Blaze.Html5 ((!))
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA

@@ -17,6 +17,8 @@ spec = do
   jsonSpecOnValid @EventLocation
   genValidSpec @Place
   jsonSpecOnValid @Place
+  genValidSpec @PlaceAddress
+  jsonSpecOnValid @PlaceAddress
   genValidSpec @EventStartDate
   jsonSpecOnValid @EventStartDate
   genValidSpec @EventEndDate
@@ -31,3 +33,9 @@ spec = do
   jsonSpecOnValid @EventAttendanceMode
   genValidSpec @EventStatus
   jsonSpecOnValid @EventStatus
+  genValidSpec @EventImage
+  jsonSpecOnValid @EventImage
+  genValidSpec @EventOrganizer
+  jsonSpecOnValid @EventOrganizer
+  genValidSpec @Organization
+  jsonSpecOnValid @Organization

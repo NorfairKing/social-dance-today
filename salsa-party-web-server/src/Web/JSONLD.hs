@@ -8,6 +8,7 @@ module Web.JSONLD where
 
 import Control.Applicative
 import Data.Aeson as JSON
+import Data.Aeson.Types as JSON
 import Data.Function
 import Data.Maybe
 import Data.Monoid
@@ -38,7 +39,9 @@ data Event = Event
     eventDescription :: !(Maybe Text),
     eventEndDate :: !(Maybe EventEndDate),
     eventAttendanceMode :: !(Maybe EventAttendanceMode),
-    eventStatus :: !(Maybe EventStatus)
+    eventStatus :: !(Maybe EventStatus),
+    eventImages :: ![EventImage],
+    eventOrganizer :: !(Maybe EventOrganizer)
   }
   deriving (Show, Eq, Generic)
 
@@ -46,21 +49,21 @@ instance Validity Event
 
 instance ToJSON Event where
   toJSON Event {..} =
-    let mField :: ToJSON a => Text -> Maybe a -> [(Text, JSON.Value)]
-        mField k mv = [k .= v | v <- maybeToList mv]
-     in object $
-          concat
-            [ [ "@context" .= ("https://schema.org" :: Text),
-                "@type" .= ("Event" :: Text),
-                "location" .= eventLocation,
-                "name" .= eventName,
-                "startDate" .= eventStartDate
-              ],
-              mField "description" eventDescription,
-              mField "endDate" eventEndDate,
-              mField "eventAttendanceMode" eventAttendanceMode,
-              mField "eventStatus" eventStatus
-            ]
+    object $
+      concat
+        [ [ "@context" .= ("https://schema.org" :: Text),
+            "@type" .= ("Event" :: Text),
+            "location" .= eventLocation,
+            "name" .= eventName,
+            "startDate" .= eventStartDate
+          ],
+          mField "description" eventDescription,
+          mField "endDate" eventEndDate,
+          mField "eventAttendanceMode" eventAttendanceMode,
+          mField "eventStatus" eventStatus,
+          lField "image" eventImages,
+          mField "organizer" eventOrganizer
+        ]
 
 instance FromJSON Event where
   parseJSON = withObject "Event" $ \o ->
@@ -72,6 +75,8 @@ instance FromJSON Event where
       <*> o .:? "endDate"
       <*> o .:? "eventAttendanceMode"
       <*> o .:? "eventStatus"
+      <*> o .:? "image" .!= []
+      <*> o .:? "organizer"
 
 data EventLocation
   = EventLocationPlace Place
@@ -88,16 +93,47 @@ instance ToJSON EventLocation where
   toJSON = \case
     EventLocationPlace p -> toJSON p
 
+-- https://schema.org/Place
 data Place = Place
+  { placeName :: Text,
+    placeAddress :: PlaceAddress
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity Place
 
 instance FromJSON Place where
-  parseJSON _ = pure Place
+  parseJSON = withObject "Place" $ \o ->
+    Place
+      <$> o .: "name"
+      <*> o .: "address"
 
 instance ToJSON Place where
-  toJSON Place = object []
+  toJSON Place {..} =
+    object
+      [ "@type" .= ("Place" :: Text),
+        "name" .= placeName,
+        "address" .= placeAddress
+      ]
+
+data PlaceAddress = PlaceAddressText !Text
+  deriving (Show, Eq, Generic)
+
+instance Validity PlaceAddress
+
+instance ToJSON PlaceAddress where
+  toJSON = \case
+    PlaceAddressText t -> toJSON t
+
+instance FromJSON PlaceAddress where
+  parseJSON = withText "PlaceAddress" $ \t -> pure $ PlaceAddressText t
+
+-- -- https://developers.google.com/search/docs/data-types/event#location-address
+-- -- https://schema.org/PostalAddress
+-- data PostalAddress = PostalAddress
+--   deriving( Show,Eq,Generic)
+-- instance Validity PostalAddress
+-- instance To
 
 -- https://schema.org/startDate
 -- https://schema.org/Date
@@ -229,3 +265,67 @@ instance ToJSON EventStatus where
     EventPostponed -> "https://schema.org/EventPostponed"
     EventRescheduled -> "https://schema.org/EventRescheduled"
     EventScheduled -> "https://schema.org/EventScheduled"
+
+data EventImage
+  = EventImageURL !Text
+  --  | EventImageObject !Image
+  deriving (Show, Eq, Generic)
+
+instance Validity EventImage
+
+instance FromJSON EventImage where
+  parseJSON = withText "EventImage" $ \t -> pure $ EventImageURL t
+
+instance ToJSON EventImage where
+  toJSON = \case
+    EventImageURL t -> toJSON t
+
+-- https://developers.google.com/search/docs/data-types/event#organizer
+data EventOrganizer
+  = EventOrganizerOrganization !Organization
+  deriving (Show, Eq, Generic)
+
+--  | EventOrganizerPerson
+
+instance Validity EventOrganizer
+
+instance ToJSON EventOrganizer where
+  toJSON = \case
+    EventOrganizerOrganization o -> toJSON o
+
+instance FromJSON EventOrganizer where
+  parseJSON v = EventOrganizerOrganization <$> parseJSON v
+
+-- https://developers.google.com/search/docs/data-types/event#organizer
+-- https://schema.org/Organization
+data Organization = Organization
+  { organizationName :: !Text,
+    organizationUrl :: !(Maybe Text)
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity Organization
+
+instance FromJSON Organization where
+  parseJSON = withObject "Organization" $ \o ->
+    Organization
+      <$> o .: "name"
+      <*> o .:? "url"
+
+instance ToJSON Organization where
+  toJSON Organization {..} =
+    object $
+      concat
+        [ [ "@type" .= ("Organization" :: Text),
+            "name" .= organizationName
+          ],
+          mField "url" organizationUrl
+        ]
+
+mField :: ToJSON a => Text -> Maybe a -> [JSON.Pair]
+mField k mv = [k .= v | v <- maybeToList mv]
+
+lField :: ToJSON a => Text -> [a] -> [JSON.Pair]
+lField k = \case
+  [] -> []
+  lv -> [k .= lv]
