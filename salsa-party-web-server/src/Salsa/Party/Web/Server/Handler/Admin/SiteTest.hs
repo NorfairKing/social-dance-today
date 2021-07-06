@@ -14,6 +14,7 @@ import qualified Data.Text.Encoding as TE
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.Internal as HTTP
 import Network.HTTP.Types as HTTP
+import Network.URI (URI)
 import Salsa.Party.Web.Server.Handler.Import
 
 getAdminSiteTesterR :: Handler Html
@@ -43,7 +44,7 @@ siteTestHandler SiteTest {..} = do
 data RobotsTxtResult
   = NoRobotsTxt
   | ErrRobotsTxt !String
-  | RobotsTxt !Text
+  | RobotsTxt !URI !Text
   deriving (Show, Eq, Generic)
 
 testRobotsTxt :: Text -> Handler RobotsTxtResult
@@ -58,7 +59,7 @@ testRobotsTxt siteTestUrl = do
             then NoRobotsTxt
             else case TE.decodeUtf8' $ LB.toStrict $ responseBody response of
               Left err -> ErrRobotsTxt $ ppShow err
-              Right t -> RobotsTxt t
+              Right t -> RobotsTxt (getUri request) t
 
 handleRequest :: Request -> Handler (Either HttpException (Response LB.ByteString))
 handleRequest request = do

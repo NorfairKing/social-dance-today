@@ -21,6 +21,8 @@
         :
         <pre>
           #{err}
-      $of RobotsTxt t
+      $of RobotsTxt url t
+        <a .button href=#{show url}>
+          Visit
         <pre>
           #{t}

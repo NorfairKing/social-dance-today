@@ -48,7 +48,7 @@ getAdminExternalEventsR = redirect $ AdminR $ AdminExternalEventsPageR 0
 
 getAdminExternalEventsPageR :: PageNumber -> Handler Html
 getAdminExternalEventsPageR pageNumber = do
-  paginated <- runDB $ selectPaginated 2 [] [Asc ExternalEventId] pageNumber
+  paginated <- runDB $ selectPaginated 10 [] [Asc ExternalEventId] pageNumber
   today <- liftIO $ utctDay <$> getCurrentTime
   token <- genToken
   withNavBar $ do
