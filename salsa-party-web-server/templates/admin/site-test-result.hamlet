@@ -1,0 +1,7 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      Site Test Result:
+      <code>
+        #{siteTestUrl}
+

@@ -38,6 +38,8 @@ library
       Salsa.Party.Web.Server.Handler.Account.Overview
       Salsa.Party.Web.Server.Handler.Account.Party
       Salsa.Party.Web.Server.Handler.Admin
+      Salsa.Party.Web.Server.Handler.Admin.Panel
+      Salsa.Party.Web.Server.Handler.Admin.SiteTest
       Salsa.Party.Web.Server.Handler.Explore
       Salsa.Party.Web.Server.Handler.Home
       Salsa.Party.Web.Server.Handler.Import

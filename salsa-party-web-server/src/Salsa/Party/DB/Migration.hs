@@ -13,7 +13,6 @@ import qualified Data.Text as T
 import Database.Persist.Sql
 import Salsa.Party.DB
 import System.Exit
-import Text.Show.Pretty (pPrint)
 import UnliftIO
 
 completeServerMigration :: (MonadUnliftIO m, MonadLogger m) => Bool -> SqlPersistT m ()

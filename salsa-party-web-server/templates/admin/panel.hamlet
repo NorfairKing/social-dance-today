@@ -9,6 +9,10 @@
       <a .button href=@{AdminR AdminExternalEventsR}>
         External Events
 
+    <div .buttons>
+      <a .button href=@{AdminR AdminSiteTesterR}>
+        Site Tester
+
 <section .section>
   <div .container>
     <h2 .title .is-4>

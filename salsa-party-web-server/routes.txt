@@ -24,13 +24,18 @@
 
 /admin AdminR:
   / PanelR GET
+
+  /user/#UserId/impersonate AdminUserImpersonateR POST
+
   /parties AdminPartiesR GET
   /parties/#PageNumber AdminPartiesPageR GET
+
+  /party/#EventUUID/delete AdminDeleteEventR POST
+
   /external-events AdminExternalEventsR GET
   /external-events/#PageNumber AdminExternalEventsPageR GET
 
-  /party/#EventUUID/delete AdminDeleteEventR POST
-  /user/#UserId/impersonate AdminUserImpersonateR POST
+  /site-tester AdminSiteTesterR GET POST
 
 /favicon.ico FaviconR GET
 /sitemap.xml SitemapR GET

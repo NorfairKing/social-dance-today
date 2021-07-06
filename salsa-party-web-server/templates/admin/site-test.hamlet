@@ -1,0 +1,22 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      Site Tester
+
+    <form .form
+      method=post
+      action=@{AdminR AdminSiteTesterR}>
+      <div .field>
+        <label .label>
+          URL
+        <div .control>
+          <input .input
+            type=url
+            name="url"
+            required>
+          <div .field>
+      <div .field>
+        <div .control>
+          <button .button .is-dark type="submit">
+            Submit
+
