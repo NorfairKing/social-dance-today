@@ -120,38 +120,9 @@ externalEventPage (Entity _ externalEvent@ExternalEvent {..}) = do
   withNavBar $ do
     setTitle $ toHtml externalEventTitle
     setDescription $ fromMaybe "Party without description" externalEventDescription
-    toWidgetHead $ toJSONLDData $ externalEventJSONLDData externalEvent place
+    toWidgetHead $ toJSONLDData $ externalEventToLDEvent externalEvent place
     addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe externalEventCreated externalEventModified
     $(widgetFile "external-event")
-
-externalEventJSONLDData :: ExternalEvent -> Place -> JSON.Value
-externalEventJSONLDData ExternalEvent {..} Place {..} =
-  object $
-    concat
-      [ [ "@context" .= ("https://schema.org" :: Text),
-          "@type" .= ("Event" :: Text),
-          "name" .= externalEventTitle,
-          "startDate" .= externalEventDay,
-          "eventAttendanceMode" .= ("https://schema.org/OfflineEventAttendanceMode" :: Text),
-          "eventStatus"
-            .= if externalEventCancelled
-              then ("https://schema.org/EventCancelled" :: Text)
-              else ("https://schema.org/EventScheduled" :: Text),
-          "location"
-            .= object
-              [ "@type" .= ("Place" :: Text),
-                "address" .= placeQuery
-              ]
-        ],
-        [ "organizer"
-            .= object
-              [ "@type" .= ("Organization" :: Text),
-                "name" .= organizer
-              ]
-          | organizer <- maybeToList externalEventOrganiser
-        ],
-        ["description" .= description | description <- maybeToList externalEventDescription]
-      ]
 
 externalEventToLDEvent :: ExternalEvent -> Place -> LD.Event
 externalEventToLDEvent ExternalEvent {..} Place {..} =
@@ -172,7 +143,8 @@ externalEventToLDEvent ExternalEvent {..} Place {..} =
                   LocalTime
                     { localDay = externalEventDay,
                       localTimeOfDay = timeOfDay
-                    }
+                    },
+                dateTimeTimeZone = Nothing
               },
       LD.eventDescription = externalEventDescription,
       LD.eventEndDate = Nothing,

@@ -96,7 +96,7 @@ spec = do
   it "outputs the same JSON LD as before for this external event" $
     pureGoldenJSONValueFile
       "test_resources/ld/external-event.json"
-      ( externalEventJSONLDData
+      ( externalEventToLDEvent
           exampleExternalEvent
           examplePlace2
       )
