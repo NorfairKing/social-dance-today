@@ -2,6 +2,11 @@
     "@context": "https://schema.org",
     "location": {
         "address": "Bahnhofplatz 6207 Nottwil LU",
+        "geo": {
+            "latitude": 47.1386577,
+            "@type": "GeoCoordinates",
+            "longitude": 8.138471299
+        },
         "@type": "Place"
     },
     "eventStatus": "https://schema.org/EventScheduled",

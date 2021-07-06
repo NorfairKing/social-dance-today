@@ -9,6 +9,7 @@ module Web.JSONLD where
 import Control.Applicative
 import Data.Aeson as JSON
 import Data.Aeson.Types as JSON
+import Data.Fixed
 import Data.Function
 import Data.Maybe
 import Data.Monoid
@@ -77,8 +78,13 @@ data EventLocation
 instance Validity EventLocation
 
 instance FromJSON EventLocation where
-  parseJSON = withObject "EventLocation" $ \o ->
-    EventLocationPlace <$> parseJSON (JSON.Object o)
+  parseJSON = withObject "EventLocation" $ \o -> do
+    mType <- o .:? "@type"
+    let parsePlace = EventLocationPlace <$> parseJSON (JSON.Object o)
+    case mType :: Maybe Text of
+      Just "Place" -> parsePlace
+      Nothing -> parsePlace
+      _ -> fail "Unknown EventLocation"
 
 instance ToJSON EventLocation where
   toJSON = \case
@@ -87,7 +93,8 @@ instance ToJSON EventLocation where
 -- https://schema.org/Place
 data Place = Place
   { placeName :: Maybe Text,
-    placeAddress :: PlaceAddress
+    placeAddress :: PlaceAddress,
+    placeGeo :: Maybe PlaceGeo
   }
   deriving (Show, Eq, Generic)
 
@@ -98,6 +105,7 @@ instance FromJSON Place where
     Place
       <$> o .:? "name"
       <*> o .: "address"
+      <*> o .:? "geo"
 
 instance ToJSON Place where
   toJSON Place {..} =
@@ -106,7 +114,8 @@ instance ToJSON Place where
         [ [ "@type" .= ("Place" :: Text),
             "address" .= placeAddress
           ],
-          mField "name" placeName
+          mField "name" placeName,
+          mField "geo" placeGeo
         ]
 
 data PlaceAddress = PlaceAddressText !Text
@@ -121,6 +130,48 @@ instance ToJSON PlaceAddress where
 instance FromJSON PlaceAddress where
   parseJSON = withText "PlaceAddress" $ \t -> pure $ PlaceAddressText t
 
+data PlaceGeo
+  = PlaceGeoCoordinates GeoCoordinates
+  deriving (Show, Eq, Generic)
+
+instance Validity PlaceGeo
+
+instance FromJSON PlaceGeo where
+  parseJSON = withObject "PlaceGeo" $ \o -> do
+    mType <- o .:? "@type"
+    let parseGeoCoordinates = PlaceGeoCoordinates <$> parseJSON (JSON.Object o)
+    case mType :: Maybe Text of
+      Just "GeoCoordinates" -> parseGeoCoordinates
+      Nothing -> parseGeoCoordinates
+      _ -> fail "Unknown EventLocation"
+
+instance ToJSON PlaceGeo where
+  toJSON = \case
+    PlaceGeoCoordinates geoCoordinates -> toJSON geoCoordinates
+
+data GeoCoordinates = GeoCoordinates
+  { geoCoordinatesLatitude :: !Nano,
+    geoCoordinatesLongitude :: !Nano
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity GeoCoordinates
+
+instance FromJSON GeoCoordinates where
+  parseJSON = withObject "GeoCoordinates" $ \o ->
+    GeoCoordinates
+      <$> o .: "latitude"
+      <*> o .: "longitude"
+
+instance ToJSON GeoCoordinates where
+  toJSON GeoCoordinates {..} =
+    object
+      [ "@type" .= ("GeoCoordinates" :: Text),
+        "latitude" .= geoCoordinatesLatitude,
+        "longitude" .= geoCoordinatesLongitude
+      ]
+
+--  | PlaceGeoShape
 -- -- https://developers.google.com/search/docs/data-types/event#location-address
 -- -- https://schema.org/PostalAddress
 -- data PostalAddress = PostalAddress

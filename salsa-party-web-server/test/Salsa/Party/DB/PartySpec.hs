@@ -42,12 +42,14 @@ spec = do
             partyModified = Nothing,
             partyPlace = toSqlKey 0
           }
+
   let examplePlace =
         Place
           { placeQuery = "Spitalgasse 4, 3011 Bern Bern",
             placeLat = 46.948335899,
             placeLon = 7.443078400
           }
+
   it "outputs the same JSON LD as before for this party" $
     pureGoldenJSONValueFile
       "test_resources/ld/party.json"

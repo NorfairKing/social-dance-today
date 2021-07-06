@@ -31,12 +31,14 @@ spec = do
             externalEventImporter = Just $ toSqlKey 0,
             externalEventOrigin = "https://events.info/events/suavemente-cuban-party-2021-07-16-kultur-bistro-bern"
           }
+
   let examplePlace =
         Place
           { placeQuery = "Bahnhofplatz 6207 Nottwil LU",
             placeLat = 47.138657700,
             placeLon = 8.138471299
           }
+
   it "outputs the same JSON LD as before for this external event" $
     pureGoldenJSONValueFile
       "test_resources/ld/external-event.json"

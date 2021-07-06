@@ -18,6 +18,10 @@ spec = do
   jsonSpecOnValid @Place
   genValidSpec @PlaceAddress
   jsonSpecOnValid @PlaceAddress
+  genValidSpec @PlaceGeo
+  jsonSpecOnValid @PlaceGeo
+  genValidSpec @GeoCoordinates
+  jsonSpecOnValid @GeoCoordinates
   genValidSpec @EventStartDate
   jsonSpecOnValid @EventStartDate
   genValidSpec @EventEndDate

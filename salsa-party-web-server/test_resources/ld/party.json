@@ -5,6 +5,11 @@
     ],
     "location": {
         "address": "Spitalgasse 4, 3011 Bern Bern",
+        "geo": {
+            "latitude": 46.948335899,
+            "@type": "GeoCoordinates",
+            "longitude": 7.4430784
+        },
         "@type": "Place"
     },
     "eventStatus": "https://schema.org/EventCancelled",

@@ -58,7 +58,14 @@ partyToLDEvent renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
         LD.EventLocationPlace $
           LD.Place
             { LD.placeName = Nothing,
-              LD.placeAddress = LD.PlaceAddressText placeQuery
+              LD.placeAddress = LD.PlaceAddressText placeQuery,
+              LD.placeGeo =
+                Just $
+                  LD.PlaceGeoCoordinates
+                    LD.GeoCoordinates
+                      { LD.geoCoordinatesLatitude = placeLat,
+                        LD.geoCoordinatesLongitude = placeLon
+                      }
             },
       LD.eventStartDate = case partyStart of
         Nothing -> LD.EventStartDate partyDay
@@ -134,7 +141,14 @@ externalEventToLDEvent ExternalEvent {..} Place {..} =
         LD.EventLocationPlace $
           LD.Place
             { LD.placeName = Nothing,
-              LD.placeAddress = LD.PlaceAddressText placeQuery
+              LD.placeAddress = LD.PlaceAddressText placeQuery,
+              LD.placeGeo =
+                Just $
+                  LD.PlaceGeoCoordinates
+                    LD.GeoCoordinates
+                      { LD.geoCoordinatesLatitude = placeLat,
+                        LD.geoCoordinatesLongitude = placeLon
+                      }
             },
       LD.eventStartDate = case externalEventStart of
         Nothing -> LD.EventStartDate externalEventDay
