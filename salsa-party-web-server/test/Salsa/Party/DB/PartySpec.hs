@@ -82,7 +82,7 @@ spec = do
   it "outputs the same JSON LD as before for this party" $
     pureGoldenJSONValueFile
       "test_resources/ld/party.json"
-      ( partyJSONLDData
+      ( partyToLDEvent
           ( \route ->
               let (routePieces, queryPieces) = renderRoute route
                   query = map (\(kt, vt) -> (TE.encodeUtf8 kt, Just $ TE.encodeUtf8 vt)) queryPieces
@@ -91,7 +91,7 @@ spec = do
           exampleParty
           exampleOrganiser
           examplePlace1
-          Nothing
+          (either (const Nothing) Just $ parseCASKey "UTpq9WwrRgBrNo9GusMO2QYGN+IZCK4E+IsnbgCVmvY=")
       )
   it "outputs the same JSON LD as before for this external event" $
     pureGoldenJSONValueFile

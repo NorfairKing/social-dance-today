@@ -53,40 +53,49 @@ partyPage (Entity partyId party@Party {..}) = do
   withNavBar $ do
     setTitle $ toHtml partyTitle
     setDescription $ fromMaybe "Party without description" partyDescription
-    toWidgetHead $ toJSONLDData $ partyJSONLDData renderUrl party organiser place mPosterKey
+    toWidgetHead $ toJSONLDData $ partyToLDEvent renderUrl party organiser place mPosterKey
     addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified
     $(widgetFile "party")
 
--- https://developers.google.com/search/docs/data-types/event
-partyJSONLDData :: (Route App -> Text) -> Party -> Organiser -> Place -> Maybe CASKey -> JSON.Value
-partyJSONLDData renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
-  object $
-    concat
-      [ [ "@context" .= ("https://schema.org" :: Text),
-          "@type" .= ("Event" :: Text),
-          "name" .= partyTitle,
-          "startDate" .= partyDay,
-          "eventAttendanceMode" .= ("https://schema.org/OfflineEventAttendanceMode" :: Text),
-          "eventStatus"
-            .= if partyCancelled
-              then ("https://schema.org/EventCancelled" :: Text)
-              else ("https://schema.org/EventScheduled" :: Text),
-          "location"
-            .= object
-              [ "@type" .= ("Place" :: Text),
-                "address" .= placeQuery
-              ],
-          "image"
-            .= [renderUrl (ImageR posterKey) | posterKey <- maybeToList mPosterKey],
-          "organizer"
-            .= object
-              [ "@type" .= ("Organization" :: Text),
-                "name" .= organiserName,
-                "url" .= renderUrl (OrganiserR organiserUuid)
-              ]
-        ],
-        ["description" .= description | description <- maybeToList partyDescription]
-      ]
+partyToLDEvent :: (Route App -> Text) -> Party -> Organiser -> Place -> Maybe CASKey -> LD.Event
+partyToLDEvent renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
+  LD.Event
+    { LD.eventName = partyTitle,
+      LD.eventLocation =
+        LD.EventLocationPlace $
+          LD.Place
+            { LD.placeName = Nothing,
+              LD.placeAddress = LD.PlaceAddressText placeQuery
+            },
+      LD.eventStartDate = case partyStart of
+        Nothing -> LD.EventStartDate partyDay
+        Just timeOfDay ->
+          LD.EventStartDateTime
+            LD.DateTime
+              { dateTimeLocalTime =
+                  LocalTime
+                    { localDay = partyDay,
+                      localTimeOfDay = timeOfDay
+                    },
+                dateTimeTimeZone = Nothing
+              },
+      LD.eventDescription = partyDescription,
+      LD.eventEndDate = Nothing,
+      LD.eventAttendanceMode = Just LD.OfflineEventAttendanceMode,
+      LD.eventStatus =
+        Just $
+          if partyCancelled
+            then LD.EventCancelled
+            else LD.EventScheduled,
+      LD.eventImages = [LD.EventImageURL (renderUrl (ImageR posterKey)) | posterKey <- maybeToList mPosterKey],
+      LD.eventOrganizer =
+        Just $
+          LD.EventOrganizerOrganization
+            LD.Organization
+              { LD.organizationName = organiserName,
+                organizationUrl = Just $ renderUrl (OrganiserR organiserUuid)
+              }
+    }
 
 getImageR :: CASKey -> Handler TypedContent
 getImageR key = do

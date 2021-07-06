@@ -1,6 +1,8 @@
 {
     "@context": "https://schema.org",
-    "image": [],
+    "image": [
+        "http://localhost:8000/image/UTpq9WwrRgBrNo9GusMO2QYGN+IZCK4E+IsnbgCVmvY="
+    ],
     "location": {
         "address": "Spitalgasse 4, 3011 Bern Bern",
         "@type": "Place"
