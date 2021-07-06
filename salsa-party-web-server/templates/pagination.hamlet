@@ -1,0 +1,34 @@
+<nav .pagination role="navigation" aria-label="pagination">
+  $maybe previous <- paginatedPreviousPage
+    <a .pagination-previous href=@{page previous}>
+      Previous
+  $maybe next <- paginatedNextPage
+    <a .pagination-next href=@{page next}>
+      Next
+  <ul .pagination-list>
+    $if shouldShowFirst
+      <li>
+        <a .pagination-link href=@{page paginatedFirstPage}>
+          #{paginatedFirstPage}
+      <li>
+        <span .pagination-elipsis>
+          &hellip;
+    $maybe previous <- paginatedPreviousPage
+      <li>
+        <a .pagination-link href=@{page previous}>
+          #{previous}
+    <li>
+      <a .pagination-link .is-current>
+        #{pageNumber}
+    $maybe next <- paginatedNextPage
+      <li>
+        <a .pagination-link href=@{page next}>
+          #{next}
+    $if shouldShowLast
+      <li>
+        <span .pagination-elipsis>
+          &hellip;
+      <li>
+        <a .pagination-link href=@{page paginatedLastPage}>
+          #{paginatedLastPage}
+

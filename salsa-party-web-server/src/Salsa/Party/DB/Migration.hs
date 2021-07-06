@@ -28,9 +28,6 @@ completeServerMigration quiet = do
   setUpPlaces
   logInfoN "Migrations done."
 
-  os <- selectList [] [Asc OrganiserId]
-  liftIO $ mapM_ pPrint os
-
 setUpPlaces :: (MonadIO m, MonadLogger m) => SqlPersistT m ()
 setUpPlaces = do
   logInfoN "Setting up standard places in database"

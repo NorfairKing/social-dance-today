@@ -450,3 +450,5 @@ instance ToWidgetHead App JSONLDData where
     toWidgetHead $
       H.script ! HA.type_ "application/ld+json" $
         H.lazyText $ renderJavascript $ toJavascript v
+
+type PageNumber = Int

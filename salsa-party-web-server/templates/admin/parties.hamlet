@@ -1,0 +1,36 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      Parties
+
+
+    ^{paginationWidget (AdminR . AdminPartiesPageR) paginated pageNumber}
+
+<section .section>
+  <div .container>
+    <h2 .title .is-4>
+      Parties
+
+    <table .table .is-fullwidth .is-striped>
+      <thead>
+        <tr>
+          <th>
+            Title
+          <th width=250px>
+            Day
+          <th width=50px>
+            Details
+      <tbody>
+        $forall Entity _ party <- paginatedElements paginated
+          <tr>
+            <td>
+              $if partyCancelled party
+                CANCELLED: 
+              #{partyTitle party}
+            <td>
+              #{formatTime defaultTimeLocale "%F" $ partyDay party}
+              (#{prettyDayAuto today $ partyDay party})
+            <td>
+              <a .button href=@{PartyR $ partyUuid party}>
+                Details
+

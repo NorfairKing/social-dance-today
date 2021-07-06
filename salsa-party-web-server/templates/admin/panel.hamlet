@@ -3,6 +3,12 @@
     <h1 .title .is-3>
       Admin Panel
 
+    <div .buttons>
+      <a .button href=@{AdminR AdminPartiesR}>
+        Parties
+      <a .button href=@{AdminR AdminExternalEventsR}>
+        External Events
+
 <section .section>
   <div .container>
     <h2 .title .is-4>
@@ -55,69 +61,3 @@
             <td>
               <a .button href=@{OrganiserR $ organiserUuid organiser}>
                 Profile
-
-<section .section>
-  <div .container>
-    <h2 .title .is-4>
-      Parties
-
-    <table .table .is-fullwidth .is-striped>
-      <thead>
-        <tr>
-          <th>
-            Title
-          <th width=250px>
-            Day
-          <th width=50px>
-            Details
-      <tbody>
-        $forall Entity _ party <- parties
-          <tr>
-            <td>
-              $if partyCancelled party
-                CANCELLED: 
-              #{partyTitle party}
-            <td>
-              #{formatTime defaultTimeLocale "%F" $ partyDay party}
-              (#{prettyDayAuto today $ partyDay party})
-            <td>
-              <a .button href=@{PartyR $ partyUuid party}>
-                Details
-
-<section .section>
-  <div .container>
-    <h2 .title .is-4>
-      External Events
-
-    <table .table .is-fullwidth .is-striped>
-      <thead>
-        <tr>
-          <th>
-            Title
-          <th width=250px>
-            Day
-          <th width=50px>
-            Delete
-          <th width=50px>
-            Details
-      <tbody>
-        $forall Entity _ externalEvent <- externalEvents
-          <tr>
-            <td>
-              $if externalEventCancelled externalEvent
-                CANCELLED: 
-              #{externalEventTitle externalEvent}
-            <td>
-              #{formatTime defaultTimeLocale "%F" $ externalEventDay externalEvent}
-              (#{prettyDayAuto today $ externalEventDay externalEvent})
-            <td>
-              <form
-                method=post
-                action=@{AdminR $ AdminDeleteEventR $ externalEventUuid externalEvent}>
-                ^{token}
-                <button .button .is-danger type=submit
-                  onclick="return confirm('Are you sure you want to delete this party? This cannot be undone.');">
-                  Delete
-            <td>
-              <a .button href=@{PartyR $ externalEventUuid externalEvent}>
-                Details
