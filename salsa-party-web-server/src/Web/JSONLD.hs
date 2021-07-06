@@ -1,15 +1,21 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Web.JSONLD where
 
+import Control.Applicative
 import Data.Aeson as JSON
+import Data.Function
+import Data.Monoid
 import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Lazy as LT
 import Data.Time
+import Data.Time.Format.ISO8601 as ISO8601
 import Data.Validity
 import Data.Validity.Text ()
 import Data.Validity.Time ()
@@ -34,7 +40,14 @@ data Event = Event
 instance Validity Event
 
 instance ToJSON Event where
-  toJSON Event {..} = object []
+  toJSON Event {..} =
+    object
+      [ "@context" .= ("https://schema.org" :: Text),
+        "@type" .= ("Event" :: Text),
+        "location" .= eventLocation,
+        "name" .= eventName,
+        "startDate" .= eventStartDate
+      ]
 
 instance FromJSON Event where
   parseJSON = withObject "Event" $ \o ->
@@ -51,10 +64,12 @@ data EventLocation
 instance Validity EventLocation
 
 instance FromJSON EventLocation where
-  parseJSON = undefined
+  parseJSON = withObject "EventLocation" $ \o ->
+    EventLocationPlace <$> parseJSON (JSON.Object o)
 
 instance ToJSON EventLocation where
-  toJSON = undefined
+  toJSON = \case
+    EventLocationPlace p -> toJSON p
 
 data Place = Place
   deriving (Show, Eq, Generic)
@@ -62,11 +77,14 @@ data Place = Place
 instance Validity Place
 
 instance FromJSON Place where
-  parseJSON = undefined
+  parseJSON _ = pure Place
 
 instance ToJSON Place where
-  toJSON = undefined
+  toJSON Place = object []
 
+-- https://schema.org/startDate
+-- https://schema.org/Date
+-- https://schema.org/DateTime
 data EventStartDate
   = EventStartDate Day
   | EventStartDateTime DateTime
@@ -75,10 +93,28 @@ data EventStartDate
 instance Validity EventStartDate
 
 instance FromJSON EventStartDate where
-  parseJSON = undefined
+  parseJSON v =
+    EventStartDate <$> parseJSON v
+      <|> EventStartDateTime <$> parseJSON v
 
 instance ToJSON EventStartDate where
-  toJSON = undefined
+  toJSON = \case
+    EventStartDate d -> toJSON d
+    EventStartDateTime dt -> toJSON dt
+
+newtype Date = Date {dateDay :: Day}
+  deriving (Eq, Generic)
+
+instance Validity Date
+
+instance Show Date where
+  show (Date zt) = iso8601Show zt
+
+instance FromJSON Date where
+  parseJSON = withText "Date" $ \t -> Date <$> iso8601ParseM (T.unpack t)
+
+instance ToJSON Date where
+  toJSON = toJSON . iso8601Show . dateDay
 
 newtype DateTime = DateTime {dateTimeZonedTime :: ZonedTime}
   deriving (Generic)
@@ -86,16 +122,23 @@ newtype DateTime = DateTime {dateTimeZonedTime :: ZonedTime}
 instance Validity DateTime
 
 instance Show DateTime where
-  show = undefined
+  show (DateTime zt) = iso8601Show zt
 
 instance Eq DateTime where
-  (==) = undefined
+  (==) =
+    let mapF2 :: (b -> c) -> (a -> a -> b) -> (a -> a -> c)
+        mapF2 func op a1 a2 = func $ op a1 a2
+     in mapF2 getAll $
+          mconcat $
+            map
+              (mapF2 All)
+              -- We only care about the local time and minutes of the timezone.
+              [ (==) `on` (zonedTimeToLocalTime . dateTimeZonedTime),
+                (==) `on` (timeZoneMinutes . zonedTimeZone . dateTimeZonedTime)
+              ]
 
 instance FromJSON DateTime where
-  parseJSON = undefined
+  parseJSON = withText "DateTime" $ \t -> DateTime <$> iso8601ParseM (T.unpack t)
 
 instance ToJSON DateTime where
-  toJSON = undefined
-
-htmlEscapedText :: Text -> Text
-htmlEscapedText = LT.toStrict . HT.renderHtml . toHtml
+  toJSON = toJSON . iso8601Show . dateTimeZonedTime
