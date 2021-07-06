@@ -37,6 +37,7 @@ pkgs.nixosTest (
             enable-osm-geocoding = false;
             enable-google-geocoding = false;
             events-info-importer.enable = false;
+            dance-us-org-importer.enable = false;
           };
         };
       };
