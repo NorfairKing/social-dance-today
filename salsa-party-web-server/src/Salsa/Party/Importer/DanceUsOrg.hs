@@ -2,6 +2,12 @@
 
 -- | https://www.danceus.org/
 --
+-- The terms of service mention that we're not allowed to scrape their site, as does their robots.txt.
+--
+-- Details anyway:
+--
+-- Home: https://www.danceus.org/
+--
 -- On the https://www.danceus.org/events/ page, there are event calendars per dance style and per location.
 --
 -- They are in `<a class="calendar-link" href="[...]">` tags.
