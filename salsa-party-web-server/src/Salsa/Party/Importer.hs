@@ -5,7 +5,6 @@
 module Salsa.Party.Importer where
 
 import Control.Exception (AsyncException)
-import Control.Monad (void)
 import Control.Monad.Logger
 import qualified Data.Text as T
 import Data.Time

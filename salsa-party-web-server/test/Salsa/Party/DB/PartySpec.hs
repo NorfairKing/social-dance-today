@@ -2,13 +2,9 @@
 
 module Salsa.Party.DB.PartySpec (spec) where
 
-import Control.Monad
 import qualified Data.ByteString.Builder as SBB
 import qualified Data.ByteString.Lazy as LB
-import Data.Text (Text)
-import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import qualified Data.Text.IO as T
 import Data.Time
 import qualified Data.UUID as UUID
 import qualified Data.UUID.Typed as Typed
@@ -18,8 +14,6 @@ import Salsa.Party.DB
 import Salsa.Party.Web.Server.Handler.Party
 import Test.Syd
 import Test.Syd.Aeson
-import Test.Syd.Persistent.Sqlite
-import UnliftIO
 import Yesod.Core
 
 spec :: Spec

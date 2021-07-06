@@ -3,7 +3,6 @@
 module Web.JSONLDSpec (spec) where
 
 import Test.Syd
-import Test.Syd.Aeson
 import Test.Syd.Validity
 import Test.Syd.Validity.Aeson
 import Web.JSONLD

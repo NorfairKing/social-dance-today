@@ -14,21 +14,12 @@ import Data.Maybe
 import Data.Monoid
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
-import qualified Data.Text.Lazy as LT
 import Data.Time
 import Data.Time.Format.ISO8601 as ISO8601
 import Data.Validity
 import Data.Validity.Text ()
 import Data.Validity.Time ()
 import GHC.Generics (Generic)
-import Network.HTTP.Types
-import qualified Text.Blaze.Html.Renderer.Text as HT
-import Text.Blaze.Html5 ((!))
-import qualified Text.Blaze.Html5 as H
-import qualified Text.Blaze.Html5.Attributes as HA
-import Text.Julius
-import Yesod
 
 -- Google: https://developers.google.com/search/docs/data-types/event#structured-data-type-definitions
 -- Schema.org: https://schema.org/Event

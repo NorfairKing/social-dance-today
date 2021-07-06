@@ -32,14 +32,6 @@
 -- And this contains a "@type": "Event", which we can import.
 module Salsa.Party.Importer.DanceUsOrg (danceUsOrgImporter) where
 
-import Conduit
-import Data.Aeson as JSON
-import qualified Data.Conduit.Combinators as C
-import Data.Fixed
-import Data.Scientific
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
-import Network.URI as URI
 import Salsa.Party.Importer.Import
 
 danceUsOrgImporter :: Importer

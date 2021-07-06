@@ -7,16 +7,9 @@
 
 module Salsa.Party.Web.Server.Handler.Party where
 
-import Data.Aeson as JSON
 import qualified Data.Text.Encoding as TE
-import qualified Data.Text.Lazy as LT
 import Network.HTTP.Types
 import Salsa.Party.Web.Server.Handler.Import
-import qualified Text.Blaze.Html.Renderer.Text as HT
-import Text.Blaze.Html5 ((!))
-import qualified Text.Blaze.Html5 as H
-import qualified Text.Blaze.Html5.Attributes as HA
-import Text.Julius
 import qualified Web.JSONLD as LD
 
 getPartyR :: EventUUID -> Handler Html
