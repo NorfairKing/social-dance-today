@@ -23,7 +23,7 @@
   /delete AccountDeleteR POST
 
 /admin AdminR:
-  / PanelR GET
+  / AdminPanelR GET
 
   /user/#UserId/impersonate AdminUserImpersonateR POST
 

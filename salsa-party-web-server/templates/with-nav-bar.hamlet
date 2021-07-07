@@ -24,7 +24,7 @@
       
     <div .navbar-end>
       $if isAdmin
-        <a .navbar-item href=@{AdminR PanelR}>
+        <a .navbar-item href=@{AdminR AdminPanelR}>
           Admin Panel
 
       <div .navbar-item>

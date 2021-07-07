@@ -9,8 +9,8 @@ module Salsa.Party.Web.Server.Handler.Admin.Panel where
 
 import Salsa.Party.Web.Server.Handler.Import
 
-getPanelR :: Handler Html
-getPanelR = do
+getAdminPanelR :: Handler Html
+getAdminPanelR = do
   users <- runDB $ selectList [] [Asc UserId]
   organisers <- runDB $ selectList [] [Asc OrganiserId]
   token <- genToken
@@ -29,7 +29,7 @@ postAdminUserImpersonateR userId = do
 postAdminDeleteEventR :: EventUUID -> Handler Html
 postAdminDeleteEventR uuid = do
   runDB $ deleteWhere [ExternalEventUuid ==. uuid]
-  redirect $ AdminR PanelR
+  redirect $ AdminR AdminPanelR
 
 getAdminPartiesR :: Handler Html
 getAdminPartiesR = redirect $ AdminR $ AdminPartiesPageR paginatedFirstPage
