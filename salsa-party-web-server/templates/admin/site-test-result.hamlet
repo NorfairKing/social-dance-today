@@ -2,8 +2,9 @@
   <div .container>
     <h1 .title .is-3>
       Site Test Result:
-      <code>
-        #{siteTestUrl}
+      <a href=#{siteTestUrl}>
+        <code>
+          #{siteTestUrl}
 
 <section .section>
   <div .container>
