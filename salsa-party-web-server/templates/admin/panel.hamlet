@@ -10,7 +10,7 @@
         External Events
 
     <div .buttons>
-      <a .button href=@{AdminR AdminSiteTesterR}>
+      <a .button href=@{AdminR AdminSiteTestR}>
         Site Tester
 
 <section .section>

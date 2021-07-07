@@ -1,4 +1,4 @@
-module Salsa.Party.Web.Server.Handler.AdminSpec (spec) where
+module Salsa.Party.Web.Server.Handler.Admin.PanelSpec (spec) where
 
 import Salsa.Party.Web.Server.Handler.TestImport
 

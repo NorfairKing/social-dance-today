@@ -24,34 +24,45 @@ import qualified Text.HTML.TagSoup as HTML
 import qualified Text.XML as XML
 import qualified Web.JSONLD as LD
 
-getAdminSiteTesterR :: Handler Html
-getAdminSiteTesterR = adminSiteTesterPage Nothing
+getAdminSiteTestR :: Handler Html
+getAdminSiteTestR = adminSiteTesterPage Nothing
 
 data SiteTest = SiteTest {siteTestUrl :: Text}
 
 siteTestForm :: FormInput Handler SiteTest
 siteTestForm = SiteTest <$> ireq urlField "url"
 
-postAdminSiteTesterR :: Handler Html
-postAdminSiteTesterR = do
+postAdminSiteTestR :: Handler Html
+postAdminSiteTestR = do
   result <- runInputPostResult siteTestForm
   adminSiteTesterPage $ Just result
 
 adminSiteTesterPage :: Maybe (FormResult SiteTest) -> Handler Html
 adminSiteTesterPage mResult = do
-  case mResult of
-    Just (FormSuccess siteTest) -> siteTestHandler siteTest
-    _ -> withMFormResultNavBar mResult $(widgetFile "admin/site-test")
-
-siteTestHandler :: SiteTest -> Handler Html
-siteTestHandler SiteTest {..} = do
-  robotsTxtResult <- testRobotsTxt siteTestUrl
-  sitemapXmlResult <- testSitemapXml siteTestUrl
+  mSiteTest <- case mResult of
+    Just (FormSuccess siteTest) -> Just . (,) siteTest <$> runSiteTest siteTest
+    _ -> pure Nothing
   let xmlRenderSets = XML.def {XML.rsPretty = True}
-  jsonLDResult <- testJSONLD siteTestUrl
-  acceptJSONResult <- testAcceptJSONResult siteTestUrl
-  acceptXMLResult <- testAcceptXMLResult siteTestUrl
-  withNavBar $(widgetFile "admin/site-test-result")
+  token <- genToken
+  withMFormResultNavBar mResult $(widgetFile "admin/site-test")
+
+runSiteTest :: SiteTest -> Handler SiteTestResult
+runSiteTest SiteTest {..} = do
+  siteTestResultRobotsTxt <- testRobotsTxt siteTestUrl
+  siteTestResultSitemapXml <- testSitemapXml siteTestUrl
+  siteTestResultJSONLD <- testJSONLD siteTestUrl
+  siteTestAcceptJSON <- testAcceptJSONResult siteTestUrl
+  siteTestAcceptXML <- testAcceptXMLResult siteTestUrl
+  pure SiteTestResult {..}
+
+data SiteTestResult = SiteTestResult
+  { siteTestResultRobotsTxt :: !RobotsTxtResult,
+    siteTestResultSitemapXml :: !SitemapXmlResult,
+    siteTestResultJSONLD :: !JSONLDResult,
+    siteTestAcceptJSON :: !AcceptJSONResult,
+    siteTestAcceptXML :: !AcceptXMLResult
+  }
+  deriving (Show, Eq, Generic)
 
 data RobotsTxtResult
   = NoRobotsTxt

@@ -35,7 +35,7 @@
   /external-events AdminExternalEventsR GET
   /external-events/#PageNumber AdminExternalEventsPageR GET
 
-  /site-tester AdminSiteTesterR GET POST
+  /site-test AdminSiteTestR GET POST
 
 /favicon.ico FaviconR GET
 /sitemap.xml SitemapR GET
