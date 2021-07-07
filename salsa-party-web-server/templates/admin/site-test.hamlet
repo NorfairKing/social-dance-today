@@ -33,8 +33,24 @@ $maybe (siteTest, result) <- mSiteTest
   <section .section>
     <div .container>
       <h2 .title .is-4>
-        <code>
-          /robots.txt
+        Robot access
+      <details .content>
+        <summary>
+          Explanation
+        <p content>
+          The
+          <code>
+            robots.txt
+          page tells us whether the site owner has indicated any wishes about robots accessing the site.
+        <p content>
+          Disallow means that the site owner does not want robots to access 
+        <p content>
+          A
+          <code>
+            &num;
+          (pound) sign indicates a comment.
+      <h3 .title .is-5>
+        Result
       $case siteTestResultRobotsTxt result
         $of NoRobotsTxt
           <p .content>
@@ -53,25 +69,33 @@ $maybe (siteTest, result) <- mSiteTest
         $of RobotsTxt url t
           <p .content>
             Found a
-            <code>
-              /robots.txt
+            <a href=#{show url}>
+              <code>
+                /robots.txt
             page:
-          <a .button href=#{show url}>
-            Visit
           <p .content>
             <details>
+              <summary>
+                Contents
               <pre>
                 #{t}
 
   <section .section>
     <div .container>
       <h2 .title .is-4>
-        <code>
-          /sitemap.xml
+        Sitemap
+      <details .content>
+        <summary>
+          Explanation
+        <p .content>
+          The sitemap is a page that site owners use to make it extra easy for search engines to crawl their website.
+          If events are mentioned here, that means that it's easier for us to find them.
       $case siteTestResultSitemapXml result
         $of NoSitemapXml
           <p .content>
             No sitemap page found.
+          <p .content>
+            This indicates that the site owner did not even set up a sitemap and it will be harder for search engines to find the pages on their site, to crawl.
         $of ErrSitemapXml err
           <p .content>
             Error while fetching
@@ -83,23 +107,30 @@ $maybe (siteTest, result) <- mSiteTest
         $of SitemapXml url document
           <p .content>
             Found a valid
-            <code>
-              /sitemap.xml
+            <a href=#{show url}>
+              <code>
+                /sitemap.xml
             document:
-          <a .button href=#{show url}>
-            Visit
           <p .content>
             <details>
+              <summary>
+                Contents
               <pre>
                 #{XML.renderText xmlRenderSets document}
 
   <section .section>
     <div .container>
       <h2 .title .is-4>
+        Machine-readability
+      <p .content>
+        If any of the following three sections show a result on an event page, that means that the events are machine-readible.
+
+      <h3 .title .is-5>
         JSON Linked Data
       $case siteTestResultJSONLD result
         $of NoJSONLD
-          Page not found.
+          <p .content>
+            Page not found.
         $of ErrJSONLD  err
           <p .content>
             Error while trying to find the JSON LD:
@@ -108,22 +139,22 @@ $maybe (siteTest, result) <- mSiteTest
                 #{err}
         $of JSONLD value
           <p .content>
-            Found a JSON LD tag with valid JSON, but it wasn't an event:
+            Found a JSON LD tag with valid JSON, but it wasn't an event.
+            This means that it either contains something different, or that our event parser is broken for this page:
             <details>
               <pre>
                 #{TE.decodeUtf8 $ LB.toStrict $ encodePretty value}
         $of JSONLDEvent event
           <p .content>
-            Found a JSON LD Event on this page:
+            Found a JSON LD Event on this page, this means the event is machine readible:
             <details>
+              <summary>
+                Event
               <pre>
                 #{ppShow event}
 
-  <section .section>
-    <div .container>
-      <h2 .title .is-4>
-        <code>
-          Accept: application/json
+      <h3 .title .is-5>
+        JSON
       $case siteTestAcceptJSON result
         $of ErrAcceptJSON err
           <p .content>
@@ -136,15 +167,15 @@ $maybe (siteTest, result) <- mSiteTest
                 #{err}
         $of AcceptJSON value
           <p .content>
+            Found a JSON object on this page, this means there is something machine readible on this page (but not necessarily an event):
             <details>
+              <summary>
+                Value
               <pre>
                 #{TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty value}
 
-  <section .section>
-    <div .container>
-      <h2 .title .is-4>
-        <code>
-          Accept: application/xml
+      <h3 .title .is-5>
+        XML
       $case siteTestAcceptXML result
         $of ErrAcceptXML err
           <p .content>
@@ -157,6 +188,9 @@ $maybe (siteTest, result) <- mSiteTest
                 #{err}
         $of AcceptXML value
           <p .content>
+            Found an XML document on this page, this means there is something machine readible on this page (but not necessarily an event):
             <details>
+              <summary>
+                Value
               <pre>
                 #{XML.renderText xmlRenderSets value}
