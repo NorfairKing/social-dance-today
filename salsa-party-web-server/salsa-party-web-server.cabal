@@ -117,6 +117,7 @@ library
     , wai
     , wai-extra
     , warp
+    , xml-conduit
     , yaml
     , yamlparse-applicative
     , yesod

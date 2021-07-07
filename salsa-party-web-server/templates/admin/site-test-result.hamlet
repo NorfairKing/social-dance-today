@@ -5,24 +5,55 @@
       <code>
         #{siteTestUrl}
 
+<section .section>
+  <div .container>
+    <h2 .title .is-4>
+      <code>
+        /sitemap.xml
+    $case sitemapXmlResult
+      $of NoSitemapXml
+        <p .content>
+          No sitemap page found.
+      $of ErrSitemapXml err
+        <p .content>
+          Error while fetching
+          <code>
+            /sitemap.xml
+          :
+          <pre>
+            #{err}
+      $of SitemapXml url document
+        <p .content>
+          <a .button href=#{show url}>
+            Visit
+          <details>
+            <pre>
+              #{XML.renderText xmlRenderSets document}
+
+<section .section>
+  <div .container>
     <h2 .title .is-4>
       <code>
         /robots.txt
     $case robotsTxtResult
       $of NoRobotsTxt
-        No
-        <code>
-          /robots.txt
-        page found.
+        <p .content>
+          No
+          <code>
+            /robots.txt
+          page found.
       $of ErrRobotsTxt err
-        Error while fetching
-        <code>
-          /robots.txt
-        :
-        <pre>
-          #{err}
+        <p .content>
+          Error while fetching
+          <code>
+            /robots.txt
+          :
+          <pre>
+            #{err}
       $of RobotsTxt url t
-        <a .button href=#{show url}>
-          Visit
-        <pre>
-          #{t}
+        <p .content>
+          <a .button href=#{show url}>
+            Visit
+          <details>
+            <pre>
+              #{t}

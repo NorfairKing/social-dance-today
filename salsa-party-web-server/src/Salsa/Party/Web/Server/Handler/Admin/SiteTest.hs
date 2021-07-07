@@ -16,6 +16,7 @@ import Network.HTTP.Client.Internal as HTTP
 import Network.HTTP.Types as HTTP
 import Network.URI (URI)
 import Salsa.Party.Web.Server.Handler.Import
+import qualified Text.XML as XML
 
 getAdminSiteTesterR :: Handler Html
 getAdminSiteTesterR = adminSiteTesterPage Nothing
@@ -39,6 +40,8 @@ adminSiteTesterPage mResult = do
 siteTestHandler :: SiteTest -> Handler Html
 siteTestHandler SiteTest {..} = do
   robotsTxtResult <- testRobotsTxt siteTestUrl
+  sitemapXmlResult <- testSitemapXml siteTestUrl
+  let xmlRenderSets = XML.def {XML.rsPretty = True}
   withNavBar $(widgetFile "admin/site-test-result")
 
 data RobotsTxtResult
@@ -49,8 +52,9 @@ data RobotsTxtResult
 
 testRobotsTxt :: Text -> Handler RobotsTxtResult
 testRobotsTxt siteTestUrl = do
-  request <- parseRequest $ T.unpack siteTestUrl
-  errOrResponse <- handleRequest $ request {path = "robots.txt"}
+  requestPrototype <- parseRequest $ T.unpack siteTestUrl
+  let request = requestPrototype {path = "/robots.txt"}
+  errOrResponse <- handleRequest request
   pure $ case errOrResponse of
     Left err -> ErrRobotsTxt $ ppShow err
     Right response ->
@@ -60,6 +64,27 @@ testRobotsTxt siteTestUrl = do
             else case TE.decodeUtf8' $ LB.toStrict $ responseBody response of
               Left err -> ErrRobotsTxt $ ppShow err
               Right t -> RobotsTxt (getUri request) t
+
+data SitemapXmlResult
+  = NoSitemapXml
+  | ErrSitemapXml !String
+  | SitemapXml !URI !XML.Document
+  deriving (Show, Eq, Generic)
+
+testSitemapXml :: Text -> Handler SitemapXmlResult
+testSitemapXml siteTestUrl = do
+  requestPrototype <- parseRequest $ T.unpack siteTestUrl
+  let request = requestPrototype {path = "/sitemap.xml"}
+  errOrResponse <- handleRequest request
+  pure $ case errOrResponse of
+    Left err -> ErrSitemapXml $ ppShow err
+    Right response ->
+      let c = HTTP.statusCode $ responseStatus response
+       in if c >= 400 && c < 500
+            then NoSitemapXml
+            else case XML.parseLBS XML.def $ responseBody response of
+              Left err -> ErrSitemapXml $ ppShow err
+              Right document -> SitemapXml (getUri request) document
 
 handleRequest :: Request -> Handler (Either HttpException (Response LB.ByteString))
 handleRequest request = do
