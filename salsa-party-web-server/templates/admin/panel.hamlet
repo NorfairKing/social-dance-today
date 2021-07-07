@@ -10,6 +10,8 @@
         External Events
 
     <div .buttons>
+      <a .button href=@{AdminR AdminGeocodingR}>
+        Geocoding
       <a .button href=@{AdminR AdminSiteTestR}>
         Site Tester
 

@@ -3,7 +3,12 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Salsa.Party.Web.Server.Handler.Account.Organiser where
+module Salsa.Party.Web.Server.Handler.Account.Organiser
+  ( getAccountOrganiserR,
+    OrganiserForm (..),
+    postAccountOrganiserR,
+  )
+where
 
 import qualified Data.Text as T
 import Salsa.Party.Web.Server.Handler.Import
@@ -17,7 +22,7 @@ instance Validity OrganiserForm where
   validate ogf@OrganiserForm {..} =
     mconcat
       [ genericValidate ogf,
-        declare "the display is not empty" $ not $ T.null organiserFormName
+        declare "The display name is not empty" $ not $ T.null organiserFormName
       ]
 
 organiserForm :: FormInput Handler OrganiserForm

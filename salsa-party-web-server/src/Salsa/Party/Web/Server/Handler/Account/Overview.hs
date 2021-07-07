@@ -3,7 +3,11 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Salsa.Party.Web.Server.Handler.Account.Overview where
+module Salsa.Party.Web.Server.Handler.Account.Overview
+  ( getAccountOverviewR,
+    postAccountDeleteR,
+  )
+where
 
 import Salsa.Party.Web.Server.Handler.Import
 

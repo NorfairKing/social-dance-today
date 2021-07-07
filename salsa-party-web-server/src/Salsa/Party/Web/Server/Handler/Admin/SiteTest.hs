@@ -6,7 +6,11 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Salsa.Party.Web.Server.Handler.Admin.SiteTest where
+module Salsa.Party.Web.Server.Handler.Admin.SiteTest
+  ( getAdminSiteTestR,
+    postAdminSiteTestR,
+  )
+where
 
 import qualified Control.Exception as Exception
 import Data.Aeson as JSON

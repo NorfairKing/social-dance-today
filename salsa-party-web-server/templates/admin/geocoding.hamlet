@@ -1,0 +1,40 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      Geocoding
+
+    <form .form
+      method=post
+      action=@{AdminR AdminGeocodingR}>
+      <div .field>
+        <label .label>
+          Query
+        <div .control>
+          <input .input
+            type=text
+            name="query"
+            required>
+          <div .field>
+      ^{token}
+      <div .field>
+        <div .control>
+          <button .button .is-dark type="submit">
+            Submit
+
+$maybe Entity _ place <- mPlace
+  <section .section>
+    <div .container>
+      <h2 .title .is-4>
+        Result
+      <div .content>
+        <p>
+          Latitude:
+          <code>
+            #{show $ placeLat place}
+        <p>
+          Longitude:
+          <code>
+            #{show $ placeLon place}
+    
+        <pre>
+          #{ppShow place}

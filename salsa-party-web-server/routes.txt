@@ -35,6 +35,7 @@
   /external-events AdminExternalEventsR GET
   /external-events/#PageNumber AdminExternalEventsPageR GET
 
+  /geocoding AdminGeocodingR GET POST
   /site-test AdminSiteTestR GET POST
 
 /favicon.ico FaviconR GET
