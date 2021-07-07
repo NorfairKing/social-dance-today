@@ -32,7 +32,7 @@ postAdminDeleteEventR uuid = do
   redirect $ AdminR PanelR
 
 getAdminPartiesR :: Handler Html
-getAdminPartiesR = redirect $ AdminR $ AdminPartiesPageR 0
+getAdminPartiesR = redirect $ AdminR $ AdminPartiesPageR paginatedFirstPage
 
 getAdminPartiesPageR :: PageNumber -> Handler Html
 getAdminPartiesPageR pageNumber = do
@@ -44,7 +44,7 @@ getAdminPartiesPageR pageNumber = do
     $(widgetFile "admin/parties")
 
 getAdminExternalEventsR :: Handler Html
-getAdminExternalEventsR = redirect $ AdminR $ AdminExternalEventsPageR 0
+getAdminExternalEventsR = redirect $ AdminR $ AdminExternalEventsPageR paginatedFirstPage
 
 getAdminExternalEventsPageR :: PageNumber -> Handler Html
 getAdminExternalEventsPageR pageNumber = do
@@ -61,12 +61,14 @@ data Paginated a = Paginated
     paginatedTotalPages :: !PageNumber,
     paginatedTotalElements :: !Int,
     paginatedElements :: ![a],
-    paginatedFirstPage :: PageNumber,
     paginatedPreviousPage :: Maybe PageNumber,
     paginatedNextPage :: Maybe PageNumber,
     paginatedLastPage :: PageNumber
   }
   deriving (Show, Eq)
+
+paginatedFirstPage :: PageNumber
+paginatedFirstPage = 1
 
 selectPaginated ::
   (PersistEntity a, PersistEntityBackend a ~ SqlBackend) =>
@@ -79,7 +81,6 @@ selectPaginated pageSize filters opts paginatedCurrentPage = do
   paginatedTotalElements <- count filters
   let paginatedTotalPages = ceiling $ fromIntegral paginatedTotalElements / (fromIntegral pageSize :: Double)
   paginatedElements <- selectList filters $ OffsetBy ((paginatedCurrentPage - 1) * pageSize) : LimitTo pageSize : opts
-  let paginatedFirstPage = 1
   let paginatedPreviousPage = if paginatedCurrentPage <= paginatedFirstPage then Nothing else Just $ pred paginatedCurrentPage
   let paginatedLastPage = paginatedTotalPages
   let paginatedNextPage = if paginatedCurrentPage >= paginatedLastPage then Nothing else Just $ succ paginatedCurrentPage
