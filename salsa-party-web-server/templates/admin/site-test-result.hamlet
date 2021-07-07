@@ -77,3 +77,23 @@
           <details>
             <pre>
               #{TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty value}
+
+<section .section>
+  <div .container>
+    <h2 .title .is-4>
+      <code>
+        Accept: application/xml
+    $case acceptXMLResult
+      $of ErrAcceptXML err
+        <p .content>
+          Error while fetching with
+          <code>
+            Accept: application/xml
+          :
+          <pre>
+            #{err}
+      $of AcceptXML value
+        <p .content>
+          <details>
+            <pre>
+              #{XML.renderText xmlRenderSets value}

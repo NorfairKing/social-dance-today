@@ -45,6 +45,7 @@ siteTestHandler SiteTest {..} = do
   sitemapXmlResult <- testSitemapXml siteTestUrl
   let xmlRenderSets = XML.def {XML.rsPretty = True}
   acceptJSONResult <- testAcceptJSONResult siteTestUrl
+  acceptXMLResult <- testAcceptXMLResult siteTestUrl
   withNavBar $(widgetFile "admin/site-test-result")
 
 data RobotsTxtResult
@@ -107,8 +108,29 @@ testAcceptJSONResult siteTestUrl = do
        in if c >= 400
             then ErrAcceptJSON $ "Responded with: " <> show sc
             else case JSON.eitherDecode $ responseBody response of
-              Left err -> ErrAcceptJSON $ "Error while parsing JSON: " <> ppShow err
+              Left err -> ErrAcceptJSON $ "Got a response, but it doesn't look like JSON: " <> ppShow err
               Right value -> AcceptJSON value
+
+data AcceptXMLResult
+  = ErrAcceptXML !String
+  | AcceptXML !XML.Document
+  deriving (Show, Eq, Generic)
+
+testAcceptXMLResult :: Text -> Handler AcceptXMLResult
+testAcceptXMLResult siteTestUrl = do
+  requestPrototype <- parseRequest $ T.unpack siteTestUrl
+  let request = requestPrototype {requestHeaders = ("Accept", "application/xml") : requestHeaders requestPrototype}
+  errOrResponse <- handleRequest request
+  pure $ case errOrResponse of
+    Left err -> ErrAcceptXML $ ppShow err
+    Right response ->
+      let sc = responseStatus response
+          c = HTTP.statusCode sc
+       in if c >= 400
+            then ErrAcceptXML $ "Responded with: " <> show sc
+            else case XML.parseLBS XML.def $ responseBody response of
+              Left err -> ErrAcceptXML $ "Got a response, but it doesn't look like XML: " <> ppShow err
+              Right document -> AcceptXML document
 
 handleRequest :: Request -> Handler (Either HttpException (Response LB.ByteString))
 handleRequest request = do
