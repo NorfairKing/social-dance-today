@@ -102,6 +102,7 @@ library
     , resourcet
     , scientific
     , shakespeare
+    , tagsoup
     , template-haskell
     , text
     , time

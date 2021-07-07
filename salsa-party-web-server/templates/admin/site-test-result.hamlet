@@ -27,8 +27,13 @@
             #{err}
       $of RobotsTxt url t
         <p .content>
-          <a .button href=#{show url}>
-            Visit
+          Found a
+          <code>
+            /robots.txt
+          page:
+        <a .button href=#{show url}>
+          Visit
+        <p .content>
           <details>
             <pre>
               #{t}
@@ -52,11 +57,42 @@
             #{err}
       $of SitemapXml url document
         <p .content>
-          <a .button href=#{show url}>
-            Visit
+          Found a valid
+          <code>
+            /sitemap.xml
+          document:
+        <a .button href=#{show url}>
+          Visit
+        <p .content>
           <details>
             <pre>
               #{XML.renderText xmlRenderSets document}
+
+<section .section>
+  <div .container>
+    <h2 .title .is-4>
+      JSON Linked Data
+    $case jsonLDResult
+      $of NoJSONLD
+        Page not found.
+      $of ErrJSONLD  err
+        <p .content>
+          Error while trying to find the JSON LD:
+          <details>
+            <pre>
+              #{err}
+      $of JSONLD value
+        <p .content>
+          Found a JSON LD tag with valid JSON, but it wasn't an event:
+          <details>
+            <pre>
+              #{TE.decodeUtf8 $ LB.toStrict $ encodePretty value}
+      $of JSONLDEvent event
+        <p .content>
+          Found a JSON LD Event on this page:
+          <details>
+            <pre>
+              #{ppShow event}
 
 <section .section>
   <div .container>
@@ -70,8 +106,9 @@
           <code>
             Accept: application/json
           :
-          <pre>
-            #{err}
+          <details>
+            <pre>
+              #{err}
       $of AcceptJSON value
         <p .content>
           <details>
@@ -90,8 +127,9 @@
           <code>
             Accept: application/xml
           :
-          <pre>
-            #{err}
+          <details>
+            <pre>
+              #{err}
       $of AcceptXML value
         <p .content>
           <details>

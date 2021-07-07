@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -10,6 +11,7 @@ module Salsa.Party.Web.Server.Handler.Admin.SiteTest where
 import qualified Control.Exception as Exception
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
+import Data.Aeson.Types as JSON
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -18,7 +20,9 @@ import Network.HTTP.Client.Internal as HTTP
 import Network.HTTP.Types as HTTP
 import Network.URI (URI)
 import Salsa.Party.Web.Server.Handler.Import
+import qualified Text.HTML.TagSoup as HTML
 import qualified Text.XML as XML
+import qualified Web.JSONLD as LD
 
 getAdminSiteTesterR :: Handler Html
 getAdminSiteTesterR = adminSiteTesterPage Nothing
@@ -44,6 +48,7 @@ siteTestHandler SiteTest {..} = do
   robotsTxtResult <- testRobotsTxt siteTestUrl
   sitemapXmlResult <- testSitemapXml siteTestUrl
   let xmlRenderSets = XML.def {XML.rsPretty = True}
+  jsonLDResult <- testJSONLD siteTestUrl
   acceptJSONResult <- testAcceptJSONResult siteTestUrl
   acceptXMLResult <- testAcceptXMLResult siteTestUrl
   withNavBar $(widgetFile "admin/site-test-result")
@@ -89,6 +94,39 @@ testSitemapXml siteTestUrl = do
             else case XML.parseLBS XML.def $ responseBody response of
               Left err -> ErrSitemapXml $ ppShow err
               Right document -> SitemapXml (getUri request) document
+
+data JSONLDResult
+  = NoJSONLD
+  | ErrJSONLD !String
+  | JSONLD !JSON.Value
+  | JSONLDEvent !LD.Event
+  deriving (Show, Eq, Generic)
+
+testJSONLD :: Text -> Handler JSONLDResult
+testJSONLD siteTestUrl = do
+  request <- parseRequest $ T.unpack siteTestUrl
+  errOrResponse <- handleRequest request
+  pure $ case errOrResponse of
+    Left err -> ErrJSONLD $ ppShow err
+    Right response ->
+      let c = HTTP.statusCode $ responseStatus response
+       in if c >= 400 && c < 500
+            then NoJSONLD
+            else
+              let tags = HTML.parseTags $ responseBody response
+                  isStartingTag = \case
+                    HTML.TagOpen "script" attributes -> ("type", "application/ld+json") `elem` attributes
+                    _ -> False
+                  isEndingTag = \case
+                    HTML.TagClose "script" -> True
+                    _ -> False
+                  relevantTags = takeWhile (not . isEndingTag) $ dropWhile (not . isStartingTag) tags
+                  scriptBody = HTML.innerText relevantTags
+               in case JSON.eitherDecode scriptBody of
+                    Left err -> ErrJSONLD $ ppShow err
+                    Right value -> case JSON.parseEither parseJSON value of
+                      Left _ -> JSONLD value
+                      Right e -> JSONLDEvent e
 
 data AcceptJSONResult
   = ErrAcceptJSON !String
