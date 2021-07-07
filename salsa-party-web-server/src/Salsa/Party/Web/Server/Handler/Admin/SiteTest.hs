@@ -8,6 +8,8 @@
 module Salsa.Party.Web.Server.Handler.Admin.SiteTest where
 
 import qualified Control.Exception as Exception
+import Data.Aeson as JSON
+import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -42,6 +44,7 @@ siteTestHandler SiteTest {..} = do
   robotsTxtResult <- testRobotsTxt siteTestUrl
   sitemapXmlResult <- testSitemapXml siteTestUrl
   let xmlRenderSets = XML.def {XML.rsPretty = True}
+  acceptJSONResult <- testAcceptJSONResult siteTestUrl
   withNavBar $(widgetFile "admin/site-test-result")
 
 data RobotsTxtResult
@@ -85,6 +88,27 @@ testSitemapXml siteTestUrl = do
             else case XML.parseLBS XML.def $ responseBody response of
               Left err -> ErrSitemapXml $ ppShow err
               Right document -> SitemapXml (getUri request) document
+
+data AcceptJSONResult
+  = ErrAcceptJSON !String
+  | AcceptJSON !JSON.Value
+  deriving (Show, Eq, Generic)
+
+testAcceptJSONResult :: Text -> Handler AcceptJSONResult
+testAcceptJSONResult siteTestUrl = do
+  requestPrototype <- parseRequest $ T.unpack siteTestUrl
+  let request = requestPrototype {requestHeaders = ("Accept", "application/json") : requestHeaders requestPrototype}
+  errOrResponse <- handleRequest request
+  pure $ case errOrResponse of
+    Left err -> ErrAcceptJSON $ ppShow err
+    Right response ->
+      let sc = responseStatus response
+          c = HTTP.statusCode sc
+       in if c >= 400
+            then ErrAcceptJSON $ "Responded with: " <> show sc
+            else case JSON.eitherDecode $ responseBody response of
+              Left err -> ErrAcceptJSON $ "Error while parsing JSON: " <> ppShow err
+              Right value -> AcceptJSON value
 
 handleRequest :: Request -> Handler (Either HttpException (Response LB.ByteString))
 handleRequest request = do

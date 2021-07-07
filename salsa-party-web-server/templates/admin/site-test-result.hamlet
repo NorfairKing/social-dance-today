@@ -9,6 +9,34 @@
   <div .container>
     <h2 .title .is-4>
       <code>
+        /robots.txt
+    $case robotsTxtResult
+      $of NoRobotsTxt
+        <p .content>
+          No
+          <code>
+            /robots.txt
+          page found.
+      $of ErrRobotsTxt err
+        <p .content>
+          Error while fetching
+          <code>
+            /robots.txt
+          :
+          <pre>
+            #{err}
+      $of RobotsTxt url t
+        <p .content>
+          <a .button href=#{show url}>
+            Visit
+          <details>
+            <pre>
+              #{t}
+
+<section .section>
+  <div .container>
+    <h2 .title .is-4>
+      <code>
         /sitemap.xml
     $case sitemapXmlResult
       $of NoSitemapXml
@@ -34,26 +62,18 @@
   <div .container>
     <h2 .title .is-4>
       <code>
-        /robots.txt
-    $case robotsTxtResult
-      $of NoRobotsTxt
+        Accept: application/json
+    $case acceptJSONResult
+      $of ErrAcceptJSON err
         <p .content>
-          No
+          Error while fetching with
           <code>
-            /robots.txt
-          page found.
-      $of ErrRobotsTxt err
-        <p .content>
-          Error while fetching
-          <code>
-            /robots.txt
+            Accept: application/json
           :
           <pre>
             #{err}
-      $of RobotsTxt url t
+      $of AcceptJSON value
         <p .content>
-          <a .button href=#{show url}>
-            Visit
           <details>
             <pre>
-              #{t}
+              #{TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty value}
