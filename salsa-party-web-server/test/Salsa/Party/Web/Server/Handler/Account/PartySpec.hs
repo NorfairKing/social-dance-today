@@ -249,6 +249,17 @@ spec = serverSpec $ do
                     addToken
                   statusIs 403
 
+    it "cannot delete a nonexistent party" $ \yc ->
+      withAnyLoggedInUser_ yc $ do
+        get $ AccountR AccountOverviewR
+        statusIs 200
+        uuid <- nextRandomUUID
+        request $ do
+          setMethod methodPost
+          setUrl $ AccountR $ AccountPartyDeleteR uuid
+          addToken
+        statusIs 404
+
   describe "AccountPartyCancelR" $ do
     it "can cancel a party" $ \yc -> do
       forAllValid $ \organiserForm_ ->
