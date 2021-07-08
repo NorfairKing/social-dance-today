@@ -120,6 +120,7 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - QuickCheck
+    - aeson
     - bytestring
     - conduit
     - containers

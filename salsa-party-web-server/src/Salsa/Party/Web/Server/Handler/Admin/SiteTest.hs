@@ -113,7 +113,7 @@ testSitemapXml siteTestUrl = do
 data JSONLDResult
   = NoJSONLD
   | ErrJSONLD !String
-  | JSONLD !JSON.Value
+  | JSONLD !JSON.Value !String -- Value and error message
   | JSONLDEvent !LD.Event
   deriving (Show, Eq, Generic)
 
@@ -140,7 +140,7 @@ testJSONLD siteTestUrl = do
                in case JSON.eitherDecode scriptBody of
                     Left err -> ErrJSONLD $ ppShow err
                     Right value -> case JSON.parseEither parseJSON value of
-                      Left _ -> JSONLD value
+                      Left e -> JSONLD value e
                       Right e -> JSONLDEvent e
 
 data AcceptJSONResult

@@ -21,6 +21,7 @@ import Data.Validity
 import Data.Validity.Text ()
 import Data.Validity.Time ()
 import GHC.Generics (Generic)
+import Text.Read
 
 -- Google: https://developers.google.com/search/docs/data-types/event#structured-data-type-definitions
 -- Schema.org: https://schema.org/Event
@@ -67,7 +68,10 @@ instance FromJSON Event where
       <*> o .:? "endDate"
       <*> o .:? "eventAttendanceMode"
       <*> o .:? "eventStatus"
-      <*> o .:? "image" .!= []
+      -- One or multiple images
+      <*> ( o .:? "image" .!= []
+              <|> (maybeToList <$> o .:? "image")
+          )
       <*> o .:? "organizer"
 
 data EventLocation
@@ -118,7 +122,10 @@ instance ToJSON Place where
           mField "geo" placeGeo
         ]
 
-data PlaceAddress = PlaceAddressText !Text
+-- https://schema.org/address
+data PlaceAddress
+  = PlaceAddressText !Text
+  | PlaceAddressPostalAddress !PostalAddress
   deriving (Show, Eq, Generic)
 
 instance Validity PlaceAddress
@@ -126,9 +133,43 @@ instance Validity PlaceAddress
 instance ToJSON PlaceAddress where
   toJSON = \case
     PlaceAddressText t -> toJSON t
+    PlaceAddressPostalAddress pa -> toJSON pa
 
 instance FromJSON PlaceAddress where
-  parseJSON = withText "PlaceAddress" $ \t -> pure $ PlaceAddressText t
+  parseJSON v = case v of
+    JSON.String t -> pure $ PlaceAddressText t
+    -- TODO test type?
+    _ -> PlaceAddressPostalAddress <$> parseJSON v
+
+-- https://schema.org/PostalAddress
+data PostalAddress = PostalAddress
+  { postalAddressStreetAddress :: !(Maybe Text),
+    postalAddressCountry :: !(Maybe Text),
+    postalAddressLocality :: !(Maybe Text),
+    postalAddressRegion :: !(Maybe Text)
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity PostalAddress
+
+instance FromJSON PostalAddress where
+  parseJSON = withObject "PostalAddress" $ \o ->
+    PostalAddress
+      <$> o .:? "streetAddress"
+      <*> o .:? "addressCountry"
+      <*> o .:? "addressLocality"
+      <*> o .:? "addressRegion"
+
+instance ToJSON PostalAddress where
+  toJSON PostalAddress {..} =
+    object $
+      concat
+        [ ["@type" .= ("PostalAddress" :: Text)],
+          mField "streetAddress" postalAddressStreetAddress,
+          mField "addressCountry" postalAddressCountry,
+          mField "addressLocality" postalAddressLocality,
+          mField "addressRegion" postalAddressRegion
+        ]
 
 data PlaceGeo
   = PlaceGeoCoordinates GeoCoordinates
@@ -160,8 +201,17 @@ instance Validity GeoCoordinates
 instance FromJSON GeoCoordinates where
   parseJSON = withObject "GeoCoordinates" $ \o ->
     GeoCoordinates
-      <$> o .: "latitude"
-      <*> o .: "longitude"
+      <$> ( o .: "latitude"
+              <|> (o .: "latitude" >>= viaRead)
+          )
+      <*> ( o .: "longitude"
+              <|> (o .: "longitude" >>= viaRead)
+          )
+
+viaRead :: Read a => String -> JSON.Parser a
+viaRead s = case readMaybe s of
+  Nothing -> fail $ "Un-Read-able string: " <> s
+  Just a -> pure a
 
 instance ToJSON GeoCoordinates where
   toJSON GeoCoordinates {..} =
@@ -312,12 +362,18 @@ instance Validity EventStatus
 
 instance FromJSON EventStatus where
   parseJSON = withText "EventStatus" $ \t ->
+    -- Parse both http:// and https;// versions of each
     case t of
       "https://schema.org/EventCancelled" -> pure EventCancelled
+      "http://schema.org/EventCancelled" -> pure EventCancelled
       "https://schema.org/EventMovedOnline" -> pure EventMovedOnline
+      "http://schema.org/EventMovedOnline" -> pure EventMovedOnline
       "https://schema.org/EventPostponed" -> pure EventPostponed
+      "http://schema.org/EventPostponed" -> pure EventPostponed
       "https://schema.org/EventRescheduled" -> pure EventRescheduled
+      "http://schema.org/EventRescheduled" -> pure EventRescheduled
       "https://schema.org/EventScheduled" -> pure EventScheduled
+      "http://schema.org/EventScheduled" -> pure EventScheduled
       _ -> fail $ "Unknown EventStatus: " <> show t
 
 instance ToJSON EventStatus where

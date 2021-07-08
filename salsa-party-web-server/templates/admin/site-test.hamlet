@@ -137,13 +137,18 @@ $maybe (siteTest, result) <- mSiteTest
             <details>
               <pre>
                 #{err}
-        $of JSONLD value
+        $of JSONLD value e
           <p .content>
-            Found a JSON LD tag with valid JSON, but it wasn't an event.
+            Found a JSON LD tag with valid JSON, but it was not an event.
             This means that it either contains something different, or that our event parser is broken for this page:
             <details>
               <pre>
                 #{TE.decodeUtf8 $ LB.toStrict $ encodePretty value}
+            <details>
+              <summary>
+                Error message
+              <pre>
+                #{e}
         $of JSONLDEvent event
           <p .content>
             Found a JSON LD Event on this page, this means the event is machine readible:
