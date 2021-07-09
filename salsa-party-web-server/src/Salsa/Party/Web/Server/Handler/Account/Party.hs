@@ -262,7 +262,6 @@ submitPartyFormPageWithPrefilled partyFilling mResult = do
         NewParty -> Nothing
         DuplicateParty _ -> Nothing -- This will indicate a new party
         EditParty partyEntity -> Just $ partyUuid $ entityVal partyEntity
-      disableDateSetting = isJust mPartyUuid -- Only disallowed for editing
       mPartyEntity = case partyFilling of
         NewParty -> Nothing
         DuplicateParty partyEntity -> Just partyEntity
