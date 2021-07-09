@@ -219,6 +219,9 @@ readTestFile testFilePath = do
         _ -> Nothing
   pure TestFile {..}
 
+testFileCASKey :: TestFile -> Maybe CASKey
+testFileCASKey TestFile {..} = mkCASKey <$> testFileType <*> pure testFileContents
+
 testSubmitParty :: PartyForm -> Coordinates -> YesodClientM App EventUUID
 testSubmitParty partyForm_ coordinates_ = testSubmitPartyHelper partyForm_ coordinates_ Nothing
 

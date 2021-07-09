@@ -1,9 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module Salsa.Party.Web.Server.Handler.Account.PartySpec (spec) where
 
-import qualified Data.Text as T
 import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Handler.Account.Party
 import Salsa.Party.Web.Server.Handler.TestImport
@@ -65,16 +63,16 @@ spec = serverSpec $ do
             forAllValid $ \location ->
               withAnyLoggedInUser_ yc $ do
                 testSubmitOrganiser organiserForm_
-                partyUuid <-
+                partyUuid_ <-
                   testSubmitParty
                     partyForm_
                     location
-                get $ AccountR $ AccountPartyR partyUuid
+                get $ AccountR $ AccountPartyR partyUuid_
                 statusIs 200
                 request $ do
                   partyFormRequestBuilder (partyForm_ {partyFormDay = day}) Nothing
-                  addPostParam "uuid" $ uuidText partyUuid
-                mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid
+                  addPostParam "uuid" $ uuidText partyUuid_
+                mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
                 liftIO $ case mParty of
                   Nothing -> expectationFailure "expected the party to still exist."
                   Just (Entity _ party) -> partyDay party `shouldBe` partyFormDay partyForm_
@@ -86,17 +84,72 @@ spec = serverSpec $ do
             forAllValid $ \location -> do
               withAnyLoggedInUser_ yc $ do
                 testSubmitOrganiser organiserForm_
-                poster <- readTestFile "test_resources/poster.png"
-                void $
+                poster <- readTestFile "test_resources/posters/1.png"
+                partyUuid1 <-
                   testSubmitPartyWithPoster
                     partyForm1_
                     location
                     poster
-                void $
+                partyUuid2 <-
                   testSubmitPartyWithPoster
                     partyForm2_
                     location
                     poster
+                mParty1 <- testDB $ DB.getBy $ UniquePartyUUID partyUuid1
+                mCasKey1 <- case mParty1 of
+                  Nothing -> liftIO $ expectationFailure "expected the first party to exist."
+                  Just (Entity partyId party) -> do
+                    liftIO $ partyDay party `shouldBe` partyFormDay partyForm1_
+                    testDB $ getPosterForParty partyId
+                mParty2 <- testDB $ DB.getBy $ UniquePartyUUID partyUuid2
+                mCasKey2 <- case mParty2 of
+                  Nothing -> liftIO $ expectationFailure "expected the second party to exist."
+                  Just (Entity partyId party) -> do
+                    liftIO $ partyDay party `shouldBe` partyFormDay partyForm2_
+                    testDB $ getPosterForParty partyId
+                liftIO $ do
+                  mCasKey1 `shouldBe` mCasKey2
+                  mCasKey1 `shouldBe` testFileCASKey poster
+                  mCasKey2 `shouldBe` testFileCASKey poster
+
+    it "Can edit a party's poster" $ \yc ->
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm1_ ->
+          forAllValid $ \partyForm2_ ->
+            forAllValid $ \location -> do
+              withAnyLoggedInUser_ yc $ do
+                testSubmitOrganiser organiserForm_
+                poster1 <- readTestFile "test_resources/posters/1.png"
+                poster2 <- readTestFile "test_resources/posters/2.png"
+                partyUuid_ <-
+                  testSubmitPartyWithPoster
+                    partyForm1_
+                    location
+                    poster1
+                mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
+                mCasKey1 <- case mParty of
+                  Nothing -> liftIO $ expectationFailure "expected the first party to exist."
+                  Just (Entity partyId _) -> testDB $ getPosterForParty partyId
+                -- There is now a poster.
+                liftIO $ mCasKey1 `shouldBe` testFileCASKey poster1
+                get $ AccountR $ AccountPartyR partyUuid_
+                statusIs 200
+                testDB $ insertPlace (partyFormAddress partyForm2_) location
+                request $ do
+                  setMethod methodPost
+                  setUrl $ AccountR AccountSubmitPartyR
+                  addToken
+                  partyFormRequestBuilder partyForm2_ (Just poster2)
+                  addPostParam "uuid" $ uuidText partyUuid_
+                statusIs 303
+                _ <- followRedirect
+                statusIs 200
+                mParty2 <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
+                mCasKey2 <- case mParty2 of
+                  Nothing -> liftIO $ expectationFailure "expected the second party to exist."
+                  Just (Entity partyId _) -> testDB $ getPosterForParty partyId
+                -- The poster is now different
+                liftIO $ mCasKey2 `shouldBe` testFileCASKey poster2
 
     it "Cannot submit to a nonexistent party" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -116,26 +169,24 @@ spec = serverSpec $ do
         forAllValid $ \testUser2 ->
           forAllValid $ \organiser1Form_ ->
             forAllValid $ \organiser2Form_ ->
-              forAllValid $ \partyForm_ ->
-                forAllValid $ \PartyForm {..} ->
+              forAllValid $ \partyForm1_ ->
+                forAllValid $ \partyForm2_ ->
                   forAllValid $ \location -> runYesodClientM yc $ do
                     partyId <- asNewUser testUser1 $ do
                       testLoginUser testUser1
                       testSubmitOrganiser organiser1Form_
                       testSubmitParty
-                        partyForm_
+                        partyForm1_
                         location
                     asNewUser testUser2 $ do
                       testSubmitOrganiser organiser2Form_
-                      testDB $ insertPlace partyFormAddress location
+                      testDB $ insertPlace (partyFormAddress partyForm2_) location
                       request $ do
                         setMethod methodPost
                         setUrl $ AccountR AccountSubmitPartyR
                         addToken
+                        partyFormRequestBuilder partyForm2_ Nothing
                         addPostParam "uuid" $ uuidText partyId
-                        addPostParam "title" partyFormTitle
-                        addPostParam "day" $ T.pack $ formatTime defaultTimeLocale "%F" partyFormDay
-                        addPostParam "address" partyFormAddress
                       statusIs 403
 
   describe "AccountPartyR" $ do
