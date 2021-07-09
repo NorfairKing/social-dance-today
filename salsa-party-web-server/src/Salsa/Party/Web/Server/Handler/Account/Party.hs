@@ -187,7 +187,7 @@ submitPartyPage mPartyUuid mResult = do
                         [] -- No need to update anything, the casKey makes the image unique.
                     void $
                       upsertBy
-                        (UniquePartyPoster partyId)
+                        (UniquePartyPoster partyId imageId) -- TODO remove the imageId from this constraint
                         ( PartyPoster
                             { partyPosterParty = partyId,
                               partyPosterImage = imageId,
@@ -206,7 +206,7 @@ submitPartyPage mPartyUuid mResult = do
               forM_ mImage $ \(Entity imageId _) -> -- TODO don't fetch the entire image.
                 runDB $
                   upsertBy
-                    (UniquePartyPoster partyId)
+                    (UniquePartyPoster partyId imageId) -- TODO remove the imageId from this constraint
                     ( PartyPoster
                         { partyPosterParty = partyId,
                           partyPosterImage = imageId,

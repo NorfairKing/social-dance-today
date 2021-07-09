@@ -128,7 +128,7 @@ PartyPoster sql=party_poster
     created UTCTime
     modified UTCTime Maybe default=NULL
 
-    UniquePartyPoster party
+    UniquePartyPoster party image
 
     deriving Show
     deriving Eq
