@@ -10,7 +10,6 @@ module Salsa.Party.DB.Migration where
 import Conduit
 import Control.Monad
 import Control.Monad.Logger
-import Data.Conduit.Combinators as C
 import qualified Data.Text as T
 import Database.Persist.Sql
 import Salsa.Party.DB
@@ -27,7 +26,6 @@ completeServerMigration quiet = do
             )
   logInfoN "Autmatic migrations done, starting application-specific migrations."
   setUpPlaces
-  deleteObsoletePartyPosters
   logInfoN "Migrations done."
 
 setUpPlaces :: (MonadIO m, MonadLogger m) => SqlPersistT m ()
@@ -46,19 +44,3 @@ locations =
     Place {placeQuery = "New York", placeLat = 43.1561681, placeLon = -75.8449946},
     Place {placeQuery = "Sydney", placeLat = -33.8888621, placeLon = 151.204897861}
   ]
-
-deleteObsoletePartyPosters :: (MonadUnliftIO m, MonadLogger m) => SqlPersistT m ()
-deleteObsoletePartyPosters = do
-  acqParties <- selectSourceRes [] [Asc PartyId]
-  withAcquire acqParties $ \partiesSource ->
-    runConduit $ partiesSource .| C.mapM_ deleteOldPartyPosterRelations
-  where
-    deleteOldPartyPosterRelations (Entity partyId _) = do
-      logInfoN $ "Deleting obsolete party posters for party " <> T.pack (show (fromSqlKey partyId))
-      mTheOneWeKeep <- selectFirst [PartyPosterParty ==. partyId] [Desc PartyPosterCreated]
-      case mTheOneWeKeep of
-        Nothing -> pure () -- No posters, also no obsolete ones.
-        Just (Entity partyPosterId _) -> do
-          logInfoN $ "Deleting relation " <> T.pack (show (fromSqlKey partyPosterId))
-          -- Delete all the relations for the same party but with a different id.
-          deleteWhere [PartyPosterParty ==. partyId, PartyPosterId !=. partyPosterId]

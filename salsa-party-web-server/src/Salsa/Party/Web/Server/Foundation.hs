@@ -414,7 +414,6 @@ getPosterForParty partyId = do
     E.from $ \(partyPoster `E.InnerJoin` image) -> do
       E.on (partyPoster E.^. PartyPosterImage E.==. image E.^. ImageId)
       E.where_ (partyPoster E.^. PartyPosterParty E.==. E.val partyId)
-      E.orderBy [E.desc $ partyPoster E.^. PartyPosterId] -- TODO remove this once uniqueness is in place
       pure (image E.^. ImageKey)
   pure $ E.unValue <$> listToMaybe keys
 
