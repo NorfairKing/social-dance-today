@@ -44,7 +44,7 @@ getPartiesOfOrganiser organiserId = do
     E.from $ \(party `E.InnerJoin` p) -> do
       E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
       E.where_ (party E.^. PartyOrganiser E.==. E.val organiserId)
-      E.orderBy [E.asc $ party E.^. PartyDay]
+      E.orderBy [E.desc $ party E.^. PartyDay]
       pure (party, p)
   forM partyTups $ \(partyEntity@(Entity partyId _), placeEntity) -> do
     -- TODO this is potentially expensive, can we do it in one query?
