@@ -12,3 +12,5 @@
     name: "Use unless"
 - ignore:
     name: "Use const"
+- ignore:
+    name: "Use record patterns"

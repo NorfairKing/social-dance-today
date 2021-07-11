@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Salsa.Party.Web.Server.TestUtils where
 
@@ -261,6 +262,7 @@ partyFormRequestBuilder PartyForm {..} mPosterFile = do
 
 partyFormShouldMatch :: PartyForm -> Party -> IO ()
 partyFormShouldMatch PartyForm {..} Party {..} = do
+  let PartyForm _ _ _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
   context "day" $ partyDay `shouldBe` partyFormDay
   context "title" $ partyTitle `shouldBe` partyFormTitle
   -- We can't check the address because that's in the Place.
@@ -272,6 +274,8 @@ partyFormShouldMatch PartyForm {..} Party {..} = do
     showMTime partyStart `shouldBe` showMTime partyFormStart
   context "homepage" $ partyHomepage `shouldBe` partyFormHomepage
   context "price" $ partyPrice `shouldBe` partyFormPrice
+  -- We can't check the poster because it's in a separate table.
+  pure ()
 
 testDB :: DB.SqlPersistT IO a -> YesodClientM App a
 testDB func = do
