@@ -60,27 +60,6 @@ spec = serverSpec $ do
                 Nothing -> expectationFailure "expected the party to still exist."
                 Just (Entity _ party) -> partyForm_ `partyFormShouldMatch` party
 
-    it "Cannot edit an existing party's date" $ \yc ->
-      forAllValid $ \organiserForm_ ->
-        forAllValid $ \partyForm_ ->
-          forAll (genValid `suchThat` (\d -> d /= partyFormDay partyForm_)) $ \day ->
-            forAllValid $ \location ->
-              withAnyLoggedInUser_ yc $ do
-                testSubmitOrganiser organiserForm_
-                partyUuid_ <-
-                  testSubmitParty
-                    partyForm_
-                    location
-                get $ AccountR $ AccountPartyR partyUuid_
-                statusIs 200
-                request $ do
-                  partyFormRequestBuilder (partyForm_ {partyFormDay = day}) Nothing
-                  addPostParam "uuid" $ uuidText partyUuid_
-                mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
-                liftIO $ case mParty of
-                  Nothing -> expectationFailure "expected the party to still exist."
-                  Just (Entity _ party) -> partyForm_ `partyFormShouldMatch` party
-
     it "Can create two parties with the same poster" $ \yc ->
       forAllValid $ \organiserForm_ ->
         forAllValid $ \partyForm1_ ->
@@ -115,83 +94,6 @@ spec = serverSpec $ do
                   mCasKey1 `shouldBe` mCasKey2
                   mCasKey1 `shouldBe` testFileCASKey poster
                   mCasKey2 `shouldBe` testFileCASKey poster
-
-    it "Can edit a party's poster" $ \yc ->
-      forAllValid $ \organiserForm_ ->
-        forAllValid $ \partyForm1_ ->
-          forAllValid $ \partyForm2_ ->
-            forAllValid $ \location -> do
-              withAnyLoggedInUser_ yc $ do
-                testSubmitOrganiser organiserForm_
-                poster1 <- readTestFile "test_resources/posters/1.png"
-                poster2 <- readTestFile "test_resources/posters/2.png"
-                partyUuid_ <-
-                  testSubmitPartyWithPoster
-                    partyForm1_
-                    location
-                    poster1
-                mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
-                mCasKey1 <- case mParty of
-                  Nothing -> liftIO $ expectationFailure "expected the first party to exist."
-                  Just (Entity partyId _) -> testDB $ getPosterForParty partyId
-                -- There is now a poster.
-                liftIO $ mCasKey1 `shouldBe` testFileCASKey poster1
-                get $ AccountR $ AccountPartyR partyUuid_
-                statusIs 200
-                testDB $ insertPlace (partyFormAddress partyForm2_) location
-                request $ do
-                  setMethod methodPost
-                  setUrl $ AccountR AccountSubmitPartyR
-                  addToken
-                  partyFormRequestBuilder partyForm2_ (Just poster2)
-                  addPostParam "uuid" $ uuidText partyUuid_
-                statusIs 303
-                _ <- followRedirect
-                statusIs 200
-                mParty2 <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
-                mCasKey2 <- case mParty2 of
-                  Nothing -> liftIO $ expectationFailure "expected the second party to exist."
-                  Just (Entity partyId _) -> testDB $ getPosterForParty partyId
-                -- The poster is now different
-                liftIO $ mCasKey2 `shouldBe` testFileCASKey poster2
-
-    it "Cannot submit to a nonexistent party" $ \yc ->
-      forAllValid $ \organiserForm_ ->
-        forAllValid $ \partyForm_ ->
-          withAnyLoggedInUser_ yc $ do
-            testSubmitOrganiser organiserForm_
-            get $ AccountR AccountSubmitPartyR
-            statusIs 200
-            uuid <- nextRandomUUID
-            request $ do
-              partyFormRequestBuilder partyForm_ Nothing
-              addPostParam "uuid" $ uuidText uuid -- Nonexistent party
-            statusIs 404
-
-    it "Cannot edit another organiser's party" $ \yc ->
-      forAllValid $ \testUser1 ->
-        forAllValid $ \testUser2 ->
-          forAllValid $ \organiser1Form_ ->
-            forAllValid $ \organiser2Form_ ->
-              forAllValid $ \partyForm1_ ->
-                forAllValid $ \partyForm2_ ->
-                  forAllValid $ \location -> runYesodClientM yc $ do
-                    partyId <- asNewUser testUser1 $ do
-                      testLoginUser testUser1
-                      testSubmitOrganiser organiser1Form_
-                      testSubmitParty
-                        partyForm1_
-                        location
-                    asNewUser testUser2 $ do
-                      testSubmitOrganiser organiser2Form_
-                      testDB $ insertPlace (partyFormAddress partyForm2_) location
-                      request $ do
-                        setMethod methodPost
-                        setUrl $ AccountR AccountSubmitPartyR
-                        addToken
-                        partyFormRequestBuilder partyForm2_ Nothing
-                        addPostParam "uuid" $ uuidText partyId
-                      statusIs 403
 
   describe "AccountPartyR" $ do
     it "can GET a party" $ \yc -> do
@@ -229,6 +131,98 @@ spec = serverSpec $ do
                     testSubmitOrganiser organiser2Form_
                     get $ AccountR $ AccountPartyR partyId
                     statusIs 403
+
+    it "Cannot edit an existing party's date" $ \yc ->
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm_ ->
+          forAll (genValid `suchThat` (\d -> d /= partyFormDay partyForm_)) $ \day ->
+            forAllValid $ \location ->
+              withAnyLoggedInUser_ yc $ do
+                testSubmitOrganiser organiserForm_
+                partyUuid_ <-
+                  testSubmitParty
+                    partyForm_
+                    location
+                get $ AccountR $ AccountPartyR partyUuid_
+                statusIs 200
+                request $ do
+                  partyFormRequestBuilder (partyForm_ {partyFormDay = day}) Nothing
+                  setUrl $ AccountR $ AccountPartyR partyUuid_
+                mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
+                liftIO $ case mParty of
+                  Nothing -> expectationFailure "expected the party to still exist."
+                  Just (Entity _ party) -> partyForm_ `partyFormShouldMatch` party
+
+    it "Can edit a party's poster" $ \yc ->
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm1_ ->
+          forAllValid $ \partyForm2_ ->
+            forAllValid $ \location -> do
+              withAnyLoggedInUser_ yc $ do
+                testSubmitOrganiser organiserForm_
+                poster1 <- readTestFile "test_resources/posters/1.png"
+                poster2 <- readTestFile "test_resources/posters/2.png"
+                partyUuid_ <-
+                  testSubmitPartyWithPoster
+                    partyForm1_
+                    location
+                    poster1
+                mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
+                mCasKey1 <- case mParty of
+                  Nothing -> liftIO $ expectationFailure "expected the first party to exist."
+                  Just (Entity partyId _) -> testDB $ getPosterForParty partyId
+                -- There is now a poster.
+                liftIO $ mCasKey1 `shouldBe` testFileCASKey poster1
+                get $ AccountR $ AccountPartyR partyUuid_
+                statusIs 200
+                testDB $ insertPlace (partyFormAddress partyForm2_) location
+                request $ do
+                  partyFormRequestBuilder partyForm2_ (Just poster2)
+                  setUrl $ AccountR $ AccountPartyR partyUuid_
+                statusIs 303
+                _ <- followRedirect
+                statusIs 200
+                mParty2 <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
+                mCasKey2 <- case mParty2 of
+                  Nothing -> liftIO $ expectationFailure "expected the second party to exist."
+                  Just (Entity partyId _) -> testDB $ getPosterForParty partyId
+                -- The poster is now different
+                liftIO $ mCasKey2 `shouldBe` testFileCASKey poster2
+
+    it "Cannot submit to a nonexistent party" $ \yc ->
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm_ ->
+          withAnyLoggedInUser_ yc $ do
+            testSubmitOrganiser organiserForm_
+            get $ AccountR AccountSubmitPartyR
+            statusIs 200
+            uuid <- nextRandomUUID
+            request $ do
+              partyFormRequestBuilder partyForm_ Nothing
+              setUrl $ AccountR $ AccountPartyR uuid
+            statusIs 404
+
+    it "Cannot edit another organiser's party" $ \yc ->
+      forAllValid $ \testUser1 ->
+        forAllValid $ \testUser2 ->
+          forAllValid $ \organiser1Form_ ->
+            forAllValid $ \organiser2Form_ ->
+              forAllValid $ \partyForm1_ ->
+                forAllValid $ \partyForm2_ ->
+                  forAllValid $ \location -> runYesodClientM yc $ do
+                    partyUuid_ <- asNewUser testUser1 $ do
+                      testLoginUser testUser1
+                      testSubmitOrganiser organiser1Form_
+                      testSubmitParty
+                        partyForm1_
+                        location
+                    asNewUser testUser2 $ do
+                      testSubmitOrganiser organiser2Form_
+                      testDB $ insertPlace (partyFormAddress partyForm2_) location
+                      request $ do
+                        partyFormRequestBuilder partyForm2_ Nothing
+                        setUrl $ AccountR $ AccountPartyR partyUuid_
+                      statusIs 403
 
   describe "AccountPartyDuplicateR" $ do
     it "cannot duplicate a nonexistent party" $ \yc -> do

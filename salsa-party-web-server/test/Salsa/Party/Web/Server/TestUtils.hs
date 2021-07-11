@@ -262,7 +262,7 @@ partyFormRequestBuilder PartyForm {..} mPosterFile = do
 
 partyFormShouldMatch :: PartyForm -> Party -> IO ()
 partyFormShouldMatch PartyForm {..} Party {..} = do
-  let PartyForm _ _ _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
+  let PartyForm _ _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
   context "day" $ partyDay `shouldBe` partyFormDay
   context "title" $ partyTitle `shouldBe` partyFormTitle
   -- We can't check the address because that's in the Place.

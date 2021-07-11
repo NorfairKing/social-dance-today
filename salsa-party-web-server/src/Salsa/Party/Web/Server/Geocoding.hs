@@ -42,7 +42,12 @@ lookupPlaceRaw query = do
 
       mCoordinates <- case (mOSMRateLimiter, mGoogleAPIKey) of
         (Nothing, Nothing) -> do
-          logErrorNS "geocoding" "No geocoding service configured, please contact the site administrators."
+          logErrorNS "geocoding" $
+            T.concat
+              [ "No geocoding service configured to geocode ",
+                T.pack (show query),
+                ", please contact the site administrators."
+              ]
           pure Nothing
         (Just osmRateLimiter, Nothing) -> do
           liftIO $ waitDebit OSM.limitConfig osmRateLimiter 1

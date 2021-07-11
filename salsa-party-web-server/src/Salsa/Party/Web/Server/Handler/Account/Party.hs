@@ -53,8 +53,7 @@ getPartiesOfOrganiser organiserId = do
     pure (partyEntity, placeEntity, mKey)
 
 data PartyForm = PartyForm
-  { partyFormUuid :: Maybe EventUUID,
-    partyFormTitle :: Text,
+  { partyFormTitle :: Text,
     partyFormDay :: Day,
     partyFormAddress :: Text,
     partyFormDescription :: Maybe Textarea,
@@ -70,14 +69,15 @@ instance Validity PartyForm where
     mconcat
       [ genericValidate pf,
         declare "The title is nonempty" $ not $ T.null partyFormTitle,
-        declare "The address is nonempty" $ not $ T.null partyFormAddress
+        declare "The address is nonempty" $ not $ T.null partyFormAddress,
+        declare "The homepage is nonempty" $ maybe True (not . T.null) partyFormHomepage,
+        declare "The price is nonempty" $ maybe True (not . T.null) partyFormPrice
       ]
 
 partyForm :: FormInput Handler PartyForm
 partyForm =
   PartyForm
-    <$> iopt hiddenField "uuid"
-    <*> ireq textField "title"
+    <$> ireq textField "title"
     <*> ireq dayField "day"
     <*> ireq textField "address"
     <*> iopt textareaField "description"
@@ -124,7 +124,7 @@ submitPartyPage mPartyUuid mResult = do
         Just (FormSuccess (PartyForm {..}, partyFormPoster)) -> do
           now <- liftIO getCurrentTime
           -- Insert or update the party
-          (partyId, partyUuid) <- case partyFormUuid of
+          (partyId, partyUuid) <- case mPartyUuid of
             Nothing -> do
               addMessage "is-success" "Succesfully submitted party"
               uuid <- nextRandomUUID
