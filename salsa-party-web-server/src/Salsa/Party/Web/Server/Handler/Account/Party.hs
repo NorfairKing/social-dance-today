@@ -7,6 +7,7 @@
 
 module Salsa.Party.Web.Server.Handler.Account.Party
   ( getAccountPartiesR,
+    postAccountPartyR,
     getAccountPartyDuplicateR,
     getAccountPartyR,
     getAccountSubmitPartyR,
@@ -88,6 +89,11 @@ partyForm =
 getAccountPartyR :: EventUUID -> Handler Html
 getAccountPartyR partyUuid =
   submitPartyPage (Just partyUuid) Nothing
+
+postAccountPartyR :: EventUUID -> Handler Html
+postAccountPartyR partyUuid = do
+  res <- runInputPostResult $ (,) <$> partyForm <*> iopt fileField "poster"
+  submitPartyPage (Just partyUuid) (Just res)
 
 getAccountSubmitPartyR :: Handler Html
 getAccountSubmitPartyR = submitPartyPage Nothing Nothing
