@@ -255,7 +255,23 @@ partyFormRequestBuilder PartyForm {..} mPosterFile = do
   addPostParam "address" partyFormAddress
   forM_ partyFormDescription $ \description -> addPostParam "description" $ unTextarea description
   forM_ partyFormStart $ \start -> addPostParam "start" $ T.pack $ formatTime defaultTimeLocale "%H:%M" start
+  forM_ partyFormHomepage $ \homepage -> addPostParam "homepage" homepage
+  forM_ partyFormPrice $ \price -> addPostParam "price" price
   forM_ mPosterFile $ \TestFile {..} -> addFileWith "poster" testFilePath testFileContents testFileType
+
+partyFormShouldMatch :: PartyForm -> Party -> IO ()
+partyFormShouldMatch PartyForm {..} Party {..} = do
+  context "day" $ partyDay `shouldBe` partyFormDay
+  context "title" $ partyTitle `shouldBe` partyFormTitle
+  -- We can't check the address because that's in the Place.
+  -- partyAddress `shouldBe` partyFormAddress
+  context "description" $ partyDescription `shouldBe` unTextarea <$> partyFormDescription
+  context "start" $ do
+    -- We only care about what the time looks like, nothing about precision.
+    let showMTime = maybe "" $ formatTime defaultTimeLocale "%H:%M"
+    showMTime partyStart `shouldBe` showMTime partyFormStart
+  context "homepage" $ partyHomepage `shouldBe` partyFormHomepage
+  context "price" $ partyPrice `shouldBe` partyFormPrice
 
 testDB :: DB.SqlPersistT IO a -> YesodClientM App a
 testDB func = do

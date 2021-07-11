@@ -82,7 +82,9 @@ partyForm =
     <*> ireq textField "address"
     <*> iopt textareaField "description"
     <*> iopt timeField "start"
-    <*> iopt urlField "homepage"
+    -- We don't use urlField here because we store the urls as text anyway.
+    -- The html still contains type="url" so invaild urls will have been submitted on purpose.
+    <*> iopt textField "homepage"
     <*> iopt textField "price"
     <*> ((>>= (either (const Nothing) Just . parseCASKey)) <$> iopt textField "poster-key")
 

@@ -51,10 +51,14 @@ spec = serverSpec $ do
           forAllValid $ \location ->
             withAnyLoggedInUser_ yc $ do
               testSubmitOrganiser organiserForm_
-              void $
+              partyUuid_ <-
                 testSubmitParty
                   partyForm_
                   location
+              mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
+              liftIO $ case mParty of
+                Nothing -> expectationFailure "expected the party to still exist."
+                Just (Entity _ party) -> partyForm_ `partyFormShouldMatch` party
 
     it "Cannot edit an existing party's date" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -75,7 +79,7 @@ spec = serverSpec $ do
                 mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
                 liftIO $ case mParty of
                   Nothing -> expectationFailure "expected the party to still exist."
-                  Just (Entity _ party) -> partyDay party `shouldBe` partyFormDay partyForm_
+                  Just (Entity _ party) -> partyForm_ `partyFormShouldMatch` party
 
     it "Can create two parties with the same poster" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -99,13 +103,13 @@ spec = serverSpec $ do
                 mCasKey1 <- case mParty1 of
                   Nothing -> liftIO $ expectationFailure "expected the first party to exist."
                   Just (Entity partyId party) -> do
-                    liftIO $ partyDay party `shouldBe` partyFormDay partyForm1_
+                    liftIO $ partyForm1_ `partyFormShouldMatch` party
                     testDB $ getPosterForParty partyId
                 mParty2 <- testDB $ DB.getBy $ UniquePartyUUID partyUuid2
                 mCasKey2 <- case mParty2 of
                   Nothing -> liftIO $ expectationFailure "expected the second party to exist."
                   Just (Entity partyId party) -> do
-                    liftIO $ partyDay party `shouldBe` partyFormDay partyForm2_
+                    liftIO $ partyForm2_ `partyFormShouldMatch` party
                     testDB $ getPosterForParty partyId
                 liftIO $ do
                   mCasKey1 `shouldBe` mCasKey2
