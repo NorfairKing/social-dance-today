@@ -57,8 +57,28 @@ spec = serverSpec $ do
                   location
               mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
               liftIO $ case mParty of
-                Nothing -> expectationFailure "expected the party to still exist."
+                Nothing -> liftIO $ expectationFailure "expected the party to exist."
                 Just (Entity _ party) -> partyForm_ `partyFormShouldMatch` party
+
+    it "Can create a party with a poster" $ \yc ->
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm_ ->
+          forAllValid $ \location -> do
+            withAnyLoggedInUser_ yc $ do
+              testSubmitOrganiser organiserForm_
+              poster_ <- readTestFile "test_resources/posters/1.png"
+              partyUuid_ <-
+                testSubmitPartyWithPoster
+                  partyForm_
+                  location
+                  poster_
+              mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
+              mCasKey <- case mParty of
+                Nothing -> liftIO $ expectationFailure "expected the party to exist."
+                Just (Entity partyId party) -> do
+                  liftIO $ partyForm_ `partyFormShouldMatch` party
+                  testDB $ getPosterForParty partyId
+              liftIO $ mCasKey `shouldBe` testFileCASKey poster_
 
     it "Can create two parties with the same poster" $ \yc ->
       forAllValid $ \organiserForm_ ->
