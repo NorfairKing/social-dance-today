@@ -101,12 +101,15 @@ editPartyPage :: EventUUID -> Maybe (FormResult (PartyForm, Maybe FileInfo)) -> 
 editPartyPage partyUuid_ = submitPartyPage (Just partyUuid_)
 
 getAccountSubmitPartyR :: Handler Html
-getAccountSubmitPartyR = submitPartyPage Nothing Nothing
+getAccountSubmitPartyR = newPartyPage Nothing
 
 postAccountSubmitPartyR :: Handler Html
 postAccountSubmitPartyR = do
   res <- runInputPostResult $ (,) <$> partyForm <*> iopt fileField "poster"
-  submitPartyPage Nothing $ Just res
+  newPartyPage $ Just res
+
+newPartyPage :: Maybe (FormResult (PartyForm, Maybe FileInfo)) -> Handler Html
+newPartyPage = submitPartyPage Nothing
 
 submitPartyPage :: Maybe EventUUID -> Maybe (FormResult (PartyForm, Maybe FileInfo)) -> Handler Html
 submitPartyPage mPartyUuid mResult = do
