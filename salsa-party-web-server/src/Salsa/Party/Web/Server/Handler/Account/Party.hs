@@ -52,6 +52,269 @@ getPartiesOfOrganiser organiserId = do
     mKey <- getPosterForParty partyId
     pure (partyEntity, placeEntity, mKey)
 
+data AddPartyForm = AddPartyForm
+  { addPartyFormTitle :: Text,
+    addPartyFormDay :: Day,
+    addPartyFormAddress :: Text,
+    addPartyFormDescription :: Maybe Textarea,
+    addPartyFormStart :: Maybe TimeOfDay,
+    addPartyFormHomepage :: Maybe Text,
+    addPartyFormPrice :: Maybe Text,
+    addPartyFormPosterKey :: Maybe CASKey
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity AddPartyForm where
+  validate pf@AddPartyForm {..} =
+    mconcat
+      [ genericValidate pf,
+        declare "The title is nonempty" $ not $ T.null addPartyFormTitle,
+        declare "The address is nonempty" $ not $ T.null addPartyFormAddress,
+        declare "The homepage is nonempty" $ maybe True (not . T.null) addPartyFormHomepage,
+        declare "The price is nonempty" $ maybe True (not . T.null) addPartyFormPrice
+      ]
+
+addPartyForm :: FormInput Handler AddPartyForm
+addPartyForm =
+  AddPartyForm
+    <$> ireq textField "title"
+    <*> ireq dayField "day"
+    <*> ireq textField "address"
+    <*> iopt textareaField "description"
+    <*> iopt timeField "start"
+    -- We don't use urlField here because we store the urls as text anyway.
+    -- The html still contains type="url" so invaild urls will have been submitted on purpose.
+    <*> iopt textField "homepage"
+    <*> iopt textField "price"
+    <*> ((>>= (either (const Nothing) Just . parseCASKey)) <$> iopt textField "poster-key")
+
+getAccountSubmitPartyR :: Handler Html
+getAccountSubmitPartyR = newPartyPage Nothing
+
+postAccountSubmitPartyR :: Handler Html
+postAccountSubmitPartyR = do
+  res <- runInputPostResult $ (,) <$> addPartyForm <*> iopt fileField "poster"
+  newPartyPage $ Just res
+
+newPartyPage :: Maybe (FormResult (AddPartyForm, Maybe FileInfo)) -> Handler Html
+newPartyPage mResult = do
+  Entity userId User {..} <- requireAuth
+
+  requireVerification <- getsYesod appSendEmails
+  when (requireVerification && isJust userVerificationKey) $ do
+    addMessage "is-danger" "Your account needs to verified before you can submit parties."
+    redirect $ AccountR AccountOverviewR
+
+  mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
+  case mOrganiser of
+    Nothing -> do
+      addMessage "is-danger" "You must set up an organiser profile in the account overview before you can submit a party."
+      redirect $ AccountR AccountOrganiserR
+    Just (Entity organiserId _) ->
+      case mResult of
+        Just (FormSuccess (form, mFileInfo)) -> addParty organiserId form mFileInfo
+        _ -> submitPartyFormPageWithPrefilled NewParty mResult
+
+addParty ::
+  Key Organiser ->
+  AddPartyForm ->
+  Maybe FileInfo ->
+  Handler Html
+addParty organiserId AddPartyForm {..} mFileInfo = do
+  now <- liftIO getCurrentTime
+  uuid <- nextRandomUUID
+  Entity placeId _ <- lookupPlace addPartyFormAddress
+  partyId <-
+    runDB $
+      insert
+        ( Party
+            { partyUuid = uuid,
+              partyOrganiser = organiserId,
+              partyTitle = addPartyFormTitle,
+              partyDescription = unTextarea <$> addPartyFormDescription,
+              partyDay = addPartyFormDay,
+              partyStart = addPartyFormStart,
+              partyHomepage = addPartyFormHomepage,
+              partyPrice = addPartyFormPrice,
+              partyCancelled = False,
+              partyCreated = now,
+              partyModified = Nothing,
+              partyPlace = placeId
+            }
+        )
+  case mFileInfo of
+    Nothing -> pure ()
+    -- Update the poster if a new one has been submitted
+    Just posterFileInfo -> do
+      imageBlob <- fileSourceByteString posterFileInfo
+      let contentType = fileContentType posterFileInfo
+      let casKey = mkCASKey contentType imageBlob
+      case posterCropImage contentType imageBlob of
+        Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
+        Right (convertedImageType, convertedImageBlob) -> do
+          runDB $ do
+            Entity imageId _ <-
+              upsertBy
+                (UniqueImageKey casKey)
+                ( Image
+                    { imageKey = casKey,
+                      imageTyp = convertedImageType,
+                      imageBlob = convertedImageBlob,
+                      imageCreated = now
+                    }
+                )
+                [] -- No need to update anything, the casKey makes the image unique.
+            insert_
+              ( PartyPoster
+                  { partyPosterParty = partyId,
+                    partyPosterImage = imageId,
+                    partyPosterCreated = now,
+                    partyPosterModified = Nothing
+                  }
+              )
+  addMessage "is-success" "Succesfully submitted party"
+  redirect $ AccountR $ AccountPartyR uuid
+
+data EditPartyForm = EditPartyForm
+  { editPartyFormTitle :: Text,
+    editPartyFormDay :: Day,
+    editPartyFormAddress :: Text,
+    editPartyFormDescription :: Maybe Textarea,
+    editPartyFormStart :: Maybe TimeOfDay,
+    editPartyFormHomepage :: Maybe Text,
+    editPartyFormPrice :: Maybe Text,
+    editPartyFormPosterKey :: Maybe CASKey
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity EditPartyForm where
+  validate pf@EditPartyForm {..} =
+    mconcat
+      [ genericValidate pf,
+        declare "The title is nonempty" $ not $ T.null editPartyFormTitle,
+        declare "The address is nonempty" $ not $ T.null editPartyFormAddress,
+        declare "The homepage is nonempty" $ maybe True (not . T.null) editPartyFormHomepage,
+        declare "The price is nonempty" $ maybe True (not . T.null) editPartyFormPrice
+      ]
+
+editPartyForm :: FormInput Handler EditPartyForm
+editPartyForm =
+  EditPartyForm
+    <$> ireq textField "title"
+    <*> ireq dayField "day"
+    <*> ireq textField "address"
+    <*> iopt textareaField "description"
+    <*> iopt timeField "start"
+    -- We don't use urlField here because we store the urls as text anyway.
+    -- The html still contains type="url" so invaild urls will have been submitted on purpose.
+    <*> iopt textField "homepage"
+    <*> iopt textField "price"
+    <*> ((>>= (either (const Nothing) Just . parseCASKey)) <$> iopt textField "poster-key")
+
+getAccountPartyR :: EventUUID -> Handler Html
+getAccountPartyR partyUuid =
+  editPartyPage partyUuid Nothing
+
+postAccountPartyR :: EventUUID -> Handler Html
+postAccountPartyR partyUuid = do
+  res <- runInputPostResult $ (,) <$> editPartyForm <*> iopt fileField "poster"
+  editPartyPage partyUuid (Just res)
+
+editPartyPage :: EventUUID -> Maybe (FormResult (EditPartyForm, Maybe FileInfo)) -> Handler Html
+editPartyPage partyUuid_ mResult = do
+  userId <- requireAuthId
+  mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
+  case mOrganiser of
+    Nothing -> do
+      addMessage "is-danger" "You must set up an organiser profile in the account overview before you can submit a party."
+      redirect $ AccountR AccountOrganiserR
+    Just (Entity organiserId _) -> do
+      mParty <- runDB $ getBy $ UniquePartyUUID partyUuid_
+      partyEntity <- case mParty of
+        Nothing -> notFound
+        Just partyEntity -> pure partyEntity
+      when (partyOrganiser (entityVal partyEntity) /= organiserId) $ permissionDenied "Not your party to edit."
+      case mResult of
+        Just (FormSuccess (form, mFileInfo)) -> editParty partyEntity form mFileInfo
+        _ -> submitPartyFormPageWithPrefilled (EditParty partyEntity) mResult
+
+editParty ::
+  Entity Party ->
+  EditPartyForm ->
+  Maybe FileInfo ->
+  Handler Html
+editParty (Entity partyId Party {..}) EditPartyForm {..} mFileInfo = do
+  now <- liftIO getCurrentTime
+  Entity placeId _ <- lookupPlace editPartyFormAddress -- Relies on the caching for geocoding
+  runDB $
+    update
+      partyId
+      [ PartyTitle =. editPartyFormTitle,
+        PartyDescription =. unTextarea <$> editPartyFormDescription,
+        -- Purposely don't update the day.
+        -- PartyDay =. partyFormDay,
+        PartyStart =. editPartyFormStart,
+        PartyHomepage =. editPartyFormHomepage,
+        PartyPrice =. editPartyFormPrice,
+        PartyPlace =. placeId,
+        PartyModified =. Just now
+      ]
+  case mFileInfo of
+    -- Update the poster if a new one has been submitted
+    Just posterFileInfo -> do
+      imageBlob <- fileSourceByteString posterFileInfo
+      let contentType = fileContentType posterFileInfo
+      let casKey = mkCASKey contentType imageBlob
+      case posterCropImage contentType imageBlob of
+        Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
+        Right (convertedImageType, convertedImageBlob) -> do
+          runDB $ do
+            Entity imageId _ <-
+              upsertBy
+                (UniqueImageKey casKey)
+                ( Image
+                    { imageKey = casKey,
+                      imageTyp = convertedImageType,
+                      imageBlob = convertedImageBlob,
+                      imageCreated = now
+                    }
+                )
+                [] -- No need to update anything, the casKey makes the image unique.
+            void $
+              upsertBy
+                (UniquePartyPoster partyId)
+                ( PartyPoster
+                    { partyPosterParty = partyId,
+                      partyPosterImage = imageId,
+                      partyPosterCreated = now,
+                      partyPosterModified = Nothing
+                    }
+                )
+                [ PartyPosterImage =. imageId,
+                  PartyPosterModified =. Just now
+                ]
+    -- If no new poster has been submitted, check for a poster key.
+    -- If there is a poster key, we need to make sure the association exists.
+    -- This is really only for duplication, I think.
+    Nothing -> forM_ editPartyFormPosterKey $ \posterKey -> do
+      mImage <- runDB $ getBy $ UniqueImageKey posterKey
+      forM_ mImage $ \(Entity imageId _) -> -- TODO don't fetch the entire image.
+        runDB $
+          upsertBy
+            (UniquePartyPoster partyId)
+            ( PartyPoster
+                { partyPosterParty = partyId,
+                  partyPosterImage = imageId,
+                  partyPosterCreated = now,
+                  partyPosterModified = Nothing
+                }
+            )
+            [ PartyPosterImage =. imageId,
+              PartyPosterModified =. Just now
+            ]
+  addMessage "is-success" "Succesfully edited party"
+  redirect $ AccountR $ AccountPartyR partyUuid
+
 data PartyForm = PartyForm
   { partyFormTitle :: Text,
     partyFormDay :: Day,
@@ -73,170 +336,6 @@ instance Validity PartyForm where
         declare "The homepage is nonempty" $ maybe True (not . T.null) partyFormHomepage,
         declare "The price is nonempty" $ maybe True (not . T.null) partyFormPrice
       ]
-
-partyForm :: FormInput Handler PartyForm
-partyForm =
-  PartyForm
-    <$> ireq textField "title"
-    <*> ireq dayField "day"
-    <*> ireq textField "address"
-    <*> iopt textareaField "description"
-    <*> iopt timeField "start"
-    -- We don't use urlField here because we store the urls as text anyway.
-    -- The html still contains type="url" so invaild urls will have been submitted on purpose.
-    <*> iopt textField "homepage"
-    <*> iopt textField "price"
-    <*> ((>>= (either (const Nothing) Just . parseCASKey)) <$> iopt textField "poster-key")
-
-getAccountPartyR :: EventUUID -> Handler Html
-getAccountPartyR partyUuid =
-  editPartyPage partyUuid Nothing
-
-postAccountPartyR :: EventUUID -> Handler Html
-postAccountPartyR partyUuid = do
-  res <- runInputPostResult $ (,) <$> partyForm <*> iopt fileField "poster"
-  editPartyPage partyUuid (Just res)
-
-editPartyPage :: EventUUID -> Maybe (FormResult (PartyForm, Maybe FileInfo)) -> Handler Html
-editPartyPage partyUuid_ = submitPartyPage (Just partyUuid_)
-
-getAccountSubmitPartyR :: Handler Html
-getAccountSubmitPartyR = newPartyPage Nothing
-
-postAccountSubmitPartyR :: Handler Html
-postAccountSubmitPartyR = do
-  res <- runInputPostResult $ (,) <$> partyForm <*> iopt fileField "poster"
-  newPartyPage $ Just res
-
-newPartyPage :: Maybe (FormResult (PartyForm, Maybe FileInfo)) -> Handler Html
-newPartyPage = submitPartyPage Nothing
-
-submitPartyPage :: Maybe EventUUID -> Maybe (FormResult (PartyForm, Maybe FileInfo)) -> Handler Html
-submitPartyPage mPartyUuid mResult = do
-  Entity userId User {..} <- requireAuth
-
-  requireVerification <- getsYesod appSendEmails
-  when (requireVerification && isJust userVerificationKey) $ do
-    addMessage "is-danger" "Your account needs to verified before you can submit parties."
-    redirect $ AccountR AccountOverviewR
-
-  mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
-  case mOrganiser of
-    Nothing -> do
-      addMessage "is-danger" "You must set up an organiser profile in the account overview before you can submit a party."
-      redirect $ AccountR AccountOrganiserR
-    Just (Entity organiserId _) ->
-      case mResult of
-        Just (FormSuccess (PartyForm {..}, partyFormPoster)) -> do
-          now <- liftIO getCurrentTime
-          -- Insert or update the party
-          (partyId, partyUuid) <- case mPartyUuid of
-            Nothing -> do
-              addMessage "is-success" "Succesfully submitted party"
-              uuid <- nextRandomUUID
-              Entity placeId _ <- lookupPlace partyFormAddress
-              partyId <-
-                runDB $
-                  insert
-                    ( Party
-                        { partyUuid = uuid,
-                          partyOrganiser = organiserId,
-                          partyTitle = partyFormTitle,
-                          partyDescription = unTextarea <$> partyFormDescription,
-                          partyDay = partyFormDay,
-                          partyStart = partyFormStart,
-                          partyHomepage = partyFormHomepage,
-                          partyPrice = partyFormPrice,
-                          partyCancelled = False,
-                          partyCreated = now,
-                          partyModified = Nothing,
-                          partyPlace = placeId
-                        }
-                    )
-              pure (partyId, uuid)
-            Just partyUuid -> do
-              mParty <- runDB $ getBy $ UniquePartyUUID partyUuid
-              case mParty of
-                Nothing -> notFound
-                Just (Entity partyId party) ->
-                  if partyOrganiser party == organiserId
-                    then do
-                      addMessage "is-success" "Succesfully edited party"
-                      Entity placeId _ <- lookupPlace partyFormAddress
-                      runDB $
-                        update
-                          partyId
-                          [ PartyTitle =. partyFormTitle,
-                            PartyDescription =. unTextarea <$> partyFormDescription,
-                            -- Purposely don't update the day.
-                            -- PartyDay =. partyFormDay,
-                            PartyStart =. partyFormStart,
-                            PartyHomepage =. partyFormHomepage,
-                            PartyPrice =. partyFormPrice,
-                            PartyPlace =. placeId,
-                            PartyModified =. Just now
-                          ]
-                      pure (partyId, partyUuid)
-                    else permissionDenied "Not your party to edit."
-          case partyFormPoster of
-            -- Update the poster if a new one has been submitted
-            Just posterFileInfo -> do
-              imageBlob <- fileSourceByteString posterFileInfo
-              let contentType = fileContentType posterFileInfo
-              let casKey = mkCASKey contentType imageBlob
-              case posterCropImage contentType imageBlob of
-                Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
-                Right (convertedImageType, convertedImageBlob) -> do
-                  runDB $ do
-                    Entity imageId _ <-
-                      upsertBy
-                        (UniqueImageKey casKey)
-                        ( Image
-                            { imageKey = casKey,
-                              imageTyp = convertedImageType,
-                              imageBlob = convertedImageBlob,
-                              imageCreated = now
-                            }
-                        )
-                        [] -- No need to update anything, the casKey makes the image unique.
-                    void $
-                      upsertBy
-                        (UniquePartyPoster partyId)
-                        ( PartyPoster
-                            { partyPosterParty = partyId,
-                              partyPosterImage = imageId,
-                              partyPosterCreated = now,
-                              partyPosterModified = Nothing
-                            }
-                        )
-                        [ PartyPosterImage =. imageId,
-                          PartyPosterModified =. Just now
-                        ]
-            -- If no new poster has been submitted, check for a poster key.
-            -- If there is a poster key, we need to make sure the association exists.
-            -- This is really only for duplication, I think.
-            Nothing -> forM_ partyFormPosterKey $ \posterKey -> do
-              mImage <- runDB $ getBy $ UniqueImageKey posterKey
-              forM_ mImage $ \(Entity imageId _) -> -- TODO don't fetch the entire image.
-                runDB $
-                  upsertBy
-                    (UniquePartyPoster partyId)
-                    ( PartyPoster
-                        { partyPosterParty = partyId,
-                          partyPosterImage = imageId,
-                          partyPosterCreated = now,
-                          partyPosterModified = Nothing
-                        }
-                    )
-                    [ PartyPosterImage =. imageId,
-                      PartyPosterModified =. Just now
-                    ]
-          redirect $ AccountR $ AccountPartyR partyUuid
-        _ -> do
-          mPartyEntity <- case mPartyUuid of
-            Nothing -> pure Nothing
-            Just partyUuid -> Just <$> getPartyEntityOfOrganiser partyUuid organiserId
-          submitPartyFormPageWithPrefilled (maybe NewParty EditParty mPartyEntity) mResult
 
 getAccountPartyDuplicateR :: EventUUID -> Handler Html
 getAccountPartyDuplicateR partyUuid = do
