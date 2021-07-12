@@ -152,6 +152,28 @@ spec = serverSpec $ do
                     get $ AccountR $ AccountPartyR partyId
                     statusIs 403
 
+    it "Can edit an existing party" $ \yc ->
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm1_ ->
+          forAllValid $ \partyForm2_ ->
+            forAllValid $ \location ->
+              withAnyLoggedInUser_ yc $ do
+                testSubmitOrganiser organiserForm_
+                partyUuid_ <-
+                  testSubmitParty
+                    partyForm1_
+                    location
+                get $ AccountR $ AccountPartyR partyUuid_
+                statusIs 200
+                testDB $ insertPlace (partyFormAddress partyForm2_) location
+                request $ do
+                  partyFormRequestBuilder partyForm2_ Nothing
+                  setUrl $ AccountR $ AccountPartyR partyUuid_
+                mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
+                liftIO $ case mParty of
+                  Nothing -> expectationFailure "expected the party to still exist."
+                  Just (Entity _ party) -> partyForm2_ {partyFormDay = partyFormDay partyForm1_} `partyFormShouldMatch` party
+
     it "Cannot edit an existing party's date" $ \yc ->
       forAllValid $ \organiserForm_ ->
         forAllValid $ \partyForm_ ->
@@ -209,7 +231,7 @@ spec = serverSpec $ do
                 -- The poster is now different
                 liftIO $ mCasKey2 `shouldBe` testFileCASKey poster2
 
-    it "Cannot submit to a nonexistent party" $ \yc ->
+    it "Cannot edit a nonexistent party" $ \yc ->
       forAllValid $ \organiserForm_ ->
         forAllValid $ \partyForm_ ->
           withAnyLoggedInUser_ yc $ do
