@@ -223,21 +223,21 @@ readTestFile testFilePath = do
 testFileCASKey :: TestFile -> Maybe CASKey
 testFileCASKey TestFile {..} = mkCASKey <$> testFileType <*> pure testFileContents
 
-testSubmitParty :: PartyForm -> Coordinates -> YesodClientM App EventUUID
-testSubmitParty partyForm_ coordinates_ = testSubmitPartyHelper partyForm_ coordinates_ Nothing
+testAddParty :: AddPartyForm -> Coordinates -> YesodClientM App EventUUID
+testAddParty partyForm_ coordinates_ = testAddPartyHelper partyForm_ coordinates_ Nothing
 
-testSubmitPartyWithPoster :: PartyForm -> Coordinates -> TestFile -> YesodClientM App EventUUID
-testSubmitPartyWithPoster partyForm_ coordinates_ posterFile = testSubmitPartyHelper partyForm_ coordinates_ (Just posterFile)
+testAddPartyWithPoster :: AddPartyForm -> Coordinates -> TestFile -> YesodClientM App EventUUID
+testAddPartyWithPoster partyForm_ coordinates_ posterFile = testAddPartyHelper partyForm_ coordinates_ (Just posterFile)
 
 -- For submitting a new party.
 -- This doesn't let you do edits using the UUID field.
-testSubmitPartyHelper :: PartyForm -> Coordinates -> Maybe TestFile -> YesodClientM App EventUUID
-testSubmitPartyHelper partyForm_ loc mPosterFile = do
+testAddPartyHelper :: AddPartyForm -> Coordinates -> Maybe TestFile -> YesodClientM App EventUUID
+testAddPartyHelper partyForm_ loc mPosterFile = do
   -- Put the address in the database already so we don't need to use an external service for geocoding
-  testDB $ insertPlace (partyFormAddress partyForm_) loc
+  testDB $ insertPlace (addPartyFormAddress partyForm_) loc
   get $ AccountR AccountSubmitPartyR
   statusIs 200
-  request $ partyFormRequestBuilder partyForm_ mPosterFile
+  request $ addPartyFormRequestBuilder partyForm_ mPosterFile
   statusIs 303
   errOrLoc <- getLocation
   case errOrLoc of
@@ -246,34 +246,79 @@ testSubmitPartyHelper partyForm_ loc mPosterFile = do
       AccountR (AccountPartyR partyUuid) -> pure partyUuid
       _ -> liftIO $ expectationFailure $ "Coordinates should have been some AccountR AccountPartyR after submitting a party, was this instead: " <> show redirectLocation
 
-partyFormRequestBuilder :: PartyForm -> Maybe TestFile -> RequestBuilder App ()
-partyFormRequestBuilder PartyForm {..} mPosterFile = do
+addPartyFormRequestBuilder :: AddPartyForm -> Maybe TestFile -> RequestBuilder App ()
+addPartyFormRequestBuilder AddPartyForm {..} mPosterFile = do
   setMethod methodPost
   setUrl $ AccountR AccountSubmitPartyR
   addToken
-  addPostParam "title" partyFormTitle
-  addPostParam "day" $ T.pack $ formatTime defaultTimeLocale "%F" partyFormDay
-  addPostParam "address" partyFormAddress
-  forM_ partyFormDescription $ \description -> addPostParam "description" $ unTextarea description
-  forM_ partyFormStart $ \start -> addPostParam "start" $ T.pack $ formatTime defaultTimeLocale "%H:%M" start
-  forM_ partyFormHomepage $ \homepage -> addPostParam "homepage" homepage
-  forM_ partyFormPrice $ \price -> addPostParam "price" price
+  addPostParam "title" addPartyFormTitle
+  addPostParam "day" $ T.pack $ formatTime defaultTimeLocale "%F" addPartyFormDay
+  addPostParam "address" addPartyFormAddress
+  forM_ addPartyFormDescription $ \description -> addPostParam "description" $ unTextarea description
+  forM_ addPartyFormStart $ \start -> addPostParam "start" $ T.pack $ formatTime defaultTimeLocale "%H:%M" start
+  forM_ addPartyFormHomepage $ \homepage -> addPostParam "homepage" homepage
+  forM_ addPartyFormPrice $ \price -> addPostParam "price" price
   forM_ mPosterFile $ \TestFile {..} -> addFileWith "poster" testFilePath testFileContents testFileType
 
-partyFormShouldMatch :: PartyForm -> Party -> IO ()
-partyFormShouldMatch PartyForm {..} Party {..} = do
-  let PartyForm _ _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
-  context "day" $ partyDay `shouldBe` partyFormDay
-  context "title" $ partyTitle `shouldBe` partyFormTitle
+addPartyFormShouldMatch :: AddPartyForm -> Party -> IO ()
+addPartyFormShouldMatch AddPartyForm {..} Party {..} = do
+  let AddPartyForm _ _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
+  context "day" $ partyDay `shouldBe` addPartyFormDay
+  context "title" $ partyTitle `shouldBe` addPartyFormTitle
   -- We can't check the address because that's in the Place.
-  -- partyAddress `shouldBe` partyFormAddress
-  context "description" $ partyDescription `shouldBe` unTextarea <$> partyFormDescription
+  -- partyAddress `shouldBe` addPartyFormAddress
+  context "description" $ partyDescription `shouldBe` unTextarea <$> addPartyFormDescription
   context "start" $ do
     -- We only care about what the time looks like, nothing about precision.
     let showMTime = maybe "" $ formatTime defaultTimeLocale "%H:%M"
-    showMTime partyStart `shouldBe` showMTime partyFormStart
-  context "homepage" $ partyHomepage `shouldBe` partyFormHomepage
-  context "price" $ partyPrice `shouldBe` partyFormPrice
+    showMTime partyStart `shouldBe` showMTime addPartyFormStart
+  context "homepage" $ partyHomepage `shouldBe` addPartyFormHomepage
+  context "price" $ partyPrice `shouldBe` addPartyFormPrice
+  -- We can't check the poster because it's in a separate table.
+  pure ()
+
+testEditParty :: EventUUID -> EditPartyForm -> Coordinates -> YesodClientM App ()
+testEditParty partyUuid_ partyForm_ coordinates_ = testEditPartyHelper partyUuid_ partyForm_ coordinates_ Nothing
+
+testEditPartyWithPoster :: EventUUID -> EditPartyForm -> Coordinates -> TestFile -> YesodClientM App ()
+testEditPartyWithPoster partyUuid_ partyForm_ coordinates_ posterFile = testEditPartyHelper partyUuid_ partyForm_ coordinates_ (Just posterFile)
+
+-- For submitting a new party.
+-- This doesn't let you do edits using the UUID field.
+testEditPartyHelper :: EventUUID -> EditPartyForm -> Coordinates -> Maybe TestFile -> YesodClientM App ()
+testEditPartyHelper partyUuid_ partyForm_ loc mPosterFile = do
+  -- Put the address in the database already so we don't need to use an external service for geocoding
+  testDB $ insertPlace (editPartyFormAddress partyForm_) loc
+  request $ editPartyFormRequestBuilder partyUuid_ partyForm_ mPosterFile
+
+editPartyFormRequestBuilder :: EventUUID -> EditPartyForm -> Maybe TestFile -> RequestBuilder App ()
+editPartyFormRequestBuilder partyUuid_ EditPartyForm {..} mPosterFile = do
+  setMethod methodPost
+  setUrl $ AccountR $ AccountPartyR partyUuid_
+  addToken
+  addPostParam "title" editPartyFormTitle
+  addPostParam "day" $ T.pack $ formatTime defaultTimeLocale "%F" editPartyFormDay
+  addPostParam "address" editPartyFormAddress
+  forM_ editPartyFormDescription $ \description -> addPostParam "description" $ unTextarea description
+  forM_ editPartyFormStart $ \start -> addPostParam "start" $ T.pack $ formatTime defaultTimeLocale "%H:%M" start
+  forM_ editPartyFormHomepage $ \homepage -> addPostParam "homepage" homepage
+  forM_ editPartyFormPrice $ \price -> addPostParam "price" price
+  forM_ mPosterFile $ \TestFile {..} -> addFileWith "poster" testFilePath testFileContents testFileType
+
+editPartyFormShouldMatch :: EditPartyForm -> Party -> IO ()
+editPartyFormShouldMatch EditPartyForm {..} Party {..} = do
+  let EditPartyForm _ _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
+  context "day" $ partyDay `shouldBe` editPartyFormDay
+  context "title" $ partyTitle `shouldBe` editPartyFormTitle
+  -- We can't check the address because that's in the Place.
+  -- partyAddress `shouldBe` editPartyFormAddress
+  context "description" $ partyDescription `shouldBe` unTextarea <$> editPartyFormDescription
+  context "start" $ do
+    -- We only care about what the time looks like, nothing about precision.
+    let showMTime = maybe "" $ formatTime defaultTimeLocale "%H:%M"
+    showMTime partyStart `shouldBe` showMTime editPartyFormStart
+  context "homepage" $ partyHomepage `shouldBe` editPartyFormHomepage
+  context "price" $ partyPrice `shouldBe` editPartyFormPrice
   -- We can't check the poster because it's in a separate table.
   pure ()
 

@@ -7,12 +7,13 @@
 
 module Salsa.Party.Web.Server.Handler.Account.Party
   ( getAccountPartiesR,
+    getAccountSubmitPartyR,
+    AddPartyForm (..),
+    postAccountSubmitPartyR,
+    getAccountPartyR,
+    EditPartyForm (..),
     postAccountPartyR,
     getAccountPartyDuplicateR,
-    getAccountPartyR,
-    getAccountSubmitPartyR,
-    PartyForm (..),
-    postAccountSubmitPartyR,
     postAccountPartyCancelR,
     postAccountPartyDeleteR,
     postAccountPartyUnCancelR,
@@ -315,28 +316,6 @@ editParty (Entity partyId Party {..}) EditPartyForm {..} mFileInfo = do
   addMessage "is-success" "Succesfully edited party"
   redirect $ AccountR $ AccountPartyR partyUuid
 
-data PartyForm = PartyForm
-  { partyFormTitle :: Text,
-    partyFormDay :: Day,
-    partyFormAddress :: Text,
-    partyFormDescription :: Maybe Textarea,
-    partyFormStart :: Maybe TimeOfDay,
-    partyFormHomepage :: Maybe Text,
-    partyFormPrice :: Maybe Text,
-    partyFormPosterKey :: Maybe CASKey
-  }
-  deriving (Show, Eq, Generic)
-
-instance Validity PartyForm where
-  validate pf@PartyForm {..} =
-    mconcat
-      [ genericValidate pf,
-        declare "The title is nonempty" $ not $ T.null partyFormTitle,
-        declare "The address is nonempty" $ not $ T.null partyFormAddress,
-        declare "The homepage is nonempty" $ maybe True (not . T.null) partyFormHomepage,
-        declare "The price is nonempty" $ maybe True (not . T.null) partyFormPrice
-      ]
-
 getAccountPartyDuplicateR :: EventUUID -> Handler Html
 getAccountPartyDuplicateR partyUuid = do
   userId <- requireAuthId
@@ -398,7 +377,6 @@ submitPartyFormPageWithPrefilled partyFilling mResult = do
       mmt formatString func = tv $ maybe "" (T.pack . formatTime defaultTimeLocale formatString) . func
       mt :: FormatTime a => String -> (Party -> a) -> Text
       mt formatString func = mmt formatString $ Just . func
-  -- mtv :: (Party -> Maybe Text) ->
   withMFormResultNavBar mResult $(widgetFile "account/submit-party")
 
 postAccountPartyDeleteR :: EventUUID -> Handler Html

@@ -31,7 +31,11 @@ instance GenValid Coordinates where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
-instance GenValid PartyForm where
+instance GenValid AddPartyForm where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid EditPartyForm where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
