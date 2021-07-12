@@ -105,6 +105,9 @@
                   Choose a poster image
               <span .file-name>
                 No poster selected
+          <figure #posterInput .py-3>
+            <img .file-img .is-16by9 style="max-width: 640px; max-height: 360px;">
+
 
       $maybe (posterKey, posterWidget) <- mPosterTup
         <div .field>
