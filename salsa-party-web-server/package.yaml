@@ -9,6 +9,7 @@ library:
   source-dirs: src
   dependencies:
   - JuicyPixels
+  - iCalendar
   - JuicyPixels-extra
   - aeson
   - aeson-pretty
@@ -124,6 +125,7 @@ tests:
     - bytestring
     - conduit
     - containers
+    - data-default
     - esqueleto
     - filepath
     - genvalidity
@@ -137,6 +139,7 @@ tests:
     - genvalidity-typed-uuid
     - http-client
     - http-types
+    - iCalendar
     - microlens
     - monad-logger
     - mtl

@@ -5,6 +5,8 @@
 /query QueryR POST
 
 /party/#EventUUID PartyR GET
+/party/#EventUUID/event.ics PartyEventIcsR GET
+
 /organiser/#OrganiserUUID OrganiserR GET
 /image/#CASKey ImageR GET
 

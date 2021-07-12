@@ -37,7 +37,7 @@
         <p>
           <a .button .is-light href=#{homepage} rel="external nofollow">
             Homepage
-  
+        
 
     $maybe googleMapsEmbedUrl <- mGoogleMapsEmbedUrl
       <div .content>
@@ -49,6 +49,13 @@
             loading="lazy"
             allowfullscreen
             src=#{googleMapsEmbedUrl}>
+ 
+    <p .content>
+      <a .button href=@{PartyEventIcsR partyUuid} type="text/calendar">
+        Download Calendar Event
+      $maybe addToGoogleLink <- mAddToGoogleLink
+        <a .button href=#{show addToGoogleLink}>
+          Add to Google Calendar
 
 
 <!-- Facebook Open Graph metadata -->

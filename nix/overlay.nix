@@ -115,8 +115,16 @@ in
                 final.salsaPartyPackages // {
                   envparse = envparsePkg;
                   yesod-autoreload = self.callCabal2nix "yesod-autoreload" sources.yesod-autoreload { };
+                  # Tests access the internet
                   yesod-static-remote = dontCheck (self.callCabal2nix "yesod-static-remote" sources.yesod-static-remote { });
+                  # Not broken in practice.
                   token-limiter = unmarkBroken (doJailbreak super.token-limiter);
+                  iCalendar = self.callCabal2nix "iCalendar"
+                    (builtins.fetchGit {
+                      url = "https://github.com/NorfairKing/iCalendar";
+                      rev = "d8acdad06988e527debef034458ddc74715f77ce";
+                    })
+                    { };
                 }
             );
       }

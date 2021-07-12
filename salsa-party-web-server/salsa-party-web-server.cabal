@@ -84,6 +84,7 @@ library
     , http-client-tls
     , http-date
     , http-types
+    , iCalendar
     , looper
     , microlens
     , monad-logger
@@ -203,6 +204,7 @@ test-suite salsa-party-web-server-test
     , bytestring
     , conduit
     , containers
+    , data-default
     , esqueleto
     , filepath
     , genvalidity
@@ -215,6 +217,7 @@ test-suite salsa-party-web-server-test
     , genvalidity-typed-uuid
     , http-client
     , http-types
+    , iCalendar
     , microlens
     , monad-logger
     , mtl
