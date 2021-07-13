@@ -244,22 +244,32 @@ editParty ::
   EditPartyForm ->
   Maybe FileInfo ->
   Handler Html
-editParty (Entity partyId Party {..}) EditPartyForm {..} mFileInfo = do
+editParty (Entity partyId party) form mFileInfo = do
   now <- liftIO getCurrentTime
-  Entity placeId _ <- lookupPlace editPartyFormAddress -- Relies on the caching for geocoding
-  runDB $
-    update
-      partyId
-      [ PartyTitle =. editPartyFormTitle,
-        PartyDescription =. unTextarea <$> editPartyFormDescription,
-        -- Purposely don't update the day.
-        -- PartyDay =. partyFormDay,
-        PartyStart =. editPartyFormStart,
-        PartyHomepage =. editPartyFormHomepage,
-        PartyPrice =. editPartyFormPrice,
-        PartyPlace =. placeId,
-        PartyModified =. Just now
-      ]
+  -- This place lookup relies on the caching for geocoding to be fast if nothing has changed.
+  Entity placeId _ <- lookupPlace (editPartyFormAddress form)
+  let whenChanged :: (Eq a, PersistField a) => (Party -> a) -> (EditPartyForm -> a) -> EntityField Party a -> Maybe (Update Party)
+      whenChanged partyFunc formFunc field = do
+        guard $ partyFunc party /= formFunc form
+        pure $ field =. formFunc form
+      fieldUpdates :: [Update Party]
+      fieldUpdates =
+        catMaybes
+          [ whenChanged partyTitle editPartyFormTitle PartyTitle,
+            whenChanged partyDescription (fmap unTextarea . editPartyFormDescription) PartyDescription,
+            -- Purposely don't update the day so that partygoers can't have the rug pulled under them
+            whenChanged partyStart editPartyFormStart PartyStart,
+            whenChanged partyHomepage editPartyFormHomepage PartyHomepage,
+            whenChanged partyPrice editPartyFormPrice PartyPrice,
+            if partyPlace party /= placeId
+              then Just (PartyPlace =. placeId)
+              else Nothing
+          ]
+      mUpdates =
+        if null fieldUpdates
+          then Nothing
+          else Just $ (PartyModified =. Just now) : fieldUpdates
+  forM_ mUpdates $ \updates -> runDB $ update partyId updates
   case mFileInfo of
     -- Update the poster if a new one has been submitted
     Just posterFileInfo -> do
@@ -297,7 +307,7 @@ editParty (Entity partyId Party {..}) EditPartyForm {..} mFileInfo = do
     -- If no new poster has been submitted, check for a poster key.
     -- If there is a poster key, we need to make sure the association exists.
     -- This is really only for duplication, I think.
-    Nothing -> forM_ editPartyFormPosterKey $ \posterKey -> do
+    Nothing -> forM_ (editPartyFormPosterKey form) $ \posterKey -> do
       mImage <- runDB $ getBy $ UniqueImageKey posterKey
       forM_ mImage $ \(Entity imageId _) -> -- TODO don't fetch the entire image.
         runDB $
@@ -314,7 +324,7 @@ editParty (Entity partyId Party {..}) EditPartyForm {..} mFileInfo = do
               PartyPosterModified =. Just now
             ]
   addMessage "is-success" "Succesfully edited party"
-  redirect $ AccountR $ AccountPartyR partyUuid
+  redirect $ AccountR $ AccountPartyR $ partyUuid party
 
 getAccountPartyDuplicateR :: EventUUID -> Handler Html
 getAccountPartyDuplicateR partyUuid = do
