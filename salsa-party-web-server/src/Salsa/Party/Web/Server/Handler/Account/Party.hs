@@ -114,7 +114,9 @@ newPartyPage mResult = do
     Just (Entity organiserId _) ->
       case mResult of
         Just (FormSuccess (form, mFileInfo)) -> addParty organiserId form mFileInfo
-        _ -> submitPartyFormPageWithPrefilled NewParty mResult
+        _ -> do
+          token <- genToken
+          withMFormResultNavBar mResult $(widgetFile "account/add-party")
 
 addParty ::
   Key Organiser ->
@@ -178,7 +180,6 @@ addParty organiserId AddPartyForm {..} mFileInfo = do
 
 data EditPartyForm = EditPartyForm
   { editPartyFormTitle :: Text,
-    editPartyFormDay :: Day,
     editPartyFormAddress :: Text,
     editPartyFormDescription :: Maybe Textarea,
     editPartyFormStart :: Maybe TimeOfDay,
@@ -202,7 +203,6 @@ editPartyForm :: FormInput Handler EditPartyForm
 editPartyForm =
   EditPartyForm
     <$> ireq textField "title"
-    <*> ireq dayField "day"
     <*> ireq textField "address"
     <*> iopt textareaField "description"
     <*> iopt timeField "start"
@@ -237,7 +237,19 @@ editPartyPage partyUuid_ mResult = do
       when (partyOrganiser (entityVal partyEntity) /= organiserId) $ permissionDenied "Not your party to edit."
       case mResult of
         Just (FormSuccess (form, mFileInfo)) -> editParty partyEntity form mFileInfo
-        _ -> submitPartyFormPageWithPrefilled (EditParty partyEntity) mResult
+        _ -> editPartyFormPage partyEntity mResult
+
+editPartyFormPage ::
+  Entity Party ->
+  -- | Just for errors
+  Maybe (FormResult a) ->
+  Handler Html
+editPartyFormPage (Entity partyId party) mResult = do
+  place <- runDB $ get404 $ partyPlace party
+  organiser <- runDB $ get404 $ partyOrganiser party
+  mPosterKey <- runDB $ getPosterForParty partyId
+  token <- genToken
+  withMFormResultNavBar mResult $(widgetFile "account/edit-party")
 
 editParty ::
   Entity Party ->
@@ -336,7 +348,7 @@ getAccountPartyDuplicateR partyUuid = do
       redirect $ AccountR AccountOrganiserR
     Just (Entity organiserId _) -> do
       partyEntity <- getPartyEntityOfOrganiser partyUuid organiserId
-      submitPartyFormPageWithPrefilled (DuplicateParty partyEntity) Nothing
+      undefined partyEntity Nothing
 
 getPartyEntityOfOrganiser :: EventUUID -> OrganiserId -> Handler (Entity Party)
 getPartyEntityOfOrganiser partyUuid organiserId = do
@@ -347,47 +359,6 @@ getPartyEntityOfOrganiser partyUuid organiserId = do
       if partyOrganiser party == organiserId
         then pure partyEntity
         else permissionDenied "Not your party to edit."
-
-data PartyFilling
-  = NewParty
-  | DuplicateParty (Entity Party)
-  | EditParty (Entity Party)
-  deriving (Show, Eq, Generic)
-
-submitPartyFormPageWithPrefilled ::
-  PartyFilling ->
-  -- | Just for errors
-  Maybe (FormResult a) ->
-  Handler Html
-submitPartyFormPageWithPrefilled partyFilling mResult = do
-  let mPartyUuid = case partyFilling of
-        NewParty -> Nothing
-        DuplicateParty _ -> Nothing -- This will indicate a new party
-        EditParty partyEntity -> Just $ partyUuid $ entityVal partyEntity
-      mPartyEntity = case partyFilling of
-        NewParty -> Nothing
-        DuplicateParty partyEntity -> Just partyEntity
-        EditParty partyEntity -> Just partyEntity
-  mPlace <- forM mPartyEntity $ \(Entity _ party) -> runDB $ get404 $ partyPlace party
-  mPosterTup <- fmap join $
-    forM mPartyEntity $ \(Entity partyId party) -> do
-      organiser <- runDB $ get404 $ partyOrganiser party
-      mPosterKey <- runDB $ getPosterForParty partyId
-      pure $ case mPosterKey of
-        Nothing -> Nothing
-        Just posterKey -> Just (posterKey, posterImageWidget party organiser posterKey)
-  token <- genToken
-  let mv :: a -> (Party -> a) -> a
-      mv defaultValue func = maybe defaultValue (func . entityVal) mPartyEntity
-      tv :: (Party -> Text) -> Text
-      tv = mv ""
-      mtv :: (Party -> Maybe Text) -> Text
-      mtv = fromMaybe "" . mv Nothing
-      mmt :: FormatTime a => String -> (Party -> Maybe a) -> Text
-      mmt formatString func = tv $ maybe "" (T.pack . formatTime defaultTimeLocale formatString) . func
-      mt :: FormatTime a => String -> (Party -> a) -> Text
-      mt formatString func = mmt formatString $ Just . func
-  withMFormResultNavBar mResult $(widgetFile "account/submit-party")
 
 postAccountPartyDeleteR :: EventUUID -> Handler Html
 postAccountPartyDeleteR partyUuid = do

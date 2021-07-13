@@ -297,7 +297,6 @@ editPartyFormRequestBuilder partyUuid_ EditPartyForm {..} mPosterFile = do
   setUrl $ AccountR $ AccountPartyR partyUuid_
   addToken
   addPostParam "title" editPartyFormTitle
-  addPostParam "day" $ T.pack $ formatTime defaultTimeLocale "%F" editPartyFormDay
   addPostParam "address" editPartyFormAddress
   forM_ editPartyFormDescription $ \description -> addPostParam "description" $ unTextarea description
   forM_ editPartyFormStart $ \start -> addPostParam "start" $ T.pack $ formatTime defaultTimeLocale "%H:%M" start
@@ -307,8 +306,7 @@ editPartyFormRequestBuilder partyUuid_ EditPartyForm {..} mPosterFile = do
 
 editPartyFormShouldMatch :: EditPartyForm -> Party -> IO ()
 editPartyFormShouldMatch EditPartyForm {..} Party {..} = do
-  let EditPartyForm _ _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
-  context "day" $ partyDay `shouldBe` editPartyFormDay
+  let EditPartyForm _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
   context "title" $ partyTitle `shouldBe` editPartyFormTitle
   -- We can't check the address because that's in the Place.
   -- partyAddress `shouldBe` editPartyFormAddress

@@ -1,10 +1,7 @@
 <section .section>
   <div .container>
     <h1 .title .is-3>
-      $maybe _ <- mPartyUuid
-        Edit Party
-      $nothing
-        Submit Party
+      Submit Party
 
     <form .form
       enctype="multipart/form-data"
@@ -18,31 +15,16 @@
           <input .input
             type=text
             name="title"
-            value=#{tv partyTitle}
             required>
 
       <div .field>
         <label .label>
           Day
-        $maybe _ <- mPartyUuid
-          <input type=hidden name="day" value=#{mt "%F" partyDay}>
-          <div .control>
-            <input .input
-              type=date
-              required
-              value=#{mt "%F" partyDay}
-              name="day"
-              disabled>
-          <p .help>
-            You can no longer edit the day for the party.
-            If you were looking to do that, you can either cancel this party and organise another, or duplicate this party to re-organise it.
-        $nothing
-          <div .control>
-            <input .input
-              type=date
-              required
-              value=#{mt "%F" partyDay}
-              name="day">
+        <div .control>
+          <input .input
+            type=date
+            required
+            name="day">
 
       <div .field>
         <label .label>
@@ -50,7 +32,6 @@
         <div .control>
           <input .input
             type=text
-            value=#{maybe "" placeQuery mPlace}
             required
             name="address">
 
@@ -60,7 +41,6 @@
         <div .control>
           <textarea .textarea
             name="description">
-            #{mtv partyDescription}
 
       <div .field>
         <label .label>
@@ -68,7 +48,6 @@
         <div .control>
           <input .input
             type=time
-            value=#{mmt "%H:%M" partyStart}
             name="start">
 
       <div .field>
@@ -77,7 +56,6 @@
         <div .control>
           <input .input
             type=url
-            value=#{mtv partyHomepage}
             name="homepage">
 
       <div .field>
@@ -86,7 +64,6 @@
         <div .control>
           <input .input
             type=text
-            value=#{mtv partyPrice}
             name="price">
         <p .help>
           Make sure to write FREE if the party is free.
@@ -108,19 +85,6 @@
           <figure #posterInput .py-3>
             <img .file-img .is-16by9 style="max-width: 640px; max-height: 360px;">
 
-
-      $maybe (posterKey, posterWidget) <- mPosterTup
-        <div .field>
-          <div .control>
-            <input .input name="poster-key" type="hidden" value=#{renderCASKey posterKey}>
-        ^{posterWidget}
-
-
-      $maybe partyUuid <- mPartyUuid
-        <div .field>
-          <div .control>
-            <input .input name="uuid" type="hidden" value=#{uuidText partyUuid}>
-
       <div .field>
         <div .control>
           ^{token}
@@ -132,6 +96,3 @@
               Submit
             <a .button href=@{AccountR AccountPartiesR}>
               Back
-            $maybe partyUuid <- mPartyUuid
-              <a .button href=@{PartyR partyUuid}>
-                Public party profile

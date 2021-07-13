@@ -3,7 +3,6 @@
 module Salsa.Party.Web.Server.Handler.Account.PartySpec (spec) where
 
 import qualified Database.Persist as DB
-import Salsa.Party.Web.Server.Handler.Account.Party
 import Salsa.Party.Web.Server.Handler.TestImport
 
 spec :: Spec
@@ -172,31 +171,7 @@ spec = serverSpec $ do
                 mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
                 liftIO $ case mParty of
                   Nothing -> expectationFailure "expected the party to still exist."
-                  Just (Entity _ party) ->
-                    editPartyForm_
-                      { editPartyFormDay = addPartyFormDay addPartyForm_
-                      }
-                      `editPartyFormShouldMatch` party
-
-    it "Cannot edit an existing party's date" $ \yc ->
-      forAllValid $ \organiserForm_ ->
-        forAllValid $ \addPartyForm_ ->
-          forAllValid $ \editPartyForm_ ->
-            forAll (genValid `suchThat` (\d -> d /= addPartyFormDay addPartyForm_)) $ \day ->
-              forAllValid $ \location ->
-                withAnyLoggedInUser_ yc $ do
-                  testSubmitOrganiser organiserForm_
-                  partyUuid_ <-
-                    testAddParty
-                      addPartyForm_
-                      location
-                  get $ AccountR $ AccountPartyR partyUuid_
-                  statusIs 200
-                  testEditParty partyUuid_ (editPartyForm_ {editPartyFormDay = day}) location
-                  mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
-                  liftIO $ case mParty of
-                    Nothing -> expectationFailure "expected the party to still exist."
-                    Just (Entity _ party) -> partyDay party `shouldBe` addPartyFormDay addPartyForm_
+                  Just (Entity _ party) -> editPartyForm_ `editPartyFormShouldMatch` party
 
     it "Can edit a party's poster" $ \yc ->
       forAllValid $ \organiserForm_ ->

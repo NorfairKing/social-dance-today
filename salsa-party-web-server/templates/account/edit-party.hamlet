@@ -1,0 +1,118 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      Edit Party
+
+    <form .form
+      enctype="multipart/form-data"
+      method=post
+      action=@{AccountR $ AccountPartyR $ partyUuid party}>
+
+      <div .field>
+        <label .label>
+          Title
+        <div .control>
+          <input .input
+            type=text
+            name="title"
+            value=#{partyTitle party}
+            required>
+
+      <div .field>
+        <label .label>
+          Day
+        <div .control>
+          <input .input
+            type=date
+            required
+            value=#{formatTime defaultTimeLocale "%F" $ partyDay party}
+            name="day"
+            disabled>
+        <p .help>
+          You can no longer edit the day for the party.
+          If you were looking to do that, you can either cancel this party and organise another, or duplicate this party to re-organise it.
+
+      <div .field>
+        <label .label>
+          Address
+        <div .control>
+          <input .input
+            type=text
+            value=#{placeQuery place}
+            required
+            name="address">
+
+      <div .field>
+        <label .label>
+          Description
+        <div .control>
+          <textarea .textarea
+            name="description">
+            #{fromMaybe "" (partyDescription party)}
+
+      <div .field>
+        <label .label>
+          Start
+        <div .control>
+          <input .input
+            type=time
+            value=#{maybe "" (formatTime defaultTimeLocale "%H:%M") (partyStart party)}
+            name="start">
+
+      <div .field>
+        <label .label>
+          Homepage
+        <div .control>
+          <input .input
+            type=url
+            value=#{fromMaybe "" (partyHomepage party)}
+            name="homepage">
+
+      <div .field>
+        <label .label>
+          Price
+        <div .control>
+          <input .input
+            type=text
+            value=#{fromMaybe "" (partyPrice party)}
+            name="price">
+        <p .help>
+          Make sure to write FREE if the party is free.
+
+      <div .field>
+        <label .label>
+          Poster
+        <div .control>
+          <div #posterInput .file .has-name>
+            <label .file-label>
+              <input .input .file-input .input name="poster" type="file">
+              <span .file-cta>
+                <span .file-icon>
+                  <i .fas .fa-upload>
+                <span .file-label>
+                  Choose a poster image
+              <span .file-name>
+                No poster selected
+          <figure #posterInput .py-3>
+            <img .file-img .is-16by9 style="max-width: 640px; max-height: 360px;">
+
+
+      $maybe posterKey <- mPosterKey
+        <div .field>
+          <div .control>
+            <input .input name="poster-key" type="hidden" value=#{renderCASKey posterKey}>
+        ^{posterImageWidget party organiser posterKey}
+
+      <div .field>
+        <div .control>
+          ^{token}
+
+      <div .field>
+        <div .control>
+          <div .buttons>
+            <button .button .is-dark type="submit">
+              Submit
+            <a .button href=@{AccountR AccountPartiesR}>
+              Back
+            <a .button href=@{PartyR $ partyUuid party}>
+              Public party profile
