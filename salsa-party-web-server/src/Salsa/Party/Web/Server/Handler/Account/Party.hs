@@ -227,7 +227,7 @@ editPartyPage partyUuid_ mResult = do
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
   case mOrganiser of
     Nothing -> do
-      addMessage "is-danger" "You must set up an organiser profile in the account overview before you can submit a party."
+      addMessage "is-danger" "You must set up an organiser profile in the account overview before you can edit a party."
       redirect $ AccountR AccountOrganiserR
     Just (Entity organiserId _) -> do
       mParty <- runDB $ getBy $ UniquePartyUUID partyUuid_
@@ -283,6 +283,7 @@ editParty (Entity partyId party) form mFileInfo = do
           else Just $ (PartyModified =. Just now) : fieldUpdates
   forM_ mUpdates $ \updates -> runDB $ update partyId updates
   case mFileInfo of
+    Nothing -> pure ()
     -- Update the poster if a new one has been submitted
     Just posterFileInfo -> do
       imageBlob <- fileSourceByteString posterFileInfo
@@ -316,39 +317,23 @@ editParty (Entity partyId party) form mFileInfo = do
                 [ PartyPosterImage =. imageId,
                   PartyPosterModified =. Just now
                 ]
-    -- If no new poster has been submitted, check for a poster key.
-    -- If there is a poster key, we need to make sure the association exists.
-    -- This is really only for duplication, I think.
-    Nothing -> forM_ (editPartyFormPosterKey form) $ \posterKey -> do
-      mImage <- runDB $ getBy $ UniqueImageKey posterKey
-      forM_ mImage $ \(Entity imageId _) -> -- TODO don't fetch the entire image.
-        runDB $
-          upsertBy
-            (UniquePartyPoster partyId)
-            ( PartyPoster
-                { partyPosterParty = partyId,
-                  partyPosterImage = imageId,
-                  partyPosterCreated = now,
-                  partyPosterModified = Nothing
-                }
-            )
-            [ PartyPosterImage =. imageId,
-              PartyPosterModified =. Just now
-            ]
   addMessage "is-success" "Succesfully edited party"
   redirect $ AccountR $ AccountPartyR $ partyUuid party
 
 getAccountPartyDuplicateR :: EventUUID -> Handler Html
-getAccountPartyDuplicateR partyUuid = do
+getAccountPartyDuplicateR partyUuid_ = do
   userId <- requireAuthId
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
   case mOrganiser of
     Nothing -> do
-      addMessage "is-danger" "You must set up an organiser profile in the account overview before you can submit a party."
+      addMessage "is-danger" "You must set up an organiser profile in the account overview before you can duplicate a party."
       redirect $ AccountR AccountOrganiserR
-    Just (Entity organiserId _) -> do
-      partyEntity <- getPartyEntityOfOrganiser partyUuid organiserId
-      undefined partyEntity Nothing
+    Just (Entity organiserId organiser) -> do
+      Entity partyId party <- getPartyEntityOfOrganiser partyUuid_ organiserId
+      place <- runDB $ get404 $ partyPlace party
+      mPosterKey <- runDB $ getPosterForParty partyId
+      token <- genToken
+      withNavBar $(widgetFile "account/duplicate-party")
 
 getPartyEntityOfOrganiser :: EventUUID -> OrganiserId -> Handler (Entity Party)
 getPartyEntityOfOrganiser partyUuid organiserId = do
