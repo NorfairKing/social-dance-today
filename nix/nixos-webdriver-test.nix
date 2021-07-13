@@ -36,23 +36,12 @@ pkgs.nixosTest (
             Type = "oneshot";
             User = testuser;
           };
-          path =
-            let
-              my-python-packages = python-packages: with python-packages; [
-                selenium
-              ];
-              python-with-my-packages = pkgs.python3.withPackages my-python-packages;
-            in
-            [
-              pkgs.geckodriver
-              pkgs.firefox
-              python-with-my-packages
-            ];
+          path = import ../webdriver-tests/env.nix { inherit pkgs; };
           script = ''
             set -e
             mkdir -p /tmp/webdriver-test
             cd /tmp/webdriver-test
-            python ${../webdriver-tests/test.py}
+            python ${../webdriver-tests/test.py} --headless --host server:${builtins.toString port}
           '';
         };
       };
