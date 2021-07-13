@@ -78,7 +78,9 @@ in
   salsaPartyRelease =
     final.symlinkJoin {
       name = "salsa-party-release";
-      paths = final.lib.attrValues final.salsaPartyPackages;
+      paths = final.lib.attrValues final.salsaPartyPackages ++ [
+        salsaWebdriverTests
+      ];
     };
 
 
