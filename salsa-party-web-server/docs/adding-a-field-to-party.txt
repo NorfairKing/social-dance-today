@@ -1,0 +1,10 @@
+# Adding a field to parties
+
+1. Add it to the add form
+2. Add it to the edit form
+3. Add it to the duplicate form
+
+Run through manually (until we have selenium tests):
+1. Adding a party
+2. Editing a party
+3. Duplicating a party
