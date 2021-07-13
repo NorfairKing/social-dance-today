@@ -30,33 +30,6 @@ pkgs.nixosTest (
           isNormalUser = true;
         };
 
-
-        # Turn on the x server.
-        # What follows here is taken from
-        # https://github.com/NixOS/nixpkgs/blob/8284fc30c84ea47e63209d1a892aca1dfcd6bdf3/nixos/tests/common/auto.nix#L42-L66
-        services.xserver.enable = true;
-        # Use IceWM as the window manager.
-        # Don't use a desktop manager.
-        services.xserver.displayManager = {
-          defaultSession = lib.mkDefault "none+icewm";
-          lightdm.enable = true;
-          autoLogin = {
-            enable = true;
-            user = testuser;
-          };
-        };
-        services.xserver.windowManager.icewm.enable = true;
-        # lightdm by default doesn't allow auto login for root, which is
-        # required by some nixos tests. Override it here.
-        security.pam.services.lightdm-autologin.text = lib.mkForce ''
-          auth     requisite pam_nologin.so
-          auth     required  pam_succeed_if.so quiet
-          auth     required  pam_permit.so
-          account  include   lightdm
-          password include   lightdm
-          session  include   lightdm
-        '';
-
         systemd.services.webdriver-test = {
           description = "webdriver test";
           serviceConfig = {
@@ -107,7 +80,6 @@ pkgs.nixosTest (
       server.wait_for_unit("multi-user.target")
 
       server.wait_for_open_port(${builtins.toString port})
-      client.wait_for_x()
       client.systemctl("start webdriver-test.service --wait")
       client.systemctl("status webdriver-test.service")
       client.require_unit_state("webdriver-test.service", "inactive")
