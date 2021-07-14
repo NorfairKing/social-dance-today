@@ -54,10 +54,7 @@ spec = serverSpec $ do
                 testAddParty
                   partyForm_
                   location
-              mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
-              liftIO $ case mParty of
-                Nothing -> liftIO $ expectationFailure "expected the party to exist."
-                Just (Entity _ party) -> partyForm_ `addPartyFormShouldMatch` party
+              verifyPartyAdded partyUuid_ partyForm_
 
     it "Can create a party with a poster" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -71,13 +68,7 @@ spec = serverSpec $ do
                   partyForm_
                   location
                   poster_
-              mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
-              mCasKey <- case mParty of
-                Nothing -> liftIO $ expectationFailure "expected the party to exist."
-                Just (Entity partyId party) -> do
-                  liftIO $ partyForm_ `addPartyFormShouldMatch` party
-                  testDB $ getPosterForParty partyId
-              liftIO $ mCasKey `shouldBe` testFileCASKey poster_
+              verifyPartyAddedWithPoster partyUuid_ partyForm_ poster_
 
     it "Can create two parties with the same poster" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -97,22 +88,8 @@ spec = serverSpec $ do
                     partyForm2_
                     location
                     poster
-                mParty1 <- testDB $ DB.getBy $ UniquePartyUUID partyUuid1
-                mCasKey1 <- case mParty1 of
-                  Nothing -> liftIO $ expectationFailure "expected the first party to exist."
-                  Just (Entity partyId party) -> do
-                    liftIO $ partyForm1_ `addPartyFormShouldMatch` party
-                    testDB $ getPosterForParty partyId
-                mParty2 <- testDB $ DB.getBy $ UniquePartyUUID partyUuid2
-                mCasKey2 <- case mParty2 of
-                  Nothing -> liftIO $ expectationFailure "expected the second party to exist."
-                  Just (Entity partyId party) -> do
-                    liftIO $ partyForm2_ `addPartyFormShouldMatch` party
-                    testDB $ getPosterForParty partyId
-                liftIO $ do
-                  mCasKey1 `shouldBe` mCasKey2
-                  mCasKey1 `shouldBe` testFileCASKey poster
-                  mCasKey2 `shouldBe` testFileCASKey poster
+                verifyPartyAddedWithPoster partyUuid1 partyForm1_ poster
+                verifyPartyAddedWithPoster partyUuid2 partyForm2_ poster
 
   describe "AccountPartyR" $ do
     it "can GET a party" $ \yc -> do
@@ -168,10 +145,7 @@ spec = serverSpec $ do
                 statusIs 303
                 _ <- followRedirect
                 statusIs 200
-                mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
-                liftIO $ case mParty of
-                  Nothing -> expectationFailure "expected the party to still exist."
-                  Just (Entity _ party) -> editPartyForm_ `editPartyFormShouldMatch` party
+                verifyPartyEdited partyUuid_ editPartyForm_
 
     it "Can edit a party's poster" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -199,12 +173,7 @@ spec = serverSpec $ do
                 statusIs 303
                 _ <- followRedirect
                 statusIs 200
-                mParty2 <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
-                mCasKey2 <- case mParty2 of
-                  Nothing -> liftIO $ expectationFailure "expected the second party to exist."
-                  Just (Entity partyId _) -> testDB $ getPosterForParty partyId
-                -- The poster is now different
-                liftIO $ mCasKey2 `shouldBe` testFileCASKey poster2
+                verifyPartyEditedWithPoster partyUuid_ editPartyForm_ poster2
 
     it "Cannot edit a nonexistent party" $ \yc ->
       forAllValid $ \organiserForm_ ->

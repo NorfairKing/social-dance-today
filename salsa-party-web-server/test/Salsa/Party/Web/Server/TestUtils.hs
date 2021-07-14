@@ -13,7 +13,7 @@ import Data.GenValidity
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
-import Database.Persist ((=.))
+import Database.Persist (Entity (..), (=.))
 import qualified Database.Persist as DB
 import qualified Database.Persist.Sql as DB
 import Database.Persist.Sqlite (fkEnabled, mkSqliteConnectionInfo, walEnabled, withSqlitePoolInfo)
@@ -260,6 +260,26 @@ addPartyFormRequestBuilder AddPartyForm {..} mPosterFile = do
   forM_ addPartyFormPrice $ \price -> addPostParam "price" price
   forM_ mPosterFile $ \TestFile {..} -> addFileWith "poster" testFilePath testFileContents testFileType
 
+verifyPartyAdded :: EventUUID -> AddPartyForm -> YesodClientM App ()
+verifyPartyAdded partyUuid_ addPartyForm_ = verifyPartyAddedHelper partyUuid_ addPartyForm_ Nothing
+
+verifyPartyAddedWithPoster :: EventUUID -> AddPartyForm -> TestFile -> YesodClientM App ()
+verifyPartyAddedWithPoster partyUuid_ addPartyForm_ poster = verifyPartyAddedHelper partyUuid_ addPartyForm_ (Just poster)
+
+verifyPartyAddedHelper :: EventUUID -> AddPartyForm -> Maybe TestFile -> YesodClientM App ()
+verifyPartyAddedHelper partyUuid_ addPartyForm_ mPoster = do
+  mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
+  case mParty of
+    Nothing -> liftIO $ expectationFailure "expected the added party to still exist."
+    Just (Entity partyId party) -> do
+      liftIO $ addPartyForm_ `addPartyFormShouldMatch` party
+      mPlace <- testDB $ DB.get $ partyPlace party
+      liftIO $ case mPlace of
+        Nothing -> expectationFailure "expected the added party to still have a place"
+        Just place -> placeQuery place `shouldBe` addPartyFormAddress addPartyForm_
+      mCASKey <- testDB $ getPosterForParty partyId
+      liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
+
 addPartyFormShouldMatch :: AddPartyForm -> Party -> IO ()
 addPartyFormShouldMatch AddPartyForm {..} Party {..} = do
   let AddPartyForm _ _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
@@ -303,6 +323,26 @@ editPartyFormRequestBuilder partyUuid_ EditPartyForm {..} mPosterFile = do
   forM_ editPartyFormHomepage $ \homepage -> addPostParam "homepage" homepage
   forM_ editPartyFormPrice $ \price -> addPostParam "price" price
   forM_ mPosterFile $ \TestFile {..} -> addFileWith "poster" testFilePath testFileContents testFileType
+
+verifyPartyEdited :: EventUUID -> EditPartyForm -> YesodClientM App ()
+verifyPartyEdited partyUuid_ editPartyForm_ = verifyPartyEditedHelper partyUuid_ editPartyForm_ Nothing
+
+verifyPartyEditedWithPoster :: EventUUID -> EditPartyForm -> TestFile -> YesodClientM App ()
+verifyPartyEditedWithPoster partyUuid_ editPartyForm_ poster = verifyPartyEditedHelper partyUuid_ editPartyForm_ (Just poster)
+
+verifyPartyEditedHelper :: EventUUID -> EditPartyForm -> Maybe TestFile -> YesodClientM App ()
+verifyPartyEditedHelper partyUuid_ editPartyForm_ mPoster = do
+  mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
+  case mParty of
+    Nothing -> liftIO $ expectationFailure "expected the edited party to still exist."
+    Just (Entity partyId party) -> do
+      liftIO $ editPartyForm_ `editPartyFormShouldMatch` party
+      mPlace <- testDB $ DB.get $ partyPlace party
+      liftIO $ case mPlace of
+        Nothing -> expectationFailure "expected the edited party to still have a place"
+        Just place -> placeQuery place `shouldBe` editPartyFormAddress editPartyForm_
+      mCASKey <- testDB $ getPosterForParty partyId
+      liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
 
 editPartyFormShouldMatch :: EditPartyForm -> Party -> IO ()
 editPartyFormShouldMatch EditPartyForm {..} Party {..} = do
