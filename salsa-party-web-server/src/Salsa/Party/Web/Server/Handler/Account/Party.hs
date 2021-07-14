@@ -146,7 +146,6 @@ addParty organiserId AddPartyForm {..} mFileInfo = do
             }
         )
   case mFileInfo of
-    Nothing -> pure ()
     -- Update the poster if a new one has been submitted
     Just posterFileInfo -> do
       imageBlob <- fileSourceByteString posterFileInfo
@@ -175,6 +174,26 @@ addParty organiserId AddPartyForm {..} mFileInfo = do
                     partyPosterModified = Nothing
                   }
               )
+    -- If no new poster has been submitted, check for a poster key.
+    -- If there is a poster key, we need to make sure the association exists.
+    -- This is really only for duplication, I think.
+    Nothing -> forM_ addPartyFormPosterKey $ \posterKey -> do
+      mImage <- runDB $ getBy $ UniqueImageKey posterKey
+      forM_ mImage $ \(Entity imageId _) -> -- TODO don't fetch the entire image.
+        runDB $
+          upsertBy
+            (UniquePartyPoster partyId)
+            ( PartyPoster
+                { partyPosterParty = partyId,
+                  partyPosterImage = imageId,
+                  partyPosterCreated = now,
+                  partyPosterModified = Nothing
+                }
+            )
+            [ PartyPosterImage =. imageId,
+              PartyPosterModified =. Just now
+            ]
+
   addMessage "is-success" "Succesfully submitted party"
   redirect $ AccountR $ AccountPartyR uuid
 

@@ -108,5 +108,5 @@
           <div .buttons>
             <button .button .is-dark type="submit">
               Submit
-            <a .button href=@{AccountR $ AccountPartyR partyUuid_}>
+            <a .button href=@{AccountR AccountParties}>
               Back
