@@ -52,6 +52,68 @@ driver.find_element_by_xpath('//button[contains(text(), "Sign up")]').click()
 
 time.sleep(1)
 
+# Set up an organiser profile
+print("Setting up an organiser profile")
+driver.find_element_by_xpath('//a[contains(text(), "Organiser Profile")]').click()
+driver.find_element_by_name("name").send_keys("Test Organiser")
+driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
+driver.find_element_by_xpath('//a[contains(text(), "View Public Profile")]').click()
+
+time.sleep(1)
+
+# Submit a party
+print("Submitting a party")
+driver.find_element_by_xpath('//a[contains(text(), "My Parties")]').click()
+driver.find_element_by_xpath('//a[contains(text(), "Submit party")]').click()
+driver.find_element_by_name("title").send_keys("Test Party")
+driver.find_element_by_name("day").send_keys("2021-07-14")
+# The address must be something we definitely have in cache
+driver.find_element_by_name("address").send_keys("Zürich")
+driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
+# Twice, just to make sure that editing without changing anything at least doesn't crash.
+driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
+driver.find_element_by_xpath('//a[contains(text(), "Public Party Profile")]').click()
+
+time.sleep(1)
+
+# Edit the party
+print("Editing the party")
+driver.find_element_by_xpath('//a[contains(text(), "My Parties")]').click()
+driver.find_element_by_xpath(
+    '//a[contains(text(), "Edit")]'
+).click()  # There's only one party so this should work.
+driver.find_element_by_name("title").clear()
+driver.find_element_by_name("title").send_keys("Test Party (Edited)")
+driver.find_element_by_name("description").send_keys(
+    "This is a Test\nDescription with\nnewlines."
+)
+driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
+# Twice, just to make sure that editing without changing anything still doesn't crash.
+driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
+driver.find_element_by_xpath('//a[contains(text(), "Public Party Profile")]').click()
+
+time.sleep(1)
+
+# Duplicate the party
+print("Duplicating the party")
+driver.find_element_by_xpath('//a[contains(text(), "My Parties")]').click()
+driver.find_element_by_xpath(
+    '//a[contains(text(), "Duplicate")]'
+).click()  # There's only one party so this should work.
+driver.find_element_by_name("title").clear()
+driver.find_element_by_name("title").send_keys("Test Party (Duplicated)")
+driver.find_element_by_name("day").send_keys("2021-07-15")
+driver.find_element_by_name("description").clear()
+driver.find_element_by_name("description").send_keys(
+    "This is the description of the duplicated party."
+)
+driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
+# Twice, just to make sure that editing without changing anything still doesn't crash.
+driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
+driver.find_element_by_xpath('//a[contains(text(), "Public Party Profile")]').click()
+
+time.sleep(1)
+
 # Try to delete account
 print("Deleting account")
 driver.find_element_by_xpath('//a[contains(text(), "Account")]').click()

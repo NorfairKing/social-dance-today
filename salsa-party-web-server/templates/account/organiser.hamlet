@@ -28,5 +28,5 @@
           $maybe Entity _ organiser <- mOrganiser
             <a .button .is-light
               href=@{OrganiserR $ organiserUuid organiser}>
-              View Public profile
+              View Public Profile
 

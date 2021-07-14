@@ -115,4 +115,4 @@
             <a .button href=@{AccountR AccountPartiesR}>
               Back
             <a .button href=@{PartyR $ partyUuid party}>
-              Public party profile
+              Public Party Profile
