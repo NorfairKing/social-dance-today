@@ -41,7 +41,7 @@
             allowfullscreen
             src=#{googleMapsEmbedUrl}>
 
-    <p .content>
+    <div .buttons>
       <a .button href=@{PartyEventIcsR externalEventUuid} type="text/calendar">
         Download Calendar Event
       $maybe addToGoogleLink <- mAddToGoogleLink
