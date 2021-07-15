@@ -68,6 +68,7 @@ searchResultPage mDay mAddress coordinates = do
       toDouble = realToFrac
   searchResults <- runDB $ searchQuery begin end coordinates
   timeLocale <- getTimeLocale
+  prettyDayFormat <- getPrettyDayFormat
   withNavBar $ do
     setTitle $
       mconcat
@@ -78,7 +79,7 @@ searchResultPage mDay mAddress coordinates = do
           " ",
           toHtml $ case mDay of
             Nothing -> "today"
-            Just d -> "on " <> formatTime defaultTimeLocale prettyDayFormat d
+            Just d -> "on " <> formatTime timeLocale prettyDayFormat d
         ]
     setDescription $
       mconcat
@@ -89,7 +90,7 @@ searchResultPage mDay mAddress coordinates = do
           " ",
           T.pack $ case mDay of
             Nothing -> "today"
-            Just d -> "on " <> formatTime defaultTimeLocale prettyDayFormat d,
+            Just d -> "on " <> formatTime timeLocale prettyDayFormat d,
           ".",
           "Should you wish to see your parties featured here, please make an account and submit your party for free!"
         ]

@@ -53,6 +53,7 @@ partyPage (Entity partyId party@Party {..}) = do
   let today = utctDay now
   renderUrl <- getUrlRender
   timeLocale <- getTimeLocale
+  prettyDayFormat <- getPrettyDayFormat
   withNavBar $ do
     setTitle $ toHtml partyTitle
     setDescription $ fromMaybe "Party without description" partyDescription
@@ -139,6 +140,7 @@ externalEventPage (Entity _ externalEvent@ExternalEvent {..}) = do
   let today = utctDay now
   renderUrl <- getUrlRender
   timeLocale <- getTimeLocale
+  prettyDayFormat <- getPrettyDayFormat
   withNavBar $ do
     setTitle $ toHtml externalEventTitle
     setDescription $ fromMaybe "Party without description" externalEventDescription

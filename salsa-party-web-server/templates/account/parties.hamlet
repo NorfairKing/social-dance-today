@@ -16,7 +16,7 @@
         <h2 .title .is-4>
           $if partyCancelled party
             CANCELLED: 
-          #{formatTime defaultTimeLocale prettyDayFormat $ partyDay party}: #{partyTitle party}
+          #{formatTime timeLocale prettyDayFormat $ partyDay party}: #{partyTitle party}
         <h3 .subtitle .is-5>
           #{placeQuery p}
         $maybe posterKey <- mPosterKey

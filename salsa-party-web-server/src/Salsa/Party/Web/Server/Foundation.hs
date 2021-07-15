@@ -399,11 +399,9 @@ instance PathPiece (Fixed a) where
 placeCoordinates :: Place -> Coordinates
 placeCoordinates Place {..} = Coordinates {coordinatesLat = placeLat, coordinatesLon = placeLon}
 
-prettyDayFormat :: String
-prettyDayFormat = "%A, %B %e"
-
 posterImageWidget :: Party -> Organiser -> CASKey -> Widget
-posterImageWidget Party {..} Organiser {..} posterKey =
+posterImageWidget Party {..} Organiser {..} posterKey = do
+  prettyDayFormat <- getPrettyDayFormat
   [whamlet|
     <img
       width=#{desiredWidth}
@@ -521,6 +519,23 @@ languageTimeLocale = \case
   "en" -> Just defaultTimeLocale
   "de" -> Just germanTimeLocale
   _ -> Nothing
+
+getPrettyDayFormat :: MonadHandler m => m String
+getPrettyDayFormat = fromMaybe defaultPrettyDayFormat . firstMatchingPrettyDayFormat <$> languages
+
+firstMatchingPrettyDayFormat :: [Text] -> Maybe String
+firstMatchingPrettyDayFormat = \case
+  [] -> Nothing
+  (lang : rest) -> languagePrettyDayFormat lang <|> firstMatchingPrettyDayFormat rest
+
+languagePrettyDayFormat :: Text -> Maybe String
+languagePrettyDayFormat = \case
+  "en" -> Just "%A, %B %e" -- Friday, July 16
+  "de" -> Just "%A, %e %B" -- Freitag, 16 juli
+  _ -> Nothing
+
+defaultPrettyDayFormat :: String
+defaultPrettyDayFormat = "%A, %e %B"
 
 -- | Locale representing German usage.
 germanTimeLocale :: TimeLocale

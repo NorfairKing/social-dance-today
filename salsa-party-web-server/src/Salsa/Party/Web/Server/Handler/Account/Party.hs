@@ -38,6 +38,8 @@ getAccountPartiesR = do
     Just (Entity organiserId organiser) -> do
       parties <- runDB $ getPartiesOfOrganiser organiserId
       token <- genToken
+      timeLocale <- getTimeLocale
+      prettyDayFormat <- getPrettyDayFormat
       withNavBar $(widgetFile "account/parties")
 
 getPartiesOfOrganiser :: MonadIO m => OrganiserId -> SqlPersistT m [(Entity Party, Entity Place, Maybe CASKey)]
