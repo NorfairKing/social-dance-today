@@ -13,31 +13,40 @@
     <div .navbar-start>
       <a .navbar-item href=@{HomeR}>
         <strong>
-          Find a party
+          _{MsgNavFind}
       $maybe _ <- mAuth
         <a .navbar-item href=@{AccountR AccountOverviewR}>
-          Account
+          _{MsgNavAccount}
         <a .navbar-item href=@{AccountR AccountOrganiserR}>
-          Organiser Profile
+          _{MsgNavOrganiser}
         <a .navbar-item href=@{AccountR AccountPartiesR}>
-          My Parties
+          _{MsgNavParties}
       
     <div .navbar-end>
+      <div .navbar-item .has-dropdown .is-hoverable>
+        <a .navbar-link>
+          _{MsgNavLanguage}
+        <div .navbar-dropdown .is-hidden-mobile>
+          $forall lang <- supportedLanguages
+            <form method=post action=@{SelectLanguageR lang}>
+              <button .button .is-text .type=submit .navbar-item>
+                #{supportedLanguageNative lang}
+
       $if isAdmin
         <a .navbar-item href=@{AdminR AdminPanelR}>
-          Admin Panel
+          _{MsgNavAdmin}
 
       <div .navbar-item>
         $maybe _ <- mAuth
           <a .button .is-light href=@{AuthR LogoutR}>
-            Log out
+            _{MsgNavLogOut}
         $nothing
           <div .buttons>
             <a .button .is-light href=@{AuthR registerR}>
-              Sign up
+              _{MsgNavSignUp}
             
             <a .button .is-light href=@{AuthR LoginR}>
-              Log in
+              _{MsgNavLogIn}
 
 $forall errorMessage <- errorMessages
   <article .message .is-danger role="alert">

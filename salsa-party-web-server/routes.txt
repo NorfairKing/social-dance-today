@@ -2,6 +2,8 @@
 
 /explore ExploreR GET
 
+/select-language/#SupportedLanguage SelectLanguageR POST
+
 /query QueryR POST
 
 /party/#EventUUID PartyR GET

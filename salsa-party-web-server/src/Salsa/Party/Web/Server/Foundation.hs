@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
@@ -14,6 +15,7 @@
 
 module Salsa.Party.Web.Server.Foundation where
 
+import Control.Applicative
 import Control.Concurrent.TokenLimiter
 import Control.Monad
 import Control.Monad.Logger
@@ -454,3 +456,53 @@ instance ToWidgetHead App JSONLDData where
         H.lazyText $ renderJavascript $ toJavascript v
 
 type PageNumber = Int
+
+-- I18N Languages
+-- TODO see if we can refactor this out
+data SupportedLanguage
+  = SupportedLangEnglish
+  | SupportedLangGerman
+  deriving (Show, Read, Eq, Enum, Bounded)
+
+instance PathPiece SupportedLanguage where
+  fromPathPiece = parseSupportedLanguage
+  toPathPiece = supportedLanguageAbbreviation
+
+supportedLanguages :: [SupportedLanguage]
+supportedLanguages = [minBound .. maxBound]
+
+parseSupportedLanguage :: Text -> Maybe SupportedLanguage
+parseSupportedLanguage =
+  \case
+    "en" -> Just SupportedLangEnglish
+    "de" -> Just SupportedLangGerman
+    _ -> Nothing
+
+supportedLanguageAbbreviation :: SupportedLanguage -> Text
+supportedLanguageAbbreviation =
+  \case
+    SupportedLangEnglish -> "en"
+    SupportedLangGerman -> "de"
+
+supportedLanguageNative :: SupportedLanguage -> Text
+supportedLanguageNative =
+  \case
+    SupportedLangEnglish -> "English"
+    SupportedLangGerman -> "Deutsch"
+
+getFirstMatchingSupportedLanguage :: Handler SupportedLanguage
+getFirstMatchingSupportedLanguage = do
+  ls <- languages
+  pure $ fromMaybe SupportedLangEnglish $ firstMatchingSupportedLanguage ls
+
+firstMatchingSupportedLanguage :: [Text] -> Maybe SupportedLanguage
+firstMatchingSupportedLanguage =
+  \case
+    [] -> Nothing
+    (l : ls) -> parseSupportedLanguage l <|> firstMatchingSupportedLanguage ls
+
+postSelectLanguageR :: SupportedLanguage -> Handler Html
+postSelectLanguageR lang = do
+  setLanguage $ supportedLanguageAbbreviation lang
+  setUltDestReferer
+  redirectUltDest HomeR
