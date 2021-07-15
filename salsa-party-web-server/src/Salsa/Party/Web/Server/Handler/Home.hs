@@ -8,6 +8,6 @@ import Salsa.Party.Web.Server.Handler.Import
 getHomeR :: Handler Html
 getHomeR =
   withNavBar $ do
-    setTitle "Salsa Parties Today"
-    setDescription "Where can I dance today?"
+    setTitleI MsgSalsaTitle
+    setDescription "Where can I dance?"
     $(widgetFile "home")

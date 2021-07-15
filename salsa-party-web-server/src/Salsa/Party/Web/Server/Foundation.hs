@@ -72,6 +72,8 @@ data App = App
     appGoogleSearchConsoleVerification :: !(Maybe Text) -- Nothing means disabled.
   }
 
+mkMessage "App" "messages" "en"
+
 mkYesodData "App" $(makeRelativeToProject "routes.txt" >>= parseRoutesFile)
 
 instance Yesod App where
