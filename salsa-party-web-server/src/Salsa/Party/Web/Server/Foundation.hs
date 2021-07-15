@@ -401,13 +401,14 @@ placeCoordinates Place {..} = Coordinates {coordinatesLat = placeLat, coordinate
 
 posterImageWidget :: Party -> Organiser -> CASKey -> Widget
 posterImageWidget Party {..} Organiser {..} posterKey = do
+  timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
   [whamlet|
     <img
       width=#{desiredWidth}
       height=#{desiredHeight}
       src=@{ImageR posterKey}
-      alt="Poster for #{partyTitle} on #{formatTime defaultTimeLocale prettyDayFormat partyDay}, by #{organiserName}">
+      alt=_{MsgPosterAltFull partyTitle (formatTime timeLocale prettyDayFormat partyDay) organiserName}>
   |]
 
 getPosterForParty :: MonadIO m => PartyId -> SqlPersistT m (Maybe CASKey)
@@ -506,7 +507,7 @@ postSelectLanguageR lang = do
   setUltDestReferer
   redirectUltDest HomeR
 
-getTimeLocale :: Handler TimeLocale
+getTimeLocale :: MonadHandler m => m TimeLocale
 getTimeLocale = fromMaybe defaultTimeLocale . firstMatchingTimeLocale <$> languages
 
 firstMatchingTimeLocale :: [Text] -> Maybe TimeLocale
@@ -516,7 +517,7 @@ firstMatchingTimeLocale = \case
 
 languageTimeLocale :: Text -> Maybe TimeLocale
 languageTimeLocale = \case
-  "en" -> Just defaultTimeLocale
+  "en" -> Just defaultTimeLocale -- The default in the 'time' package is american.
   "de" -> Just germanTimeLocale
   _ -> Nothing
 

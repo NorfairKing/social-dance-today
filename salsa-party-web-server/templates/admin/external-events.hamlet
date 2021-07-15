@@ -30,7 +30,7 @@
                 CANCELLED: 
               #{externalEventTitle externalEvent}
             <td>
-              #{formatTime defaultTimeLocale "%F" $ externalEventDay externalEvent}
+              #{formatTime timeLocale "%F" $ externalEventDay externalEvent}
               (_{autoDayMsg today $ externalEventDay externalEvent})
             <td>
               <form

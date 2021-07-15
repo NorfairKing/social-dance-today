@@ -28,7 +28,7 @@
                 CANCELLED: 
               #{partyTitle party}
             <td>
-              #{formatTime defaultTimeLocale "%F" $ partyDay party}
+              #{formatTime timeLocale "%F" $ partyDay party}
               (_{autoDayMsg today $ partyDay party})
             <td>
               <a .button href=@{PartyR $ partyUuid party}>

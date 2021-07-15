@@ -58,6 +58,9 @@ OrganiserName name@Text: Organiser: #{name}
 OrganiserUpcomingParties: Upcoming parties
 OrganiserNoUpcomingParties: No upcoming parties
 
+# Poster
+PosterAltFull title@Text day@String organiser@Text: Poster for #{title} on #{day} by #{organiser}.
+
 # Auto day
 DayMoreThanAYearAgo: more than a year ago
 Day11MonthsAgo: 11 months ago

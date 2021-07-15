@@ -39,6 +39,7 @@ getAdminPartiesPageR pageNumber = do
   paginated <- runDB $ selectPaginated 10 [] [Asc PartyId] pageNumber
   today <- liftIO $ utctDay <$> getCurrentTime
   withNavBar $ do
+    timeLocale <- getTimeLocale
     setTitle "Salsa Parties Admin Parties"
     setDescription "Admin overview of the parties"
     $(widgetFile "admin/parties")
@@ -52,6 +53,7 @@ getAdminExternalEventsPageR pageNumber = do
   today <- liftIO $ utctDay <$> getCurrentTime
   token <- genToken
   withNavBar $ do
+    timeLocale <- getTimeLocale
     setTitle "Salsa Parties Admin External Events"
     setDescription "Admin overview of the external events"
     $(widgetFile "admin/external-events")
