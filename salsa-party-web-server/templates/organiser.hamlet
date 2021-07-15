@@ -1,13 +1,13 @@
 <section .section>
   <div .container>
     <h1 .title .is-3>
-      Organiser: #{organiserName}
+      _{MsgOrganiserName organiserName}
 
     <h2 .title .is-4>
-      Upcoming Parties
+      _{MsgOrganiserUpcomingParties}
     $if null parties
       <p>
-        No parties found
+        _{MsgOrganiserNoUpcomingParties}
     $else
       <div .columns .is-multiline .is-centered>
         $forall (Entity _ party, Entity _ p, mPosterKey) <- parties
@@ -21,12 +21,13 @@
                         ^{posterImageWidget party organiser posterKey}
                   <div .card-content>
                     <h3 .title .is-5>
-                      $if partyCancelled party
-                        CANCELLED: 
-                      #{formatTime defaultTimeLocale prettyDayFormat $ partyDay party}
+                      #{formatTime timeLocale prettyDayFormat $ partyDay party}
                       (#{prettyDayAuto today $ partyDay party})
                     <h4 .title .is-6>
-                      #{partyTitle party}
+                      $if partyCancelled party
+                        _{MsgPartyTitleCancelled (partyTitle party)}
+                      $else
+                        _{MsgPartyTitleScheduled (partyTitle party)}
                     <h5 .subtitle .is-6>
                       #{placeQuery p}
 

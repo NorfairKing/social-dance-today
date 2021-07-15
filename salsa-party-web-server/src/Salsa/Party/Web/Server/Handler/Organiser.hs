@@ -18,6 +18,7 @@ getOrganiserR uuid = do
       now <- liftIO getCurrentTime
       let today = utctDay now
       parties <- runDB $ getUpcomingPartiesOfOrganiser organiserId
+      timeLocale <- getTimeLocale
       withNavBar $ do
         setTitle $ "Organiser profile: " <> toHtml organiserName
         setDescription $ mconcat ["The organiser profile of ", organiserName, ", and a list of their upcoming social dance parties"]

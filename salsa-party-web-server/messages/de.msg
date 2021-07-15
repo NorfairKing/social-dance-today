@@ -55,3 +55,8 @@ PartyAddToGoogleCalendar: Zu Google Kalender hinzufügen
 
 ExternalEventCaution: Event via Websuche gefunden. Behandeln Sie diese Informationen mit Vorsicht. 
 
+# Organiser Page
+OrganiserName name@Text: Veranstalter: #{name}
+OrganiserUpcomingParties: Bevorstehende Parties
+OrganiserNoUpcomingParties: Keine bevorstehenden Parties
+

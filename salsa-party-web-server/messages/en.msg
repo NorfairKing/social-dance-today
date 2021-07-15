@@ -23,10 +23,10 @@ FooterOpenstreetmapCopyright: © OpenStreetMap contributors
 # Navbar
 NavFind: Find a party
 NavAccount: Account
-NavOrganiser: Organiser Profile
-NavParties: My Parties
+NavOrganiser: Organiser profile
+NavParties: My parties
 NavLanguage: Language
-NavAdmin: Admin Panel
+NavAdmin: Admin panel
 NavSignUp: Sign up
 NavLogIn: Log in
 NavLogOut: Log out
@@ -52,3 +52,8 @@ PartyDownloadCalendarEvent: Download Calendar Event
 PartyAddToGoogleCalendar: Add to Google Calendar
 
 ExternalEventCaution: Event found via web search, treat this information with caution.
+
+# Organiser Page
+OrganiserName name@Text: Organiser: #{name}
+OrganiserUpcomingParties: Upcoming parties
+OrganiserNoUpcomingParties: No upcoming parties
