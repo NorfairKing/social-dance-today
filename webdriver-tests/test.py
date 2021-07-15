@@ -46,15 +46,15 @@ time.sleep(1)
 print("Registering")
 driver.find_element_by_xpath('//a[contains(text(), "Sign up")]').click()
 driver.find_element_by_name("email-address").send_keys("test@example.com")
-driver.find_element_by_name("passphrase").send_keys("test-pass")
-driver.find_element_by_name("passphrase-confirm").send_keys("test-pass")
+driver.find_element_by_name("passphrase").send_keys("test")
+driver.find_element_by_name("passphrase-confirm").send_keys("test")
 driver.find_element_by_xpath('//button[contains(text(), "Sign up")]').click()
 
 time.sleep(1)
 
 # Set up an organiser profile
 print("Setting up an organiser profile")
-driver.find_element_by_xpath('//a[contains(text(), "Organiser Profile")]').click()
+driver.find_element_by_xpath('//a[contains(text(), "Organiser profile")]').click()
 driver.find_element_by_name("name").send_keys("Test Organiser")
 driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
 driver.find_element_by_xpath('//a[contains(text(), "View Public Profile")]').click()
@@ -63,7 +63,7 @@ time.sleep(1)
 
 # Submit a party
 print("Submitting a party")
-driver.find_element_by_xpath('//a[contains(text(), "My Parties")]').click()
+driver.find_element_by_xpath('//a[contains(text(), "My parties")]').click()
 driver.find_element_by_xpath('//a[contains(text(), "Submit party")]').click()
 driver.find_element_by_name("title").send_keys("Test Party")
 driver.find_element_by_name("day").send_keys("2021-07-14")
@@ -78,7 +78,7 @@ time.sleep(1)
 
 # Edit the party
 print("Editing the party")
-driver.find_element_by_xpath('//a[contains(text(), "My Parties")]').click()
+driver.find_element_by_xpath('//a[contains(text(), "My parties")]').click()
 driver.find_element_by_xpath(
     '//a[contains(text(), "Edit")]'
 ).click()  # There's only one party so this should work.
@@ -96,7 +96,7 @@ time.sleep(1)
 
 # Duplicate the party
 print("Duplicating the party")
-driver.find_element_by_xpath('//a[contains(text(), "My Parties")]').click()
+driver.find_element_by_xpath('//a[contains(text(), "My parties")]').click()
 driver.find_element_by_xpath(
     '//a[contains(text(), "Duplicate")]'
 ).click()  # There's only one party so this should work.

@@ -11,7 +11,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -fno-warn-orphans -fno-warn-partial-fields #-}
 
 module Salsa.Party.Web.Server.Foundation where
 
@@ -459,6 +459,7 @@ type PageNumber = Int
 
 -- I18N Languages
 -- TODO see if we can refactor this out
+-- Then also get rid of the partiel field ignoring option in OPTIONS_GHC above
 data SupportedLanguage
   = SupportedLangEnglish
   | SupportedLangGerman
