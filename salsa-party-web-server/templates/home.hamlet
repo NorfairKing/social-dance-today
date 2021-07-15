@@ -3,7 +3,7 @@
     <figure .image .container .is-centered .is-128x128 .mb-6>
       <img src=@{StaticR logo_svg} alt="_{MsgSalsaPartiesLogo}">
     <h1 .title .is-3 .has-text-centered .mt-6>
-      _{MsgSalsaSubtitleQuestion}
+      _{MsgHomeSubtitleQuestion}
     <div .columns .is-centered>
       <div .column .is-half>
         <form
@@ -20,8 +20,8 @@
                     placeholder="Zürich"
                     required>
                 <p .control>
-                  <button .button #find-me>
-                    My location
+                  <div .button #find-me>
+                    _{MsgHomeFormLocation}
 
           <input #latitudeInput type=hidden name="latitude">
           <input #longitudeInput type=hidden name="longitude">
@@ -29,7 +29,7 @@
           <div .field .has-text-centered>
             <div .control>
               <button .button .is-dark type="submit">
-                Search
+                _{MsgHomeFormSearch}
 
           <div .field .has-text-centered>
             <div .help #help>
@@ -38,8 +38,8 @@
   <div .columns .is-centered>
     <div .column .is-half>
       <h2 .title .is-4 .has-text-centered>
-        Explore the world of social dance
+        _{MsgHomeExploreTitle}
       <div .field .has-text-centered>
         <a .button .is-light
           href=@{ExploreR}>
-          Explore
+          _{MsgHomeExplore}

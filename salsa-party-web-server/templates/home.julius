@@ -9,27 +9,27 @@ function geoFindMe() {
     const latitude  = position.coords.latitude;
     const longitude = position.coords.longitude;
 
-    address.placeholder = 'My Location';
-    status.textContent = 'Located';
+    address.placeholder = #{messageRender MsgHomeFormLocation};
+    status.textContent = #{messageRender MsgHomeFormLocationDone};
     status.classList.add("is-dark");
     status.disabled = true;
 
     document.querySelector('#queryInput').required = false;
     document.querySelector('#latitudeInput').value = latitude;
     document.querySelector('#longitudeInput').value = longitude;
-    document.querySelector('#help').innerText = "Press the search button to search around your current location.";
+    document.querySelector('#help').innerText = #{messageRender MsgHomeFormHelp};
   }
 
   function error(err) {
     console.log(err)
-    status.textContent = 'Unable to retrieve your location';
+    status.textContent = #{messageRender MsgHomeFormLocationUnable};
     status.classList.add("is-danger");
   }
 
   if(!navigator.geolocation) {
-    status.textContent = 'Geolocation is not supported by your browser';
+    status.textContent = #{messageRender MsgHomeFormLocationNotSupported};
   } else {
-    status.textContent = 'Locating…';
+    status.textContent = #{messageRender MsgHomeFormLocationInProgress};
     navigator.geolocation.getCurrentPosition(success, error);
   }
 

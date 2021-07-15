@@ -1,10 +1,28 @@
-# Home Page
+# Logo
 SalsaPartiesLogo: Salsa Parties Logo
-SalsaTitle: Salsa Parties Heute
-SalsaSubtitleQuestion: Wo kann ich tanzen?
+
+# Home Page
+HomeTitle: Salsa Parties Heute
+HomeDescription: Wo kann ich tanzen gehen?
+HomeSubtitleQuestion: Wo kann ich tanzen gehen?
+HomeFormLocation: Mein Standort
+HomeFormLocationUnable: Lokalisierung fehlgeschlagen.
+HomeFormLocationNotSupported: Geolocation wird von Ihrem Browser nicht unterstützt.
+HomeFormLocationInProgress: Lokalisieren…
+HomeFormLocationDone: Lokalisiert
+HomeFormSearch: Suche
+HomeFormHelp: Drücken Sie die Suchtaste, um parties in ihrer Umgebung zu finden.
+
+HomeExploreTitle: Erkunde die Welt des Sozial Dance!
+HomeExplore: Erkunden
+
+## Footer
+FooterGeocodingAttribution: Geokodierung durch OpenStreetMaps Nominatim
+FooterOpenstreetmapCopyright: © OpenStreetMap Mitwirkende
+
 
 # Navbar
-NavFind: Party Suchen
+NavFind: Party suchen
 NavAccount: Konto
 NavOrganiser: Veranstalterprofil
 NavParties: Meine Partys

@@ -20,9 +20,8 @@ $forall (classes, message) <- messages
     $if currentRoute == Just HomeR
       <div .columns .is-centered .py-6>
         <p .has-text-centered>
-          Geocoding by 
           <a href="https://wiki.openstreetmap.org/wiki/Nominatim">
-            OpenStreetMaps Nominatim
+            _{MsgFooterGeocodingAttribution}
           <br>
           <a href="https://www.openstreetmap.org/copyright">
-            &copy; OpenStreetMap contributors
+            _{MsgFooterOpenstreetmapCopyright}

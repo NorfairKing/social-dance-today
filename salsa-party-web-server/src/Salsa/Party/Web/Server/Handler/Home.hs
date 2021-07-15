@@ -6,8 +6,9 @@ module Salsa.Party.Web.Server.Handler.Home where
 import Salsa.Party.Web.Server.Handler.Import
 
 getHomeR :: Handler Html
-getHomeR =
+getHomeR = do
+  messageRender <- getMessageRender
   withNavBar $ do
-    setTitleI MsgSalsaTitle
-    setDescription "Where can I dance?"
+    setTitleI MsgHomeTitle
+    setDescriptionI MsgHomeDescription
     $(widgetFile "home")
