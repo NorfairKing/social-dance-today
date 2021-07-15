@@ -67,6 +67,7 @@ searchResultPage mDay mAddress coordinates = do
   let toDouble :: Nano -> Double
       toDouble = realToFrac
   searchResults <- runDB $ searchQuery begin end coordinates
+  timeLocale <- getTimeLocale
   withNavBar $ do
     setTitle $
       mconcat

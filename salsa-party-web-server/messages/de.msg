@@ -31,3 +31,13 @@ NavAdmin: Admin-Panel
 NavSignUp: Registrieren
 NavLogIn: Anmelden
 NavLogOut: Admelden
+
+# Search Results
+SearchPartiesAroundAddress address@Text: Parties in der Nähe von #{address}
+SearchPartiesAroundYourLocation: Parties in deiner Umgebung
+SearchNoParties: Es wurden keine Parties gefunden.
+SearchPosterAlt title@Text day@String: Poster für #{title} am #{day}.
+
+SearchNavEarlier: Früher
+SearchNavLater: Später
+

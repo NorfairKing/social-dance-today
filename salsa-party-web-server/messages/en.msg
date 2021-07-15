@@ -31,3 +31,11 @@ NavSignUp: Sign up
 NavLogIn: Log in
 NavLogOut: Log out
 
+# Search Results
+SearchPartiesAroundAddress address@Text: Parties near #{address}
+SearchPartiesAroundYourLocation: Parties near your location
+SearchNoParties: No parties found for this day.
+SearchPosterAlt title@Text day@String: Poster for #{title} on #{day}.
+
+SearchNavEarlier: Earlier
+SearchNavLater: Later

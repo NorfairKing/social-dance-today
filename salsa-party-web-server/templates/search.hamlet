@@ -1,11 +1,10 @@
 <section .section>
   <div .container>
     <h1 .title .is-3 .has-text-centered>
-      Parties around 
       $maybe address <- mAddress
-        #{address} 
+        _{MsgSearchPartiesAroundAddress address}
       $nothing
-        your location 
+        _{MsgSearchPartiesAroundYourLocation}
 
     ^{pagination}
 
@@ -13,11 +12,11 @@ $forall (day, results) <- M.toList searchResults
   <section .section>
     <div .container>
       <h2 .title .is-4 .has-text-centered>
-        #{formatTime defaultTimeLocale prettyDayFormat day}
+        #{formatTime timeLocale prettyDayFormat day}
         (#{prettyDayAuto today day})
       $if null results
         <p .has-text-centered>
-          No parties found for this day.
+          _{MsgSearchNoParties}
       $else
         <div .columns .is-multiline .is-centered>
           $forall result <- results
@@ -34,7 +33,7 @@ $forall (day, results) <- M.toList searchResults
                                 width=640
                                 height=360
                                 src=@{ImageR posterKey}
-                                alt="Poster for #{partyTitle party} on #{formatTime defaultTimeLocale prettyDayFormat $ partyDay party}">
+                                alt=_{MsgSearchPosterAlt (partyTitle party) (formatTime timeLocale prettyDayFormat $ partyDay party)}>
 
                         <div .card-content>
                           <h2 .title .is-4>

@@ -506,3 +506,52 @@ postSelectLanguageR lang = do
   setLanguage $ supportedLanguageAbbreviation lang
   setUltDestReferer
   redirectUltDest HomeR
+
+getTimeLocale :: Handler TimeLocale
+getTimeLocale = fromMaybe defaultTimeLocale . firstMatchingTimeLocale <$> languages
+
+firstMatchingTimeLocale :: [Text] -> Maybe TimeLocale
+firstMatchingTimeLocale = \case
+  [] -> Nothing
+  (lang : rest) -> languageTimeLocale lang <|> firstMatchingTimeLocale rest
+
+languageTimeLocale :: Text -> Maybe TimeLocale
+languageTimeLocale = \case
+  "en" -> Just defaultTimeLocale
+  "de" -> Just germanTimeLocale
+  _ -> Nothing
+
+-- | Locale representing German usage.
+germanTimeLocale :: TimeLocale
+germanTimeLocale =
+  TimeLocale
+    { wDays =
+        [ ("Montag", "Mon"),
+          ("Dienstag", "Die"),
+          ("Mittwoch", "Mit"),
+          ("Donnerstag", "Don"),
+          ("Freitag", "Fre"),
+          ("Samstag", "Sam"),
+          ("Sonntag", "Son")
+        ],
+      months =
+        [ ("Januar", "Jan."),
+          ("Februar", "Feb."),
+          ("März", "März."),
+          ("April", "Apr."),
+          ("Mai", "Mai."),
+          ("Juni", "Juni."),
+          ("Juli", "Juli."),
+          ("August", "Aug."),
+          ("September", "Sept."),
+          ("Oktober", "Okt."),
+          ("November", "Nov."),
+          ("Dezember", "Dez.")
+        ],
+      amPm = ("AM", "PM"), -- Not used.
+      dateTimeFmt = "%a %b %e %H:%M:%S %Z %Y",
+      dateFmt = "%d.%m.%y",
+      timeFmt = "%H:%M:%S",
+      time12Fmt = "%I:%M:%S %p", -- Not used.
+      knownTimeZones = [] -- Don't need it.
+    }

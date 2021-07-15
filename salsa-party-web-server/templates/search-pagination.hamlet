@@ -8,7 +8,7 @@
     <input name="latitude" type="hidden" value="#{toDouble $ coordinatesLat coordinates}">
     <input name="longitude" type="hidden" value="#{toDouble $ coordinatesLon coordinates}">
     <button .pagination-previous type="submit">
-      Earlier
+      _{MsgSearchNavEarlier}
   
   <form .form
     method=post
@@ -19,4 +19,4 @@
     <input name="latitude" type="hidden" value="#{toDouble $ coordinatesLat coordinates}">
     <input name="longitude" type="hidden" value="#{toDouble $ coordinatesLon coordinates}">
     <button .pagination-next type="submit">
-      Later
+      _{MsgSearchNavLater}
