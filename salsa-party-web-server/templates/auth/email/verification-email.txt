@@ -1,8 +1,11 @@
-Salsa Party Registrations
+#{messageRender MsgVerificationEmailTitle}
 
-To verify your email address, please visit the following link:
+#{messageRender MsgVerificationEmailTextCTA}
+
 @{AuthR $ verifyR userEmailAddress verificationKey}
 
-We hope to see you soon.
+#{messageRender MsgVerificationEmailInvitation}
 
-You got this email because you tried to register at @{HomeR}.
+#{messageRender MsgVerificationEmailExplanation}
+
+@{HomeR}

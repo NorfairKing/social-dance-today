@@ -314,13 +314,14 @@ sendVerificationEmail userEmailAddress verificationKey = do
     then do
       logInfoN $ "Sending verification email to address: " <> userEmailAddress
 
-      renderUrl <- getUrlRenderParams
+      urlRender <- getUrlRenderParams
+      messageRender <- getMessageRender
 
       let subject = SES.content "Email Verification"
 
-      let textBody = SES.content $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/auth/email/verification-email.txt") renderUrl
+      let textBody = SES.content $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/auth/email/verification-email.txt") urlRender
 
-      let htmlBody = SES.content $ LT.toStrict $ renderHtml $ $(hamletFile "templates/auth/email/verification-email.hamlet") renderUrl
+      let htmlBody = SES.content $ LT.toStrict $ renderHtml $ $(ihamletFile "templates/auth/email/verification-email.hamlet") (toHtml . messageRender) urlRender
 
       let body =
             SES.body

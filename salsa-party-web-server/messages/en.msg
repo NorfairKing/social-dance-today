@@ -78,10 +78,27 @@ PosterAltFull title@Text day@String organiser@Text: Poster for #{title} on #{day
 # Registration
 RegistrationTitle: Salsa Parties Today: Registration
 RegistrationDescription: Register an account at Salsa Parties Today
+RegistrationEmailAddressLabel: Email Address
+RegistrationPassphraseLabel: Passphrase
+RegistrationConfirmPassphraseLabel: Confirm Passphrase
+RegistrationSignUpButton: Sign up
+RegistrationLogInButton: Log in
 
 # Login
 LoginTitle: Salsa Parties Today: Login
 LoginDescription: Log into your account at Salsa Parties Today
+LoginEmailAddressLabel: Email Address
+LoginPassphraseLabel: Passphrase
+LoginLogInButton: Log in
+LoginSignUpButton: Sign up
+
+# Verification Email
+VerificationEmailTitle: Salsa Party Today Registration
+VerificationEmailTextCTA: Please verify your email address by following this link:
+VerificationEmailHtmlCTA: Please verify your email address by clicking the link below.
+VerificationEmailButton: Verify Email
+VerificationEmailInvitation: We hope to see you soon.
+VerificationEmailExplanation: You got this email because you tried to register at Salsa Parties Today
 
 # Auto day
 DayMoreThanAYearAgo: more than a year ago

@@ -8,7 +8,7 @@
             action=@{AuthR registerR}>
             <div .field>
               <label for="user" .label>
-                Email Address
+                _{MsgRegistrationEmailAddressLabel}
               <div .control>
                 <input .input
                   name="email-address"
@@ -20,7 +20,7 @@
 
             <div .field>
               <label for="passhprase" .label>
-                Passphrase
+                _{MsgRegistrationPassphraseLabel}
               <div .control>
                 <input .input
                   name="passphrase"
@@ -31,7 +31,7 @@
 
             <div .field>
               <label for="passhprase" .label>
-                Confirm Passphrase
+                _{MsgRegistrationConfirmPassphraseLabel}
               <div .control>
                 <input .input
                   name="passphrase-confirm"
@@ -53,10 +53,10 @@
             <div .field .is-grouped>
               <div .control>
                 <button .button .is-light type="submit">
-                  Sign up
+                  _{MsgRegistrationSignUpButton}
 
 
               <div .control>
                 <a .button .is-text href=@{AuthR LoginR}>
-                  Log in
+                  _{MsgRegistrationLogInButton}
 

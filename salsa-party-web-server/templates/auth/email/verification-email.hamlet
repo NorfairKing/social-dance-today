@@ -3,17 +3,15 @@
   <body>
     <div
       class="container-fluid">
-      <h1> Salsa Party Registrations
-      <p> Please verify your email address by clicking the link below.
+      <h1> _{MsgVerificationEmailTitle}
+      <p> _{MsgVerificationEmailHtmlCTA}
       <p>
         <a
           class="button is-dark"
           href=@{AuthR $ verifyR userEmailAddress verificationKey}>
-          Verify Email
-      <p> We hope to see you soon.
+          _{MsgVerificationEmailButton}
+      <p> _{MsgVerificationEmailInvitation}
       <p>
-        You got this email because you tried to register at 
         <a href=@{HomeR}>
-          Salsa Parties Today
-        .
+          _{MsgVerificationEmailExplanation}
 
