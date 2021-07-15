@@ -82,6 +82,7 @@ instance Yesod App where
   defaultLayout widget = do
     app <- getYesod
     messages <- getMessages
+    lang <- supportedLanguageAbbreviation <$> getFirstMatchingSupportedLanguage
     let withAutoReload =
           if development
             then (<> autoReloadWidgetFor ReloadR)
