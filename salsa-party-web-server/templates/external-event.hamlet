@@ -13,7 +13,7 @@
       #{formatTime timeLocale prettyDayFormat externalEventDay} 
       $maybe start <- externalEventStart
         #{formatTime timeLocale "%H:%M" start} 
-      (#{prettyDayAuto today externalEventDay})
+      (_{autoDayMsg today externalEventDay})
 
     $maybe description <- externalEventDescription
       <div .content>

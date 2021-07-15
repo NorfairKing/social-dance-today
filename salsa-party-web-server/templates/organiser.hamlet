@@ -22,7 +22,7 @@
                   <div .card-content>
                     <h3 .title .is-5>
                       #{formatTime timeLocale prettyDayFormat $ partyDay party}
-                      (#{prettyDayAuto today $ partyDay party})
+                      (_{autoDayMsg today $ partyDay party})
                     <h4 .title .is-6>
                       $if partyCancelled party
                         _{MsgPartyTitleCancelled (partyTitle party)}

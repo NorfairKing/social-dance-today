@@ -536,18 +536,18 @@ germanTimeLocale =
           ("Samstag", "Sam")
         ],
       months =
-        [ ("Januar", "Jan."),
-          ("Februar", "Feb."),
-          ("März", "März."),
-          ("April", "Apr."),
-          ("Mai", "Mai."),
-          ("Juni", "Juni."),
-          ("Juli", "Juli."),
-          ("August", "Aug."),
-          ("September", "Sept."),
-          ("Oktober", "Okt."),
-          ("November", "Nov."),
-          ("Dezember", "Dez.")
+        [ ("januar", "Jan."),
+          ("februar", "Feb."),
+          ("märz", "März."),
+          ("april", "Apr."),
+          ("mai", "Mai."),
+          ("juni", "Juni."),
+          ("juli", "Juli."),
+          ("august", "Aug."),
+          ("september", "Sept."),
+          ("oktober", "Okt."),
+          ("november", "Nov."),
+          ("dezember", "Dez.")
         ],
       amPm = ("AM", "PM"), -- Not used.
       dateTimeFmt = "%a %b %e %H:%M:%S %Z %Y",
@@ -556,3 +556,58 @@ germanTimeLocale =
       time12Fmt = "%I:%M:%S %p", -- Not used.
       knownTimeZones = [] -- Don't need it.
     }
+
+-- TODO test this function
+autoDayMsg :: Day -> Day -> AppMessage
+autoDayMsg today day =
+  let d = diffDays day today
+   in case compare d 0 of
+        EQ -> MsgDayToday
+        LT -> case d of
+          -1 -> MsgDayYesterday
+          -2 -> MsgDay2DaysAgo
+          -3 -> MsgDay3DaysAgo
+          -4 -> MsgDay4DaysAgo
+          -5 -> MsgDay5DaysAgo
+          -6 -> MsgDay6DaysAgo
+          i
+            | i > (- 2 * 7) -> MsgDay1WeekAgo
+            | i > (- 3 * 7) -> MsgDay2WeeksAgo
+            | i > (- 4 * 7) -> MsgDay3WeeksAgo
+            | i > (- 1 * 30) -> MsgDay4WeeksAgo
+            | i > (- 2 * 30) -> MsgDay1MonthAgo
+            | i > (- 3 * 30) -> MsgDay2MonthsAgo
+            | i > (- 4 * 30) -> MsgDay3MonthsAgo
+            | i > (- 5 * 30) -> MsgDay4MonthsAgo
+            | i > (- 6 * 30) -> MsgDay5MonthsAgo
+            | i > (- 7 * 30) -> MsgDay6MonthsAgo
+            | i > (- 8 * 30) -> MsgDay7MonthsAgo
+            | i > (- 9 * 30) -> MsgDay8MonthsAgo
+            | i > (- 10 * 30) -> MsgDay9MonthsAgo
+            | i > (- 11 * 30) -> MsgDay10MonthsAgo
+            | i > -365 -> MsgDay11MonthsAgo
+            | otherwise -> MsgDayMoreThanAYearAgo
+        GT -> case d of
+          1 -> MsgDayTomorrow
+          2 -> MsgDayIn2Days
+          3 -> MsgDayIn3Days
+          4 -> MsgDayIn4Days
+          5 -> MsgDayIn5Days
+          6 -> MsgDayIn6Days
+          i
+            | i < 2 * 7 -> MsgDayIn1Week
+            | i < 3 * 7 -> MsgDayIn2Week
+            | i < 4 * 7 -> MsgDayIn3Week
+            | i < 1 * 30 -> MsgDayIn4Week
+            | i < 2 * 30 -> MsgDayIn1Month
+            | i < 3 * 30 -> MsgDayIn2Months
+            | i < 4 * 30 -> MsgDayIn3Months
+            | i < 5 * 30 -> MsgDayIn4Months
+            | i < 6 * 30 -> MsgDayIn5Months
+            | i < 7 * 30 -> MsgDayIn6Months
+            | i < 8 * 30 -> MsgDayIn7Months
+            | i < 9 * 30 -> MsgDayIn8Months
+            | i < 10 * 30 -> MsgDayIn9Months
+            | i < 11 * 30 -> MsgDayIn10Months
+            | i < 365 -> MsgDayIn11Months
+            | otherwise -> MsgDayInMoreThanAYear

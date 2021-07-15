@@ -31,7 +31,7 @@
               #{externalEventTitle externalEvent}
             <td>
               #{formatTime defaultTimeLocale "%F" $ externalEventDay externalEvent}
-              (#{prettyDayAuto today $ externalEventDay externalEvent})
+              (_{autoDayMsg today $ externalEventDay externalEvent})
             <td>
               <form
                 method=post

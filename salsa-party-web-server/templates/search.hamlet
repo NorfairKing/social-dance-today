@@ -13,7 +13,7 @@ $forall (day, results) <- M.toList searchResults
     <div .container>
       <h2 .title .is-4 .has-text-centered>
         #{formatTime timeLocale prettyDayFormat day}
-        (#{prettyDayAuto today day})
+        (_{autoDayMsg today day})
       $if null results
         <p .has-text-centered>
           _{MsgSearchNoParties}

@@ -13,7 +13,7 @@
       #{formatTime timeLocale prettyDayFormat partyDay} 
       $maybe start <- partyStart
         #{formatTime timeLocale "%H:%M" start} 
-      (#{prettyDayAuto today partyDay})
+      (_{autoDayMsg today partyDay})
 
     $maybe posterKey <- mPosterKey
       ^{posterImageWidget party organiser posterKey}

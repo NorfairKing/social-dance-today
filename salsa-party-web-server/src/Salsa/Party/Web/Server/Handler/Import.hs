@@ -22,6 +22,5 @@ import Salsa.Party.Web.Server.Foundation as X
 import Salsa.Party.Web.Server.Static as X
 import Salsa.Party.Web.Server.Widget as X
 import Text.Show.Pretty as X (pPrint, ppShow)
-import Text.Time.Pretty as X
 import Yesod as X hiding (parseTime)
 import Yesod.Auth as X

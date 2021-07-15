@@ -29,7 +29,7 @@
               #{partyTitle party}
             <td>
               #{formatTime defaultTimeLocale "%F" $ partyDay party}
-              (#{prettyDayAuto today $ partyDay party})
+              (_{autoDayMsg today $ partyDay party})
             <td>
               <a .button href=@{PartyR $ partyUuid party}>
                 Details
