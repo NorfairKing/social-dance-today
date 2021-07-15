@@ -13,8 +13,10 @@ HomeFormLocationDone: Located
 HomeFormSearch: Search
 HomeFormHelp: Press the search button to find parties around your current location.
 
-HomeExploreTitle: Explore the world of social dance!
-HomeExplore: Explore
+# Explore
+ExploreTitle: Explore the world of social dance!
+ExploreDescription: Social dance exists all over the world, find out where to go!
+ExploreButton: Explore
 
 ## Footer
 FooterGeocodingAttribution: Geocoding by OpenStreetMaps Nominatim
@@ -32,6 +34,14 @@ NavLogIn: Log in
 NavLogOut: Log out
 
 # Search Results
+SearchTitleAroundYourLocationToday: Social dance parties near your location today
+SearchTitleAroundYourLocationOnDay day@String: Social dance parties near your location on #{day}
+SearchTitleAroundAddressToday address@Text: Social dance parties near #{address} today
+SearchTitleAroundAddressOnDay address@Text day@String: Social dance parties near #{address} on #{day}
+SearchDescriptionAroundYourLocationToday: A List of social dance parties near your location oday
+SearchDescriptionAroundYourLocationOnDay day@String: A List of social dance parties near your location on #{day}
+SearchDescriptionAroundAddressToday address@Text: A List of social dance parties near #{address} today
+SearchDescriptionAroundAddressOnDay address@Text day@String: A List of social dance parties near #{address} on #{day}
 SearchPartiesAroundAddress address@Text: Parties near #{address}
 SearchPartiesAroundYourLocation: Parties near your location
 SearchNoParties: No parties found for this day.
@@ -43,6 +53,8 @@ SearchNavLater: Later
 # Party Page
 PartyTitleScheduled title@Text: #{title}
 PartyTitleCancelled title@Text: CANCELLED: #{title}
+PartyDescription description@Text: #{description}
+PartyWithoutDescription: Party without description
 
 PartyAddress address@Text: Address: #{address}
 PartyOrganiser name@Text: Organiser: #{name}
@@ -54,12 +66,22 @@ PartyAddToGoogleCalendar: Add to Google Calendar
 ExternalEventCaution: Event found via web search, treat this information with caution.
 
 # Organiser Page
+OrganiserTitle name@Text: Organiser profile: #{name}
+OrganiserDescription name@Text: The organiser profile of #{name}, and a list of their upcoming social dance parties
 OrganiserName name@Text: Organiser: #{name}
 OrganiserUpcomingParties: Upcoming parties
 OrganiserNoUpcomingParties: No upcoming parties
 
 # Poster
 PosterAltFull title@Text day@String organiser@Text: Poster for #{title} on #{day} by #{organiser}.
+
+# Registration
+RegistrationTitle: Salsa Parties Today: Registration
+RegistrationDescription: Register an account at Salsa Parties Today
+
+# Login
+LoginTitle: Salsa Parties Today: Login
+LoginDescription: Log into your account at Salsa Parties Today
 
 # Auto day
 DayMoreThanAYearAgo: more than a year ago
@@ -107,3 +129,6 @@ DayIn9Months: In 9 months
 DayIn10Months: In 10 months
 DayIn11Months: In 11 months
 DayInMoreThanAYear: more than a year from now
+
+# Errors
+NotFound: Page not found

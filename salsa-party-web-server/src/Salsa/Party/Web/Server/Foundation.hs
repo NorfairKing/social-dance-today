@@ -103,7 +103,7 @@ instance Yesod App where
 
   errorHandler NotFound = fmap toTypedContent $
     withNavBar $ do
-      setTitle "Page not found"
+      setTitleI MsgNotFound
       $(widgetFile "error/404")
   errorHandler route = defaultErrorHandler route
 
@@ -214,8 +214,8 @@ getRegisterR = do
   token <- genToken
   liftHandler $
     withNavBar $ do
-      setTitle "Salsa Parties Today: Registration"
-      setDescription "Register an account at Salsa Parties Today"
+      setTitleI MsgRegistrationTitle
+      setDescriptionI MsgRegistrationDescription
       $(widgetFile "auth/register")
 
 data RegisterForm = RegisterForm
@@ -267,8 +267,8 @@ salsaLoginHandler :: (Route Auth -> Route App) -> Widget
 salsaLoginHandler _toParentRoute = do
   messages <- getMessages
   token <- genToken
-  setTitle "Salsa Parties Today: Login"
-  setDescription "Log into your account at Salsa Parties Today"
+  setTitleI MsgLoginTitle
+  setDescriptionI MsgLoginDescription
   $(widgetFile "auth/login")
 
 data LoginForm = LoginForm

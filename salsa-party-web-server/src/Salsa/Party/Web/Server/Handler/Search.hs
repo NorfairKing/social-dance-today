@@ -70,29 +70,15 @@ searchResultPage mDay mAddress coordinates = do
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
   withNavBar $ do
-    setTitle $
-      mconcat
-        [ "Social dance parties around ",
-          case mAddress of
-            Just address -> toHtml address
-            Nothing -> "your location",
-          " ",
-          toHtml $ case mDay of
-            Nothing -> "today"
-            Just d -> "on " <> formatTime timeLocale prettyDayFormat d
-        ]
-    setDescription $
-      mconcat
-        [ "This is our list of social dance parties in and around ",
-          case mAddress of
-            Just address -> address
-            Nothing -> "your location",
-          " ",
-          T.pack $ case mDay of
-            Nothing -> "today"
-            Just d -> "on " <> formatTime timeLocale prettyDayFormat d,
-          ".",
-          "Should you wish to see your parties featured here, please make an account and submit your party for free!"
-        ]
+    setTitleI $ case (mAddress, mDay) of
+      (Nothing, Nothing) -> MsgSearchTitleAroundYourLocationToday
+      (Nothing, Just d) -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat d
+      (Just address, Nothing) -> MsgSearchTitleAroundAddressToday address
+      (Just address, Just d) -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat d
+    setDescriptionI $ case (mAddress, mDay) of
+      (Nothing, Nothing) -> MsgSearchDescriptionAroundYourLocationToday
+      (Nothing, Just d) -> MsgSearchDescriptionAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat d
+      (Just address, Nothing) -> MsgSearchDescriptionAroundAddressToday address
+      (Just address, Just d) -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat d
     let pagination = $(widgetFile "search-pagination")
     $(widgetFile "search")

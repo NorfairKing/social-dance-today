@@ -55,8 +55,11 @@ partyPage (Entity partyId party@Party {..}) = do
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
   withNavBar $ do
-    setTitle $ toHtml partyTitle
-    setDescription $ fromMaybe "Party without description" partyDescription
+    setTitleI $
+      if partyCancelled
+        then MsgPartyTitleCancelled partyTitle
+        else MsgPartyTitleScheduled partyTitle
+    setDescriptionI $ maybe MsgPartyWithoutDescription MsgPartyDescription partyDescription
     toWidgetHead $ toJSONLDData $ partyToLDEvent renderUrl party organiser place mPosterKey
     addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified
     let mAddToGoogleLink = addPartyToGoogleCalendarLink renderUrl party place
@@ -142,8 +145,11 @@ externalEventPage (Entity _ externalEvent@ExternalEvent {..}) = do
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
   withNavBar $ do
-    setTitle $ toHtml externalEventTitle
-    setDescription $ fromMaybe "Party without description" externalEventDescription
+    setTitleI $
+      if externalEventCancelled
+        then MsgPartyTitleCancelled externalEventTitle
+        else MsgPartyTitleScheduled externalEventTitle
+    setDescriptionI $ maybe MsgPartyWithoutDescription MsgPartyDescription externalEventDescription
     toWidgetHead $ toJSONLDData $ externalEventToLDEvent externalEvent place
     addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe externalEventCreated externalEventModified
     let mAddToGoogleLink = addExternalEventToGoogleCalendarLink renderUrl externalEvent place

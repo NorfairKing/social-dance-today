@@ -13,8 +13,10 @@ HomeFormLocationDone: Lokalisiert
 HomeFormSearch: Suche
 HomeFormHelp: Drücken Sie die Suchtaste, um parties in ihrer Umgebung zu finden.
 
-HomeExploreTitle: Erkunde die Welt des Sozial Dance!
-HomeExplore: Erkunden
+# Explore
+ExploreTitle: Erkunde die Welt des Sozial Dance!
+ExploreDescription: Social Dance gibt es auf der ganzen Welt, finde heraus, wohin du gehen kannst! 
+ExploreButton: Erkunden
 
 ## Footer
 FooterGeocodingAttribution: Geokodierung durch OpenStreetMaps Nominatim

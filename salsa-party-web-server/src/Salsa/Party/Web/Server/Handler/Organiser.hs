@@ -21,8 +21,8 @@ getOrganiserR uuid = do
       timeLocale <- getTimeLocale
       prettyDayFormat <- getPrettyDayFormat
       withNavBar $ do
-        setTitle $ "Organiser profile: " <> toHtml organiserName
-        setDescription $ mconcat ["The organiser profile of ", organiserName, ", and a list of their upcoming social dance parties"]
+        setTitleI $ MsgOrganiserTitle organiserName
+        setDescriptionI $ MsgOrganiserDescription organiserName
         addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe organiserCreated organiserModified
         $(widgetFile "organiser")
 

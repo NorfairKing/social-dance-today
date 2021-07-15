@@ -8,8 +8,8 @@ import Salsa.Party.Web.Server.Handler.Import
 getExploreR :: Handler Html
 getExploreR =
   withNavBar $ do
-    setTitle "Explore Social Dance"
-    setDescription "Social dance exists all over the world, find out where to go!"
+    setTitleI MsgExploreTitle
+    setDescriptionI MsgExploreDescription
     $(widgetFile "explore")
 
 locations :: [Text]

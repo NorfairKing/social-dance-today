@@ -38,8 +38,8 @@
   <div .columns .is-centered>
     <div .column .is-half>
       <h2 .title .is-4 .has-text-centered>
-        _{MsgHomeExploreTitle}
+        _{MsgExploreTitle}
       <div .field .has-text-centered>
         <a .button .is-light
           href=@{ExploreR}>
-          _{MsgHomeExplore}
+          _{MsgExploreButton}
