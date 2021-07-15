@@ -526,13 +526,13 @@ germanTimeLocale :: TimeLocale
 germanTimeLocale =
   TimeLocale
     { wDays =
-        [ ("Montag", "Mon"),
+        [ ("Sonntag", "Son"),
+          ("Montag", "Mon"),
           ("Dienstag", "Die"),
           ("Mittwoch", "Mit"),
           ("Donnerstag", "Don"),
           ("Freitag", "Fre"),
-          ("Samstag", "Sam"),
-          ("Sonntag", "Son")
+          ("Samstag", "Sam")
         ],
       months =
         [ ("Januar", "Jan."),

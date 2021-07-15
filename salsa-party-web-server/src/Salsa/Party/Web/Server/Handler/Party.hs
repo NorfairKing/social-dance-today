@@ -52,6 +52,7 @@ partyPage (Entity partyId party@Party {..}) = do
   now <- liftIO getCurrentTime
   let today = utctDay now
   renderUrl <- getUrlRender
+  timeLocale <- getTimeLocale
   withNavBar $ do
     setTitle $ toHtml partyTitle
     setDescription $ fromMaybe "Party without description" partyDescription
@@ -137,6 +138,7 @@ externalEventPage (Entity _ externalEvent@ExternalEvent {..}) = do
   now <- liftIO getCurrentTime
   let today = utctDay now
   renderUrl <- getUrlRender
+  timeLocale <- getTimeLocale
   withNavBar $ do
     setTitle $ toHtml externalEventTitle
     setDescription $ fromMaybe "Party without description" externalEventDescription

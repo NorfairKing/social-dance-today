@@ -39,3 +39,16 @@ SearchPosterAlt title@Text day@String: Poster for #{title} on #{day}.
 
 SearchNavEarlier: Earlier
 SearchNavLater: Later
+
+# Party Page
+PartyTitleScheduled title@Text: #{title}
+PartyTitleCancelled title@Text: CANCELLED: #{title}
+
+PartyAddress address@Text: Address: #{address}
+PartyOrganiser name@Text: Organiser: #{name}
+PartyPrice price@Text: Price: #{price}
+PartyHomepage: Website
+PartyDownloadCalendarEvent: Download Calendar Event
+PartyAddToGoogleCalendar: Add to Google Calendar
+
+ExternalEventCaution: Event found via web search, treat this information with caution.

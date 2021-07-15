@@ -2,25 +2,25 @@
   <div .container>
     <h1 .title .is-3>
       $if partyCancelled
-        CANCELLED: 
-      #{partyTitle}
+        _{MsgPartyTitleCancelled partyTitle}
+      $else
+        _{MsgPartyTitleScheduled partyTitle}
 
     <h2 .title .is-4>
-      Address: #{placeQuery}
+      _{MsgPartyAddress placeQuery}
     
     <h3 .subtitle .is-5>
-      #{formatTime defaultTimeLocale prettyDayFormat partyDay} 
+      #{formatTime timeLocale prettyDayFormat partyDay} 
       $maybe start <- partyStart
-        #{formatTime defaultTimeLocale "%H:%M" start} 
+        #{formatTime timeLocale "%H:%M" start} 
       (#{prettyDayAuto today partyDay})
 
     $maybe posterKey <- mPosterKey
       ^{posterImageWidget party organiser posterKey}
 
     <h4 .title .is-6>
-      Organiser: 
       <a href=@{OrganiserR organiserUuid}>
-        #{organiserName}
+        _{MsgPartyOrganiser organiserName}
 
     $maybe description <- partyDescription
       <div .content>
@@ -30,13 +30,13 @@
     $maybe price <- partyPrice
       <div .content>
         <p>
-          Price: #{price}
+          _{MsgPartyPrice price}
   
     $maybe homepage <- partyHomepage
       <div .content>
         <p>
           <a .button .is-light href=#{homepage} rel="external nofollow">
-            Homepage
+            _{MsgPartyHomepage}
         
 
     $maybe googleMapsEmbedUrl <- mGoogleMapsEmbedUrl
@@ -52,10 +52,10 @@
  
     <div .buttons>
       <a .button href=@{PartyEventIcsR partyUuid} type="text/calendar">
-        Download Calendar Event
+        _{MsgPartyDownloadCalendarEvent}
       $maybe addToGoogleLink <- mAddToGoogleLink
         <a .button href=#{show addToGoogleLink}>
-          Add to Google Calendar
+          _{MsgPartyAddToGoogleCalendar}
 
 
 <!-- Facebook Open Graph metadata -->
