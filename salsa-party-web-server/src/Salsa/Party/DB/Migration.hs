@@ -38,8 +38,17 @@ setUpPlaces = do
 
 locations :: [Place]
 locations =
-  [ Place {placeQuery = "Zürich", placeLat = 47.4133024, placeLon = 8.656394},
-    Place {placeQuery = "London", placeLat = 51.5073219, placeLon = -0.1276474},
+  [ Place {placeQuery = "London", placeLat = 51.5073219, placeLon = -0.1276474},
     Place {placeQuery = "New York", placeLat = 43.1561681, placeLon = -75.8449946},
+    Place {placeQuery = "Zürich", placeLat = 47.4133024, placeLon = 8.656394},
+    Place {placeQuery = "San Juan", placeLat = 18.3892246, placeLon = -66.1305125},
+    Place {placeQuery = "Barcelona", placeLat = 41.3948976, placeLon = 2.0787282},
+    Place {placeQuery = "Bern", placeLat = 46.9547232, placeLon = 7.3598507},
+    Place {placeQuery = "Bogotá", placeLat = 4.6482837, placeLon = -74.2482335},
+    Place {placeQuery = "Cádiz", placeLat = 35.4524784, placeLon = -7.260937},
+    Place {placeQuery = "Chicago", placeLat = 41.8336474, placeLon = -87.8723884},
+    Place {placeQuery = "Havana", placeLat = 39.3277335, placeLon = -90.9080091},
+    Place {placeQuery = "Miami", placeLat = 25.7824033, placeLon = -80.2645636},
+    Place {placeQuery = "Los Angeles", placeLat = 34.0201598, placeLon = -118.6925951},
     Place {placeQuery = "Sydney", placeLat = -33.8888621, placeLon = 151.204897861}
   ]

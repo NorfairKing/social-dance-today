@@ -5,6 +5,8 @@ module Salsa.Party.Web.Server.Handler.Explore where
 
 import Salsa.Party.Web.Server.Handler.Import
 
+import Salsa.Party.DB.Migration
+
 getExploreR :: Handler Html
 getExploreR =
   withNavBar $ do
@@ -12,10 +14,3 @@ getExploreR =
     setDescription "Social dance exists all over the world, find out where to go!"
     $(widgetFile "explore")
 
-locations :: [Text]
-locations =
-  [ "Zürich",
-    "London",
-    "New York",
-    "Sydney"
-  ]
