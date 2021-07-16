@@ -12,7 +12,7 @@ let
 in
 pkgs.nixosTest (
   { lib, pkgs, ... }: {
-    name = "salsa-party-webdriver-test";
+    name = "salsa-party-selenium-test";
     nodes = {
       client = {
         imports = [
@@ -30,18 +30,18 @@ pkgs.nixosTest (
           isNormalUser = true;
         };
 
-        systemd.services.webdriver-test = {
-          description = "webdriver test";
+        systemd.services.selenium-test = {
+          description = "selenium test";
           serviceConfig = {
             Type = "oneshot";
             User = testuser;
           };
-          path = import ../webdriver-tests/env.nix { inherit pkgs; };
+          path = import ../selenium-tests/env.nix { inherit pkgs; };
           script = ''
             set -e
-            mkdir -p /tmp/webdriver-test
-            cd /tmp/webdriver-test
-            python ${../webdriver-tests/test.py} --headless --host server:${builtins.toString port}
+            mkdir -p /tmp/selenium-test
+            cd /tmp/selenium-test
+            python ${../selenium-tests/test.py} --headless --host server:${builtins.toString port}
           '';
         };
       };
@@ -69,9 +69,9 @@ pkgs.nixosTest (
       server.wait_for_unit("multi-user.target")
 
       server.wait_for_open_port(${builtins.toString port})
-      client.systemctl("start webdriver-test.service --wait")
-      client.systemctl("status webdriver-test.service")
-      client.require_unit_state("webdriver-test.service", "inactive")
+      client.systemctl("start selenium-test.service --wait")
+      client.systemctl("status selenium-test.service")
+      client.require_unit_state("selenium-test.service", "inactive")
     '';
   }
 )
