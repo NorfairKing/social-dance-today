@@ -137,17 +137,39 @@ YourPartiesUnCancelPartyButton: Un-Cancel
 YourPartiesDeletePartyWarning: Are you sure you want to delete this party? This cannot be undone.
 YourPartiesDeletePartyButton: Delete
 
+# Party form
+PartyFormTitleLabel: Title
+PartyFormDayLabel: Day
+PartyFormAddressLabel: Address
+PartyFormDescriptionLabel: Description
+PartyFormStartLabel: Start
+PartyFormHomepageLabel: Website
+PartyFormPriceLabel: Price
+PartyFormPriceHelp: Make sure to write FREE if the party is free.
+PartyFormPosterLabel: Poster
+PartyFormPosterChooseInstruction: Choose a poster image
+PartyFormPosterNoPoster: No poster selected
+PartyFormBackButton: Back
+
 # Submit Party
+SubmitPartyTitle: Submit Party
+SubmitPartyButton: Submit
 SubmitPartySuccess: Succesfully submitted party
 SubmitPartyErrorUnverified: Your account needs to verified before you can submit parties.
 SubmitPartyErrorNoOrganiser: You must set up an organiser profile in the account overview before you can submit a party.
 
 # Edit Party
+EditPartyTitle: Submit Party
+EditPartyButton: Submit
 EditPartySuccess: Succesfully edited party
+EditPartyPublicPartyProfile: Public Party Profile
+EditPartyDayHelp: You can no longer edit the day for the party. If you were looking to do that, you can either cancel this party and organise another, or duplicate this party to re-organise it.
 EditPartyErrorNoOrganiser: You must set up an organiser profile in the account overview before you can edit a party.
 EditPartyErrorNotYourParty: This is not your party to edit.
 
 # Duplicate Party
+DuplicatePartyTitle: Submit Party
+DuplicatePartyButton: Submit
 DuplicatePartyErrorNoOrganiser: You must set up an organiser profile in the account overview before you can duplicate a party.
 DuplicatePartyErrorNotYourParty: This is not your party to duplicate.
 

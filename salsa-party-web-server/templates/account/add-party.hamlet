@@ -1,7 +1,7 @@
 <section .section>
   <div .container>
     <h1 .title .is-3>
-      Submit Party
+      _{MsgSubmitPartyTitle}
 
     <form .form
       enctype="multipart/form-data"
@@ -10,7 +10,7 @@
 
       <div .field>
         <label .label>
-          Title
+          _{MsgPartyFormTitleLabel}
         <div .control>
           <input .input
             type=text
@@ -19,7 +19,7 @@
 
       <div .field>
         <label .label>
-          Day
+          _{MsgPartyFormDayLabel}
         <div .control>
           <input .input
             type=date
@@ -28,7 +28,7 @@
 
       <div .field>
         <label .label>
-          Address
+          _{MsgPartyFormAddressLabel}
         <div .control>
           <input .input
             type=text
@@ -37,14 +37,14 @@
 
       <div .field>
         <label .label>
-          Description
+          _{MsgPartyFormDescriptionLabel}
         <div .control>
           <textarea .textarea
             name="description">
 
       <div .field>
         <label .label>
-          Start
+          _{MsgPartyFormStartLabel}
         <div .control>
           <input .input
             type=time
@@ -52,7 +52,7 @@
 
       <div .field>
         <label .label>
-          Homepage
+          _{MsgPartyFormHomepageLabel}
         <div .control>
           <input .input
             type=url
@@ -60,17 +60,17 @@
 
       <div .field>
         <label .label>
-          Price
+          _{MsgPartyFormPriceLabel}
         <div .control>
           <input .input
             type=text
             name="price">
         <p .help>
-          Make sure to write FREE if the party is free.
+          _{MsgPartyFormPriceHelp}
 
       <div .field>
         <label .label>
-          Poster
+          _{MsgPartyFormPosterLabel}
         <div .control>
           <div #posterInput .file .has-name>
             <label .file-label>
@@ -79,9 +79,9 @@
                 <span .file-icon>
                   <i .fas .fa-upload>
                 <span .file-label>
-                  Choose a poster image
+                  _{MsgPartyFormPosterChooseInstruction}
               <span .file-name>
-                No poster selected
+                _{MsgPartyFormPosterNoPoster}
           <figure #posterInput .py-3>
             <img .file-img .is-16by9 style="max-width: 640px; max-height: 360px;">
 
@@ -93,6 +93,6 @@
         <div .control>
           <div .buttons>
             <button .button .is-dark type="submit">
-              Submit
+              _{MsgSubmitPartyButton}
             <a .button href=@{AccountR AccountPartiesR}>
-              Back
+              _{MsgPartyFormBackButton}
