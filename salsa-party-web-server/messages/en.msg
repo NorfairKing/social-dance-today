@@ -108,6 +108,16 @@ VerificationErrorAlreadyVerified: This account is already verified.
 
 
 # Account Page
+AccountOverviewTitle: Account
+AccountEmailAddress emailAddress@Text: Email Address: #{emailAddress}
+AccountVerificationTitle: Account Verification
+AccountVerificationWarning: Your account is not verified yet. You will not be able to submit parties.
+AccountVerificationCheckEmail: Please check your email inbox for a verification email.
+AccountVerificationCheckEmailDisclaimer: If your verification email has not arrived yet, please make sure to check your spam folder. We do our best to prevent emails from ending up in spam but fail sometimes. If you still do not find a verification email, please contact the site administrators.
+AccountVerificationResendButton: Resend Verification Email
+AccountDangerZoneTitle: Danger Zone
+AccountDeleteButton: Delete Account
+AccountDeleteWarning: Are you sure you want to delete your account? This cannot be undone.
 
 # Organiser Profile
 
