@@ -540,6 +540,23 @@ languagePrettyDayFormat = \case
 defaultPrettyDayFormat :: String
 defaultPrettyDayFormat = "%A, %e %B"
 
+getPrettyDateTimeFormat :: MonadHandler m => m String
+getPrettyDateTimeFormat = fromMaybe defaultPrettyDateTimeFormat . firstMatchingPrettyDateTimeFormat <$> languages
+
+firstMatchingPrettyDateTimeFormat :: [Text] -> Maybe String
+firstMatchingPrettyDateTimeFormat = \case
+  [] -> Nothing
+  (lang : rest) -> languagePrettyDateTimeFormat lang <|> firstMatchingPrettyDateTimeFormat rest
+
+languagePrettyDateTimeFormat :: Text -> Maybe String
+languagePrettyDateTimeFormat = \case
+  "en" -> Just "%A, %B %e - %H:%M" -- Friday, July 16 - 18:30
+  "de" -> Just "%A, %e %B - %H:%M" -- Freitag, 16 juli - 18:30
+  _ -> Nothing
+
+defaultPrettyDateTimeFormat :: String
+defaultPrettyDateTimeFormat = "%A, %e %B"
+
 -- | Locale representing German usage.
 germanTimeLocale :: TimeLocale
 germanTimeLocale =

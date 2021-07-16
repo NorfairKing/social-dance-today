@@ -1,10 +1,10 @@
 <nav .pagination role="navigation" aria-label="pagination">
   $maybe previous <- paginatedPreviousPage
     <a .pagination-previous href=@{page previous}>
-      Previous
+      _{MsgPaginationPrevious}
   $maybe next <- paginatedNextPage
     <a .pagination-next href=@{page next}>
-      Next
+      _{MsgPaginationNext}
   <ul .pagination-list>
     $if shouldShowFirst
       <li>

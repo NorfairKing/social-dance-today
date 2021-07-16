@@ -21,7 +21,10 @@
                         ^{posterImageWidget party organiser posterKey}
                   <div .card-content>
                     <h3 .title .is-5>
-                      #{formatTime timeLocale prettyDayFormat $ partyDay party}
+                      $maybe start <- partyStart party
+                        #{formatTime timeLocale prettyDateTimeFormat (LocalTime (partyDay party) start)} 
+                      $nothing
+                        #{formatTime timeLocale prettyDayFormat $ partyDay party} 
                       (_{autoDayMsg today $ partyDay party})
                     <h4 .title .is-6>
                       $if partyCancelled party

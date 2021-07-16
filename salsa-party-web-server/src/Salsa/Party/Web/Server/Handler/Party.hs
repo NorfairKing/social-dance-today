@@ -54,6 +54,7 @@ partyPage (Entity partyId party@Party {..}) = do
   renderUrl <- getUrlRender
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
+  prettyDateTimeFormat <- getPrettyDateTimeFormat
   withNavBar $ do
     setTitleI $
       if partyCancelled
@@ -144,6 +145,7 @@ externalEventPage (Entity _ externalEvent@ExternalEvent {..}) = do
   renderUrl <- getUrlRender
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
+  prettyDateTimeFormat <- getPrettyDateTimeFormat
   withNavBar $ do
     setTitleI $
       if externalEventCancelled

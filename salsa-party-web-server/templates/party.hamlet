@@ -10,9 +10,10 @@
       _{MsgPartyAddress placeQuery}
     
     <h3 .subtitle .is-5>
-      #{formatTime timeLocale prettyDayFormat partyDay} 
       $maybe start <- partyStart
-        #{formatTime timeLocale "%H:%M" start} 
+        #{formatTime timeLocale prettyDateTimeFormat (LocalTime partyDay start)} 
+      $nothing
+        #{formatTime timeLocale prettyDayFormat partyDay} 
       (_{autoDayMsg today partyDay})
 
     $maybe posterKey <- mPosterKey

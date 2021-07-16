@@ -20,6 +20,7 @@ getOrganiserR uuid = do
       parties <- runDB $ getUpcomingPartiesOfOrganiser organiserId
       timeLocale <- getTimeLocale
       prettyDayFormat <- getPrettyDayFormat
+      prettyDateTimeFormat <- getPrettyDateTimeFormat
       withNavBar $ do
         setTitleI $ MsgOrganiserTitle organiserName
         setDescriptionI $ MsgOrganiserDescription organiserName

@@ -38,8 +38,9 @@ $forall (day, results) <- M.toList searchResults
                         <div .card-content>
                           <h2 .title .is-4>
                             $if partyCancelled party
-                              CANCELLED: 
-                            #{partyTitle party}
+                              _{MsgPartyTitleCancelled (partyTitle party)}
+                            $else
+                              _{MsgPartyTitleScheduled (partyTitle party)}
                           <h3 .subtitle .is-5>
                             #{placeQuery p}
 
@@ -51,8 +52,9 @@ $forall (day, results) <- M.toList searchResults
                         <div .card-content>
                           <h2 .title .is-4>
                             $if externalEventCancelled externalEvent
-                              CANCELLED: 
-                            #{externalEventTitle externalEvent}
+                              _{MsgPartyTitleCancelled (externalEventTitle externalEvent)}
+                            $else
+                              _{MsgPartyTitleScheduled (externalEventTitle externalEvent)}
                           <h3 .subtitle .is-5>
                             #{placeQuery p}
 

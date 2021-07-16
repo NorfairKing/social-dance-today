@@ -135,6 +135,10 @@ UnCancelPartyErrorNotYourParty: This is not your party to un-cancel.
 DeletePartyErrorNotYourParty: This is not your party to delete.
 
 
+# Pagination
+PaginationPrevious: Previous
+PaginationNext: Next
+
 # Auto day
 DayMoreThanAYearAgo: more than a year ago
 Day11MonthsAgo: 11 months ago

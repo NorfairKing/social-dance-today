@@ -10,9 +10,10 @@
       _{MsgPartyAddress placeQuery}
     
     <h3 .subtitle .is-5>
-      #{formatTime timeLocale prettyDayFormat externalEventDay} 
       $maybe start <- externalEventStart
-        #{formatTime timeLocale "%H:%M" start} 
+        #{formatTime timeLocale prettyDateTimeFormat (LocalTime externalEventDay start)} 
+      $nothing
+        #{formatTime timeLocale prettyDayFormat externalEventDay} 
       (_{autoDayMsg today externalEventDay})
 
     $maybe description <- externalEventDescription
