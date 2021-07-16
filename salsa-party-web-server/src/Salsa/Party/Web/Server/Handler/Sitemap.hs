@@ -7,8 +7,8 @@ import Conduit
 import Control.Monad
 import Control.Monad.Trans.Resource
 import qualified Data.Conduit.Combinators as C
-import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.DB.Migration
+import Salsa.Party.Web.Server.Handler.Import
 import Yesod.Sitemap
 
 getSitemapR :: Handler TypedContent

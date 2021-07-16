@@ -17,7 +17,7 @@ HomeFormHelp: Drücken Sie die Suchtaste, um parties in ihrer Umgebung zu finden
 ExploreTitle: Erkunde die Welt des Sozial Dance!
 ExploreDescription: Social Dance gibt es auf der ganzen Welt, finde heraus, wohin du gehen kannst!
 ExploreButton: Erkunden
-ExploreSkylineAlt location@Text: TODO Night-time skyline of #{location}
+ExploreSkylineAlt location@Text:  Nächtliche Skyline von #{location}
 
 ## Footer
 FooterGeocodingAttribution: Geokodierung durch OpenStreetMaps Nominatim
@@ -33,17 +33,17 @@ NavLanguage: Sprache
 NavAdmin: Admin-Panel
 NavSignUp: Registrieren
 NavLogIn: Anmelden
-NavLogOut: Admelden
+NavLogOut: Abmelden
 
 # Search Results
-SearchTitleAroundYourLocationToday: TODO Social dance parties near your location today
-SearchTitleAroundYourLocationOnDay day@String: TODO Social dance parties near your location on #{day}
-SearchTitleAroundAddressToday address@Text: TODO Social dance parties near #{address} today
-SearchTitleAroundAddressOnDay address@Text day@String: TODO Social dance parties near #{address} on #{day}
-SearchDescriptionAroundYourLocationToday: TODO A List of social dance parties near your location oday
-SearchDescriptionAroundYourLocationOnDay day@String: TODO A List of social dance parties near your location on #{day}
-SearchDescriptionAroundAddressToday address@Text: TODO A List of social dance parties near #{address} today
-SearchDescriptionAroundAddressOnDay address@Text day@String: TODO A List of social dance parties near #{address} on #{day}
+SearchTitleAroundYourLocationToday:  Social Dance Parties in deiner Umgebung heute
+SearchTitleAroundYourLocationOnDay day@String:  Social Dance Parties in der Nähe am #{day}
+SearchTitleAroundAddressToday address@Text:  Social Dance Parties in der Nähe von #{address} heute
+SearchTitleAroundAddressOnDay address@Text day@String:  Social Dance Parties in der Nähe von #{address} am #{day}
+SearchDescriptionAroundYourLocationToday:  Eine Liste von allen Social Dance Parties in deiner Umgebung heute
+SearchDescriptionAroundYourLocationOnDay day@String:  Eine Liste von allen Social Dance Parties in der Nähe am #{day}
+SearchDescriptionAroundAddressToday address@Text:  Eine Liste von allen Social Dance Parties in der Nähe von #{address} today
+SearchDescriptionAroundAddressOnDay address@Text day@String:  Eine Liste von allen Social Dance Parties in der Nähe  von #{address} am #{day}
 SearchPartiesAroundAddress address@Text: Parties in der Nähe von #{address}
 SearchPartiesAroundYourLocation: Parties in deiner Umgebung
 SearchNoParties: Es wurden keine Parties gefunden.
@@ -56,136 +56,135 @@ SearchNavLater: Später
 # Party Page
 PartyTitleScheduled title@Text: #{title}
 PartyTitleCancelled title@Text: ABGESAGT: #{title}
-PartyDescription description@Text: TODO #{description}
-PartyWithoutDescription: TODO Party without description
+PartyDescription description@Text:  #{description}
+PartyWithoutDescription:  Party ohne Beschreibung
 
-PartyAddress address@Text: Addresse: #{address}
+PartyAddress address@Text: Adresse: #{address}
 PartyOrganiser name@Text: Veranstalter: #{name}
 PartyPrice price@Text: Preis: #{price}
 PartyHomepage: Webseite
 PartyDownloadCalendarEvent: Kalendar-Event herunterladen
 PartyAddToGoogleCalendar: Zu Google Kalender hinzufügen
 
-ExternalEventCaution: Event via Websuche gefunden. Behandeln Sie diese Informationen mit Vorsicht. 
+ExternalEventCaution: Event via Websuche gefunden. Behandeln Sie diese Informationen mit Vorsicht. (Or: Angaben ohne Gewähr.)
 
 # Organiser Page
-OrganiserTitle name@Text: TODO Organiser profile: #{name}
-OrganiserDescription name@Text: TODO The organiser profile of #{name}, and a list of their upcoming social dance parties
-OrganiserName name@Text: Veranstalter: #{name}
+OrganiserTitle name@Text:  Veranstalterprofil: #{name}
+OrganiserDescription name@Text:  Veranstalterprofil von #{name}, und eine Liste seiner/ihrer bevorstehenden Social Dance Parties 
+OrganiserName name@Text: Veranstalter/in: #{name}
 OrganiserUpcomingParties: Bevorstehende Parties
 OrganiserNoUpcomingParties: Keine bevorstehenden Parties
 
 # Poster
-PosterAltFull title@Text day@String organiser@Text: TODO Poster for #{title} on #{day} by #{organiser}.
+PosterAltFull title@Text day@String organiser@Text: Bild für #{title} am #{day} organisiert durch #{organiser}.
 
 # Registration
-RegistrationTitle: TODO Salsa Parties Today: Registration
-RegistrationDescription: TODO Register an account at Salsa Parties Today
-RegistrationEmailAddressLabel: TODO Email Address
-RegistrationPassphraseLabel: TODO Passphrase
-RegistrationConfirmPassphraseLabel: TODO Confirm Passphrase
-RegistrationSignUpButton: TODO Sign up
-RegistrationLogInButton: TODO Log in
-RegistrationErrorAccountAlreadyExists: TODO An account with this username already exists.
+RegistrationTitle: Salsa Parties Heute: Registrierung
+RegistrationDescription: Erstellen Sie einen Account auf Salsa Parties Heute 
+RegistrationEmailAddressLabel: Email-Adresse
+RegistrationPassphraseLabel: Passwort-Satz
+RegistrationConfirmPassphraseLabel: Passwort-Satz bestätigen
+RegistrationSignUpButton:  Registrieren
+RegistrationLogInButton:  Anmelden
+RegistrationErrorAccountAlreadyExists: Es besteht bereits ein Account mit diesem Benutzernamen
 
-# Login
-LoginTitle: TODO Salsa Parties Today: Login
-LoginDescription: TODO Log into your account at Salsa Parties Today
-LoginEmailAddressLabel: TODO Email Address
-LoginPassphraseLabel: TODO Passphrase
-LoginLogInButton: TODO Log in
-LoginSignUpButton: TODO Sign up
+# Anmelden
+LoginTitle:  Salsa Parties Today: Anmelden
+LoginDescription: Melde dich an bei Salsa Parties Heute
+LoginEmailAddressLabel: Email-Adresse
+LoginPassphraseLabel: Passwort-Satz
+LoginLogInButton: Anmelden
+LoginSignUpButton: Registrieren
 
-# Verification Email
-VerificationEmailSubject: TODO Salsa Party Today Email Verification
-VerificationEmailTitle: TODO Salsa Party Today Registration
-VerificationEmailTextCTA: TODO Please verify your email address by following this link:
-VerificationEmailHtmlCTA: TODO Please verify your email address by clicking the link below.
-VerificationEmailButton: TODO Verify Email
-VerificationEmailInvitation: TODO We hope to see you soon.
-VerificationEmailExplanation: TODO You got this email because you tried to register at Salsa Parties Today
+# Bestätigungs-Email
+VerificationEmailSubject: Salsa Party Heute Email bestätigen
+VerificationEmailTitle: Salsa Party Heute Registrierung
+VerificationEmailTextCTA: Bitte bestätigen Sie Ihre Email-Adresse, indem sie folgendem Link folgen:
+VerificationEmailHtmlCTA: Bitte bestätigen Sie Ihre Email-Adresse, indem Sie den unterstehenden Link anklicken.
+VerificationEmailButton: Bestätigen Sie Ihre Email-Adresse.
+VerificationEmailInvitation: Wir hoffen, Sie bald zu treffen.
+VerificationEmailExplanation: Sie haben dieses Mail erhalten, weil Sie versucht haben, sich bei Salsa Parties Heute zu registrieren. 
 
-VerificationEmailFailure: TODO Failed to send verification email.
-VerificationErrorAlreadyVerified: TODO This account is already verified.
+VerificationEmailFailure:  Senden des Bestätigungs-Emails fehlgeschlagen 
+VerificationErrorAlreadyVerified:  Dieses Konto ist bereits bestätigt.
 
 # Account Page
-AccountOverviewTitle: TODO Account
-AccountEmailAddress emailAddress@Text: TODO Email Address: #{emailAddress}
-AccountVerificationTitle: TODO Account Verification
-AccountVerificationWarning: TODO Your account is not verified yet. You will not be able to submit parties.
-AccountVerificationCheckEmail: TODO Please check your email inbox for a verification email.
-AccountVerificationCheckEmailDisclaimer: TODO If your verification email has not arrived yet, please make sure to check your spam folder. We do our best to prevent emails from ending up in spam but fail sometimes. If you still do not find a verification email, please contact the site administrators.
-AccountVerificationResendButton: TODO Resend Verification Email
-AccountDangerZoneTitle: TODO Danger Zone
-AccountDeleteButton: TODO Delete Account
-AccountDeleteWarning: TODO Are you sure you want to delete your account? This cannot be undone.
+AccountOverviewTitle:  Konto
+AccountEmailAddress emailAddress@Text:  Email-Addresse: #{emailAddress}
+AccountVerificationTitle:  Kontobestätigung
+AccountVerificationWarning:  Ihr Konto ist noch nicht bestätigt. Sie können noch keine Parties erstellten. 
+AccountVerificationCheckEmail:  Bitte überprüfen Sie Ihren Posteingang auf eine Bestätigungs-E-Mail.
+AccountVerificationCheckEmailDisclaimer:  Wenn Ihre Bestätigungs-E-Mail noch nicht angekommen ist, überprüfen Sie bitte Ihren Spam-Ordner. Wir tun unser Bestes, um zu verhindern, dass E-Mails im Spam landen. Dies kann manchmal scheitert. Wenn Sie immer noch keine Bestätigungs-E-Mail finden, wenden Sie sich bitte an den Administrator.
+AccountVerificationResendButton:  Bestätigungs-Mail erneut senden
+AccountDangerZoneTitle:  Gefahrenzone
+AccountDeleteButton:  Konto löschen
+AccountDeleteWarning:  Sind Sie sicher, dass sie Ihr Konto löschen wollen? Das kann nicht rückgängig gemacht werden.
 
-# Organiser Profile
-OrganiserProfileTitle: TODO Organiser Profile
-OrganiserDisplayNameLabel: TODO Display Name
-OrganiserSubmitButton: TODO Submit
-OrganiserViewPublicProfileButton: TODO View Public Profile
+# Veranstalterprofil
+OrganiserProfileTitle:  Veranstalterprofil
+OrganiserDisplayNameLabel:  Anzeigename
+OrganiserSubmitButton:  Erstellen
+OrganiserViewPublicProfileButton:  Öffentliches Veranstalterprofil anzeigen
 
-# Your parties
-YourPartiesTitle: TODO Your parties
-YourPartiesSubmitButton: TODO Submit party
-YourPartiesNoParties: TODO You have not submitted any parties yet.
-YourPartiesEditPartyButton: TODO Edit
-YourPartiesPublicPartyButton: TODO Public Party Profile
-YourPartiesDuplicatePartyButton: TODO Duplicate
-YourPartiesCancelPartyButton: TODO Cancel
-YourPartiesUnCancelPartyButton: TODO Un-Cancel
-YourPartiesDeletePartyWarning: TODO Are you sure you want to delete this party? This cannot be undone.
-YourPartiesDeletePartyButton: TODO Delete
+# Deine Parties
+YourPartiesTitle:  Ihre Parties
+YourPartiesSubmitButton:  Parties erstellen
+YourPartiesNoParties:  Sie haben noch keine Parties erstellt.
+YourPartiesEditPartyButton:  Bearbeiten
+YourPartiesPublicPartyButton:  Öffentliches Party-Profil
+YourPartiesDuplicatePartyButton:  Dublizieren
+YourPartiesCancelPartyButton:  Abbrechen
+YourPartiesUnCancelPartyButton:  Weiter
+YourPartiesDeletePartyWarning:  Sind Sie sicher, dass Sie diese Party löschen wollen? Das kann nicht rückgängig gemacht werden. 
+YourPartiesDeletePartyButton:  Löschen
 
 # Party form
-PartyFormTitleLabel: TODO Title
-PartyFormDayLabel: TODO Day
-PartyFormAddressLabel: TODO Address
-PartyFormDescriptionLabel: TODO Description
-PartyFormStartLabel: TODO Start
-PartyFormHomepageLabel: TODO Website
-PartyFormPriceLabel: TODO Price
-PartyFormPriceHelp: TODO Make sure to write FREE if the party is free.
-PartyFormPosterLabel: TODO Poster
-PartyFormPosterChooseInstruction: TODO Choose a poster image
-PartyFormPosterNoPoster: TODO No poster selected
-PartyFormBackButton: TODO Back
+PartyFormTitleLabel:  Titel
+PartyFormDayLabel:  Tag
+PartyFormAddressLabel:  Adresse
+PartyFormDescriptionLabel:  Beschreibung
+PartyFormStartLabel:  Start
+PartyFormHomepageLabel:  Webseite
+PartyFormPriceLabel:  Preis
+PartyFormPriceHelp:  Stellen Sie sicher, dass Sie KOSTENLOS schreiben, wenn die Party kostenlos ist.
+PartyFormPosterLabel:  Bild
+PartyFormPosterChooseInstruction:  Bild auswählen
+PartyFormPosterNoPoster:  Kein Bild ausgewählt
+PartyFormBackButton:  Zurück
 
 # Submit Party
-SubmitPartyTitle: TODO Submit Party
-SubmitPartyButton: TODO Submit
-SubmitPartySuccess: TODO Succesfully submitted party
-SubmitPartyErrorUnverified: TODO Your account needs to verified before you can submit parties.
-SubmitPartyErrorNoOrganiser: TODO You must set up an organiser profile in the account overview before you can submit a party.
+SubmitPartyTitle:  Party erstellen
+SubmitPartyButton:  Speichern
+SubmitPartySuccess:  Erfolgreich erstellte Party
+SubmitPartyErrorUnverified:  Ihr Konto muss zuerst bestätigt werden, bevor Sie Parties erstellen können. 
+SubmitPartyErrorNoOrganiser:  Bevor Sie eine Party erstellen können, müssen Sie in der Kontoübersicht ein Veranstalterprofil anlegen.
+# Party bearbeiten
+EditPartyTitle:  Party bearbeiten 
+EditPartyButton:  Speichern
+EditPartySuccess:  Erfolgreich bearbeitete Party
+EditPartyPublicPartyProfile:  Öffentliches Party-Profil
+EditPartyDayHelp:  Sie können den Tag für die Party nicht mehr bearbeiten. Wenn Sie dies wünschen, können Sie diese Party entweder absagen und eine andere organisieren oder diese Party duplizieren, um sie neu zu organisieren.
+EditPartyErrorNoOrganiser: Bevor Sie eine Party bearbeiten können, müssen Sie in der Kontoübersicht ein Veranstalterprofil einrichten.
+EditPartyErrorNotYourParty: Diese Party können Sie nicht bearbeiten, da es nicht Ihre Party ist.
 
-# Edit Party
-EditPartyTitle: TODO Submit Party
-EditPartyButton: TODO Submit
-EditPartySuccess: TODO Succesfully edited party
-EditPartyPublicPartyProfile: TODO Public Party Profile
-EditPartyDayHelp: TODO You can no longer edit the day for the party. If you were looking to do that, you can either cancel this party and organise another, or duplicate this party to re-organise it.
-EditPartyErrorNoOrganiser: TODO You must set up an organiser profile in the account overview before you can edit a party.
-EditPartyErrorNotYourParty: TODO This is not your party to edit.
-
-# Duplicate Party
-DuplicatePartyTitle: TODO Submit Party
-DuplicatePartyButton: TODO Submit
-DuplicatePartyErrorNoOrganiser: TODO You must set up an organiser profile in the account overview before you can duplicate a party.
-DuplicatePartyErrorNotYourParty: TODO This is not your party to duplicate.
+# Party dublizieren
+DuplicatePartyTitle: Party dublizieren
+DuplicatePartyButton: Speichern
+DuplicatePartyErrorNoOrganiser: Bevor Sie eine Party duplizieren können, müssen Sie in der Kontoübersicht ein Veranstalterprofil einrichten.
+DuplicatePartyErrorNotYourParty: Sie können diese Party nicht dublizieren, da es nicht Ihre Party ist.
 
 # Cancel party
-CancelPartyErrorNotYourParty: TODO This is not your party to cancel.
+CancelPartyErrorNotYourParty: Diese Party können sie nicht absagen, da es nicht Ihre Party ist.
 
 # Un-Cancel party
-UnCancelPartyErrorNotYourParty: TODO This is not your party to un-cancel.
+UnCancelPartyErrorNotYourParty: Die Absage dieser Party können Sie nicht Rückgängig machen, da es nicht Ihre Party ist.
 
 # Delete party
-DeletePartyErrorNotYourParty: TODO This is not your party to delete.
+DeletePartyErrorNotYourParty: Sie können diese Party nicht löschen, da es nicht Ihre Party ist.
 
 # Pagination
-PaginationPrevious: TODO Previous
-PaginationNext: TODO Next
+PaginationPrevious:  Früher
+PaginationNext:  Später
 
 # Auto day
 DayMoreThanAYearAgo: vor mehr als einem Jahr
@@ -235,4 +234,4 @@ DayIn11Months: In 11 Monaten
 DayInMoreThanAYear: in mehr als einem Jahr
 
 # Errors
-NotFound: TODO Page not found
+NotFound: Seite nicht gefunden 

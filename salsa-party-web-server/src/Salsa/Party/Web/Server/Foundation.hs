@@ -472,7 +472,7 @@ instance PathPiece SupportedLanguage where
   toPathPiece = supportedLanguageAbbreviation
 
 supportedLanguages :: [SupportedLanguage]
-supportedLanguages = [minBound .. maxBound]
+supportedLanguages = [SupportedLangEnglish, SupportedLangGerman] -- TODO put this back when we get the dutch translations [minBound .. maxBound]
 
 parseSupportedLanguage :: Text -> Maybe SupportedLanguage
 parseSupportedLanguage =

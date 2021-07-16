@@ -23,10 +23,26 @@ parser.add_argument(
     type=bool,
     help="Whether to run with display",
 )
+parser.add_argument(
+    "--wait",
+    nargs="?",
+    const=True,
+    default=False,
+    type=bool,
+    help="Wether to wait between steps",
+)
+
 
 args = parser.parse_args()
 
 host = args.host
+
+
+def wait(seconds=1):
+    if args.wait:
+        time.sleep(seconds)
+
+
 options = FirefoxOptions()
 options.headless = args.headless
 driver = webdriver.Firefox(options=options)
@@ -40,7 +56,7 @@ element = driver.find_element_by_id("queryInput")
 element.send_keys("Zürich")
 element.submit()
 
-time.sleep(1)
+wait()
 
 # Try to register
 print("Registering")
@@ -50,7 +66,7 @@ driver.find_element_by_name("passphrase").send_keys("test")
 driver.find_element_by_name("passphrase-confirm").send_keys("test")
 driver.find_element_by_xpath('//button[contains(text(), "Sign up")]').click()
 
-time.sleep(1)
+wait()
 
 # Set up an organiser profile
 print("Setting up an organiser profile")
@@ -59,7 +75,7 @@ driver.find_element_by_name("name").send_keys("Test Organiser")
 driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
 driver.find_element_by_xpath('//a[contains(text(), "View Public Profile")]').click()
 
-time.sleep(1)
+wait()
 
 # Submit a party
 print("Submitting a party")
@@ -74,7 +90,7 @@ driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
 driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
 driver.find_element_by_xpath('//a[contains(text(), "Public Party Profile")]').click()
 
-time.sleep(1)
+wait()
 
 # Edit the party
 print("Editing the party")
@@ -92,7 +108,7 @@ driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
 driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
 driver.find_element_by_xpath('//a[contains(text(), "Public Party Profile")]').click()
 
-time.sleep(1)
+wait()
 
 # Duplicate the party
 print("Duplicating the party")
@@ -112,15 +128,15 @@ driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
 driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
 driver.find_element_by_xpath('//a[contains(text(), "Public Party Profile")]').click()
 
-time.sleep(1)
+wait()
 
 # Try to delete account
 print("Deleting account")
 driver.find_element_by_xpath('//a[contains(text(), "Account")]').click()
-driver.find_element_by_xpath('//button[contains(text(), "Delete account")]').click()
+driver.find_element_by_xpath('//button[contains(text(), "Delete Account")]').click()
 WebDriverWait(driver, 10).until(EC.alert_is_present())
 driver.switch_to.alert.accept()
 
-time.sleep(1)
+wait()
 
 driver.close()
