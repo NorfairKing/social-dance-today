@@ -43,7 +43,7 @@
                 method=post
                 action=@{AccountR $ AccountPartyDeleteR $ partyUuid party}>
                 <button .button .is-danger type=submit
-                  onclick="return confirm(_{MsgYourPartiesDeletePartyWarning});">
+                  onclick="return confirm('_{MsgYourPartiesDeletePartyWarning}');">
                   _{MsgYourPartiesDeletePartyButton}
             $else
               ^{token}

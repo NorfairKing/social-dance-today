@@ -49,6 +49,6 @@ $if requireVerification
           <button
             .button .is-danger
             type=submit
-            onclick="return confirm(_{MsgAccountDeleteWarning});">
+            onclick="return confirm('_{MsgAccountDeleteWarning}');">
             _{MsgAccountDeleteButton}
 
