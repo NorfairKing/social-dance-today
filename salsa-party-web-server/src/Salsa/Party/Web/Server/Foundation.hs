@@ -503,7 +503,7 @@ supportedLanguageEnglish =
     SupportedLangGerman -> "German"
     SupportedLangDutch -> "Dutch"
 
-getFirstMatchingSupportedLanguage :: Handler SupportedLanguage
+getFirstMatchingSupportedLanguage :: MonadHandler m => m SupportedLanguage
 getFirstMatchingSupportedLanguage = do
   ls <- languages
   pure $ fromMaybe SupportedLangEnglish $ firstMatchingSupportedLanguage ls
@@ -521,55 +521,31 @@ postSelectLanguageR lang = do
   redirectUltDest HomeR
 
 getTimeLocale :: MonadHandler m => m TimeLocale
-getTimeLocale = fromMaybe defaultTimeLocale . firstMatchingTimeLocale <$> languages
+getTimeLocale = languageTimeLocale <$> getFirstMatchingSupportedLanguage
 
-firstMatchingTimeLocale :: [Text] -> Maybe TimeLocale
-firstMatchingTimeLocale = \case
-  [] -> Nothing
-  (lang : rest) -> languageTimeLocale lang <|> firstMatchingTimeLocale rest
-
-languageTimeLocale :: Text -> Maybe TimeLocale
+languageTimeLocale :: SupportedLanguage -> TimeLocale
 languageTimeLocale = \case
-  "en" -> Just defaultTimeLocale -- The default in the 'time' package is american.
-  "de" -> Just germanTimeLocale
-  "nl" -> Just dutchTimeLocale
-  _ -> Nothing
+  SupportedLangEnglish -> defaultTimeLocale -- The default in the 'time' package is american.
+  SupportedLangGerman -> germanTimeLocale
+  SupportedLangDutch -> dutchTimeLocale
 
 getPrettyDayFormat :: MonadHandler m => m String
-getPrettyDayFormat = fromMaybe defaultPrettyDayFormat . firstMatchingPrettyDayFormat <$> languages
+getPrettyDayFormat = languagePrettyDayFormat <$> getFirstMatchingSupportedLanguage
 
-firstMatchingPrettyDayFormat :: [Text] -> Maybe String
-firstMatchingPrettyDayFormat = \case
-  [] -> Nothing
-  (lang : rest) -> languagePrettyDayFormat lang <|> firstMatchingPrettyDayFormat rest
-
-languagePrettyDayFormat :: Text -> Maybe String
+languagePrettyDayFormat :: SupportedLanguage -> String
 languagePrettyDayFormat = \case
-  "en" -> Just "%A, %B %e" -- Friday, July 16
-  "de" -> Just "%A, %e %B" -- Freitag, 16 juli
-  "nl" -> Just "%A, %e %B" -- Vrijdag, 16 juli
-  _ -> Nothing
-
-defaultPrettyDayFormat :: String
-defaultPrettyDayFormat = "%A, %e %B"
+  SupportedLangEnglish -> "%A, %B %e" -- Friday, July 16
+  SupportedLangGerman -> "%A, %e %B" -- Freitag, 16 juli
+  SupportedLangDutch -> "%A, %e %B" -- Vrijdag, 16 juli
 
 getPrettyDateTimeFormat :: MonadHandler m => m String
-getPrettyDateTimeFormat = fromMaybe defaultPrettyDateTimeFormat . firstMatchingPrettyDateTimeFormat <$> languages
+getPrettyDateTimeFormat = languagePrettyDateTimeFormat <$> getFirstMatchingSupportedLanguage
 
-firstMatchingPrettyDateTimeFormat :: [Text] -> Maybe String
-firstMatchingPrettyDateTimeFormat = \case
-  [] -> Nothing
-  (lang : rest) -> languagePrettyDateTimeFormat lang <|> firstMatchingPrettyDateTimeFormat rest
-
-languagePrettyDateTimeFormat :: Text -> Maybe String
+languagePrettyDateTimeFormat :: SupportedLanguage -> String
 languagePrettyDateTimeFormat = \case
-  "en" -> Just "%A, %B %e - %H:%M" -- Friday, July 16 - 18:30
-  "de" -> Just "%A, %e %B - %H:%M" -- Freitag, 16 juli - 18:30
-  "nl" -> Just "%A, %e %B - %H:%M" -- Vrijdag, 16 juli - 18:30
-  _ -> Nothing
-
-defaultPrettyDateTimeFormat :: String
-defaultPrettyDateTimeFormat = "%A, %e %B"
+  SupportedLangEnglish -> "%A, %B %e - %H:%M" -- Friday, July 16 - 18:30
+  SupportedLangGerman -> "%A, %e %B - %H:%M" -- Freitag, 16 juli - 18:30
+  SupportedLangDutch -> "%A, %e %B - %H:%M" -- Vrijdag, 16 juli - 18:30
 
 -- | Locale representing German usage.
 germanTimeLocale :: TimeLocale
