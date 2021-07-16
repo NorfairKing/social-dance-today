@@ -3,6 +3,7 @@
 
 module Salsa.Party.Web.Server.Handler.Explore where
 
+import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Handler.Import
 
 getExploreR :: Handler Html
@@ -11,11 +12,3 @@ getExploreR =
     setTitleI MsgExploreTitle
     setDescriptionI MsgExploreDescription
     $(widgetFile "explore")
-
-locations :: [Text]
-locations =
-  [ "Zürich",
-    "London",
-    "New York",
-    "Sydney"
-  ]

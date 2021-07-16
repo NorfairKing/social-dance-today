@@ -7,15 +7,16 @@
       $forall location <- locations
         <div .column .is-two-thirds-tablet .is-half-desktop>
           <div .zoom-without-container>
-            <a  href=@{SearchR location}>
+            <a  href=@{SearchR $ placeQuery location}>
               <div .card>
                 <div .card-image .has-text-centered>
                   <figure .image .is-16by9>
                     <img 
                       width=640
                       height=360
-                      src="@{HomeR}static/res/#{location}.jpg"
-                      alt=_{MsgExploreSkylineAlt location}>
+                      src="@{HomeR}static/res/#{placeQuery location}.jpg"
+                      alt=_{MsgExploreSkylineAlt (placeQuery location)}>
                 <div .card-content>
                   <h2 .title .is-4 .has-text-centered>
-                    #{location}
+                    #{placeQuery location}
+

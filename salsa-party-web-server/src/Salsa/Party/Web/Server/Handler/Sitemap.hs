@@ -7,8 +7,8 @@ import Conduit
 import Control.Monad
 import Control.Monad.Trans.Resource
 import qualified Data.Conduit.Combinators as C
-import Salsa.Party.Web.Server.Handler.Explore
 import Salsa.Party.Web.Server.Handler.Import
+import Salsa.Party.DB.Migration
 import Yesod.Sitemap
 
 getSitemapR :: Handler TypedContent
@@ -36,7 +36,7 @@ getSitemapR = do
     forM_ locations $ \location ->
       yield
         SitemapUrl
-          { sitemapLoc = SearchR location,
+          { sitemapLoc = SearchR $ placeQuery location,
             sitemapLastMod = Nothing,
             sitemapChangeFreq = Just Daily,
             sitemapPriority = Just 0.6
