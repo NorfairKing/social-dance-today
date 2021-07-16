@@ -10,7 +10,12 @@ import Salsa.Party.Web.Server.Handler.TestImport
 
 spec :: Spec
 spec =
-  describe "I18N" $
+  describe "I18N" $ do
+    scenarioDir "messages" $ \fp ->
+      it (fp <> " has no more TODOs") $ do
+        contents <- readFile fp
+        contents `shouldNotSatisfy` ("TODO" `isInfixOf`)
+
     it "Has translations for every string" $ do
       translationsDir <- resolveDir' "messages"
       mainFile <- resolveFile translationsDir "en.msg"
