@@ -120,6 +120,10 @@ AccountDeleteButton: Delete Account
 AccountDeleteWarning: Are you sure you want to delete your account? This cannot be undone.
 
 # Organiser Profile
+OrganiserProfileTitle: Organiser Profile
+OrganiserDisplayNameLabel: Display Name
+OrganiserSubmitButton: Submit
+OrganiserViewPublicProfileButton: View Public Profile
 
 # Submit Party
 SubmitPartySuccess: Succesfully submitted party

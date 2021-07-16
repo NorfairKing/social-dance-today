@@ -1,7 +1,7 @@
 <section .section>
   <div .container>
     <h1 .title .is-3>
-      Organiser Profile
+      _{MsgOrganiserProfileTitle}
 
     <form
       method=post
@@ -9,7 +9,7 @@
       
       <div .field>
         <label .label>
-          Display Name
+          _{MsgOrganiserDisplayNameLabel}
         <div .control>
           <input .input
             type=text
@@ -23,10 +23,10 @@
       <div .field>
         <div .control .buttons>
           <button .button .is-dark type="submit">
-            Submit
+            _{MsgOrganiserSubmitButton}
 
           $maybe Entity _ organiser <- mOrganiser
             <a .button .is-light
               href=@{OrganiserR $ organiserUuid organiser}>
-              View Public Profile
+              _{MsgOrganiserViewPublicProfileButton}
 
