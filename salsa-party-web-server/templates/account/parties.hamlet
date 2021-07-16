@@ -18,9 +18,10 @@
             _{MsgPartyTitleCancelled (partyTitle party)}
           $else
             _{MsgPartyTitleScheduled (partyTitle party)}
-          #{formatTime timeLocale prettyDayFormat $ partyDay party}
-          (_{autoDayMsg today (partyDay party)})
         <h3 .subtitle .is-5>
+          #{formatTime timeLocale prettyDayFormat $ partyDay party} 
+          (_{autoDayMsg today (partyDay party)})
+        <p .content>
           #{placeQuery p}
         $maybe posterKey <- mPosterKey
           ^{posterImageWidget party organiser posterKey}

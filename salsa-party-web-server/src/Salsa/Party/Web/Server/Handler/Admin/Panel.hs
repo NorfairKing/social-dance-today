@@ -36,7 +36,7 @@ getAdminPartiesR = redirect $ AdminR $ AdminPartiesPageR paginatedFirstPage
 
 getAdminPartiesPageR :: PageNumber -> Handler Html
 getAdminPartiesPageR pageNumber = do
-  paginated <- runDB $ selectPaginated 10 [] [Asc PartyId] pageNumber
+  paginated <- runDB $ selectPaginated 10 [] [Asc PartyDay, Asc PartyId] pageNumber
   today <- liftIO $ utctDay <$> getCurrentTime
   withNavBar $ do
     timeLocale <- getTimeLocale
@@ -49,7 +49,7 @@ getAdminExternalEventsR = redirect $ AdminR $ AdminExternalEventsPageR paginated
 
 getAdminExternalEventsPageR :: PageNumber -> Handler Html
 getAdminExternalEventsPageR pageNumber = do
-  paginated <- runDB $ selectPaginated 10 [] [Asc ExternalEventId] pageNumber
+  paginated <- runDB $ selectPaginated 10 [] [Asc ExternalEventDay, Asc ExternalEventId] pageNumber
   today <- liftIO $ utctDay <$> getCurrentTime
   token <- genToken
   withNavBar $ do
