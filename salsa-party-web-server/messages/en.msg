@@ -83,6 +83,7 @@ RegistrationPassphraseLabel: Passphrase
 RegistrationConfirmPassphraseLabel: Confirm Passphrase
 RegistrationSignUpButton: Sign up
 RegistrationLogInButton: Log in
+RegistrationErrorAccountAlreadyExists: An account with this username already exists.
 
 # Login
 LoginTitle: Salsa Parties Today: Login
@@ -93,12 +94,45 @@ LoginLogInButton: Log in
 LoginSignUpButton: Sign up
 
 # Verification Email
+VerificationEmailSubject: Salsa Party Today Email Verification
 VerificationEmailTitle: Salsa Party Today Registration
 VerificationEmailTextCTA: Please verify your email address by following this link:
 VerificationEmailHtmlCTA: Please verify your email address by clicking the link below.
 VerificationEmailButton: Verify Email
 VerificationEmailInvitation: We hope to see you soon.
 VerificationEmailExplanation: You got this email because you tried to register at Salsa Parties Today
+
+VerificationEmailFailure: Failed to send verification email.
+VerificationErrorAlreadyVerified: This account is already verified.
+
+
+# Account Page
+
+# Organiser Profile
+
+# Submit Party
+SubmitPartySuccess: Succesfully submitted party
+SubmitPartyErrorUnverified: Your account needs to verified before you can submit parties.
+SubmitPartyErrorNoOrganiser: You must set up an organiser profile in the account overview before you can submit a party.
+
+# Edit Party
+EditPartySuccess: Succesfully edited party
+EditPartyErrorNoOrganiser: You must set up an organiser profile in the account overview before you can edit a party.
+EditPartyErrorNotYourParty: This is not your party to edit.
+
+# Duplicate Party
+DuplicatePartyErrorNoOrganiser: You must set up an organiser profile in the account overview before you can duplicate a party.
+DuplicatePartyErrorNotYourParty: This is not your party to duplicate.
+
+# Cancel party
+CancelPartyErrorNotYourParty: This is not your party to cancel.
+
+# Un-Cancel party
+UnCancelPartyErrorNotYourParty: This is not your party to un-cancel.
+
+# Delete party
+DeletePartyErrorNotYourParty: This is not your party to delete.
+
 
 # Auto day
 DayMoreThanAYearAgo: more than a year ago

@@ -239,7 +239,7 @@ postRegisterR = liftHandler $ do
   mUser <- runDB $ getBy (UniqueUserEmailAddress registerFormEmailAddress)
   case mUser of
     Just _ -> do
-      setMessage "An account with this username already exists"
+      setMessageI MsgRegistrationErrorAccountAlreadyExists
       redirect $ AuthR registerR
     Nothing -> do
       if unsafeShowPassword registerFormPassphrase == unsafeShowPassword registerFormConfirmPassphrase
@@ -303,7 +303,7 @@ postResendVerificationEmailR :: AuthHandler App TypedContent
 postResendVerificationEmailR = do
   Entity _ User {..} <- requireAuth
   case userVerificationKey of
-    Nothing -> addMessage "" "Account is already verified."
+    Nothing -> addMessageI "" MsgVerificationErrorAlreadyVerified
     Just verificationKey -> liftHandler $ sendVerificationEmail userEmailAddress verificationKey
   redirect $ AccountR AccountOverviewR
 
@@ -317,7 +317,7 @@ sendVerificationEmail userEmailAddress verificationKey = do
       urlRender <- getUrlRenderParams
       messageRender <- getMessageRender
 
-      let subject = SES.content "Email Verification"
+      let subject = SES.content $ messageRender MsgVerificationEmailSubject
 
       let textBody = SES.content $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/auth/email/verification-email.txt") urlRender
 
@@ -359,7 +359,7 @@ sendVerificationEmail userEmailAddress verificationKey = do
           addMessageI "is-success" (ConfirmationEmailSent userEmailAddress)
         _ -> do
           logErrorN $ T.unlines ["Failed to send verification email to address: " <> userEmailAddress, T.pack (ppShow response)]
-          addMessage "is-danger" "Failed te send verification email."
+          addMessageI "is-danger" MsgVerificationEmailFailure
     else logInfoN $ "Not sending verification email (because sendEmail is turned of), to address: " <> userEmailAddress
 
 verifyR :: Text -> Text -> Route Auth

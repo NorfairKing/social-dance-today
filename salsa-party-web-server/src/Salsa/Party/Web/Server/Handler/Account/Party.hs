@@ -33,7 +33,7 @@ getAccountPartiesR = do
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
   case mOrganiser of
     Nothing -> do
-      addMessage "is-danger" "You must set up an organiser profile in the account overview before you can submit a party."
+      addMessageI "is-danger" MsgSubmitPartyErrorNoOrganiser
       redirect $ AccountR AccountOrganiserR
     Just (Entity organiserId organiser) -> do
       parties <- runDB $ getPartiesOfOrganiser organiserId
@@ -105,13 +105,13 @@ newPartyPage mResult = do
 
   requireVerification <- getsYesod appSendEmails
   when (requireVerification && isJust userVerificationKey) $ do
-    addMessage "is-danger" "Your account needs to verified before you can submit parties."
+    addMessageI "is-danger" MsgSubmitPartyErrorUnverified
     redirect $ AccountR AccountOverviewR
 
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
   case mOrganiser of
     Nothing -> do
-      addMessage "is-danger" "You must set up an organiser profile in the account overview before you can submit a party."
+      addMessageI "is-danger" MsgSubmitPartyErrorNoOrganiser
       redirect $ AccountR AccountOrganiserR
     Just (Entity organiserId _) ->
       case mResult of
@@ -196,7 +196,7 @@ addParty organiserId AddPartyForm {..} mFileInfo = do
               PartyPosterModified =. Just now
             ]
 
-  addMessage "is-success" "Succesfully submitted party"
+  addMessageI "is-success" MsgSubmitPartySuccess
   redirect $ AccountR $ AccountPartyR uuid
 
 data EditPartyForm = EditPartyForm
@@ -248,14 +248,14 @@ editPartyPage partyUuid_ mResult = do
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
   case mOrganiser of
     Nothing -> do
-      addMessage "is-danger" "You must set up an organiser profile in the account overview before you can edit a party."
+      addMessageI "is-danger" MsgEditPartyErrorNoOrganiser
       redirect $ AccountR AccountOrganiserR
     Just (Entity organiserId _) -> do
       mParty <- runDB $ getBy $ UniquePartyUUID partyUuid_
       partyEntity <- case mParty of
         Nothing -> notFound
         Just partyEntity -> pure partyEntity
-      when (partyOrganiser (entityVal partyEntity) /= organiserId) $ permissionDenied "Not your party to edit."
+      when (partyOrganiser (entityVal partyEntity) /= organiserId) $ permissionDeniedI MsgEditPartyErrorNotYourParty
       case mResult of
         Just (FormSuccess (form, mFileInfo)) -> editParty partyEntity form mFileInfo
         _ -> editPartyFormPage partyEntity mResult
@@ -338,7 +338,7 @@ editParty (Entity partyId party) form mFileInfo = do
                 [ PartyPosterImage =. imageId,
                   PartyPosterModified =. Just now
                 ]
-  addMessage "is-success" "Succesfully edited party"
+  addMessageI "is-success" MsgEditPartySuccess
   redirect $ AccountR $ AccountPartyR $ partyUuid party
 
 getAccountPartyDuplicateR :: EventUUID -> Handler Html
@@ -347,7 +347,7 @@ getAccountPartyDuplicateR partyUuid_ = do
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
   case mOrganiser of
     Nothing -> do
-      addMessage "is-danger" "You must set up an organiser profile in the account overview before you can duplicate a party."
+      addMessageI "is-danger" MsgDuplicatePartyErrorNoOrganiser
       redirect $ AccountR AccountOrganiserR
     Just (Entity organiserId organiser) -> do
       Entity partyId party <- getPartyEntityOfOrganiser partyUuid_ organiserId
@@ -364,7 +364,7 @@ getPartyEntityOfOrganiser partyUuid organiserId = do
     Just partyEntity@(Entity _ party) ->
       if partyOrganiser party == organiserId
         then pure partyEntity
-        else permissionDenied "Not your party to edit."
+        else permissionDeniedI MsgEditPartyErrorNotYourParty
 
 postAccountPartyDeleteR :: EventUUID -> Handler Html
 postAccountPartyDeleteR partyUuid = do
@@ -378,7 +378,7 @@ postAccountPartyDeleteR partyUuid = do
         then do
           runDB $ deletePartyCompletely partyId
           redirect $ AccountR AccountPartiesR
-        else permissionDenied "Not your party to delete."
+        else permissionDeniedI MsgDeletePartyErrorNotYourParty
 
 postAccountPartyCancelR :: EventUUID -> Handler Html
 postAccountPartyCancelR partyUuid = do
@@ -392,7 +392,7 @@ postAccountPartyCancelR partyUuid = do
         then do
           runDB $ update partyId [PartyCancelled =. True]
           redirect $ AccountR AccountPartiesR
-        else permissionDenied "Not your party to cancel."
+        else permissionDeniedI MsgCancelPartyErrorNotYourParty
 
 postAccountPartyUnCancelR :: EventUUID -> Handler Html
 postAccountPartyUnCancelR partyUuid = do
@@ -406,4 +406,4 @@ postAccountPartyUnCancelR partyUuid = do
         then do
           runDB $ update partyId [PartyCancelled =. False]
           redirect $ AccountR AccountPartiesR
-        else permissionDenied "Not your party to un-cancel."
+        else permissionDeniedI MsgUnCancelPartyErrorNotYourParty

@@ -25,3 +25,10 @@
     within:
       - Salsa.Party.Web.Server.Handler.Admin.Panel
     message: Use setDescriptionI instead.
+  - name: addMessage
+    within:
+      - Salsa.Party.Web.Server.Handler.Admin.Panel
+    message: Use addMessageI instead.
+  - name: permissionDenied
+    within: []
+    message: Use permissionDeniedI instead.
