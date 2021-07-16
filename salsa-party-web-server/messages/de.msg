@@ -1,3 +1,6 @@
+# Translators
+# s.ostermeier88@gmail.com
+
 # Logo
 SalsaPartiesLogo: Salsa Parties Logo
 
