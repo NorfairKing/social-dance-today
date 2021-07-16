@@ -464,6 +464,7 @@ type PageNumber = Int
 data SupportedLanguage
   = SupportedLangEnglish
   | SupportedLangGerman
+  | SupportedLangDutch
   deriving (Show, Read, Eq, Enum, Bounded)
 
 instance PathPiece SupportedLanguage where
@@ -478,6 +479,7 @@ parseSupportedLanguage =
   \case
     "en" -> Just SupportedLangEnglish
     "de" -> Just SupportedLangGerman
+    "nl" -> Just SupportedLangDutch
     _ -> Nothing
 
 supportedLanguageAbbreviation :: SupportedLanguage -> Text
@@ -485,12 +487,21 @@ supportedLanguageAbbreviation =
   \case
     SupportedLangEnglish -> "en"
     SupportedLangGerman -> "de"
+    SupportedLangDutch -> "nl"
 
 supportedLanguageNative :: SupportedLanguage -> Text
 supportedLanguageNative =
   \case
     SupportedLangEnglish -> "English"
     SupportedLangGerman -> "Deutsch"
+    SupportedLangDutch -> "Nederlands"
+
+supportedLanguageEnglish :: SupportedLanguage -> Text
+supportedLanguageEnglish =
+  \case
+    SupportedLangEnglish -> "English"
+    SupportedLangGerman -> "German"
+    SupportedLangDutch -> "Dutch"
 
 getFirstMatchingSupportedLanguage :: Handler SupportedLanguage
 getFirstMatchingSupportedLanguage = do
@@ -521,6 +532,7 @@ languageTimeLocale :: Text -> Maybe TimeLocale
 languageTimeLocale = \case
   "en" -> Just defaultTimeLocale -- The default in the 'time' package is american.
   "de" -> Just germanTimeLocale
+  "nl" -> Just dutchTimeLocale
   _ -> Nothing
 
 getPrettyDayFormat :: MonadHandler m => m String
@@ -535,6 +547,7 @@ languagePrettyDayFormat :: Text -> Maybe String
 languagePrettyDayFormat = \case
   "en" -> Just "%A, %B %e" -- Friday, July 16
   "de" -> Just "%A, %e %B" -- Freitag, 16 juli
+  "nl" -> Just "%A, %e %B" -- Vrijdag, 16 juli
   _ -> Nothing
 
 defaultPrettyDayFormat :: String
@@ -552,6 +565,7 @@ languagePrettyDateTimeFormat :: Text -> Maybe String
 languagePrettyDateTimeFormat = \case
   "en" -> Just "%A, %B %e - %H:%M" -- Friday, July 16 - 18:30
   "de" -> Just "%A, %e %B - %H:%M" -- Freitag, 16 juli - 18:30
+  "nl" -> Just "%A, %e %B - %H:%M" -- Vrijdag, 16 juli - 18:30
   _ -> Nothing
 
 defaultPrettyDateTimeFormat :: String
@@ -562,13 +576,13 @@ germanTimeLocale :: TimeLocale
 germanTimeLocale =
   TimeLocale
     { wDays =
-        [ ("Sonntag", "Son"),
-          ("Montag", "Mon"),
-          ("Dienstag", "Die"),
-          ("Mittwoch", "Mit"),
-          ("Donnerstag", "Don"),
-          ("Freitag", "Fre"),
-          ("Samstag", "Sam")
+        [ ("Sonntag", "So"),
+          ("Montag", "Mo"),
+          ("Dienstag", "Di"),
+          ("Mittwoch", "Mi"),
+          ("Donnerstag", "Do"),
+          ("Freitag", "Fr"),
+          ("Samstag", "Sa")
         ],
       months =
         [ ("januar", "Jan."),
@@ -587,6 +601,41 @@ germanTimeLocale =
       amPm = ("AM", "PM"), -- Not used.
       dateTimeFmt = "%a %b %e %H:%M:%S %Z %Y",
       dateFmt = "%d.%m.%y",
+      timeFmt = "%H:%M:%S",
+      time12Fmt = "%I:%M:%S %p", -- Not used.
+      knownTimeZones = [] -- Don't need it.
+    }
+
+-- | Locale representing Dutch usage.
+dutchTimeLocale :: TimeLocale
+dutchTimeLocale =
+  TimeLocale
+    { wDays =
+        [ ("zondag", "zo."),
+          ("maandag", "ma."),
+          ("dinsdag", "di."),
+          ("woensdag", "wo."),
+          ("donderdag", "do."),
+          ("vrijdag", "vr."),
+          ("zaterdag", "za.")
+        ],
+      months =
+        [ ("januari", "jan."),
+          ("februari", "feb."),
+          ("maart", "mrt."),
+          ("april", "apr."),
+          ("mei", "mei"),
+          ("juni", "jun."),
+          ("juli", "jul."),
+          ("augustus", "aug."),
+          ("september", "sept."),
+          ("oktober", "okt."),
+          ("november", "nov."),
+          ("december", "dec.")
+        ],
+      amPm = ("AM", "PM"), -- Not used.
+      dateTimeFmt = "%a %b %e %H:%M:%S %Z %Y",
+      dateFmt = "%d-%m-%y",
       timeFmt = "%H:%M:%S",
       time12Fmt = "%I:%M:%S %p", -- Not used.
       knownTimeZones = [] -- Don't need it.

@@ -25,12 +25,12 @@
     <div .navbar-end>
       <div .navbar-item .has-dropdown .is-hoverable>
         <a .navbar-link>
-          _{MsgNavLanguage}
+          _{MsgNavLanguage} / Language
         <div .navbar-dropdown .is-hidden-mobile>
           $forall lang <- supportedLanguages
             <form method=post action=@{SelectLanguageR lang}>
               <button .button .is-text .type=submit .navbar-item>
-                #{supportedLanguageNative lang}
+                #{supportedLanguageNative lang} / #{supportedLanguageEnglish lang}
 
       $if isAdmin
         <a .navbar-item href=@{AdminR AdminPanelR}>
