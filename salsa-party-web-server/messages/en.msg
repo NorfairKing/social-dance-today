@@ -125,6 +125,18 @@ OrganiserDisplayNameLabel: Display Name
 OrganiserSubmitButton: Submit
 OrganiserViewPublicProfileButton: View Public Profile
 
+# Your parties
+YourPartiesTitle: Your parties
+YourPartiesSubmitButton: Submit party
+YourPartiesNoParties: You have not submitted any parties yet.
+YourPartiesEditPartyButton: Edit
+YourPartiesPublicPartyButton: Public Party Profile
+YourPartiesDuplicatePartyButton: Duplicate
+YourPartiesCancelPartyButton: Cancel
+YourPartiesUnCancelPartyButton: Un-Cancel
+YourPartiesDeletePartyWarning: Are you sure you want to delete this party? This cannot be undone.
+YourPartiesDeletePartyButton: Delete
+
 # Submit Party
 SubmitPartySuccess: Succesfully submitted party
 SubmitPartyErrorUnverified: Your account needs to verified before you can submit parties.

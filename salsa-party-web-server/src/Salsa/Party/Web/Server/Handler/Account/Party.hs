@@ -40,6 +40,7 @@ getAccountPartiesR = do
       token <- genToken
       timeLocale <- getTimeLocale
       prettyDayFormat <- getPrettyDayFormat
+      today <- liftIO $ utctDay <$> getCurrentTime
       withNavBar $(widgetFile "account/parties")
 
 getPartiesOfOrganiser :: MonadIO m => OrganiserId -> SqlPersistT m [(Entity Party, Entity Place, Maybe CASKey)]
