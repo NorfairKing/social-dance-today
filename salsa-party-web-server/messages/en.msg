@@ -17,6 +17,7 @@ HomeFormHelp: Press the search button to find parties around your current locati
 ExploreTitle: Explore the world of social dance!
 ExploreDescription: Social dance exists all over the world, find out where to go!
 ExploreButton: Explore
+ExploreSkylineAlt location@Text: Night-time skyline of #{location}
 
 ## Footer
 FooterGeocodingAttribution: Geocoding by OpenStreetMaps Nominatim

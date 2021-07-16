@@ -1,7 +1,7 @@
 <section .section>
   <div .container>
     <h1 .title .is-3 .has-text-centered>
-      Explore social dance all over the world
+      _{MsgExploreTitle}
 
     <div .columns .is-multiline .is-centered>
       $forall location <- locations
@@ -15,11 +15,7 @@
                       width=640
                       height=360
                       src="@{HomeR}static/res/#{location}.jpg"
-                      alt="Night-time skyline of #{location}">
+                      alt=_{MsgExploreSkylineAlt location}>
                 <div .card-content>
                   <h2 .title .is-4 .has-text-centered>
                     #{location}
-
-    <div .has-text-centered>
-      <p>
-        Would you like to see your city featured here? Contact us!
