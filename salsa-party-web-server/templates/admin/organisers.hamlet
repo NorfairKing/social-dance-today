@@ -1,0 +1,28 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      Organisers
+
+    ^{paginationWidget (AdminR . AdminOrganisersPageR) paginated pageNumber}
+
+
+<section .section>
+  <div .container>
+    <h2 .title .is-4>
+      Organisers
+
+    <table .table .is-fullwidth .is-striped>
+      <thead>
+        <tr>
+          <th>
+            Display Name
+          <th width=50px>
+            Profile
+      <tbody>
+        $forall Entity _ organiser <- paginatedElements paginated
+          <tr>
+            <td>
+              #{organiserName organiser}
+            <td>
+              <a .button href=@{OrganiserR $ organiserUuid organiser}>
+                Profile

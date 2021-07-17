@@ -3,14 +3,22 @@
     <h1 .title .is-3>
       Admin Panel
 
+
+    <h2 .title .is-4>
+      Data
     <div .buttons>
       <a .button href=@{AdminR AdminUsersR}>
         Users
+      <a .button href=@{AdminR AdminOrganisersR}>
+        Organisers
       <a .button href=@{AdminR AdminPartiesR}>
         Parties
       <a .button href=@{AdminR AdminExternalEventsR}>
         External Events
 
+
+    <h2 .title .is-4>
+      Tools
     <div .buttons>
       <a .button href=@{AdminR AdminGeocodingR}>
         Geocoding
@@ -47,24 +55,3 @@
             Upcoming Events
           <p .title>
             #{nbUpcomingParties + nbUpcomingExternalEvents}
-
-<section .section>
-  <div .container>
-    <h2 .title .is-4>
-      Organisers
-
-    <table .table .is-fullwidth .is-striped>
-      <thead>
-        <tr>
-          <th>
-            Display Name
-          <th width=50px>
-            Profile
-      <tbody>
-        $forall Entity _ organiser <- organisers
-          <tr>
-            <td>
-              #{organiserName organiser}
-            <td>
-              <a .button href=@{OrganiserR $ organiserUuid organiser}>
-                Profile

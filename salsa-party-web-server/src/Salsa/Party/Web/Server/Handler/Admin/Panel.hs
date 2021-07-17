@@ -11,13 +11,10 @@ import Salsa.Party.Web.Server.Handler.Import
 
 getAdminPanelR :: Handler Html
 getAdminPanelR = do
-  users <- runDB $ selectList [] [Asc UserId]
-  organisers <- runDB $ selectList [] [Asc OrganiserId]
-  nbOrganisers <- runDB $ count ([] :: [Filter Organiser])
   today <- liftIO $ utctDay <$> getCurrentTime
+  nbOrganisers <- runDB $ count ([] :: [Filter Organiser])
   nbUpcomingParties <- runDB $ count ([PartyDay >=. today] :: [Filter Party])
   nbUpcomingExternalEvents <- runDB $ count ([ExternalEventDay >=. today] :: [Filter ExternalEvent])
-  token <- genToken
   withNavBar $ do
     setTitle "Salsa Parties Admin Panel"
     setDescription "Admin panel for the salsa parties admin"
@@ -41,6 +38,17 @@ postAdminUserImpersonateR userId = do
   setCreds False Creds {credsPlugin = "impersonation", credsIdent = userEmailAddress, credsExtra = []}
   addMessage "is-success" $ "You are now impersonating user " <> toHtml userEmailAddress
   redirect $ AccountR AccountOverviewR
+
+getAdminOrganisersR :: Handler Html
+getAdminOrganisersR = redirect $ AdminR $ AdminOrganisersPageR paginatedFirstPage
+
+getAdminOrganisersPageR :: PageNumber -> Handler Html
+getAdminOrganisersPageR pageNumber = do
+  paginated <- runDB $ selectPaginated 10 [] [Asc OrganiserCreated, Asc OrganiserId] pageNumber
+  withNavBar $ do
+    setTitle "Salsa Organisers Admin Organisers"
+    setDescription "Admin overview of the organisers"
+    $(widgetFile "admin/organisers")
 
 postAdminDeleteEventR :: EventUUID -> Handler Html
 postAdminDeleteEventR uuid = do
