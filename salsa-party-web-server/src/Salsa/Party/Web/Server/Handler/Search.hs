@@ -64,9 +64,10 @@ searchResultPage mDay mAddress coordinates = do
   let end = addDays daysAhead begin
       prevDay = addDays (negate daysAhead) begin
       nextDay = addDays daysAhead begin
+      days = [begin .. end]
   let toDouble :: Nano -> Double
       toDouble = realToFrac
-  searchResults <- runDB $ searchQuery begin end coordinates
+  searchResults <- runDB $ searchQuery begin (Just end) coordinates
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
 

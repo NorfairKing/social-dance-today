@@ -8,16 +8,13 @@
 
     ^{pagination}
 
-$forall (day, results) <- M.toList searchResults
+$forall day <- days
   <section .section>
     <div .container>
       <h2 .title .is-4 .has-text-centered>
         #{formatTime timeLocale prettyDayFormat day}
         (_{autoDayMsg today day})
-      $if null results
-        <p .has-text-centered>
-          _{MsgSearchNoParties}
-      $else
+      $maybe results <- M.lookup day searchResults
         <div .columns .is-multiline .is-centered>
           $forall result <- results
             $case result
@@ -57,6 +54,9 @@ $forall (day, results) <- M.toList searchResults
                               _{MsgPartyTitleScheduled (externalEventTitle externalEvent)}
                           <h3 .subtitle .is-5>
                             #{placeQuery p}
+      $nothing
+        <p .has-text-centered>
+          _{MsgSearchNoParties}
 
 <section .section>
   <div .container>

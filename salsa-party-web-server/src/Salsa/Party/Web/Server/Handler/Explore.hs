@@ -32,5 +32,5 @@ explorePartiesAroundLocationQuery today coordinates =
   countSearchResults
     <$> searchQuery
       today
-      (addDays 365 today) -- Parties in the next year
+      Nothing
       coordinates

@@ -14,11 +14,11 @@ spec = do
     describe "searchQuery" $ do
       it "runs without results, and returns a map with empty days (and not an empty map)" $ \pool ->
         forAllValid $ \begin ->
-          forAllValid $ \end ->
+          forAllValid $ \mEnd ->
             forAllValid $ \place ->
               flip runSqlPool pool $ do
-                sr <- searchQuery @IO begin end place
-                liftIO $ sr `shouldBe` M.fromList [(day, []) | day <- [begin .. end]]
+                sr <- searchQuery @IO begin mEnd place
+                liftIO $ sr `shouldBe` M.empty
 
       it "runs correctly with these three parties where one is on a different day" $ \pool ->
         forAllValid $ \party1Prototype ->
@@ -53,7 +53,7 @@ spec = do
                             partyPlace = place3Id
                           }
                   DB.insert_ party3
-                  sr <- searchQuery @IO day day (placeCoordinates queryPlace)
+                  sr <- searchQuery @IO day (Just day) (placeCoordinates queryPlace)
                   liftIO $
                     sr
                       `shouldBe` M.fromList
@@ -97,7 +97,7 @@ spec = do
                             partyPlace = place3Id
                           }
                   DB.insert_ party3
-                  sr <- searchQuery @IO day day (placeCoordinates queryPlace)
+                  sr <- searchQuery @IO day (Just day) (placeCoordinates queryPlace)
                   liftIO $
                     sr
                       `shouldBe` M.fromList
@@ -139,7 +139,7 @@ spec = do
                         DB.insert_ partyPoster1Prototype {partyPosterParty = party1Id, partyPosterImage = image1Id}
                         image2Id <- DB.insert image2Prototype
                         DB.insert_ partyPoster2Prototype {partyPosterParty = party2Id, partyPosterImage = image2Id}
-                        sr <- searchQuery @IO day day (placeCoordinates queryPlace)
+                        sr <- searchQuery @IO day (Just day) (placeCoordinates queryPlace)
                         liftIO $
                           sr
                             `shouldBe` M.fromList
@@ -194,7 +194,7 @@ spec = do
                           -- A duplicate of party 1, not supposed to be shown
                           let externalEvent3 = externalEvent3Prototype {externalEventTitle = "Party 1", externalEventDay = day, externalEventPlace = place6Id}
                           _ <- DB.insert externalEvent3
-                          sr <- searchQuery @IO day day (placeCoordinates queryPlace)
+                          sr <- searchQuery @IO day (Just day) (placeCoordinates queryPlace)
                           liftIO $
                             sr
                               `shouldBe` M.fromList

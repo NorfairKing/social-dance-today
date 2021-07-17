@@ -24,9 +24,7 @@ countSearchResults = M.foldl (+) 0 . M.map length
 noDataQuery :: MonadIO m => Coordinates -> SqlPersistT m Bool -- True means no data
 noDataQuery coordinates = do
   today <- liftIO $ utctDay <$> getCurrentTime
-  -- TODO remove the begin date
-  -- TODO make the end date optional
-  nullSearchResults <$> searchQuery today (addDays 365 today) coordinates
+  nullSearchResults <$> searchQuery today Nothing coordinates
 
 data Result
   = External (Entity ExternalEvent) (Entity Place)
@@ -35,12 +33,12 @@ data Result
 
 -- For a begin day end day (inclusive) and a given place, find all parties per
 -- day sorted by distance, and with external parties at the end in any case.
-searchQuery :: MonadIO m => Day -> Day -> Coordinates -> SqlPersistT m (Map Day [Result])
-searchQuery begin end coordinates@Coordinates {..} = do
+searchQuery :: MonadIO m => Day -> Maybe Day -> Coordinates -> SqlPersistT m (Map Day [Result])
+searchQuery begin mEnd coordinates@Coordinates {..} = do
   rawPartyResults <- E.select $
     E.from $ \((party `E.InnerJoin` p)) -> do
       E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
-      E.where_ $ dayLimit (party E.^. PartyDay) begin end
+      E.where_ $ dayLimit (party E.^. PartyDay) begin mEnd
       distanceEstimationQuery coordinates p
       pure (party, p)
 
@@ -54,7 +52,7 @@ searchQuery begin end coordinates@Coordinates {..} = do
   rawExternalEventResults <- E.select $
     E.from $ \(externalEvent `E.InnerJoin` p) -> do
       E.on (externalEvent E.^. ExternalEventPlace E.==. p E.^. PlaceId)
-      E.where_ $ dayLimit (externalEvent E.^. ExternalEventDay) begin end
+      E.where_ $ dayLimit (externalEvent E.^. ExternalEventDay) begin mEnd
       distanceEstimationQuery coordinates p
       pure (externalEvent, p)
 
@@ -62,20 +60,26 @@ searchQuery begin end coordinates@Coordinates {..} = do
       externalResults = deduplicateExternalEvents internalResults $ makeGroupedByDay $ postProcessExternalEvents coordinates rawExternalEventResults
 
   pure $
-    M.unionsWith
-      (++)
-      [ M.map (map makeInternalResult) internalResults,
-        M.map (map makeExternalResult) externalResults,
-        M.fromList $ [(d, []) | d <- [begin .. end]] -- Just to make sure there are no missing days.
-      ]
+    M.filter (not . null) $
+      M.unionsWith
+        (++)
+        [ M.map (map makeInternalResult) internalResults,
+          M.map (map makeExternalResult) externalResults
+        ]
 
-dayLimit :: E.SqlExpr (E.Value Day) -> Day -> Day -> E.SqlExpr (E.Value Bool)
-dayLimit dayExp begin end =
-  E.between
-    dayExp
-    ( E.val begin,
-      E.val end
-    )
+dayLimit :: E.SqlExpr (E.Value Day) -> Day -> Maybe Day -> E.SqlExpr (E.Value Bool)
+dayLimit dayExp begin mEnd =
+  case mEnd of
+    Nothing -> E.val begin E.<=. dayExp
+    Just end ->
+      if begin == end
+        then dayExp E.==. E.val begin
+        else
+          E.between
+            dayExp
+            ( E.val begin,
+              E.val end
+            )
 
 distanceEstimationQuery :: Coordinates -> E.SqlExpr (Entity Place) -> E.SqlQuery ()
 distanceEstimationQuery Coordinates {..} p = do
