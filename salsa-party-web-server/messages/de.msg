@@ -21,6 +21,7 @@ ExploreTitle: Erkunde die Welt des Sozial Dance!
 ExploreDescription: Social Dance gibt es auf der ganzen Welt, finde heraus, wohin du gehen kannst!
 ExploreButton: Erkunden
 ExploreSkylineAlt location@Text:  Nächtliche Skyline von #{location}
+ExploreUpcomingParties number@String: #{number} bevorstehenden Parties
 
 ## Footer
 FooterGeocodingAttribution: Geokodierung durch OpenStreetMaps Nominatim
@@ -47,8 +48,8 @@ SearchDescriptionAroundYourLocationToday:  Eine Liste von allen Social Dance Par
 SearchDescriptionAroundYourLocationOnDay day@String:  Eine Liste von allen Social Dance Parties in der Nähe am #{day}
 SearchDescriptionAroundAddressToday address@Text:  Eine Liste von allen Social Dance Parties in der Nähe von #{address} today
 SearchDescriptionAroundAddressOnDay address@Text day@String:  Eine Liste von allen Social Dance Parties in der Nähe  von #{address} am #{day}
-SearchPartiesAroundAddress address@Text: Parties in der Nähe von #{address}
-SearchPartiesAroundYourLocation: Parties in deiner Umgebung
+SearchPartiesAroundAddress address@Text: Social Dance Parties in der Nähe von #{address}
+SearchPartiesAroundYourLocation: Social Dance Parties in deiner Umgebung
 SearchNoParties: Es wurden keine Parties gefunden.
 SearchPosterAlt title@Text day@String: Poster für #{title} am #{day}.
 

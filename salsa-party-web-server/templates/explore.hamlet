@@ -4,7 +4,7 @@
       _{MsgExploreTitle}
 
     <div .columns .is-multiline .is-centered>
-      $forall location <- locations
+      $forall (location, nbParties) <- locationTups
         <div .column .is-two-thirds-tablet .is-half-desktop>
           <div .zoom-without-container>
             <a  href=@{SearchR $ placeQuery location}>
@@ -19,4 +19,6 @@
                 <div .card-content>
                   <h2 .title .is-4 .has-text-centered>
                     #{placeQuery location}
+                  <h3 .title .is-5 .has-text-centered>
+                    _{MsgExploreUpcomingParties (show nbParties)}
 

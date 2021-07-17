@@ -13,6 +13,9 @@ import qualified Database.Esqueleto as E
 import Salsa.Party.Web.Server.Distance
 import Salsa.Party.Web.Server.Handler.Import
 
+countSearchResults :: Map Day [Result] -> Int
+countSearchResults = M.foldl (+) 0 . M.map length
+
 data Result
   = External (Entity ExternalEvent) (Entity Place)
   | Internal (Entity Party) (Entity Place) (Maybe CASKey)
@@ -124,7 +127,7 @@ makeExternalResult :: (Entity ExternalEvent, Entity Place) -> Result
 makeExternalResult (externalEvent, place) = External externalEvent place
 
 maximumDistance :: Double
-maximumDistance = 100_000 -- 100 km
+maximumDistance = 50_000 -- 50 km
 
 makeGroupedByDay :: forall eTup. [(Day, eTup)] -> Map Day [eTup]
 makeGroupedByDay = foldr go M.empty -- This could be falter with a fold

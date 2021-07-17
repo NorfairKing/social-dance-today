@@ -36,7 +36,7 @@ getSitemapR = do
     forM_ locations $ \location ->
       yield
         SitemapUrl
-          { sitemapLoc = SearchR $ placeQuery location,
+          { sitemapLoc = SearchR $ placeQuery $ locationPlace location,
             sitemapLastMod = Nothing,
             sitemapChangeFreq = Just Daily,
             sitemapPriority = Just 0.6

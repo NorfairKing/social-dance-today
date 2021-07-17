@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Main where
 
@@ -66,15 +67,15 @@ spec uri = do
         get RobotsR
         statusIs 200
       describe "Search" $
-        forM_ locations $ \p ->
-          describe (T.unpack (placeQuery p)) $
+        forM_ locations $ \Location {..} ->
+          describe (T.unpack (placeQuery locationPlace)) $
             it "QueryR" $ do
               request $ do
                 setUrl QueryR
                 setMethod methodPost
-                addPostParam "address" $ placeQuery p
+                addPostParam "address" $ placeQuery locationPlace
               statusIs 303
-              locationShouldBe $ SearchR $ placeQuery p
+              locationShouldBe $ SearchR $ placeQuery locationPlace
               _ <- followRedirect
               statusIs 200
       doNotRandomiseExecutionOrder $
