@@ -1,0 +1,17 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3 .has-text-centered>
+      $maybe address <- mAddress
+        _{MsgSearchPartiesAroundAddress address}
+      $nothing
+        _{MsgSearchPartiesAroundYourLocation}
+
+
+<section .section>
+  <div .container>
+    <h2 .title .is-4 .has-text-centered>
+      _{MsgSearchNoResults}
+
+    <div .columns .is-centered>
+      <p .content .has-text-centered .column .is-mobile .is-half>
+        _{MsgSearchNoResultsHelp}

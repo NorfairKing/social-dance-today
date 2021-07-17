@@ -69,16 +69,32 @@ searchResultPage mDay mAddress coordinates = do
   searchResults <- runDB $ searchQuery begin end coordinates
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
-  withNavBar $ do
-    setTitleI $ case (mAddress, mDay) of
-      (Nothing, Nothing) -> MsgSearchTitleAroundYourLocationToday
-      (Nothing, Just d) -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat d
-      (Just address, Nothing) -> MsgSearchTitleAroundAddressToday address
-      (Just address, Just d) -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat d
-    setDescriptionI $ case (mAddress, mDay) of
-      (Nothing, Nothing) -> MsgSearchDescriptionAroundYourLocationToday
-      (Nothing, Just d) -> MsgSearchDescriptionAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat d
-      (Just address, Nothing) -> MsgSearchDescriptionAroundAddressToday address
-      (Just address, Just d) -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat d
-    let pagination = $(widgetFile "search-pagination")
-    $(widgetFile "search")
+
+  let title = case (mAddress, mDay) of
+        (Nothing, Nothing) -> MsgSearchTitleAroundYourLocationToday
+        (Nothing, Just d) -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat d
+        (Just address, Nothing) -> MsgSearchTitleAroundAddressToday address
+        (Just address, Just d) -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat d
+
+  let description = case (mAddress, mDay) of
+        (Nothing, Nothing) -> MsgSearchDescriptionAroundYourLocationToday
+        (Nothing, Just d) -> MsgSearchDescriptionAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat d
+        (Just address, Nothing) -> MsgSearchDescriptionAroundAddressToday address
+        (Just address, Just d) -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat d
+
+  noData <-
+    if nullSearchResults searchResults
+      then runDB $ noDataQuery coordinates
+      else pure False
+  if noData
+    then do
+      withNavBar $ do
+        setTitleI title
+        setDescriptionI description
+        $(widgetFile "search-no-results")
+    else do
+      withNavBar $ do
+        setTitleI title
+        setDescriptionI description
+        let pagination = $(widgetFile "search-pagination")
+        $(widgetFile "search")

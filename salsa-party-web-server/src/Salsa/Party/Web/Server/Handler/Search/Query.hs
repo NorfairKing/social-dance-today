@@ -19,6 +19,15 @@ nullSearchResults = (== 0) . countSearchResults -- Not the same as M.null!
 countSearchResults :: Map Day [Result] -> Int
 countSearchResults = M.foldl (+) 0 . M.map length
 
+-- TODO this can be optimised
+-- We can probably use a count query, and there's definitely no need to fetch the posters for example
+noDataQuery :: MonadIO m => Coordinates -> SqlPersistT m Bool -- True means no data
+noDataQuery coordinates = do
+  today <- liftIO $ utctDay <$> getCurrentTime
+  -- TODO remove the begin date
+  -- TODO make the end date optional
+  nullSearchResults <$> searchQuery today (addDays 365 today) coordinates
+
 data Result
   = External (Entity ExternalEvent) (Entity Place)
   | Internal (Entity Party) (Entity Place) (Maybe CASKey)
