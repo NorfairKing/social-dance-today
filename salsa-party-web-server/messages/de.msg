@@ -52,8 +52,8 @@ SearchPartiesAroundAddress address@Text: Social Dance Parties in der Nähe von #
 SearchPartiesAroundYourLocation: Social Dance Parties in deiner Umgebung
 SearchNoParties: Es wurden keine Parties gefunden.
 SearchPosterAlt title@Text day@String: Poster für #{title} am #{day}.
-SearchNoResults: TODO We do not have any data about this area yet.
-SearchNoResultsHelp: TODO We need your help to gather more data about this area. Please get in touch with party organisers and tell them about this page. If you organise parties in this area, please sign up and advertise your parties here.
+SearchNoResults: Wir haben noch keine Daten zu dieser Gegend.
+SearchNoResultsHelp: Wir brauchen Ihre Hilfe, um mehr Daten über diese Gegend zu sammeln. Bitte nehmen Sie Kontakt mit den Partyorganisatoren auf und informieren Sie sie über diese Seite. Wenn Sie Partys in diesem Bereich organisieren, melden Sie sich bitte hier an und bewerben Sie Ihre Partys. 
 
 
 SearchNavEarlier: Früher
