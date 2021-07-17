@@ -6,58 +6,69 @@
       $nothing
         _{MsgSearchPartiesAroundYourLocation}
 
-    ^{pagination}
+    $if not (nullSearchResults searchResults)
+      ^{pagination}
 
-$forall (day, results) <- M.toList searchResults
+$if nullSearchResults searchResults
   <section .section>
     <div .container>
       <h2 .title .is-4 .has-text-centered>
-        #{formatTime timeLocale prettyDayFormat day}
-        (_{autoDayMsg today day})
-      $if null results
-        <p .has-text-centered>
-          _{MsgSearchNoParties}
-      $else
-        <div .columns .is-multiline .is-centered>
-          $forall result <- results
-            $case result
-              $of Internal (Entity _ party) (Entity _ p) mPosterVal 
-                <div .column .is-two-thirds-tablet .is-half-desktop>
-                  <div .zoom-without-container>
-                    <a  href=@{PartyR $ partyUuid party}>
-                      <div .card>
-                        $maybe posterKey <- mPosterVal
-                          <div .card-image .has-text-centered>
-                            <figure .image .is-16by9>
-                              <img
-                                width=640
-                                height=360
-                                src=@{ImageR posterKey}
-                                alt=_{MsgSearchPosterAlt (partyTitle party) (formatTime timeLocale prettyDayFormat $ partyDay party)}>
+        _{MsgSearchNoResults}
 
-                        <div .card-content>
-                          <h2 .title .is-4>
-                            $if partyCancelled party
-                              _{MsgPartyTitleCancelled (partyTitle party)}
-                            $else
-                              _{MsgPartyTitleScheduled (partyTitle party)}
-                          <h3 .subtitle .is-5>
-                            #{placeQuery p}
+      <div .columns .is-centered>
+        <p .content .has-text-centered .column .is-mobile .is-half>
+          _{MsgSearchNoResultsHelp}
+$else
+  $forall (day, results) <- M.toList searchResults
+    <section .section>
+      <div .container>
+        <h2 .title .is-4 .has-text-centered>
+          #{formatTime timeLocale prettyDayFormat day}
+          (_{autoDayMsg today day})
+        $if null results
+          <p .has-text-centered>
+            _{MsgSearchNoParties}
+        $else
+          <div .columns .is-multiline .is-centered>
+            $forall result <- results
+              $case result
+                $of Internal (Entity _ party) (Entity _ p) mPosterVal 
+                  <div .column .is-two-thirds-tablet .is-half-desktop>
+                    <div .zoom-without-container>
+                      <a  href=@{PartyR $ partyUuid party}>
+                        <div .card>
+                          $maybe posterKey <- mPosterVal
+                            <div .card-image .has-text-centered>
+                              <figure .image .is-16by9>
+                                <img
+                                  width=640
+                                  height=360
+                                  src=@{ImageR posterKey}
+                                  alt=_{MsgSearchPosterAlt (partyTitle party) (formatTime timeLocale prettyDayFormat $ partyDay party)}>
 
-              $of External (Entity _ externalEvent) ( Entity _ p)
-                <div .column .is-two-thirds-tablet .is-half-desktop>
-                  <div .zoom-without-container>
-                    <a  href=@{PartyR $ externalEventUuid externalEvent}>
-                      <div .card>
-                        <div .card-content>
-                          <h2 .title .is-4>
-                            $if externalEventCancelled externalEvent
-                              _{MsgPartyTitleCancelled (externalEventTitle externalEvent)}
-                            $else
-                              _{MsgPartyTitleScheduled (externalEventTitle externalEvent)}
-                          <h3 .subtitle .is-5>
-                            #{placeQuery p}
+                          <div .card-content>
+                            <h2 .title .is-4>
+                              $if partyCancelled party
+                                _{MsgPartyTitleCancelled (partyTitle party)}
+                              $else
+                                _{MsgPartyTitleScheduled (partyTitle party)}
+                            <h3 .subtitle .is-5>
+                              #{placeQuery p}
 
-<section .section>
-  <div .container>
-    ^{pagination}
+                $of External (Entity _ externalEvent) ( Entity _ p)
+                  <div .column .is-two-thirds-tablet .is-half-desktop>
+                    <div .zoom-without-container>
+                      <a  href=@{PartyR $ externalEventUuid externalEvent}>
+                        <div .card>
+                          <div .card-content>
+                            <h2 .title .is-4>
+                              $if externalEventCancelled externalEvent
+                                _{MsgPartyTitleCancelled (externalEventTitle externalEvent)}
+                              $else
+                                _{MsgPartyTitleScheduled (externalEventTitle externalEvent)}
+                            <h3 .subtitle .is-5>
+                              #{placeQuery p}
+
+  <section .section>
+    <div .container>
+      ^{pagination}

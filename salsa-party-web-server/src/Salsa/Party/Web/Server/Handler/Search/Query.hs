@@ -13,6 +13,9 @@ import qualified Database.Esqueleto as E
 import Salsa.Party.Web.Server.Distance
 import Salsa.Party.Web.Server.Handler.Import
 
+nullSearchResults :: Map Day [Result] -> Bool
+nullSearchResults = (== 0) . countSearchResults -- Not the same as M.null!
+
 countSearchResults :: Map Day [Result] -> Int
 countSearchResults = M.foldl (+) 0 . M.map length
 
