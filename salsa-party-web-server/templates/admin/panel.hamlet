@@ -4,6 +4,8 @@
       Admin Panel
 
     <div .buttons>
+      <a .button href=@{AdminR AdminUsersR}>
+        Users
       <a .button href=@{AdminR AdminPartiesR}>
         Parties
       <a .button href=@{AdminR AdminExternalEventsR}>
@@ -45,38 +47,6 @@
             Upcoming Events
           <p .title>
             #{nbUpcomingParties + nbUpcomingExternalEvents}
-
-<section .section>
-  <div .container>
-    <h2 .title .is-4>
-      Users
-
-    <table .table .is-fullwidth .is-striped>
-      <thead>
-        <tr>
-          <th>
-            Email address
-          <th width=50px>
-            Verified
-          <th width=50px>
-            Impersonate
-      <tbody>
-        $forall Entity userId user <- users
-          <tr>
-            <td>
-              #{userEmailAddress user}
-            <td width=50px>
-              $maybe _ <- userVerificationKey user
-                No
-              $nothing
-                Yes
-            <td>
-              <form
-                method=post
-                action=@{AdminR $ AdminUserImpersonateR userId}>
-                ^{token}
-                <button .button .is-danger type=submit>
-                  Impersonate
 
 <section .section>
   <div .container>

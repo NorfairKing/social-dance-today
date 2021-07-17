@@ -29,6 +29,8 @@
 /admin AdminR:
   / AdminPanelR GET
 
+  /users AdminUsersR GET
+  /users/#PageNumber AdminUsersPageR GET
   /user/#UserId/impersonate AdminUserImpersonateR POST
 
   /parties AdminPartiesR GET

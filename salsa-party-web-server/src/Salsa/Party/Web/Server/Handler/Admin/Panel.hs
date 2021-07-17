@@ -23,6 +23,18 @@ getAdminPanelR = do
     setDescription "Admin panel for the salsa parties admin"
     $(widgetFile "admin/panel")
 
+getAdminUsersR :: Handler Html
+getAdminUsersR = redirect $ AdminR $ AdminUsersPageR paginatedFirstPage
+
+getAdminUsersPageR :: PageNumber -> Handler Html
+getAdminUsersPageR pageNumber = do
+  paginated <- runDB $ selectPaginated 10 [] [Asc UserCreated, Asc UserId] pageNumber
+  token <- genToken
+  withNavBar $ do
+    setTitle "Salsa Users Admin Users"
+    setDescription "Admin overview of the users"
+    $(widgetFile "admin/users")
+
 postAdminUserImpersonateR :: UserId -> Handler Html
 postAdminUserImpersonateR userId = do
   User {..} <- runDB $ get404 userId
