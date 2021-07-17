@@ -18,6 +18,37 @@
 <section .section>
   <div .container>
     <h2 .title .is-4>
+      Stats
+
+    <nav .level>
+      <div .level-item .has-text-centered>
+        <div>
+          <p .heading>
+            Organisers
+          <p .title>
+            #{nbOrganisers}
+      <div .level-item .has-text-centered>
+        <div>
+          <p .heading>
+            Upcoming Parties
+          <p .title>
+            #{nbUpcomingParties}
+      <div .level-item .has-text-centered>
+        <div>
+          <p .heading>
+            Upcoming External Events
+          <p .title>
+            #{nbUpcomingExternalEvents}
+      <div .level-item .has-text-centered>
+        <div>
+          <p .heading>
+            Upcoming Events
+          <p .title>
+            #{nbUpcomingParties + nbUpcomingExternalEvents}
+
+<section .section>
+  <div .container>
+    <h2 .title .is-4>
       Users
 
     <table .table .is-fullwidth .is-striped>

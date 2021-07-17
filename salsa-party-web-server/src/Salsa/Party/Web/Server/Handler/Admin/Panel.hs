@@ -13,6 +13,10 @@ getAdminPanelR :: Handler Html
 getAdminPanelR = do
   users <- runDB $ selectList [] [Asc UserId]
   organisers <- runDB $ selectList [] [Asc OrganiserId]
+  nbOrganisers <- runDB $ count ([] :: [Filter Organiser])
+  today <- liftIO $ utctDay <$> getCurrentTime
+  nbUpcomingParties <- runDB $ count ([PartyDay >=. today] :: [Filter Party])
+  nbUpcomingExternalEvents <- runDB $ count ([ExternalEventDay >=. today] :: [Filter ExternalEvent])
   token <- genToken
   withNavBar $ do
     setTitle "Salsa Parties Admin Panel"
