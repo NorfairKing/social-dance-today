@@ -12,6 +12,7 @@ import Control.Monad.Reader
 import Data.Aeson as JSON
 import Data.Aeson.Types as JSON
 import Data.ByteString (ByteString)
+import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -46,7 +47,22 @@ runImporter a Importer {..} = do
         (ImporterMetadata {importerMetadataName = importerName, importerMetadataLastRun = now})
         [ImporterMetadataLastRun =. now]
 
-  let env = ImportEnv {importEnvApp = a, importEnvName = importerName, importEnvId = importerId}
+  userAgent <- liftIO chooseUserAgent
+  let limitConfig =
+        defaultLimitConfig
+          { maxBucketTokens = 10, -- Ten tokens maximum, represents one request
+            initialBucketTokens = 10,
+            bucketRefillTokensPerSecond = 1
+          }
+  rateLimiter <- liftIO $ newRateLimiter limitConfig
+  let env =
+        ImportEnv
+          { importEnvApp = a,
+            importEnvName = importerName,
+            importEnvId = importerId,
+            importEnvUserAgent = userAgent,
+            importEnvRateLimiter = (limitConfig, rateLimiter)
+          }
   runReaderT (unImport importerFunc) env
 
 newtype Import a = Import {unImport :: ReaderT ImportEnv (LoggingT IO) a}
@@ -65,7 +81,9 @@ newtype Import a = Import {unImport :: ReaderT ImportEnv (LoggingT IO) a}
 data ImportEnv = ImportEnv
   { importEnvApp :: !App,
     importEnvName :: !Text,
-    importEnvId :: !ImporterMetadataId
+    importEnvId :: !ImporterMetadataId,
+    importEnvUserAgent :: !ByteString,
+    importEnvRateLimiter :: !(LimitConfig, RateLimiter)
   }
 
 importDB :: SqlPersistT (LoggingT IO) a -> Import a
@@ -106,54 +124,50 @@ jsonRequestConduit :: FromJSON a => ConduitT HTTP.Request a Import ()
 jsonRequestConduit = C.map ((,) ()) .| jsonRequestConduitWith .| C.map snd
 
 jsonRequestConduitWith :: FromJSON a => ConduitT (c, HTTP.Request) (c, a) Import ()
-jsonRequestConduitWith = do
+jsonRequestConduitWith = awaitForever $ \(c, request) -> do
+  errOrResponse <- lift $ doHttpRequest request
+  case errOrResponse of
+    Left err ->
+      logErrorNS "Importer" $
+        T.unlines
+          [ "HTTP Exception occurred.",
+            "request:",
+            T.pack (ppShow request),
+            "exception:",
+            T.pack (ppShow err)
+          ]
+    Right response -> do
+      let body = responseBody response
+      case JSON.eitherDecode body of
+        Left err ->
+          logErrorNS "Importer" $
+            T.unlines
+              [ "Invalid JSON:" <> T.pack err,
+                T.pack (show body)
+              ]
+        Right jsonValue ->
+          case JSON.parseEither parseJSON jsonValue of
+            Left err ->
+              logErrorNS "Importer" $
+                T.unlines
+                  [ "Unable to parse JSON:" <> T.pack err,
+                    T.pack $ ppShow jsonValue
+                  ]
+            Right a -> yield (c, a)
+
+doHttpRequest :: HTTP.Request -> Import (Either HttpException (HTTP.Response LB.ByteString))
+doHttpRequest requestPrototype = do
   man <- asks $ appHTTPManager . importEnvApp
-  userAgent <- liftIO chooseUserAgent
-  let limitConfig =
-        defaultLimitConfig
-          { maxBucketTokens = 10, -- Ten tokens maximum, represents one request
-            initialBucketTokens = 10,
-            bucketRefillTokensPerSecond = 1
-          }
-  rateLimiter <- liftIO $ newRateLimiter limitConfig
-  awaitForever $ \(c, requestPrototype) -> do
-    liftIO $ waitDebit limitConfig rateLimiter 10 -- Need 10 tokens
-    let request = requestPrototype {requestHeaders = ("User-Agent", userAgent) : requestHeaders requestPrototype}
-    logInfoNS "Importer" $ "fetching: " <> T.pack (show (getUri request))
-    errOrResponse <-
-      liftIO $
-        (Right <$> httpLbs request man)
-          `catches` [ Handler $ \e -> pure (Left (toHttpException request e)),
-                      Handler $ \e -> pure (Left (e :: HttpException))
-                    ]
-    case errOrResponse of
-      Left err -> do
-        logErrorNS "Importer" $
-          T.unlines
-            [ "HTTP Exception occurred.",
-              "request:",
-              T.pack (ppShow request),
-              "exception:",
-              T.pack (ppShow err)
-            ]
-      Right response -> do
-        let body = responseBody response
-        case JSON.eitherDecode body of
-          Left err ->
-            logErrorNS "Importer" $
-              T.unlines
-                [ "Invalid JSON:" <> T.pack err,
-                  T.pack (show body)
+  userAgent <- asks importEnvUserAgent
+  (limitConfig, rateLimiter) <- asks importEnvRateLimiter
+  liftIO $ waitDebit limitConfig rateLimiter 10 -- Need 10 tokens
+  let request = requestPrototype {requestHeaders = ("User-Agent", userAgent) : requestHeaders requestPrototype}
+  logInfoNS "Importer" $ "fetching: " <> T.pack (show (getUri request))
+  liftIO $
+    (Right <$> httpLbs request man)
+      `catches` [ Handler $ \e -> pure (Left (toHttpException request e)),
+                  Handler $ \e -> pure (Left (e :: HttpException))
                 ]
-          Right jsonValue ->
-            case JSON.parseEither parseJSON jsonValue of
-              Left err ->
-                logErrorNS "Importer" $
-                  T.unlines
-                    [ "Unable to parse JSON:" <> T.pack err,
-                      T.pack $ ppShow jsonValue
-                    ]
-              Right a -> yield (c, a)
 
 chooseUserAgent :: IO ByteString
 chooseUserAgent = do

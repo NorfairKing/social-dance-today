@@ -28,6 +28,7 @@ module Salsa.Party.Importer.EventsInfo (eventsInfoImporter) where
 
 import Conduit
 import Data.Aeson as JSON
+import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
 import Data.Fixed
 import Data.Maybe
@@ -36,6 +37,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Network.URI as URI
 import Salsa.Party.Importer.Import
+import Salsa.Party.Web.Server.Poster
 
 eventsInfoImporter :: Importer
 eventsInfoImporter =
@@ -234,4 +236,33 @@ eventDetailsSink = awaitForever $ \(identifier, EventDetails {..}) -> do
             ]
 
 tryToImportImage :: EventImage -> Import (Maybe ImageId)
-tryToImportImage EventImage {..} = pure Nothing
+tryToImportImage EventImage {..} = do
+  case requestFromURI eventImageSrc of
+    Nothing -> pure Nothing
+    Just request -> do
+      errOrResponse <- doHttpRequest request
+      case errOrResponse of
+        Left _ -> pure Nothing
+        Right response -> do
+          case TE.decodeUtf8' $ fromMaybe "image/jpeg" $ lookup "Content-Type" (responseHeaders response) of
+            Left _ -> pure Nothing
+            Right contentType -> do
+              let imageBlob = LB.toStrict $ responseBody response
+              let casKey = mkCASKey contentType imageBlob
+              case posterCropImage contentType imageBlob of
+                Left _ -> pure Nothing -- TODO log error
+                Right (convertedImageType, convertedImageBlob) -> do
+                  now <- liftIO getCurrentTime
+                  Entity imageId _ <-
+                    importDB $
+                      upsertBy
+                        (UniqueImageKey casKey)
+                        ( Image
+                            { imageKey = casKey,
+                              imageTyp = convertedImageType,
+                              imageBlob = convertedImageBlob,
+                              imageCreated = now
+                            }
+                        )
+                        [] -- No need to update anything, the casKey makes the image unique.
+                  pure $ Just imageId
