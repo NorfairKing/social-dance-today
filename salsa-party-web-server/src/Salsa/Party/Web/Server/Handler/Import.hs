@@ -18,6 +18,7 @@ import Database.Persist.Sql as X
 import GHC.Generics as X (Generic)
 import Network.HTTP.Date as X
 import Salsa.Party.DB as X
+import Salsa.Party.Web.Server.Constants as X
 import Salsa.Party.Web.Server.Foundation as X
 import Salsa.Party.Web.Server.Static as X
 import Salsa.Party.Web.Server.Widget as X

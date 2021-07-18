@@ -405,12 +405,29 @@ posterImageWidget :: Party -> Organiser -> CASKey -> Widget
 posterImageWidget Party {..} Organiser {..} posterKey = do
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
+  let timeStr = formatTime timeLocale prettyDayFormat partyDay
   [whamlet|
     <img
       width=#{desiredWidth}
       height=#{desiredHeight}
       src=@{ImageR posterKey}
-      alt=_{MsgPosterAltFull partyTitle (formatTime timeLocale prettyDayFormat partyDay) organiserName}>
+      alt=_{MsgPosterAltFull partyTitle timeStr organiserName}>
+  |]
+
+externalEventPosterImageWidget :: ExternalEvent -> CASKey -> Widget
+externalEventPosterImageWidget ExternalEvent {..} posterKey = do
+  timeLocale <- getTimeLocale
+  prettyDayFormat <- getPrettyDayFormat
+  let timeStr = formatTime timeLocale prettyDayFormat externalEventDay
+  let altMsg = case externalEventOrganiser of
+        Nothing -> MsgPosterAltTitle externalEventTitle timeStr
+        Just organiserName -> MsgPosterAltFull externalEventTitle timeStr organiserName
+  [whamlet|
+    <img
+      width=#{desiredWidth}
+      height=#{desiredHeight}
+      src=@{ImageR posterKey}
+      alt=_{altMsg}>
   |]
 
 getPosterForParty :: MonadIO m => PartyId -> SqlPersistT m (Maybe CASKey)
@@ -419,6 +436,15 @@ getPosterForParty partyId = do
     E.from $ \(partyPoster `E.InnerJoin` image) -> do
       E.on (partyPoster E.^. PartyPosterImage E.==. image E.^. ImageId)
       E.where_ (partyPoster E.^. PartyPosterParty E.==. E.val partyId)
+      pure (image E.^. ImageKey)
+  pure $ E.unValue <$> listToMaybe keys
+
+getPosterForExternalEvent :: MonadIO m => ExternalEventId -> SqlPersistT m (Maybe CASKey)
+getPosterForExternalEvent externalEventId = do
+  keys <- E.select $
+    E.from $ \(externalEventPoster `E.InnerJoin` image) -> do
+      E.on (externalEventPoster E.^. ExternalEventPosterImage E.==. image E.^. ImageId)
+      E.where_ (externalEventPoster E.^. ExternalEventPosterExternalEvent E.==. E.val externalEventId)
       pure (image E.^. ImageKey)
   pure $ E.unValue <$> listToMaybe keys
 

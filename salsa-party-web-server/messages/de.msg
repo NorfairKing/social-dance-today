@@ -83,7 +83,8 @@ OrganiserUpcomingParties: Bevorstehende Parties
 OrganiserNoUpcomingParties: Keine bevorstehenden Parties
 
 # Poster
-PosterAltFull title@Text day@String organiser@Text: Bild für #{title} am #{day} organisiert durch #{organiser}.
+PosterAltFull title@Text day@String organiser@Text: Bild für #{title} am #{day} organisiert durch #{organiser}
+PosterAltTitle title@Text day@String: Bild für #{title} am #{day}
 
 # Registration
 RegistrationTitle: Salsa Parties Heute: Registrierung

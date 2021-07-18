@@ -77,7 +77,8 @@ OrganiserUpcomingParties: Upcoming parties
 OrganiserNoUpcomingParties: No upcoming parties
 
 # Poster
-PosterAltFull title@Text day@String organiser@Text: Poster for #{title} on #{day} by #{organiser}.
+PosterAltFull title@Text day@String organiser@Text: Poster for #{title} on #{day} by #{organiser}
+PosterAltTitle title@Text day@String: Poster for #{title} on #{day}
 
 # Registration
 RegistrationTitle: Salsa Parties Today: Registration

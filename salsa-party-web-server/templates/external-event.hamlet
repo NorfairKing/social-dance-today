@@ -16,6 +16,14 @@
         #{formatTime timeLocale prettyDayFormat externalEventDay} 
       (_{autoDayMsg today externalEventDay})
 
+    $maybe posterKey <- mPosterKey
+      ^{externalEventPosterImageWidget externalEvent posterKey}
+
+    $maybe organiserName <- externalEventOrganiser
+      <h4 .title .is-6>
+        _{MsgPartyOrganiser organiserName}
+
+
     $maybe description <- externalEventDescription
       <div .content>
         <p>
@@ -53,13 +61,20 @@
     <p .help>
       _{MsgExternalEventCaution}
 
+    $if development
+      <a .button .is-danger href=#{externalEventOrigin}>
+        Origin
+
 
 <!-- Facebook Open Graph metadata -->
 <meta property="og:type" content="website">
 <meta property="og:url" content=@{PartyR externalEventUuid}>
 <meta property="og:title" content=#{externalEventTitle}>
+$maybe posterKey <- mPosterKey
+  <meta property="og:image" content=@{ImageR posterKey}>
 $maybe description <- externalEventDescription
   <meta property="og:description" content=#{description}>
+
 
 <!-- Twitter Meta tags -->
 <meta name="twitter:site" content="@kerckhove_ts">
@@ -68,4 +83,7 @@ $maybe description <- externalEventDescription
 <meta name="twitter:title" content=#{externalEventTitle}>
 $maybe description <- externalEventDescription
   <meta property="twitter:description" content=#{description}>
+$maybe posterKey <- mPosterKey
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content=@{ImageR posterKey}>
 

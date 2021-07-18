@@ -126,8 +126,9 @@ getImageR key = do
       respond (TE.encodeUtf8 imageTyp) imageBlob
 
 externalEventPage :: Entity ExternalEvent -> Handler Html
-externalEventPage (Entity _ externalEvent@ExternalEvent {..}) = do
+externalEventPage (Entity externalEventId externalEvent@ExternalEvent {..}) = do
   place@Place {..} <- runDB $ get404 externalEventPlace
+  mPosterKey <- runDB $ getPosterForExternalEvent externalEventId
   mGoogleAPIKey <- getsYesod appGoogleAPIKey
   let mGoogleMapsEmbedUrl = do
         apiKey <- mGoogleAPIKey
@@ -152,13 +153,13 @@ externalEventPage (Entity _ externalEvent@ExternalEvent {..}) = do
         then MsgPartyTitleCancelled externalEventTitle
         else MsgPartyTitleScheduled externalEventTitle
     setDescriptionI $ maybe MsgPartyWithoutDescription MsgPartyDescription externalEventDescription
-    toWidgetHead $ toJSONLDData $ externalEventToLDEvent externalEvent place
+    toWidgetHead $ toJSONLDData $ externalEventToLDEvent renderUrl externalEvent place mPosterKey
     addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe externalEventCreated externalEventModified
     let mAddToGoogleLink = addExternalEventToGoogleCalendarLink renderUrl externalEvent place
     $(widgetFile "external-event")
 
-externalEventToLDEvent :: ExternalEvent -> Place -> LD.Event
-externalEventToLDEvent ExternalEvent {..} Place {..} =
+externalEventToLDEvent :: (Route App -> Text) -> ExternalEvent -> Place -> Maybe CASKey -> LD.Event
+externalEventToLDEvent renderUrl ExternalEvent {..} Place {..} mPosterKey =
   LD.Event
     { LD.eventName = externalEventTitle,
       LD.eventLocation =
@@ -194,7 +195,7 @@ externalEventToLDEvent ExternalEvent {..} Place {..} =
           if externalEventCancelled
             then LD.EventCancelled
             else LD.EventScheduled,
-      LD.eventImages = [],
+      LD.eventImages = [LD.EventImageURL (renderUrl (ImageR posterKey)) | posterKey <- maybeToList mPosterKey],
       LD.eventOrganizer = case externalEventOrganiser of
         Nothing -> Nothing
         Just name ->

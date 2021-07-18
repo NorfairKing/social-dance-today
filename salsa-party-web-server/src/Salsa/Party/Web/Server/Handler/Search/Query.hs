@@ -27,7 +27,7 @@ noDataQuery coordinates = do
   nullSearchResults <$> searchQuery today Nothing coordinates
 
 data Result
-  = External (Entity ExternalEvent) (Entity Place)
+  = External (Entity ExternalEvent) (Entity Place) (Maybe CASKey)
   | Internal (Entity Party) (Entity Place) (Maybe CASKey)
   deriving (Show, Eq)
 
@@ -45,9 +45,9 @@ searchQuery begin mEnd coordinates@Coordinates {..} = do
   -- Post-process the distance before we fetch images so we don't fetch too many images.
   let partyResultsWithoutImages = postProcessParties coordinates rawPartyResults
   partyResultsWithImages <-
-    forM partyResultsWithoutImages $ \(partyEntity@(Entity partyId _), placeEntity) -> do
+    forM partyResultsWithoutImages $ \(partyEntity@(Entity partyId party), placeEntity) -> do
       mKey <- getPosterForParty partyId
-      pure (partyDay $ entityVal partyEntity, (partyEntity, placeEntity, mKey))
+      pure (partyDay party, (partyEntity, placeEntity, mKey))
 
   rawExternalEventResults <- E.select $
     E.from $ \(externalEvent `E.InnerJoin` p) -> do
@@ -56,8 +56,15 @@ searchQuery begin mEnd coordinates@Coordinates {..} = do
       distanceEstimationQuery coordinates p
       pure (externalEvent, p)
 
+  -- TODO deduplicate external events before fetching posters
+  let externalEventResultsWithoutImages = postProcessExternalEvents coordinates rawExternalEventResults
+  externalEventResultsWithImages <-
+    forM externalEventResultsWithoutImages $ \(externalEventEntity@(Entity externalEventId externalEvent), placeEntity) -> do
+      mKey <- getPosterForExternalEvent externalEventId
+      pure (externalEventDay externalEvent, (externalEventEntity, placeEntity, mKey))
+
   let internalResults = makeGroupedByDay partyResultsWithImages
-      externalResults = deduplicateExternalEvents internalResults $ makeGroupedByDay $ postProcessExternalEvents coordinates rawExternalEventResults
+      externalResults = deduplicateExternalEvents internalResults $ makeGroupedByDay externalEventResultsWithImages
 
   pure $
     M.filter (not . null) $
@@ -130,17 +137,17 @@ makeInternalResult (party, place, mCasKey) = Internal party place mCasKey
 postProcessExternalEvents ::
   Coordinates ->
   [(Entity ExternalEvent, Entity Place)] ->
-  [(Day, (Entity ExternalEvent, Entity Place))]
+  [(Entity ExternalEvent, Entity Place)]
 postProcessExternalEvents coordinates =
   mapMaybe $
     \(externalEvent, place) -> do
       guard $
         coordinates `distanceTo` placeCoordinates (entityVal place)
           <= maximumDistance
-      pure (externalEventDay $ entityVal externalEvent, (externalEvent, place))
+      pure (externalEvent, place)
 
-makeExternalResult :: (Entity ExternalEvent, Entity Place) -> Result
-makeExternalResult (externalEvent, place) = External externalEvent place
+makeExternalResult :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Result
+makeExternalResult (externalEvent, place, mCasKey) = External externalEvent place mCasKey
 
 maximumDistance :: Double
 maximumDistance = 50_000 -- 50 km
@@ -163,14 +170,14 @@ makeGroupedByDay = foldr go M.empty -- This could be falter with a fold
 -- In general false-negatives are safer than false-positives, for the user experience.
 deduplicateExternalEvents ::
   Map Day [(Entity Party, Entity Place, Maybe CASKey)] ->
-  Map Day [(Entity ExternalEvent, Entity Place)] ->
-  Map Day [(Entity ExternalEvent, Entity Place)]
+  Map Day [(Entity ExternalEvent, Entity Place, Maybe CASKey)] ->
+  Map Day [(Entity ExternalEvent, Entity Place, Maybe CASKey)]
 deduplicateExternalEvents internals externals = M.differenceWith go externals internals
   where
     go ::
-      [(Entity ExternalEvent, Entity Place)] ->
+      [(Entity ExternalEvent, Entity Place, Maybe CASKey)] ->
       [(Entity Party, Entity Place, Maybe CASKey)] ->
-      Maybe [(Entity ExternalEvent, Entity Place)]
+      Maybe [(Entity ExternalEvent, Entity Place, Maybe CASKey)]
     go externalsOnDay internalsOnDay =
       -- TODO: This is a quadratic-time comparison.
       -- We rely on the assumption that there are not a lot of events happening in the same area on the same day.
@@ -178,8 +185,8 @@ deduplicateExternalEvents internals externals = M.differenceWith go externals in
         filter
           (\externalEvent -> not $ any (isSimilarEnoughTo externalEvent) internalsOnDay)
           externalsOnDay
-    isSimilarEnoughTo :: (Entity ExternalEvent, Entity Place) -> (Entity Party, Entity Place, Maybe CASKey) -> Bool
-    isSimilarEnoughTo (Entity _ ExternalEvent {..}, Entity place1Id place1) (Entity _ Party {..}, Entity place2Id place2, _) =
+    isSimilarEnoughTo :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> (Entity Party, Entity Place, Maybe CASKey) -> Bool
+    isSimilarEnoughTo (Entity _ ExternalEvent {..}, Entity place1Id place1, _) (Entity _ Party {..}, Entity place2Id place2, _) =
       -- For the following conditions, keep in mind that it's already established that the two things happen on the same day.
       or
         [ -- At exactly the same location is probably the same event.
