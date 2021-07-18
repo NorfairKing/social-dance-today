@@ -43,6 +43,7 @@ data Location = Location
   { locationPlace :: Place,
     locationImportant :: Bool -- Whether it should show up in the explore if there are no parties
   }
+  deriving (Show)
 
 locations :: [Location]
 locations =
@@ -53,6 +54,12 @@ locations =
     Location {locationPlace = Place {placeQuery = "Geneva", placeLat = 46.225650900, placeLon = 6.143920900}, locationImportant = False},
     Location {locationPlace = Place {placeQuery = "Lausanne", placeLat = 46.521826900, placeLon = 6.632702500}, locationImportant = False},
     Location {locationPlace = Place {placeQuery = "Lucerne", placeLat = 47.090820700, placeLon = 8.171961100}, locationImportant = False},
+    --  ** Belgium
+    Location {locationPlace = Place {placeQuery = "Brussels", placeLat = 50.843670900, placeLon = 4.367436693}, locationImportant = True},
+    Location {locationPlace = Place {placeQuery = "Hasselt", placeLat = 50.921295549, placeLon = 5.305192877}, locationImportant = False},
+    Location {locationPlace = Place {placeQuery = "Leuven", placeLat = 50.876588950, placeLon = 4.838740993}, locationImportant = False},
+    Location {locationPlace = Place {placeQuery = "Ghent", placeLat = 51.060032100, placeLon = 3.644079554}, locationImportant = False},
+    Location {locationPlace = Place {placeQuery = "Bruges", placeLat = 51.192551500, placeLon = 3.202205278}, locationImportant = False},
     --  ** England
     Location {locationPlace = Place {placeQuery = "London", placeLat = 51.5073219, placeLon = -0.1276474}, locationImportant = True},
     --  ** Spain

@@ -12,6 +12,7 @@ module Salsa.Party.Web.Server.Handler.Admin.Geocoding
   )
 where
 
+import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
 
@@ -33,5 +34,6 @@ adminGeocodingPage mResult = do
   mPlace <- case mResult of
     Just (FormSuccess Geocoding {..}) -> Just <$> lookupPlace geocodingQuery
     _ -> pure Nothing
+  let mkLocation place = Location {locationPlace = place, locationImportant = False}
   token <- genToken
   withMFormResultNavBar mResult $(widgetFile "admin/geocoding")
