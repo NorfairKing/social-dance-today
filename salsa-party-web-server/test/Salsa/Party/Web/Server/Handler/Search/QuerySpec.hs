@@ -200,8 +200,8 @@ spec = do
                               `shouldBe` M.fromList
                                 [ ( day,
                                     [ Internal (Entity party1Id party1) (Entity place1Id place1) Nothing,
-                                      External (Entity externalEvent1Id externalEvent1) (Entity place4Id place4),
-                                      External (Entity externalEvent2Id externalEvent2) (Entity place5Id place5)
+                                      External (Entity externalEvent1Id externalEvent1) (Entity place4Id place4) Nothing,
+                                      External (Entity externalEvent2Id externalEvent2) (Entity place5Id place5) Nothing
                                     ]
                                   )
                                 ]
