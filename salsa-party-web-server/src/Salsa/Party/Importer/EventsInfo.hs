@@ -91,10 +91,10 @@ instance FromJSON EventFromHomepage where
       <*> o .: "is_cancelled"
       <*> o .: "id"
 
-eventPageConduit :: ConduitT Text EventDetails Import ()
+eventPageConduit :: ConduitT Text (Text, EventDetails) Import ()
 eventPageConduit =
-  C.concatMap makeEventPageRequest -- concatMap generalises mapMaybe
-    .| jsonRequestConduit
+  C.concatMap (\t -> (,) t <$> makeEventPageRequest t) -- concatMap generalises mapMaybe
+    .| jsonRequestConduitWith
 
 makeEventPageRequest :: Text -> Maybe Request
 makeEventPageRequest identifier = do
@@ -179,10 +179,10 @@ instance FromJSON EventImage where
       <$> o .: "id"
       <*> o .: "src"
 
-toExternalEvent :: ConduitT EventDetails ExternalEvent Import ()
-toExternalEvent = awaitForever $ \EventDetails {..} -> do
+toExternalEvent :: ConduitT (Text, EventDetails) ExternalEvent Import ()
+toExternalEvent = awaitForever $ \(identifier, EventDetails {..}) -> do
   externalEventUuid <- nextRandomUUID
-  let externalEventKey = eventDetailsId
+  let externalEventKey = identifier
   let externalEventTitle = eventDetailsName
   let externalEventDescription = eventDetailsDescription
   let externalEventOrganiser = eventVenueName eventDetailsVenue

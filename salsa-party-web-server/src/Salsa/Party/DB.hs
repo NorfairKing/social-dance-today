@@ -189,7 +189,7 @@ ExternalEvent sql=external_event
     origin Text
 
     UniqueExternalEventUUID uuid !force
-    UniqueExternalEventKey key
+    UniqueExternalEventKey importer key !force
 
     deriving Show
     deriving Eq

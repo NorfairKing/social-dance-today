@@ -12,6 +12,7 @@ import Control.Monad.Reader
 import Data.Aeson as JSON
 import Data.Aeson.Types as JSON
 import Data.ByteString (ByteString)
+import qualified Data.Conduit.Combinators as C
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
@@ -79,7 +80,7 @@ externalEventSink = awaitForever $ \externalEvent@ExternalEvent {..} -> do
   importerId <- asks importEnvId
   lift $
     importDB $ do
-      mExternalEvent <- getBy (UniqueExternalEventKey externalEventKey)
+      mExternalEvent <- getBy (UniqueExternalEventKey (Just importerId) externalEventKey)
       case mExternalEvent of
         Nothing -> insert_ externalEvent
         Just (Entity externalEventId oldExternalEvent) ->
@@ -102,7 +103,10 @@ externalEventSink = awaitForever $ \externalEvent@ExternalEvent {..} -> do
             else pure ()
 
 jsonRequestConduit :: FromJSON a => ConduitT HTTP.Request a Import ()
-jsonRequestConduit = do
+jsonRequestConduit = C.map ((,) ()) .| jsonRequestConduitWith .| C.map snd
+
+jsonRequestConduitWith :: FromJSON a => ConduitT (c, HTTP.Request) (c, a) Import ()
+jsonRequestConduitWith = do
   man <- asks $ appHTTPManager . importEnvApp
   userAgent <- liftIO chooseUserAgent
   let limitConfig =
@@ -112,7 +116,7 @@ jsonRequestConduit = do
             bucketRefillTokensPerSecond = 1
           }
   rateLimiter <- liftIO $ newRateLimiter limitConfig
-  awaitForever $ \requestPrototype -> do
+  awaitForever $ \(c, requestPrototype) -> do
     liftIO $ waitDebit limitConfig rateLimiter 10 -- Need 10 tokens
     let request = requestPrototype {requestHeaders = ("User-Agent", userAgent) : requestHeaders requestPrototype}
     logInfoNS "Importer" $ "fetching: " <> T.pack (show (getUri request))
@@ -149,7 +153,7 @@ jsonRequestConduit = do
                     [ "Unable to parse JSON:" <> T.pack err,
                       T.pack $ ppShow jsonValue
                     ]
-              Right a -> yield a
+              Right a -> yield (c, a)
 
 chooseUserAgent :: IO ByteString
 chooseUserAgent = do
