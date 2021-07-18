@@ -407,7 +407,7 @@ posterImageWidget Party {..} Organiser {..} posterKey = do
   prettyDayFormat <- getPrettyDayFormat
   let timeStr = formatTime timeLocale prettyDayFormat partyDay
   [whamlet|
-    <img
+    <img .poster
       width=#{desiredWidth}
       height=#{desiredHeight}
       src=@{ImageR posterKey}
@@ -423,11 +423,26 @@ externalEventPosterImageWidget ExternalEvent {..} posterKey = do
         Nothing -> MsgPosterAltTitle externalEventTitle timeStr
         Just organiserName -> MsgPosterAltFull externalEventTitle timeStr organiserName
   [whamlet|
-    <img
-      width=#{desiredWidth}
-      height=#{desiredHeight}
-      src=@{ImageR posterKey}
-      alt=_{altMsg}>
+      <img .poster
+        width=#{desiredWidth}
+        height=#{desiredHeight}
+        src=@{ImageR posterKey}
+        alt=_{altMsg}>
+  |]
+    <> posterCSS
+
+posterCSS :: Widget
+posterCSS =
+  toWidget
+    [lucius|
+  .poster {
+    max-width: #{show desiredWidth}px;
+    max-height: #{show desiredHeight}px;
+    width: 100%;
+    height: 100%;
+    object-fit: scale-down;
+    object-position:left;
+  }
   |]
 
 getPosterForParty :: MonadIO m => PartyId -> SqlPersistT m (Maybe CASKey)
