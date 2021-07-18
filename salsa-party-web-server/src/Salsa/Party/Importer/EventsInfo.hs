@@ -22,12 +22,15 @@
 -- and whether it's been cancelled under "is_cancelled".
 --
 -- After that, you can look up events.info/events/:id to get the info about a specific event.
+--
+-- That specific info may contain a list of 'images' that we can import to get a poster.
 module Salsa.Party.Importer.EventsInfo (eventsInfoImporter) where
 
 import Conduit
 import Data.Aeson as JSON
 import qualified Data.Conduit.Combinators as C
 import Data.Fixed
+import Data.Maybe
 import Data.Scientific
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -49,8 +52,7 @@ func = do
     yieldMany days
       .| homePageConduit
       .| eventPageConduit
-      .| toExternalEvent
-      .| externalEventSink
+      .| eventDetailsSink
 
 homePageConduit ::
   ConduitT
@@ -179,8 +181,8 @@ instance FromJSON EventImage where
       <$> o .: "id"
       <*> o .: "src"
 
-toExternalEvent :: ConduitT (Text, EventDetails) ExternalEvent Import ()
-toExternalEvent = awaitForever $ \(identifier, EventDetails {..}) -> do
+eventDetailsSink :: ConduitT (Text, EventDetails) o Import ()
+eventDetailsSink = awaitForever $ \(identifier, EventDetails {..}) -> do
   externalEventUuid <- nextRandomUUID
   let externalEventKey = identifier
   let externalEventTitle = eventDetailsName
@@ -212,4 +214,24 @@ toExternalEvent = awaitForever $ \(identifier, EventDetails {..}) -> do
           [] -- Don't change if it's already there, so that they can't fill our page with junk.
   let externalEventOrigin = "https://events.info/events/" <> eventDetailsId
   externalEventImporter <- Just <$> asks importEnvId
-  yield ExternalEvent {..}
+  externalEventId <- lift $ importExternalEvent ExternalEvent {..}
+  forM_ (listToMaybe eventDetailsImages) $ \eventImage -> do
+    mImageId <- lift $ tryToImportImage eventImage
+    forM_ mImageId $ \imageId -> do
+      lift $
+        importDB $
+          upsertBy
+            (UniqueExternalEventPoster externalEventId)
+            ( ExternalEventPoster
+                { externalEventPosterExternalEvent = externalEventId,
+                  externalEventPosterImage = imageId,
+                  externalEventPosterCreated = now,
+                  externalEventPosterModified = Nothing
+                }
+            )
+            [ ExternalEventPosterImage =. imageId,
+              ExternalEventPosterModified =. Just now
+            ]
+
+tryToImportImage :: EventImage -> Import (Maybe ImageId)
+tryToImportImage EventImage {..} = pure Nothing

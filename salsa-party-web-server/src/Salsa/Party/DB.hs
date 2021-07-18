@@ -194,6 +194,18 @@ ExternalEvent sql=external_event
     deriving Show
     deriving Eq
     deriving Generic
+
+ExternalEventPoster sql=external_event_poster
+    externalEvent ExternalEventId
+    image ImageId
+    created UTCTime
+    modified UTCTime Maybe default=NULL
+
+    UniqueExternalEventPoster externalEvent
+
+    deriving Show
+    deriving Eq
+    deriving Generic
 |]
 
 instance Validity Place

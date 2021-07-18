@@ -74,33 +74,33 @@ importDB func = do
   logFunc <- askLoggerIO
   liftIO $ runLoggingT (runSqlPool func pool) logFunc
 
-externalEventSink :: ConduitT ExternalEvent Void Import ()
-externalEventSink = awaitForever $ \externalEvent@ExternalEvent {..} -> do
+importExternalEvent :: ExternalEvent -> Import ExternalEventId
+importExternalEvent externalEvent@ExternalEvent {..} = do
   now <- liftIO getCurrentTime
   importerId <- asks importEnvId
-  lift $
-    importDB $ do
-      mExternalEvent <- getBy (UniqueExternalEventKey (Just importerId) externalEventKey)
-      case mExternalEvent of
-        Nothing -> insert_ externalEvent
-        Just (Entity externalEventId oldExternalEvent) ->
-          if externalEvent `hasChangedComparedTo` oldExternalEvent
-            then do
-              void $
-                update
-                  externalEventId
-                  [ ExternalEventTitle =. externalEventTitle,
-                    ExternalEventDescription =. externalEventDescription,
-                    ExternalEventOrganiser =. externalEventOrganiser,
-                    ExternalEventDay =. externalEventDay,
-                    ExternalEventStart =. externalEventStart,
-                    ExternalEventHomepage =. externalEventHomepage,
-                    ExternalEventModified =. Just now,
-                    ExternalEventPlace =. externalEventPlace,
-                    ExternalEventOrigin =. externalEventOrigin,
-                    ExternalEventImporter =. Just importerId
-                  ]
-            else pure ()
+  importDB $ do
+    mExternalEvent <- getBy (UniqueExternalEventKey (Just importerId) externalEventKey)
+    case mExternalEvent of
+      Nothing -> insert externalEvent
+      Just (Entity externalEventId oldExternalEvent) -> do
+        if externalEvent `hasChangedComparedTo` oldExternalEvent
+          then do
+            void $
+              update
+                externalEventId
+                [ ExternalEventTitle =. externalEventTitle,
+                  ExternalEventDescription =. externalEventDescription,
+                  ExternalEventOrganiser =. externalEventOrganiser,
+                  ExternalEventDay =. externalEventDay,
+                  ExternalEventStart =. externalEventStart,
+                  ExternalEventHomepage =. externalEventHomepage,
+                  ExternalEventModified =. Just now,
+                  ExternalEventPlace =. externalEventPlace,
+                  ExternalEventOrigin =. externalEventOrigin,
+                  ExternalEventImporter =. Just importerId
+                ]
+          else pure ()
+        pure externalEventId
 
 jsonRequestConduit :: FromJSON a => ConduitT HTTP.Request a Import ()
 jsonRequestConduit = C.map ((,) ()) .| jsonRequestConduitWith .| C.map snd
