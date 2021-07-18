@@ -16,6 +16,7 @@ getAdminPanelR = do
   nbUpcomingParties <- runDB $ count ([PartyDay >=. today] :: [Filter Party])
   nbUpcomingExternalEvents <- runDB $ count ([ExternalEventDay >=. today] :: [Filter ExternalEvent])
   importers <- runDB $ selectList [] [Asc ImporterMetadataId]
+  token <- genToken
   timeLocale <- getTimeLocale
   prettyDateTimeFormat <- getPrettyDateTimeFormat
   withNavBar $ do
@@ -93,6 +94,13 @@ externalEventsListPage filters sorters pageNumber = do
     setTitle "Salsa Parties Admin External Events"
     setDescription "Admin overview of the external events"
     $(widgetFile "admin/external-events")
+
+postAdminImporterDeleteR :: ImporterMetadataId -> Handler Html
+postAdminImporterDeleteR importerId = do
+  runDB $ do
+    deleteWhere [ExternalEventImporter ==. Just importerId]
+    delete importerId
+  redirect $ AdminR AdminPanelR
 
 data Paginated a = Paginated
   { paginatedCurrentPage :: !PageNumber,
