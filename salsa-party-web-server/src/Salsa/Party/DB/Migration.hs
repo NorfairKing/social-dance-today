@@ -27,7 +27,6 @@ completeServerMigration quiet = do
   logInfoN "Autmatic migrations done, starting application-specific migrations."
   setUpPlaces
   cleanupOldExternalEvents
-  garbageCollectImages
   logInfoN "Migrations done."
 
 setUpPlaces :: (MonadIO m, MonadLogger m) => SqlPersistT m ()
@@ -83,13 +82,3 @@ locations =
 
 cleanupOldExternalEvents :: MonadIO m => SqlPersistT m ()
 cleanupOldExternalEvents = deleteWhere [ExternalEventImporter ==. Nothing] -- TODO When we remove this, remove the maybe in the db
-
--- TODO we'll probably want to do this in a looper instead, but fine for now.
-garbageCollectImages :: MonadIO m => SqlPersistT m ()
-garbageCollectImages = do
-  imageIds <- selectKeysList [] [Asc ImageId]
-  forM_ imageIds $ \imageId -> do
-    parties <- count [PartyPosterImage ==. imageId]
-    externalEvents <- count [ExternalEventPosterImage ==. imageId]
-    when (parties + externalEvents == 0) $ do
-      delete imageId
