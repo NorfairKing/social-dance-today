@@ -216,24 +216,25 @@ eventDetailsSink = awaitForever $ \(identifier, EventDetails {..}) -> do
           [] -- Don't change if it's already there, so that they can't fill our page with junk.
   let externalEventOrigin = "https://events.info/events/" <> eventDetailsId
   externalEventImporter <- Just <$> asks importEnvId
-  externalEventId <- lift $ importExternalEvent ExternalEvent {..}
-  forM_ (listToMaybe eventDetailsImages) $ \eventImage -> do
-    mImageId <- lift $ tryToImportImage eventImage
-    forM_ mImageId $ \imageId -> do
-      lift $
-        importDB $
-          upsertBy
-            (UniqueExternalEventPoster externalEventId)
-            ( ExternalEventPoster
-                { externalEventPosterExternalEvent = externalEventId,
-                  externalEventPosterImage = imageId,
-                  externalEventPosterCreated = now,
-                  externalEventPosterModified = Nothing
-                }
-            )
-            [ ExternalEventPosterImage =. imageId,
-              ExternalEventPosterModified =. Just now
-            ]
+  -- Import the event and download its images if anything has changed.
+  lift $
+    importExternalEventAnd ExternalEvent {..} $ \externalEventId -> do
+      forM_ (listToMaybe eventDetailsImages) $ \eventImage -> do
+        mImageId <- tryToImportImage eventImage
+        forM_ mImageId $ \imageId -> do
+          importDB $
+            upsertBy
+              (UniqueExternalEventPoster externalEventId)
+              ( ExternalEventPoster
+                  { externalEventPosterExternalEvent = externalEventId,
+                    externalEventPosterImage = imageId,
+                    externalEventPosterCreated = now,
+                    externalEventPosterModified = Nothing
+                  }
+              )
+              [ ExternalEventPosterImage =. imageId,
+                ExternalEventPosterModified =. Just now
+              ]
 
 tryToImportImage :: EventImage -> Import (Maybe ImageId)
 tryToImportImage EventImage {..} = do

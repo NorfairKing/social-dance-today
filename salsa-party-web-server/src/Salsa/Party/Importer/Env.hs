@@ -92,17 +92,19 @@ importDB func = do
   logFunc <- askLoggerIO
   liftIO $ runLoggingT (runSqlPool func pool) logFunc
 
-importExternalEvent :: ExternalEvent -> Import ExternalEventId
-importExternalEvent externalEvent@ExternalEvent {..} = do
+-- Import an external event and run the given function if anything has changed.
+-- We use this extra function to import images but only if the event has changed.
+importExternalEventAnd :: ExternalEvent -> (ExternalEventId -> Import ()) -> Import ()
+importExternalEventAnd externalEvent@ExternalEvent {..} func = do
   now <- liftIO getCurrentTime
   importerId <- asks importEnvId
-  importDB $ do
-    mExternalEvent <- getBy (UniqueExternalEventKey (Just importerId) externalEventKey)
-    case mExternalEvent of
-      Nothing -> insert externalEvent
-      Just (Entity externalEventId oldExternalEvent) -> do
-        if externalEvent `hasChangedComparedTo` oldExternalEvent
-          then do
+  mExternalEvent <- importDB $ getBy (UniqueExternalEventKey (Just importerId) externalEventKey)
+  case mExternalEvent of
+    Nothing -> importDB (insert externalEvent) >>= func
+    Just (Entity externalEventId oldExternalEvent) -> do
+      if externalEvent `hasChangedComparedTo` oldExternalEvent
+        then do
+          importDB $
             void $
               update
                 externalEventId
@@ -117,8 +119,8 @@ importExternalEvent externalEvent@ExternalEvent {..} = do
                   ExternalEventOrigin =. externalEventOrigin,
                   ExternalEventImporter =. Just importerId
                 ]
-          else pure ()
-        pure externalEventId
+          func externalEventId
+        else pure ()
 
 jsonRequestConduit :: FromJSON a => ConduitT HTTP.Request a Import ()
 jsonRequestConduit = C.map ((,) ()) .| jsonRequestConduitWith .| C.map snd
