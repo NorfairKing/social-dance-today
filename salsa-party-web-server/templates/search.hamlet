@@ -25,12 +25,9 @@ $forall day <- days
                       <div .card>
                         $maybe posterKey <- mPosterVal
                           <div .card-image .has-text-centered>
-                            <figure .image .is-16by9>
-                              <img
-                                width=640
-                                height=360
-                                src=@{ImageR posterKey}
-                                alt=_{MsgSearchPosterAlt (partyTitle party) (formatTime timeLocale prettyDayFormat $ partyDay party)}>
+                            <img .poster
+                              src=@{ImageR posterKey}
+                              alt=_{MsgSearchPosterAlt (partyTitle party) (formatTime timeLocale prettyDayFormat $ partyDay party)}>
 
                         <div .card-content>
                           <h2 .title .is-4>
@@ -48,12 +45,9 @@ $forall day <- days
                       <div .card>
                         $maybe posterKey <- mPosterVal
                           <div .card-image .has-text-centered>
-                            <figure .image .is-16by9>
-                              <img
-                                width=640
-                                height=360
-                                src=@{ImageR posterKey}
-                                alt=_{MsgSearchPosterAlt (externalEventTitle externalEvent) (formatTime timeLocale prettyDayFormat $ externalEventDay externalEvent)}>
+                            <img .poster
+                              src=@{ImageR posterKey}
+                              alt=_{MsgSearchPosterAlt (externalEventTitle externalEvent) (formatTime timeLocale prettyDayFormat $ externalEventDay externalEvent)}>
                         <div .card-content>
                           <h2 .title .is-4>
                             $if externalEventCancelled externalEvent

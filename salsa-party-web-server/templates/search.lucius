@@ -11,3 +11,9 @@
 .zoom-without-container:hover {
   transform: scale(1.025); 
 }
+
+.poster {
+  max-width: 640px;
+  max-height: 360px;
+  object-fit: contain;
+}
