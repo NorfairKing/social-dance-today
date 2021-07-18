@@ -15,6 +15,9 @@ getAdminPanelR = do
   nbOrganisers <- runDB $ count ([] :: [Filter Organiser])
   nbUpcomingParties <- runDB $ count ([PartyDay >=. today] :: [Filter Party])
   nbUpcomingExternalEvents <- runDB $ count ([ExternalEventDay >=. today] :: [Filter ExternalEvent])
+  importers <- runDB $ selectList [] [Asc ImporterMetadataId]
+  timeLocale <- getTimeLocale
+  prettyDateTimeFormat <- getPrettyDateTimeFormat
   withNavBar $ do
     setTitle "Salsa Parties Admin Panel"
     setDescription "Admin panel for the salsa parties admin"
@@ -72,8 +75,17 @@ getAdminExternalEventsR :: Handler Html
 getAdminExternalEventsR = redirect $ AdminR $ AdminExternalEventsPageR paginatedFirstPage
 
 getAdminExternalEventsPageR :: PageNumber -> Handler Html
-getAdminExternalEventsPageR pageNumber = do
-  paginated <- runDB $ selectPaginated 10 [] [Asc ExternalEventDay, Asc ExternalEventId] pageNumber
+getAdminExternalEventsPageR = externalEventsListPage [] [Asc ExternalEventDay, Asc ExternalEventId]
+
+getAdminImporterEventsR :: ImporterMetadataId -> Handler Html
+getAdminImporterEventsR importerId = redirect $ AdminR $ AdminImporterEventsPageR importerId paginatedFirstPage
+
+getAdminImporterEventsPageR :: ImporterMetadataId -> PageNumber -> Handler Html
+getAdminImporterEventsPageR importerId = externalEventsListPage [ExternalEventImporter ==. Just importerId] [Asc ExternalEventDay, Asc ExternalEventId]
+
+externalEventsListPage :: [Filter ExternalEvent] -> [SelectOpt ExternalEvent] -> PageNumber -> Handler Html
+externalEventsListPage filters sorters pageNumber = do
+  paginated <- runDB $ selectPaginated 10 filters sorters pageNumber
   today <- liftIO $ utctDay <$> getCurrentTime
   token <- genToken
   withNavBar $ do

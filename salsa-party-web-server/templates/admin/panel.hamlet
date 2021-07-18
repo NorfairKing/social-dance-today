@@ -55,3 +55,28 @@
             Upcoming Events
           <p .title>
             #{nbUpcomingParties + nbUpcomingExternalEvents}
+
+<section .section>
+  <div .container>
+    <h2 .title .is-4>
+      Importers
+
+    <table .table .is-fullwidth .is-striped>
+      <thead> 
+        <tr>
+          <th>
+            Title
+          <th width=250px>
+            Last Run
+          <th width=50px>
+            Events
+      <tbody>
+        $forall Entity importerId importer <- importers
+          <tr>
+            <td>
+              #{importerMetadataName importer}
+            <td>
+              #{formatTime timeLocale prettyDateTimeFormat $ importerMetadataLastRun importer}
+            <td>
+              <a .button href=@{AdminR $ AdminImporterEventsR importerId}>
+                Events
