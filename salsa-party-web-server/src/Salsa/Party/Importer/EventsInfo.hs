@@ -248,10 +248,10 @@ tryToImportImage EventImage {..} = do
             Left _ -> pure Nothing
             Right contentType -> do
               let imageBlob = LB.toStrict $ responseBody response
-              let casKey = mkCASKey contentType imageBlob
               case posterCropImage contentType imageBlob of
                 Left _ -> pure Nothing -- TODO log error
                 Right (convertedImageType, convertedImageBlob) -> do
+                  let casKey = mkCASKey convertedImageType convertedImageBlob
                   now <- liftIO getCurrentTime
                   Entity imageId _ <-
                     importDB $

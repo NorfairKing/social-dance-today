@@ -153,10 +153,10 @@ addParty organiserId AddPartyForm {..} mFileInfo = do
     Just posterFileInfo -> do
       imageBlob <- fileSourceByteString posterFileInfo
       let contentType = fileContentType posterFileInfo
-      let casKey = mkCASKey contentType imageBlob
       case posterCropImage contentType imageBlob of
         Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
         Right (convertedImageType, convertedImageBlob) -> do
+          let casKey = mkCASKey convertedImageType convertedImageBlob
           runDB $ do
             Entity imageId _ <-
               upsertBy
@@ -310,10 +310,10 @@ editParty (Entity partyId party) form mFileInfo = do
     Just posterFileInfo -> do
       imageBlob <- fileSourceByteString posterFileInfo
       let contentType = fileContentType posterFileInfo
-      let casKey = mkCASKey contentType imageBlob
       case posterCropImage contentType imageBlob of
         Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
         Right (convertedImageType, convertedImageBlob) -> do
+          let casKey = mkCASKey convertedImageType convertedImageBlob
           runDB $ do
             Entity imageId _ <-
               upsertBy
