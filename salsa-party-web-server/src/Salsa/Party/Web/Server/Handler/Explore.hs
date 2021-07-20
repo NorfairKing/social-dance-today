@@ -18,7 +18,7 @@ getExploreR = do
       forM locations $ \Location {..} -> do
         nbUpcomingParties <- explorePartiesAroundLocationQuery today (placeCoordinates locationPlace)
         pure $ do
-          guard $ locationImportant || nbUpcomingParties > 0
+          guard $ nbUpcomingParties > 0
           pure (locationPlace, nbUpcomingParties)
 
   withNavBar $ do

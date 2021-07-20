@@ -34,6 +34,6 @@ adminGeocodingPage mResult = do
   mPlace <- case mResult of
     Just (FormSuccess Geocoding {..}) -> Just <$> lookupPlace geocodingQuery
     _ -> pure Nothing
-  let mkLocation place = Location {locationPlace = place, locationImportant = False}
+  let mkLocation place = Location {locationPlace = place}
   token <- genToken
   withMFormResultNavBar mResult $(widgetFile "admin/geocoding")
