@@ -20,9 +20,9 @@ library
       Salsa.Party.DB.URI
       Salsa.Party.DB.UUID
       Salsa.Party.Importer
-      Salsa.Party.Importer.DanceUsOrg
       Salsa.Party.Importer.Env
       Salsa.Party.Importer.EventsInfo
+      Salsa.Party.Importer.GolatindanceCom
       Salsa.Party.Importer.Import
       Salsa.Party.OptParse
       Salsa.Party.Server

@@ -13,9 +13,9 @@ import Database.Persist.Sql
 import GHC.Clock (getMonotonicTimeNSec)
 import Looper
 import Salsa.Party.DB
-import Salsa.Party.Importer.DanceUsOrg
 import Salsa.Party.Importer.Env
 import Salsa.Party.Importer.EventsInfo
+import Salsa.Party.Importer.GolatindanceCom
 import Salsa.Party.OptParse
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
@@ -32,7 +32,7 @@ runImporterLoopers Settings {..} app = do
           (runImporter app importer)
       looperDefs =
         [ importerLooper eventsInfoImporter settingEventsInfoImportLooperSettings,
-          importerLooper danceUsOrgImporter settingDanceUsOrgImportLooperSettings
+          importerLooper golatindanceComImporter settingGolatindanceComImportLooperSettings
         ]
       runDBHere :: SqlPersistT (LoggingT IO) a -> LoggingT IO a
       runDBHere = flip runSqlPool (appConnectionPool app)
