@@ -87,7 +87,7 @@
               #{maybe "" (formatTime timeLocale prettyDateTimeFormat) $ importerMetadataLastRunEnd importer}
             <td>
               $maybe end <- importerMetadataLastRunEnd importer
-                #{formatTime timeLocale "%M" $ diffUTCTime end $ importerMetadataLastRunStart importer}
+                #{formatTime timeLocale "%Hh%Mm%Ss" $ diffUTCTime end $ importerMetadataLastRunStart importer}
             <td>
               <a .button href=@{AdminR $ AdminImporterEventsR importerId}>
                 Events
