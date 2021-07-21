@@ -70,6 +70,8 @@
             Last Run Start
           <th width=250px>
             Last Run End
+          <th width=250px>
+            Last Run Timing
           <th width=50px>
             Events
           <th width=50px>
@@ -83,6 +85,9 @@
               #{formatTime timeLocale prettyDateTimeFormat $ importerMetadataLastRunStart importer}
             <td>
               #{maybe "" (formatTime timeLocale prettyDateTimeFormat) $ importerMetadataLastRunEnd importer}
+            <td>
+              $maybe end <- importerMetadataLastRunEnd importer
+                #{formatTime timeLocale "%M" $ diffUTCTime end $ importerMetadataLastRunStart importer}
             <td>
               <a .button href=@{AdminR $ AdminImporterEventsR importerId}>
                 Events
