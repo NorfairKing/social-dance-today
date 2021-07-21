@@ -64,6 +64,9 @@ locations =
     Location {locationPlace = Place {placeQuery = "Barcelona", placeLat = 41.3948976, placeLon = 2.0787282}},
     Location {locationPlace = Place {placeQuery = "Cádiz", placeLat = 35.4524784, placeLon = -7.260937}},
     --  * North America
+    --  ** Canada
+    Location {locationPlace = Place {placeQuery = "Toronto", placeLat = 43.653481700, placeLon = -79.383934700}},
+    Location {locationPlace = Place {placeQuery = "Vancouver Canada", placeLat = 49.260872400, placeLon = -123.113952900}},
     --  ** United States
     Location {locationPlace = Place {placeQuery = "New York", placeLat = 43.1561681, placeLon = -75.8449946}},
     Location {locationPlace = Place {placeQuery = "Chicago", placeLat = 41.8336474, placeLon = -87.8723884}},
@@ -77,8 +80,7 @@ locations =
     --  * Africa
     --  * Australia
     Location {locationPlace = Place {placeQuery = "Sydney", placeLat = -33.8888621, placeLon = 151.204897861}},
-    Location {locationPlace = Place {placeQuery = "Melbourne", placeLat = -37.814217600, placeLon = 144.963160800}},
-    Location {locationPlace = Place {placeQuery = "Toronto", placeLat = 43.653481700, placeLon = -79.383934700}}
+    Location {locationPlace = Place {placeQuery = "Melbourne", placeLat = -37.814217600, placeLon = 144.963160800}}
   ]
 
 cleanupOldExternalEvents :: MonadIO m => SqlPersistT m ()
