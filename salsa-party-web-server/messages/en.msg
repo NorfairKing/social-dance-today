@@ -49,7 +49,7 @@ SearchPartiesAroundYourLocation: Social dance parties near your location
 SearchNoParties: No parties found for this day.
 SearchPosterAlt title@Text day@String: Poster for #{title} on #{day}.
 SearchNoResults: We do not have any data about this area yet.
-SearchNoResultsHelp: We need your help to gather more data about this area. Please get in touch with party organisers and tell them about this page. If you organise parties in this area, please sign up and advertise your parties here.
+SearchNoResultsHelp: We need your help to gather more data about this area. Please get in touch with party organisers and tell them about this page. If you organise parties in this area, please sign up and advertise your parties here for free.
 
 SearchNavEarlier: Earlier
 SearchNavLater: Later

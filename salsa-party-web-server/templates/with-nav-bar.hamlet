@@ -25,7 +25,10 @@
     <div .navbar-end>
       <div .navbar-item .has-dropdown .is-hoverable>
         <a .navbar-link>
-          _{MsgNavLanguage} / Language
+          $if lang == SupportedLangEnglish
+            Language
+          $else
+            _{MsgNavLanguage} / Language
         <div .navbar-dropdown .is-hidden-mobile>
           $forall lang <- supportedLanguages
             <form method=post action=@{SelectLanguageR lang}>

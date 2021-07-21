@@ -191,6 +191,7 @@ withFormFailureNavBar errorMessages body = do
   let isAdmin = case mAuth of
         Nothing -> False
         Just (Entity _ user) -> Just (userEmailAddress user) == mAdmin
+  lang <- getFirstMatchingSupportedLanguage
   defaultLayout $(widgetFile "with-nav-bar")
 
 salsaAuthPlugin :: AuthPlugin App
@@ -513,7 +514,7 @@ instance PathPiece SupportedLanguage where
   toPathPiece = supportedLanguageAbbreviation
 
 supportedLanguages :: [SupportedLanguage]
-supportedLanguages = [SupportedLangEnglish, SupportedLangGerman] -- TODO put this back when we get the dutch translations [minBound .. maxBound]
+supportedLanguages = [minBound .. maxBound]
 
 parseSupportedLanguage :: Text -> Maybe SupportedLanguage
 parseSupportedLanguage =
