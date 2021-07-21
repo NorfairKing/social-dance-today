@@ -4,25 +4,8 @@
 
 module Web.JSONLD.Parse where
 
-import Conduit
-import Control.Applicative
-import Data.Aeson as JSON
-import Data.Aeson.Types as JSON
-import qualified Data.ByteString.Lazy as LB
-import qualified Data.ByteString.Lazy.Char8 as LB8
-import Data.Char as Char
-import qualified Data.Conduit.Combinators as C
-import Data.Maybe
 import Data.String
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
-import Network.HTTP.Client as HTTP
-import Network.HTTP.Types as HTTP
-import Network.URI
-import Salsa.Party.Importer.Import
-import Salsa.Party.Web.Server.Geocoding
 import qualified Text.HTML.TagSoup as HTML
-import qualified Web.JSONLD as LD
 
 groupIntoJSONLDPieces :: forall str. (Eq str, IsString str) => [HTML.Tag str] -> [[HTML.Tag str]]
 groupIntoJSONLDPieces = lookForStart

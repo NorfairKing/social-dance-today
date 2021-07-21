@@ -55,7 +55,6 @@ import qualified Data.ByteString.Lazy.Char8 as LB8
 import Data.Char as Char
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
-import Data.String
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Network.HTTP.Client as HTTP
