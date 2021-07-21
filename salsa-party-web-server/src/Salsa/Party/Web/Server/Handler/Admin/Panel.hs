@@ -130,7 +130,7 @@ selectPaginated ::
   SqlPersistT Handler (Paginated (Entity a))
 selectPaginated pageSize filters opts paginatedCurrentPage = do
   paginatedTotalElements <- count filters
-  let paginatedTotalPages = floor (fromIntegral paginatedTotalElements / (fromIntegral pageSize :: Double)) + 1
+  let paginatedTotalPages = ceiling (fromIntegral paginatedTotalElements / (fromIntegral pageSize :: Double))
   paginatedElements <- selectList filters $ OffsetBy ((paginatedCurrentPage - 1) * pageSize) : LimitTo pageSize : opts
   let paginatedPreviousPage = if paginatedCurrentPage <= paginatedFirstPage then Nothing else Just $ pred paginatedCurrentPage
   let paginatedLastPage = paginatedTotalPages

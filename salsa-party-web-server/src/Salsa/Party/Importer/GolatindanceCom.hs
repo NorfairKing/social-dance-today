@@ -90,21 +90,56 @@ func = do
       .| doHttpRequestWith
       .| logRequestErrors
       .| parseJSONLDPieces
+      .| C.mapM
+        ( \(req, val) -> do
+            liftIO $ LB.putStrLn $ JSON.encodePretty val
+            pure (req, val)
+        )
       .| parseJSONLDEvents
       .| importJSONLDEvents
       .| C.mapM_ (liftIO . print)
 
 categories :: [Text]
 categories =
-  [ "london"
+  [ -- Australia
+    "melbourne",
+    "sydney",
+    -- Canada
+    "toronto",
+    "vancouver",
+    -- UK
+    "london",
+    -- USA - Midwest
+    "chicago",
+    "kansas-city",
+    "minneapolis",
+    -- USA - East
+    "boston",
+    "detroit",
+    "philadelphia",
+    "new-york-city",
+    "washington-dc-baltimore",
+    -- USA - South
+    "austin",
+    "dallas-forth-worth",
+    "houston",
+    "san-antonio",
+    -- USA - Southeast
+    "atlanta",
+    "miami",
+    "orlando",
+    "raleigh-durham",
+    "tampa",
+    -- USA - West
+    "denver",
+    "las-vegas",
+    "los-angeles",
+    "phoenix",
+    "portland",
+    "san-diego",
+    "san-francisco-bay-area",
+    "seattle"
   ]
-
--- [ "melbourne",
---   "sydney",
---   "toronto",
---   "vancouver"
--- ]
--- TODO the rest of the categories under 'Event Calendars' here: https://golatindance.com/
 
 makeCalendarRequest :: Text -> Maybe HTTP.Request
 makeCalendarRequest city = do
@@ -193,16 +228,31 @@ parseJSONLDEvents = awaitForever $ \(uri, value) ->
 
 importJSONLDEvents :: ConduitT (HTTP.Request, LD.Event) () Import ()
 importJSONLDEvents = awaitForever $ \(request, event) -> do
+  -- We use this 'unescapeHtml' function because
+  -- there are still html entities in the tags that we get.
+  -- I'm not sure whether that's a mistake on their part or on ours, but it's definitely weird.
+  let unescapeHtml = HTML.innerText . HTML.parseTags
   liftIO $ print event
   externalEventUuid <- nextRandomUUID
-  -- This is not ideal, but we don't have anything better it seems.
+  -- This is not ideal, because the URL could change, in which case we'll
+  -- duplicate the event, but we don't have anything better it seems.
   let externalEventKey = T.pack $ show $ getUri request
-  let externalEventTitle = LD.eventName event
+  let externalEventTitle = unescapeHtml $ LD.eventName event
+  -- For the desciption we even unescape twice because there is html like '<p>' in there.
+  -- We also get rid of any literal "\n" strings.
+  let cleanupDescription =
+        T.replace "Event Video Preview..." ""
+          . T.replace "..." ""
+          . T.replace "\\n" "\n"
+          . T.replace "\\n" "\n"
+          . T.replace "\\'" "'"
+          . T.strip
+          . unescapeHtml
   let externalEventDescription =
         -- Get rid of empty descriptions.
         case fromMaybe "" $ LD.eventDescription event of
           "" -> Nothing
-          t -> Just t
+          t -> Just $ cleanupDescription $ unescapeHtml t
   -- TODO the events MAY contain an organisers but in this case they don't seem to.
   -- We may want to try and parse it anyway in case that changes or we use this function somewhere else.
   let externalEventOrganiser = Nothing
@@ -224,15 +274,16 @@ importJSONLDEvents = awaitForever $ \(request, event) -> do
   Entity externalEventPlace _ <- case LD.eventLocation event of
     LD.EventLocationPlace place ->
       let address = case LD.placeAddress place of
-            LD.PlaceAddressText t -> t
+            LD.PlaceAddressText t -> unescapeHtml t
             LD.PlaceAddressPostalAddress postalAddress ->
-              T.unwords $
-                catMaybes
-                  [ LD.postalAddressStreetAddress postalAddress,
-                    LD.postalAddressLocality postalAddress,
-                    LD.postalAddressRegion postalAddress,
-                    LD.postalAddressCountry postalAddress
-                  ]
+              unescapeHtml $
+                T.unwords $
+                  catMaybes
+                    [ LD.postalAddressStreetAddress postalAddress,
+                      LD.postalAddressLocality postalAddress,
+                      LD.postalAddressRegion postalAddress,
+                      LD.postalAddressCountry postalAddress
+                    ]
        in case LD.placeGeo place of
             Just (LD.PlaceGeoCoordinates geoCoordinates) ->
               lift $
