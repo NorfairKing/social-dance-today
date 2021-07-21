@@ -3,7 +3,7 @@
     <h1 .title .is-3>
       External Events
 
-    ^{paginationWidget (AdminR . AdminExternalEventsPageR) paginated pageNumber}
+    ^{paginationWidget pageRoute paginated pageNumber}
 
 
 <section .section>

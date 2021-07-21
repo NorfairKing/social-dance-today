@@ -76,7 +76,7 @@ getAdminExternalEventsR :: Handler Html
 getAdminExternalEventsR = redirect $ AdminR $ AdminExternalEventsPageR paginatedFirstPage
 
 getAdminExternalEventsPageR :: PageNumber -> Handler Html
-getAdminExternalEventsPageR = externalEventsListPage [] [Asc ExternalEventDay, Asc ExternalEventId]
+getAdminExternalEventsPageR = externalEventsListPage [] [Asc ExternalEventDay, Asc ExternalEventId] (AdminR . AdminExternalEventsPageR)
 
 getAdminImporterEventsR :: ImporterMetadataId -> Handler Html
 getAdminImporterEventsR importerId = redirect $ AdminR $ AdminImporterEventsPageR importerId paginatedFirstPage
@@ -88,9 +88,10 @@ getAdminImporterEventsPageR importerId =
     [ Asc ExternalEventDay,
       Asc ExternalEventId
     ]
+    (AdminR . AdminImporterEventsPageR importerId)
 
-externalEventsListPage :: [Filter ExternalEvent] -> [SelectOpt ExternalEvent] -> PageNumber -> Handler Html
-externalEventsListPage filters sorters pageNumber = do
+externalEventsListPage :: [Filter ExternalEvent] -> [SelectOpt ExternalEvent] -> (PageNumber -> Route App) -> PageNumber -> Handler Html
+externalEventsListPage filters sorters pageRoute pageNumber = do
   paginated <- runDB $ selectPaginated 10 filters sorters pageNumber
   today <- liftIO $ utctDay <$> getCurrentTime
   token <- genToken
