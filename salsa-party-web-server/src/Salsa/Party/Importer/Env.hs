@@ -14,16 +14,20 @@ import Data.Aeson.Types as JSON
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
+import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Time
 import Database.Persist
 import Database.Persist.Sql
 import GHC.Generics (Generic)
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.Internal as HTTP
+import Network.URI
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation
+import Salsa.Party.Web.Server.Poster
 import System.Random (randomRIO)
 import Text.Show.Pretty (ppShow)
 import UnliftIO
@@ -205,3 +209,35 @@ userAgentList =
     "Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/13.0.782.112 Safari/535.1",
     "Mozilla/4.0 (compatible; MSIE 6.0; MSIE 5.5; Windows NT 5.0) Opera 7.02 Bork-edition [en]"
   ]
+
+tryToImportImage :: URI -> Import (Maybe ImageId)
+tryToImportImage uri = do
+  case requestFromURI uri of
+    Nothing -> pure Nothing
+    Just request -> do
+      errOrResponse <- doHttpRequest request
+      case errOrResponse of
+        Left _ -> pure Nothing
+        Right response -> do
+          case TE.decodeUtf8' $ fromMaybe "image/jpeg" $ lookup "Content-Type" (responseHeaders response) of
+            Left _ -> pure Nothing
+            Right contentType -> do
+              let imageBlob = LB.toStrict $ responseBody response
+              case posterCropImage contentType imageBlob of
+                Left _ -> pure Nothing -- TODO log error
+                Right (convertedImageType, convertedImageBlob) -> do
+                  let casKey = mkCASKey convertedImageType convertedImageBlob
+                  now <- liftIO getCurrentTime
+                  Entity imageId _ <-
+                    importDB $
+                      upsertBy
+                        (UniqueImageKey casKey)
+                        ( Image
+                            { imageKey = casKey,
+                              imageTyp = convertedImageType,
+                              imageBlob = convertedImageBlob,
+                              imageCreated = now
+                            }
+                        )
+                        [] -- No need to update anything, the casKey makes the image unique.
+                  pure $ Just imageId

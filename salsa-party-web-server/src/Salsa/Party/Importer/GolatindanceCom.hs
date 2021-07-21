@@ -61,6 +61,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Types as HTTP
+import Network.URI
 import Salsa.Party.Importer.Import
 import Salsa.Party.Web.Server.Geocoding
 import qualified Text.HTML.TagSoup as HTML
@@ -90,7 +91,6 @@ func = do
       .| parseJSONLDPieces
       .| parseJSONLDEvents
       .| importJSONLDEvents
-      .| C.mapM_ (liftIO . print)
 
 categories :: [Text]
 categories =
@@ -216,7 +216,7 @@ parseJSONLDEvents = awaitForever $ \(uri, value) ->
     Left err ->
       -- TODO check for the type before we start to try parsing?
       -- We don't need to log errors for every error because some are expected.
-      logErrorNS logname $
+      logDebugNS logname $
         T.pack $
           unlines
             [ unwords ["Unable to parse JSON value as JSONLD Event:", err],
@@ -224,13 +224,12 @@ parseJSONLDEvents = awaitForever $ \(uri, value) ->
             ]
     Right event -> yieldMany $ map ((,) uri) event
 
-importJSONLDEvents :: ConduitT (HTTP.Request, LD.Event) () Import ()
+importJSONLDEvents :: ConduitT (HTTP.Request, LD.Event) Void Import ()
 importJSONLDEvents = awaitForever $ \(request, event) -> do
   -- We use this 'unescapeHtml' function because
   -- there are still html entities in the tags that we get.
   -- I'm not sure whether that's a mistake on their part or on ours, but it's definitely weird.
   let unescapeHtml = HTML.innerText . HTML.parseTags
-  liftIO $ print event
   externalEventUuid <- nextRandomUUID
   -- This is not ideal, because the URL could change, in which case we'll
   -- duplicate the event, but we don't have anything better it seems.
@@ -307,4 +306,24 @@ importJSONLDEvents = awaitForever $ \(request, event) -> do
     Just (Entity externalEventPlace _) -> do
       externalEventImporter <- Just <$> asks importEnvId
       let externalEventOrigin = T.pack $ show $ getUri request
-      lift $ importExternalEvent ExternalEvent {..}
+      lift $
+        importExternalEventAnd ExternalEvent {..} $ \externalEventId -> do
+          forM_ (listToMaybe (LD.eventImages event)) $ \eventImage -> case eventImage of
+            LD.EventImageURL t -> case parseURI $ T.unpack t of
+              Nothing -> pure ()
+              Just uri -> do
+                mImageId <- tryToImportImage uri
+                forM_ mImageId $ \imageId -> do
+                  importDB $
+                    upsertBy
+                      (UniqueExternalEventPoster externalEventId)
+                      ( ExternalEventPoster
+                          { externalEventPosterExternalEvent = externalEventId,
+                            externalEventPosterImage = imageId,
+                            externalEventPosterCreated = now,
+                            externalEventPosterModified = Nothing
+                          }
+                      )
+                      [ ExternalEventPosterImage =. imageId,
+                        ExternalEventPosterModified =. Just now
+                      ]
