@@ -90,7 +90,7 @@ in
                     description = "The google Search Console verification code";
                   };
                   events-info-importer = mkLooperOption "events-info-importer";
-                  dance-us-org-importer = mkLooperOption "dance-us-org-importer";
+                  golatindance-com-importer = mkLooperOption "golatindance-com-importer";
                 };
             });
           default = null;
@@ -137,7 +137,7 @@ in
           (nullOrOption "google-analytics-tracking" google-analytics-tracking)
           (nullOrOption "google-search-console-verification" google-search-console-verification)
           (nullOrOption "events-info-importer" events-info-importer)
-          (nullOrOption "dance-us-org-importer" dance-us-org-importer)
+          (nullOrOption "golatindance-com-importer" golatindance-com-importer)
           cfg.web-server.config
         ];
       web-server-config-file = toYamlFile "salsa-web-server-config" web-server-config;
