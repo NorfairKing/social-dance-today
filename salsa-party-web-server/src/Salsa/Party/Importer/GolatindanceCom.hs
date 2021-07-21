@@ -235,22 +235,7 @@ importJSONLDEvents = awaitForever $ \(request, event) -> do
               Nothing -> uriText
               Just suffix -> suffix
   let externalEventTitle = unescapeHtml $ LD.eventName event
-  -- For the desciption we even unescape twice because there is html like '<p>' in there.
-  -- We also get rid of any literal "\n" strings.
-  let cleanupDescription =
-        T.replace "Event Video Preview..." ""
-          . T.replace "..." ""
-          . T.replace "\\r" "\n"
-          . T.replace "\\n" "\n"
-          . T.replace "\\'" "'"
-          . T.strip
-          . unescapeHtml
-  let externalEventDescription =
-        -- Get rid of empty descriptions.
-        case fromMaybe "" $ LD.eventDescription event of
-          "" -> Nothing
-          t -> Just $ cleanupDescription $ unescapeHtml t
-
+  let externalEventDescription = Nothing
   let externalEventOrganiser = do
         eventOrganizer <- LD.eventOrganizer event
         case eventOrganizer of

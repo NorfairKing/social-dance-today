@@ -76,7 +76,9 @@ locations =
     --  * Asia
     --  * Africa
     --  * Australia
-    Location {locationPlace = Place {placeQuery = "Sydney", placeLat = -33.8888621, placeLon = 151.204897861}}
+    Location {locationPlace = Place {placeQuery = "Sydney", placeLat = -33.8888621, placeLon = 151.204897861}},
+    Location {locationPlace = Place {placeQuery = "Melbourne", placeLat = -37.814217600, placeLon = 144.963160800}},
+    Location {locationPlace = Place {placeQuery = "Toronto", placeLat = 43.653481700, placeLon = -79.383934700}}
   ]
 
 cleanupOldExternalEvents :: MonadIO m => SqlPersistT m ()
