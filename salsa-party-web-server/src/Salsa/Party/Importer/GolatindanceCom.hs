@@ -74,9 +74,6 @@ golatindanceComImporter =
       importerFunc = func
     }
 
-logname :: LogSource
-logname = "Importer-golatindance.com"
-
 func :: Import ()
 func = do
   runConduit $
@@ -153,7 +150,7 @@ logRequestErrors ::
     Import
     ()
 logRequestErrors = awaitForever $ \(request, errOrResponse) -> case errOrResponse of
-  Left err -> logErrorNS logname $ T.pack $ unlines ["Error while fetching calendar page: " <> ppShow err]
+  Left err -> logErrorN $ T.pack $ unlines ["Error while fetching calendar page: " <> ppShow err]
   Right response -> yield (request, response)
 
 parseUrlsInCalendars :: ConduitT (HTTP.Request, Response LB.ByteString) Text Import ()
@@ -213,15 +210,14 @@ parseJSONLDEvents ::
     ()
 parseJSONLDEvents = awaitForever $ \(uri, value) ->
   case ((: []) <$> JSON.parseEither parseJSON value) <|> JSON.parseEither parseJSON value of
-    Left err ->
-      -- TODO check for the type before we start to try parsing?
-      -- We don't need to log errors for every error because some are expected.
-      logDebugNS logname $
-        T.pack $
-          unlines
-            [ unwords ["Unable to parse JSON value as JSONLD Event:", err],
-              ppShow value
-            ]
+    Left _ ->
+      -- We don't log this error.
+      -- We _could_ log it if we were sure that it represented a failure in our event
+      -- but as it stands we cannot be sure of that.
+      --
+      -- TODO: Maybe we could try checkning for the type of what we are parsing?
+      -- JSONLD uses an @type field so that could work.
+      pure ()
     Right event -> yieldMany $ map ((,) uri) event
 
 importJSONLDEvents :: ConduitT (HTTP.Request, LD.Event) Void Import ()
@@ -233,14 +229,18 @@ importJSONLDEvents = awaitForever $ \(request, event) -> do
   externalEventUuid <- nextRandomUUID
   -- This is not ideal, because the URL could change, in which case we'll
   -- duplicate the event, but we don't have anything better it seems.
-  let externalEventKey = T.pack $ show $ getUri request
+  let externalEventKey =
+        let uriText = T.pack $ show $ getUri request
+         in case T.stripPrefix "https://golatindance.com/event/" uriText of
+              Nothing -> uriText
+              Just suffix -> suffix
   let externalEventTitle = unescapeHtml $ LD.eventName event
   -- For the desciption we even unescape twice because there is html like '<p>' in there.
   -- We also get rid of any literal "\n" strings.
   let cleanupDescription =
         T.replace "Event Video Preview..." ""
           . T.replace "..." ""
-          . T.replace "\\n" "\n"
+          . T.replace "\\r" "\n"
           . T.replace "\\n" "\n"
           . T.replace "\\'" "'"
           . T.strip
@@ -302,7 +302,7 @@ importJSONLDEvents = awaitForever $ \(request, event) -> do
               app <- asks importEnvApp
               runReaderT (lookupPlaceRaw address) app
   case mPlaceEntity of
-    Nothing -> logWarnNS logname "Place not found."
+    Nothing -> logWarnN "Place not found."
     Just (Entity externalEventPlace _) -> do
       externalEventImporter <- Just <$> asks importEnvId
       let externalEventOrigin = T.pack $ show $ getUri request

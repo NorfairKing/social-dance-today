@@ -67,7 +67,20 @@ runImporter a Importer {..} = do
             importEnvUserAgent = userAgent,
             importEnvRateLimiter = (limitConfig, rateLimiter)
           }
-  runReaderT (unImport importerFunc) env
+  logFunc <- askLoggerIO
+  let importerLogFunc loc source level str =
+        let source' =
+              if source == ""
+                then "importer-" <> importerName
+                else source
+         in logFunc loc source' level str
+  liftIO $
+    runLoggingT
+      ( runReaderT
+          (unImport importerFunc)
+          env
+      )
+      importerLogFunc
 
 newtype Import a = Import {unImport :: ReaderT ImportEnv (LoggingT IO) a}
   deriving
@@ -137,7 +150,7 @@ jsonRequestConduitWith = awaitForever $ \(c, request) -> do
   errOrResponse <- lift $ doHttpRequest request
   case errOrResponse of
     Left err ->
-      logErrorNS "Importer" $
+      logErrorN $
         T.unlines
           [ "HTTP Exception occurred.",
             "request:",
@@ -149,7 +162,7 @@ jsonRequestConduitWith = awaitForever $ \(c, request) -> do
       let body = responseBody response
       case JSON.eitherDecode body of
         Left err ->
-          logErrorNS "Importer" $
+          logErrorN $
             T.unlines
               [ "Invalid JSON:" <> T.pack err,
                 T.pack (show body)
@@ -157,7 +170,7 @@ jsonRequestConduitWith = awaitForever $ \(c, request) -> do
         Right jsonValue ->
           case JSON.parseEither parseJSON jsonValue of
             Left err ->
-              logErrorNS "Importer" $
+              logErrorN $
                 T.unlines
                   [ "Unable to parse JSON:" <> T.pack err,
                     T.pack $ ppShow jsonValue
@@ -174,7 +187,7 @@ doHttpRequest requestPrototype = do
   (limitConfig, rateLimiter) <- asks importEnvRateLimiter
   liftIO $ waitDebit limitConfig rateLimiter 10 -- Need 10 tokens
   let request = requestPrototype {requestHeaders = ("User-Agent", userAgent) : requestHeaders requestPrototype}
-  logInfoNS "Importer" $ "fetching: " <> T.pack (show (getUri request))
+  logInfoN $ "fetching: " <> T.pack (show (getUri request))
   liftIO $
     (Right <$> httpLbs request man)
       `catches` [ Handler $ \e -> pure (Left (toHttpException request e)),

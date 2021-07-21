@@ -36,6 +36,8 @@ runImporterLoopers Settings {..} app = do
         ]
       runDBHere :: SqlPersistT (LoggingT IO) a -> LoggingT IO a
       runDBHere = flip runSqlPool (appConnectionPool app)
+      -- TODO move the looper running double-check into the importers
+      -- Make sure to get rid of the log sources when we do that.
       looperRunner LooperDef {..} = do
         -- We double-check whether to run the importer because we don't want to
         -- bash any external sites should the importers or the webserver
