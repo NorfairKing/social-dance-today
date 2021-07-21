@@ -82,7 +82,12 @@ getAdminImporterEventsR :: ImporterMetadataId -> Handler Html
 getAdminImporterEventsR importerId = redirect $ AdminR $ AdminImporterEventsPageR importerId paginatedFirstPage
 
 getAdminImporterEventsPageR :: ImporterMetadataId -> PageNumber -> Handler Html
-getAdminImporterEventsPageR importerId = externalEventsListPage [ExternalEventImporter ==. Just importerId] [Asc ExternalEventDay, Asc ExternalEventId]
+getAdminImporterEventsPageR importerId =
+  externalEventsListPage
+    [ExternalEventImporter ==. Just importerId]
+    [ Asc ExternalEventDay,
+      Asc ExternalEventId
+    ]
 
 externalEventsListPage :: [Filter ExternalEvent] -> [SelectOpt ExternalEvent] -> PageNumber -> Handler Html
 externalEventsListPage filters sorters pageNumber = do
@@ -125,7 +130,7 @@ selectPaginated ::
   SqlPersistT Handler (Paginated (Entity a))
 selectPaginated pageSize filters opts paginatedCurrentPage = do
   paginatedTotalElements <- count filters
-  let paginatedTotalPages = ceiling $ fromIntegral paginatedTotalElements / (fromIntegral pageSize :: Double)
+  let paginatedTotalPages = floor (fromIntegral paginatedTotalElements / (fromIntegral pageSize :: Double)) + 1
   paginatedElements <- selectList filters $ OffsetBy ((paginatedCurrentPage - 1) * pageSize) : LimitTo pageSize : opts
   let paginatedPreviousPage = if paginatedCurrentPage <= paginatedFirstPage then Nothing else Just $ pred paginatedCurrentPage
   let paginatedLastPage = paginatedTotalPages

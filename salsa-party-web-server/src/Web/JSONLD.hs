@@ -30,6 +30,7 @@ data Event = Event
     eventLocation :: !EventLocation,
     eventStartDate :: !EventStartDate,
     eventDescription :: !(Maybe Text),
+    eventUrl :: !(Maybe Text),
     eventEndDate :: !(Maybe EventEndDate),
     eventAttendanceMode :: !(Maybe EventAttendanceMode),
     eventStatus :: !(Maybe EventStatus),
@@ -51,6 +52,7 @@ instance ToJSON Event where
             "startDate" .= eventStartDate
           ],
           mField "description" eventDescription,
+          mField "url" eventUrl,
           mField "endDate" eventEndDate,
           mField "eventAttendanceMode" eventAttendanceMode,
           mField "eventStatus" eventStatus,
@@ -65,6 +67,7 @@ instance FromJSON Event where
       <*> o .: "location"
       <*> o .: "startDate"
       <*> o .:? "description"
+      <*> o .:? "url"
       <*> o .:? "endDate"
       <*> o .:? "eventAttendanceMode"
       <*> o .:? "eventStatus"
@@ -144,9 +147,9 @@ instance FromJSON PlaceAddress where
 -- https://schema.org/PostalAddress
 data PostalAddress = PostalAddress
   { postalAddressStreetAddress :: !(Maybe Text),
-    postalAddressCountry :: !(Maybe Text),
     postalAddressLocality :: !(Maybe Text),
-    postalAddressRegion :: !(Maybe Text)
+    postalAddressRegion :: !(Maybe Text),
+    postalAddressCountry :: !(Maybe Text)
   }
   deriving (Show, Eq, Generic)
 
@@ -156,9 +159,9 @@ instance FromJSON PostalAddress where
   parseJSON = withObject "PostalAddress" $ \o ->
     PostalAddress
       <$> o .:? "streetAddress"
-      <*> o .:? "addressCountry"
       <*> o .:? "addressLocality"
       <*> o .:? "addressRegion"
+      <*> o .:? "addressCountry"
 
 instance ToJSON PostalAddress where
   toJSON PostalAddress {..} =
@@ -166,9 +169,9 @@ instance ToJSON PostalAddress where
       concat
         [ ["@type" .= ("PostalAddress" :: Text)],
           mField "streetAddress" postalAddressStreetAddress,
-          mField "addressCountry" postalAddressCountry,
           mField "addressLocality" postalAddressLocality,
-          mField "addressRegion" postalAddressRegion
+          mField "addressRegion" postalAddressRegion,
+          mField "addressCountry" postalAddressCountry
         ]
 
 data PlaceGeo

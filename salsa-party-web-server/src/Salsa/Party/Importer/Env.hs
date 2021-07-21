@@ -92,6 +92,9 @@ importDB func = do
   logFunc <- askLoggerIO
   liftIO $ runLoggingT (runSqlPool func pool) logFunc
 
+importExternalEvent :: ExternalEvent -> Import ()
+importExternalEvent externalEvent = importExternalEventAnd externalEvent $ \_ -> pure ()
+
 -- Import an external event and run the given function if anything has changed.
 -- We use this extra function to import images but only if the event has changed.
 importExternalEventAnd :: ExternalEvent -> (ExternalEventId -> Import ()) -> Import ()
@@ -156,6 +159,9 @@ jsonRequestConduitWith = awaitForever $ \(c, request) -> do
                     T.pack $ ppShow jsonValue
                   ]
             Right a -> yield (c, a)
+
+doHttpRequestWith :: ConduitT HTTP.Request (HTTP.Request, Either HttpException (HTTP.Response LB.ByteString)) Import ()
+doHttpRequestWith = C.mapM (\req -> (,) req <$> doHttpRequest req)
 
 doHttpRequest :: HTTP.Request -> Import (Either HttpException (HTTP.Response LB.ByteString))
 doHttpRequest requestPrototype = do

@@ -96,6 +96,7 @@ partyToLDEvent renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
                 dateTimeTimeZone = Nothing
               },
       LD.eventDescription = partyDescription,
+      LD.eventUrl = Just $ renderUrl $ PartyR partyUuid,
       LD.eventEndDate = Nothing,
       LD.eventAttendanceMode = Just LD.OfflineEventAttendanceMode,
       LD.eventStatus =
@@ -188,6 +189,7 @@ externalEventToLDEvent renderUrl ExternalEvent {..} Place {..} mPosterKey =
                 dateTimeTimeZone = Nothing
               },
       LD.eventDescription = externalEventDescription,
+      LD.eventUrl = Just $ renderUrl $ PartyR externalEventUuid,
       LD.eventEndDate = Nothing,
       LD.eventAttendanceMode = Just LD.OfflineEventAttendanceMode,
       LD.eventStatus =
