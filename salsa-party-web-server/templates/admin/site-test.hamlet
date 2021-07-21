@@ -128,35 +128,38 @@ $maybe (siteTest, result) <- mSiteTest
       <h3 .title .is-5>
         JSON Linked Data
       $case siteTestResultJSONLD result
-        $of NoJSONLD
+        $of []
           <p .content>
-            Page not found.
-        $of ErrJSONLD  err
-          <p .content>
-            Error while trying to find the JSON LD:
-            <details>
-              <pre>
-                #{err}
-        $of JSONLD value e
-          <p .content>
-            Found a JSON LD tag with valid JSON, but it was not an event.
-            This means that it either contains something different, or that our event parser is broken for this page:
-            <details>
-              <pre>
-                #{TE.decodeUtf8 $ LB.toStrict $ encodePretty value}
-            <details>
-              <summary>
-                Error message
-              <pre>
-                #{e}
-        $of JSONLDEvent event
-          <p .content>
-            Found a JSON LD Event on this page, this means the event is machine readible:
-            <details>
-              <summary>
-                Event
-              <pre>
-                #{ppShow event}
+            No Linked data found
+        $of l
+          $forall result <- l
+            $case result
+              $of ErrJSONLD err
+                <p .content>
+                  Error while trying to find the JSON LD:
+                  <details>
+                    <pre>
+                      #{err}
+              $of ErrJSONValue value e
+                <p .content>
+                  Found a JSON LD tag with valid JSON, but it was not an event or list of events.
+                  This means that it either contains something different, or that our event parser is broken for this page:
+                  <details>
+                    <pre>
+                      #{TE.decodeUtf8 $ LB.toStrict $ encodePretty value}
+                  <details>
+                    <summary>
+                      Error message
+                    <pre>
+                      #{e}
+              $of JSONLD event
+                <p .content>
+                  Found a JSON LD Event on this page, this means the event is machine readible:
+                  <details>
+                    <summary>
+                      Event
+                    <pre>
+                      #{ppShow event}
 
       <h3 .title .is-5>
         JSON

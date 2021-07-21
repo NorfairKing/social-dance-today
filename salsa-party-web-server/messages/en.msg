@@ -88,7 +88,7 @@ RegistrationPassphraseLabel: Passphrase
 RegistrationConfirmPassphraseLabel: Confirm Passphrase
 RegistrationSignUpButton: Sign up
 RegistrationLogInButton: Log in
-RegistrationErrorAccountAlreadyExists: An account with this username already exists.
+RegistrationErrorAccountAlreadyExists: An account with this email address already exists.
 
 # Login
 LoginTitle: Salsa Parties Today: Login

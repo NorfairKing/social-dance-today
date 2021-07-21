@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -66,6 +65,7 @@ import Salsa.Party.Importer.Import
 import Salsa.Party.Web.Server.Geocoding
 import qualified Text.HTML.TagSoup as HTML
 import qualified Web.JSONLD as LD
+import qualified Web.JSONLD.Parse as LD
 
 golatindanceComImporter :: Importer
 golatindanceComImporter =
@@ -172,35 +172,13 @@ parseJSONLDPieces :: ConduitT (Request, Response LB.ByteString) (Request, JSON.V
 parseJSONLDPieces = C.concatMap $ \(request, response) -> do
   let c = HTTP.statusCode (responseStatus response)
   guard $ 200 <= c && c < 300
-  let pieces = groupIntoJSONLDPieces $ HTML.parseTags $ responseBody response
+  let pieces = LD.groupIntoJSONLDPieces $ HTML.parseTags $ responseBody response
   -- Newer bytestring libraries actually have more efficient versions of
   -- LB8.dropWhile Char.isSpace
   -- Indeed what we want is a LB.strip instead.
   let bytestrings = map (LB8.dropWhile Char.isSpace . HTML.innerText) pieces
   value <- mapMaybe JSON.decode bytestrings
   pure (request, value)
-
-groupIntoJSONLDPieces :: forall str. (Eq str, IsString str) => [HTML.Tag str] -> [[HTML.Tag str]]
-groupIntoJSONLDPieces = lookForStart
-  where
-    lookForStart :: [HTML.Tag str] -> [[HTML.Tag str]]
-    lookForStart stream = case dropWhile (not . isStartingTag) stream of
-      [] -> [] -- Stop looking because there is no starting tag.
-      (_startingTag : rest) -> lookForEnd rest
-    lookForEnd :: [HTML.Tag str] -> [[HTML.Tag str]]
-    lookForEnd stream =
-      let (pieces, rest) = break isEndingTag stream
-       in case pieces of
-            [] -> [] -- Stop looking.
-            _ -> case rest of
-              [] -> [pieces] -- Stop looking
-              (_endingTag : restrest) -> pieces : lookForStart restrest
-    isStartingTag = \case
-      HTML.TagOpen "script" attributes -> ("type", "application/ld+json") `elem` attributes
-      _ -> False
-    isEndingTag = \case
-      HTML.TagClose "script" -> True
-      _ -> False
 
 parseJSONLDEvents ::
   ConduitT
@@ -246,69 +224,75 @@ importJSONLDEvents = awaitForever $ \(request, event) -> do
         LD.EventStartDateTime dateTime ->
           let LocalTime d tod = LD.dateTimeLocalTime dateTime
            in (d, Just tod)
-  -- It's probably possible to find this on the event page, but not in the event LD
-  let externalEventHomepage = Nothing
-  -- It's probably possible to find this on the event page, but not in the event LD
-  let externalEventPrice = Nothing
-  -- TODO the events may contain an attendance mode but in this case they don't seem to.
-  -- We may want to try and parse it anyway in case that changes or we use this function somewhere else.
-  let externalEventCancelled = False
-  now <- liftIO getCurrentTime
-  let externalEventCreated = now
-  let externalEventModified = Nothing
-  mPlaceEntity <- case LD.eventLocation event of
-    LD.EventLocationPlace place ->
-      let address = case LD.placeAddress place of
-            LD.PlaceAddressText t -> unescapeHtml t
-            LD.PlaceAddressPostalAddress postalAddress ->
-              unescapeHtml $
-                T.unwords $
-                  catMaybes
-                    [ LD.postalAddressStreetAddress postalAddress,
-                      LD.postalAddressLocality postalAddress,
-                      LD.postalAddressRegion postalAddress,
-                      LD.postalAddressCountry postalAddress
-                    ]
-       in case LD.placeGeo place of
-            Just (LD.PlaceGeoCoordinates geoCoordinates) ->
-              fmap Just $
-                lift $
-                  importDB $
-                    upsertBy
-                      (UniquePlaceQuery address)
-                      ( Place
-                          { placeQuery = address,
-                            placeLat = LD.geoCoordinatesLatitude geoCoordinates,
-                            placeLon = LD.geoCoordinatesLongitude geoCoordinates
-                          }
-                      )
-                      [] -- Don't change if it's already there, so that they can't fill our page with junk.
-            Nothing -> lift $ do
-              app <- asks importEnvApp
-              runReaderT (lookupPlaceRaw address) app
-  case mPlaceEntity of
-    Nothing -> logWarnN "Place not found."
-    Just (Entity externalEventPlace _) -> do
-      externalEventImporter <- Just <$> asks importEnvId
-      let externalEventOrigin = T.pack $ show $ getUri request
-      lift $
-        importExternalEventAnd ExternalEvent {..} $ \externalEventId -> do
-          forM_ (listToMaybe (LD.eventImages event)) $ \eventImage -> case eventImage of
-            LD.EventImageURL t -> case parseURI $ T.unpack t of
-              Nothing -> pure ()
-              Just uri -> do
-                mImageId <- tryToImportImage uri
-                forM_ mImageId $ \imageId -> do
-                  importDB $
-                    upsertBy
-                      (UniqueExternalEventPoster externalEventId)
-                      ( ExternalEventPoster
-                          { externalEventPosterExternalEvent = externalEventId,
-                            externalEventPosterImage = imageId,
-                            externalEventPosterCreated = now,
-                            externalEventPosterModified = Nothing
-                          }
-                      )
-                      [ ExternalEventPosterImage =. imageId,
-                        ExternalEventPosterModified =. Just now
-                      ]
+  today <- liftIO $ utctDay <$> getCurrentTime
+  -- If the event is in the past, don't import it.
+  -- We add '-1' to today to be safe with timezones that are way behind UTC.
+  if externalEventDay < addDays (-1) today
+    then pure ()
+    else do
+      -- It's probably possible to find this on the event page, but not in the event LD
+      let externalEventHomepage = Nothing
+      -- It's probably possible to find this on the event page, but not in the event LD
+      let externalEventPrice = Nothing
+      -- TODO the events may contain an attendance mode but in this case they don't seem to.
+      -- We may want to try and parse it anyway in case that changes or we use this function somewhere else.
+      let externalEventCancelled = False
+      now <- liftIO getCurrentTime
+      let externalEventCreated = now
+      let externalEventModified = Nothing
+      mPlaceEntity <- case LD.eventLocation event of
+        LD.EventLocationPlace place ->
+          let address = case LD.placeAddress place of
+                LD.PlaceAddressText t -> unescapeHtml t
+                LD.PlaceAddressPostalAddress postalAddress ->
+                  unescapeHtml $
+                    T.unwords $
+                      catMaybes
+                        [ LD.postalAddressStreetAddress postalAddress,
+                          LD.postalAddressLocality postalAddress,
+                          LD.postalAddressRegion postalAddress,
+                          LD.postalAddressCountry postalAddress
+                        ]
+           in case LD.placeGeo place of
+                Just (LD.PlaceGeoCoordinates geoCoordinates) ->
+                  fmap Just $
+                    lift $
+                      importDB $
+                        upsertBy
+                          (UniquePlaceQuery address)
+                          ( Place
+                              { placeQuery = address,
+                                placeLat = LD.geoCoordinatesLatitude geoCoordinates,
+                                placeLon = LD.geoCoordinatesLongitude geoCoordinates
+                              }
+                          )
+                          [] -- Don't change if it's already there, so that they can't fill our page with junk.
+                Nothing -> lift $ do
+                  app <- asks importEnvApp
+                  runReaderT (lookupPlaceRaw address) app
+      case mPlaceEntity of
+        Nothing -> logWarnN "Place not found."
+        Just (Entity externalEventPlace _) -> do
+          externalEventImporter <- Just <$> asks importEnvId
+          let externalEventOrigin = T.pack $ show $ getUri request
+          lift $
+            importExternalEventAnd ExternalEvent {..} $ \externalEventId -> do
+              forM_ (listToMaybe (LD.eventImages event)) $ \eventImage -> case eventImage of
+                LD.EventImageURL t -> case parseURI $ T.unpack t of
+                  Nothing -> pure ()
+                  Just uri -> do
+                    mImageId <- tryToImportImage uri
+                    forM_ mImageId $ \imageId -> do
+                      importDB $
+                        upsertBy
+                          (UniqueExternalEventPoster externalEventId)
+                          ( ExternalEventPoster
+                              { externalEventPosterExternalEvent = externalEventId,
+                                externalEventPosterImage = imageId,
+                                externalEventPosterCreated = now,
+                                externalEventPosterModified = Nothing
+                              }
+                          )
+                          [ ExternalEventPosterImage =. imageId,
+                            ExternalEventPosterModified =. Just now
+                          ]

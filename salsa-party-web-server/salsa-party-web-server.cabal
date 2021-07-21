@@ -54,6 +54,7 @@ library
       Salsa.Party.Web.Server.Static.TH
       Salsa.Party.Web.Server.Widget
       Web.JSONLD
+      Web.JSONLD.Parse
   other-modules:
       Paths_salsa_party_web_server
   hs-source-dirs:

@@ -27,6 +27,7 @@ import Salsa.Party.Web.Server.Handler.Import
 import qualified Text.HTML.TagSoup as HTML
 import qualified Text.XML as XML
 import qualified Web.JSONLD as LD
+import qualified Web.JSONLD.Parse as LD
 
 getAdminSiteTestR :: Handler Html
 getAdminSiteTestR = adminSiteTesterPage Nothing
@@ -62,7 +63,7 @@ runSiteTest SiteTest {..} = do
 data SiteTestResult = SiteTestResult
   { siteTestResultRobotsTxt :: !RobotsTxtResult,
     siteTestResultSitemapXml :: !SitemapXmlResult,
-    siteTestResultJSONLD :: !JSONLDResult,
+    siteTestResultJSONLD :: ![JSONLDResult],
     siteTestAcceptJSON :: !AcceptJSONResult,
     siteTestAcceptXML :: !AcceptXMLResult
   }
@@ -111,37 +112,31 @@ testSitemapXml siteTestUrl = do
               Right document -> SitemapXml (getUri request) document
 
 data JSONLDResult
-  = NoJSONLD
-  | ErrJSONLD !String
-  | JSONLD !JSON.Value !String -- Value and error message
-  | JSONLDEvent !LD.Event
+  = ErrJSONLD !String
+  | ErrJSONValue !JSON.Value String -- Value and error message or event
+  | JSONLD [LD.Event]
   deriving (Show, Eq, Generic)
 
-testJSONLD :: Text -> Handler JSONLDResult
+testJSONLD :: Text -> Handler [JSONLDResult]
 testJSONLD siteTestUrl = do
   request <- parseRequest $ T.unpack siteTestUrl
   errOrResponse <- handleRequest request
   pure $ case errOrResponse of
-    Left err -> ErrJSONLD $ ppShow err
+    Left err -> [ErrJSONLD $ ppShow err]
     Right response ->
       let c = HTTP.statusCode $ responseStatus response
        in if c >= 400 && c < 500
-            then NoJSONLD
+            then []
             else
               let tags = HTML.parseTags $ responseBody response
-                  isStartingTag = \case
-                    HTML.TagOpen "script" attributes -> ("type", "application/ld+json") `elem` attributes
-                    _ -> False
-                  isEndingTag = \case
-                    HTML.TagClose "script" -> True
-                    _ -> False
-                  relevantTags = takeWhile (not . isEndingTag) $ dropWhile (not . isStartingTag) tags
-                  scriptBody = HTML.innerText relevantTags
-               in case JSON.eitherDecode scriptBody of
-                    Left err -> ErrJSONLD $ ppShow err
-                    Right value -> case JSON.parseEither parseJSON value of
-                      Left e -> JSONLD value e
-                      Right e -> JSONLDEvent e
+                  groups = LD.groupIntoJSONLDPieces tags
+               in flip map groups $ \tagGroup ->
+                    let scriptBody = HTML.innerText tagGroup
+                     in case JSON.eitherDecode scriptBody of
+                          Left err -> ErrJSONLD $ ppShow err
+                          Right value -> case ((: []) <$> JSON.parseEither parseJSON value) <|> JSON.parseEither parseJSON value of
+                            Left e -> ErrJSONValue value e
+                            Right e -> JSONLD e
 
 data AcceptJSONResult
   = ErrAcceptJSON !String
