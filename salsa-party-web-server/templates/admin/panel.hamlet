@@ -67,7 +67,9 @@
           <th>
             Title
           <th width=250px>
-            Last Run
+            Last Run Start
+          <th width=250px>
+            Last Run End
           <th width=50px>
             Events
           <th width=50px>
@@ -78,7 +80,9 @@
             <td>
               #{importerMetadataName importer}
             <td>
-              #{formatTime timeLocale prettyDateTimeFormat $ importerMetadataLastRun importer}
+              #{formatTime timeLocale prettyDateTimeFormat $ importerMetadataLastRunStart importer}
+            <td>
+              #{maybe "" (formatTime timeLocale prettyDateTimeFormat) $ importerMetadataLastRunEnd importer}
             <td>
               <a .button href=@{AdminR $ AdminImporterEventsR importerId}>
                 Events

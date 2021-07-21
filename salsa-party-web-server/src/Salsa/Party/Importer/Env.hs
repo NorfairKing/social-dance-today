@@ -43,13 +43,18 @@ runImporter a Importer {..} = do
   let runDBHere :: SqlPersistT (LoggingT IO) a -> LoggingT IO a
       runDBHere = flip runSqlPool (appConnectionPool a)
 
-  now <- liftIO getCurrentTime
+  begin <- liftIO getCurrentTime
   Entity importerId _ <-
     runDBHere $
       upsertBy
         (UniqueImporterMetadataName importerName)
-        (ImporterMetadata {importerMetadataName = importerName, importerMetadataLastRun = now})
-        [ImporterMetadataLastRun =. now]
+        ( ImporterMetadata
+            { importerMetadataName = importerName,
+              importerMetadataLastRunStart = begin,
+              importerMetadataLastRunEnd = Nothing
+            }
+        )
+        [ImporterMetadataLastRunStart =. begin]
 
   userAgent <- liftIO chooseUserAgent
   let limitConfig =
@@ -74,6 +79,7 @@ runImporter a Importer {..} = do
                 then "importer-" <> importerName
                 else source
          in logFunc loc source' level str
+
   liftIO $
     runLoggingT
       ( runReaderT
@@ -81,6 +87,22 @@ runImporter a Importer {..} = do
           env
       )
       importerLogFunc
+
+  end <- liftIO getCurrentTime
+  -- We don't just use 'update' here because the admin could have deleted this metadata in the meantime.
+  void $
+    runDBHere $
+      upsertBy
+        (UniqueImporterMetadataName importerName)
+        ( ImporterMetadata
+            { importerMetadataName = importerName,
+              importerMetadataLastRunStart = begin,
+              importerMetadataLastRunEnd = Just end
+            }
+        )
+        [ ImporterMetadataLastRunStart =. begin,
+          ImporterMetadataLastRunEnd =. Just end
+        ]
 
 newtype Import a = Import {unImport :: ReaderT ImportEnv (LoggingT IO) a}
   deriving

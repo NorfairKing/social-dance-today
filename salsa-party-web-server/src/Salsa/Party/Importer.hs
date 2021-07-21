@@ -45,7 +45,7 @@ runImporterLoopers Settings {..} app = do
         logInfoNS looperDefName "Checking whether to run"
         now <- liftIO getCurrentTime
         mImporterMetadata <- runDBHere $ getBy $ UniqueImporterMetadataName looperDefName
-        let mLastRun = importerMetadataLastRun . entityVal <$> mImporterMetadata
+        let mLastRun = importerMetadataLastRunStart . entityVal <$> mImporterMetadata
         shouldRun <- case mLastRun of
           Nothing -> do
             logDebugNS looperDefName "Definitely running because it's never run before"
