@@ -50,23 +50,20 @@ module Salsa.Party.Importer.GolatindanceCom (golatindanceComImporter) where
 import Conduit
 import Control.Applicative
 import Data.Aeson as JSON
-import Data.Aeson.Encode.Pretty as JSON
 import Data.Aeson.Types as JSON
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.ByteString.Lazy.Char8 as LB8
 import Data.Char as Char
 import qualified Data.Conduit.Combinators as C
-import Data.Default
 import Data.Maybe
 import Data.String
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Types as HTTP
-import Network.URI
 import Salsa.Party.Importer.Import
+import Salsa.Party.Web.Server.Geocoding
 import qualified Text.HTML.TagSoup as HTML
-import Text.ICalendar.Parser as ICal
 import qualified Web.JSONLD as LD
 
 golatindanceComImporter :: Importer
@@ -76,6 +73,7 @@ golatindanceComImporter =
       importerFunc = func
     }
 
+logname :: LogSource
 logname = "Importer-golatindance.com"
 
 func :: Import ()
@@ -90,11 +88,6 @@ func = do
       .| doHttpRequestWith
       .| logRequestErrors
       .| parseJSONLDPieces
-      .| C.mapM
-        ( \(req, val) -> do
-            liftIO $ LB.putStrLn $ JSON.encodePretty val
-            pure (req, val)
-        )
       .| parseJSONLDEvents
       .| importJSONLDEvents
       .| C.mapM_ (liftIO . print)
@@ -145,8 +138,13 @@ makeCalendarRequest :: Text -> Maybe HTTP.Request
 makeCalendarRequest city = do
   let baseUrl = "https://golatindance.com"
       categoryIcalUrl category = baseUrl <> "/events/category/" <> category <> "/list"
-  requestPrototype <- parseRequest $ categoryIcalUrl "london"
-  pure $ setQueryString [("tribe-bar-date", Just "2021-07-21"), ("ical", Just "1")] $ requestPrototype {requestHeaders = ("Accept", "application/calendar") : requestHeaders requestPrototype}
+  requestPrototype <- parseRequest $ categoryIcalUrl $ T.unpack city
+  pure $
+    setQueryString
+      [ ("tribe-bar-date", Just "2021-07-21"),
+        ("ical", Just "1")
+      ]
+      $ requestPrototype {requestHeaders = ("Accept", "application/calendar") : requestHeaders requestPrototype}
 
 logRequestErrors ::
   ConduitT
@@ -253,9 +251,12 @@ importJSONLDEvents = awaitForever $ \(request, event) -> do
         case fromMaybe "" $ LD.eventDescription event of
           "" -> Nothing
           t -> Just $ cleanupDescription $ unescapeHtml t
-  -- TODO the events MAY contain an organisers but in this case they don't seem to.
-  -- We may want to try and parse it anyway in case that changes or we use this function somewhere else.
-  let externalEventOrganiser = Nothing
+
+  let externalEventOrganiser = do
+        eventOrganizer <- LD.eventOrganizer event
+        case eventOrganizer of
+          LD.EventOrganizerOrganization organization -> pure $ LD.organizationName organization
+
   let (externalEventDay, externalEventStart) = case LD.eventStartDate event of
         LD.EventStartDate d -> (d, Nothing)
         LD.EventStartDateTime dateTime ->
@@ -271,7 +272,7 @@ importJSONLDEvents = awaitForever $ \(request, event) -> do
   now <- liftIO getCurrentTime
   let externalEventCreated = now
   let externalEventModified = Nothing
-  Entity externalEventPlace _ <- case LD.eventLocation event of
+  mPlaceEntity <- case LD.eventLocation event of
     LD.EventLocationPlace place ->
       let address = case LD.placeAddress place of
             LD.PlaceAddressText t -> unescapeHtml t
@@ -286,17 +287,24 @@ importJSONLDEvents = awaitForever $ \(request, event) -> do
                     ]
        in case LD.placeGeo place of
             Just (LD.PlaceGeoCoordinates geoCoordinates) ->
-              lift $
-                importDB $
-                  upsertBy
-                    (UniquePlaceQuery address)
-                    ( Place
-                        { placeQuery = address,
-                          placeLat = LD.geoCoordinatesLatitude geoCoordinates,
-                          placeLon = LD.geoCoordinatesLongitude geoCoordinates
-                        }
-                    )
-                    [] -- Don't change if it's already there, so that they can't fill our page with junk.
-  externalEventImporter <- Just <$> asks importEnvId
-  let externalEventOrigin = T.pack $ show $ getUri request
-  lift $ importExternalEvent ExternalEvent {..}
+              fmap Just $
+                lift $
+                  importDB $
+                    upsertBy
+                      (UniquePlaceQuery address)
+                      ( Place
+                          { placeQuery = address,
+                            placeLat = LD.geoCoordinatesLatitude geoCoordinates,
+                            placeLon = LD.geoCoordinatesLongitude geoCoordinates
+                          }
+                      )
+                      [] -- Don't change if it's already there, so that they can't fill our page with junk.
+            Nothing -> lift $ do
+              app <- asks importEnvApp
+              runReaderT (lookupPlaceRaw address) app
+  case mPlaceEntity of
+    Nothing -> logWarnNS logname "Place not found."
+    Just (Entity externalEventPlace _) -> do
+      externalEventImporter <- Just <$> asks importEnvId
+      let externalEventOrigin = T.pack $ show $ getUri request
+      lift $ importExternalEvent ExternalEvent {..}
