@@ -14,7 +14,7 @@ import qualified OpenStreetMaps.Geocoding as OSM
 import Path
 import Path.IO
 import Salsa.Party.DB.Migration
-import Salsa.Party.Importer
+import Salsa.Party.Looper
 import Salsa.Party.OptParse
 import Salsa.Party.Web.Server
 import Salsa.Party.Web.Server.Application ()
@@ -60,5 +60,5 @@ runSalsaPartyServer settings@Settings {..} = do
                   appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
                 }
         concurrently_
-          (runImporterLoopers settings app)
+          (runLoopers settings app)
           (runSalsaPartyWebServer settings app)

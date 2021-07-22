@@ -89,6 +89,7 @@ in
                     default = null;
                     description = "The google Search Console verification code";
                   };
+                  image-garbage-collector = mkLooperOption "image-garbage-collector";
                   events-info-importer = mkLooperOption "events-info-importer";
                   golatindance-com-importer = mkLooperOption "golatindance-com-importer";
                 };
@@ -136,6 +137,7 @@ in
           (nullOrOption "google-api-key" google-api-key)
           (nullOrOption "google-analytics-tracking" google-analytics-tracking)
           (nullOrOption "google-search-console-verification" google-search-console-verification)
+          (nullOrOption "image-garbage-collector" image-garbage-collector)
           (nullOrOption "events-info-importer" events-info-importer)
           (nullOrOption "golatindance-com-importer" golatindance-com-importer)
           cfg.web-server.config
