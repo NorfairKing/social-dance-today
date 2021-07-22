@@ -104,6 +104,7 @@ library
     , pretty-show
     , random
     , resourcet
+    , retry
     , scientific
     , shakespeare
     , tagsoup
