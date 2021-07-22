@@ -31,10 +31,13 @@
 
   /users AdminUsersR GET
   /users/#PageNumber AdminUsersPageR GET
+
+  /user/#UserId AdminUserR GET
   /user/#UserId/impersonate AdminUserImpersonateR POST
   
   /organisers AdminOrganisersR GET
   /organisers/#PageNumber AdminOrganisersPageR GET
+
 
   /parties AdminPartiesR GET
   /parties/#PageNumber AdminPartiesPageR GET

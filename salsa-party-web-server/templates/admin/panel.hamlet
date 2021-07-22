@@ -25,6 +25,19 @@
       <a .button href=@{AdminR AdminSiteTestR}>
         Site Tester
 
+    <h2 .title .is-4>
+      Analytics
+
+    <div .buttons>
+      <a .button href="https://analytics.google.com/analytics/web/#/p275681125">
+        Google Analytics
+      <a .button href="https://search.google.com/search-console?resource_id=https://salsa-parties.today/">
+        Google Search Console
+      <a .button href="https://sentry.io/organizations/cs-kerckhove/projects/salsa-parties">
+        Sentry Apdex
+      <a .button href="https://sentry.io/organizations/cs-kerckhove/performance/?project=5875813">
+        Sentry Performance
+
 <section .section>
   <div .container>
     <h2 .title .is-4>

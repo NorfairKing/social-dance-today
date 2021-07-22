@@ -30,11 +30,27 @@ getAdminUsersR = redirect $ AdminR $ AdminUsersPageR paginatedFirstPage
 getAdminUsersPageR :: PageNumber -> Handler Html
 getAdminUsersPageR pageNumber = do
   paginated <- runDB $ selectPaginated 10 [] [Asc UserCreated, Asc UserId] pageNumber
-  token <- genToken
   withNavBar $ do
     setTitle "Salsa Users Admin Users"
     setDescription "Admin overview of the users"
     $(widgetFile "admin/users")
+
+getAdminUserR :: UserId -> Handler Html
+getAdminUserR userId = do
+  User {..} <- runDB $ get404 userId
+  mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
+  timeLocale <- getTimeLocale
+  today <- liftIO $ utctDay <$> getCurrentTime
+  token <- genToken
+  (partiesCount, upcomingPartiesCount, mLastParty) <- case mOrganiser of
+    Nothing -> pure (0, 0, Nothing)
+    Just (Entity organiserId _) ->
+      runDB $
+        (,,)
+          <$> count [PartyOrganiser ==. organiserId]
+          <*> count [PartyOrganiser ==. organiserId, PartyDay >=. today]
+          <*> selectFirst [PartyOrganiser ==. organiserId] [Desc PartyDay]
+  withNavBar $(widgetFile "admin/user")
 
 postAdminUserImpersonateR :: UserId -> Handler Html
 postAdminUserImpersonateR userId = do

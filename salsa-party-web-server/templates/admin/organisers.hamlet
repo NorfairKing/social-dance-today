@@ -17,12 +17,12 @@
           <th>
             Display Name
           <th width=50px>
-            Profile
+            Details
       <tbody>
         $forall Entity _ organiser <- paginatedElements paginated
           <tr>
             <td>
               #{organiserName organiser}
             <td>
-              <a .button href=@{OrganiserR $ organiserUuid organiser}>
-                Profile
+              <a .button href=@{AdminR $ AdminUserR $ organiserUser organiser}>
+                Details

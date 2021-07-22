@@ -1,0 +1,78 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      User: #{userEmailAddress}
+
+    <p .content>
+      Verified: 
+      $maybe _ <- userVerificationKey
+        No
+      $nothing
+        Yes
+
+    <p .content>
+      Created: 
+      #{formatTime timeLocale "%F %H:%M" userCreated}
+      (_{autoDayMsg today $ utctDay userCreated})
+
+    <p .content>
+      <form
+        method=post
+        action=@{AdminR $ AdminUserImpersonateR userId}>
+        ^{token}
+        <button .button .is-danger type=submit>
+          Impersonate
+
+$maybe Entity _ organiser <- mOrganiser
+  <section .section>
+    <div .container>
+      <h2 .title .is-4>
+        Organiser: #{organiserName organiser}
+
+
+      <p .content>
+        Created: 
+        #{formatTime timeLocale "%F %H:%M" $ organiserCreated organiser}
+        (_{autoDayMsg today $ utctDay $ organiserCreated organiser})
+      
+      $maybe modified <- organiserModified organiser
+        <p .content>
+          Modified: 
+          #{formatTime timeLocale "%F %H:%M" modified}
+          (_{autoDayMsg today $ utctDay modified})
+
+      <p .content>
+        Total Parties: #{partiesCount}
+
+      <p .content>
+        Upcoming Parties: #{upcomingPartiesCount}
+
+      <p .content>
+        <a .button href=@{OrganiserR $ organiserUuid organiser}>
+          Public Organiser Profile
+
+      $maybe Entity _ party <- mLastParty
+        <h3 .title .is-5>
+          Last party
+
+        <p .content>
+          Day: 
+          #{formatTime timeLocale "%F" $ partyDay party}
+          (_{autoDayMsg today $ partyDay party})
+
+        <p .content>
+          Created: 
+          #{formatTime timeLocale "%F %H:%M" $ partyCreated party}
+          (_{autoDayMsg today $ utctDay $ partyCreated party})
+        
+        $maybe modified <- partyModified party
+          <p .content>
+            Modified: 
+            #{formatTime timeLocale "%F %H:%M" modified}
+            (_{autoDayMsg today $ utctDay modified})
+          
+        <p .content>
+          <a .button href=@{PartyR $ partyUuid party}>
+            Public Party Profile
+
+

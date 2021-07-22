@@ -18,7 +18,7 @@
           <th width=50px>
             Verified
           <th width=50px>
-            Impersonate
+            Details
       <tbody>
         $forall Entity userId user <- paginatedElements paginated
           <tr>
@@ -30,9 +30,5 @@
               $nothing
                 Yes
             <td>
-              <form
-                method=post
-                action=@{AdminR $ AdminUserImpersonateR userId}>
-                ^{token}
-                <button .button .is-danger type=submit>
-                  Impersonate
+              <a .button href=@{AdminR $ AdminUserR userId}>
+                Details
