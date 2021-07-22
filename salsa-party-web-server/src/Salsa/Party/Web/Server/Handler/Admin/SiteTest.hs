@@ -133,7 +133,7 @@ testJSONLD siteTestUrl = do
                     let scriptBody = HTML.innerText tagGroup
                      in case JSON.eitherDecode scriptBody of
                           Left err -> ErrJSONLD $ ppShow err
-                          Right value -> case ((: []) <$> JSON.parseEither parseJSON value) <|> JSON.parseEither parseJSON value of
+                          Right value -> case JSON.parseEither parseJSON value <|> (: []) <$> JSON.parseEither parseJSON value of
                             Left e -> ErrJSONValue value e
                             Right e -> JSONLD e
 
