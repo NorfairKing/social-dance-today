@@ -33,10 +33,12 @@ setUpPlaces :: (MonadIO m, MonadLogger m) => SqlPersistT m ()
 setUpPlaces = do
   logInfoN "Setting up standard places in database"
   forM_ locations $ \Location {..} -> do
-    mPlace <- getBy (UniquePlaceQuery $ placeQuery locationPlace)
-    case mPlace of
-      Just _ -> pure ()
-      Nothing -> insert_ locationPlace
+    upsertBy
+      (UniquePlaceQuery (placeQuery locationPlace))
+      locationPlace
+      [ PlaceLat =. placeLat locationPlace,
+        PlaceLon =. placeLon locationPlace
+      ]
 
 data Location = Location
   { locationPlace :: Place
@@ -68,7 +70,7 @@ locations =
     Location {locationPlace = Place {placeQuery = "Toronto", placeLat = 43.653481700, placeLon = -79.383934700}},
     Location {locationPlace = Place {placeQuery = "Vancouver Canada", placeLat = 49.260872400, placeLon = -123.113952900}},
     --  ** United States
-    Location {locationPlace = Place {placeQuery = "New York", placeLat = 43.1561681, placeLon = -75.8449946}},
+    Location {locationPlace = Place {placeQuery = "New York", placeLat = 40.748551, placeLon = -73.9860367}},
     Location {locationPlace = Place {placeQuery = "Chicago", placeLat = 41.8336474, placeLon = -87.8723884}},
     Location {locationPlace = Place {placeQuery = "Miami", placeLat = 25.7824033, placeLon = -80.2645636}},
     Location {locationPlace = Place {placeQuery = "Los Angeles", placeLat = 34.0201598, placeLon = -118.6925951}},
