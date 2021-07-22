@@ -37,4 +37,4 @@ $maybe Entity _ place <- mPlace
             #{show $ placeLon place}
     
         <pre>
-          #{ppShow $ mkLocation place}
+          #{show $ mkLocation place},
