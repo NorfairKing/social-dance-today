@@ -70,10 +70,10 @@ data App = App
     appSendEmails :: !Bool,
     appAdmin :: !(Maybe Text),
     appOSMRateLimiter :: !(Maybe RateLimiter), -- Nothing means disabled.
+    appSentrySettings :: !(Maybe SentrySettings), -- Nothing means disabled.
     appGoogleAPIKey :: !(Maybe Text), -- Nothing means disabled.
     appGoogleAnalyticsTracking :: !(Maybe Text), -- Nothing means disabled.
-    appGoogleSearchConsoleVerification :: !(Maybe Text), -- Nothing means disabled.
-    appSentrySettings :: !(Maybe SentrySettings) -- Nothing means disabled.
+    appGoogleSearchConsoleVerification :: !(Maybe Text) -- Nothing means disabled.
   }
 
 mkMessage "App" "messages" "en"

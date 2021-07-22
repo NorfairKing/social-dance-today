@@ -89,6 +89,26 @@ in
                     default = null;
                     description = "The google Search Console verification code";
                   };
+                  sentry =
+                    mkOption {
+                      default = null;
+                      type =
+                        types.nullOr (types.submodule {
+                          options =
+                            {
+                              dsn = mkOption {
+                                type = types.str;
+                                example = "https://XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX@XXXXXXX.ingest.sentry.io/XXXXXXX";
+                                description = "The Sentry Data Source Name";
+                              };
+                              release = mkOption {
+                                type = types.str;
+                                example = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+                                description = "The Sentry Release";
+                              };
+                            };
+                        });
+                    };
                   image-garbage-collector = mkLooperOption "image-garbage-collector";
                   events-info-importer = mkLooperOption "events-info-importer";
                   golatindance-com-importer = mkLooperOption "golatindance-com-importer";
@@ -140,6 +160,7 @@ in
           (nullOrOption "image-garbage-collector" image-garbage-collector)
           (nullOrOption "events-info-importer" events-info-importer)
           (nullOrOption "golatindance-com-importer" golatindance-com-importer)
+          (nullOrOption "sentry" sentry)
           cfg.web-server.config
         ];
       web-server-config-file = toYamlFile "salsa-web-server-config" web-server-config;

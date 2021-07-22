@@ -65,10 +65,10 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingAdmin = flagAdmin <|> envAdmin <|> mc confAdmin
   let settingEnableOSMGeocoding = fromMaybe True $ flagEnableOSMGeocoding <|> envEnableOSMGeocoding <|> mc confEnableOSMGeocoding
   let settingEnableGoogleGeocoding = fromMaybe True $ flagEnableGoogleGeocoding <|> envEnableGoogleGeocoding <|> mc confEnableGoogleGeocoding
+  let settingSentrySettings = combineToSentrySettings flagSentryFlags envSentryEnvironment $ mc confSentryConfiguration
   let settingGoogleAPIKey = flagGoogleAPIKey <|> envGoogleAPIKey <|> mc confGoogleAPIKey
   let settingGoogleAnalyticsTracking = flagGoogleAnalyticsTracking <|> envGoogleAnalyticsTracking <|> mc confGoogleAnalyticsTracking
   let settingGoogleSearchConsoleVerification = flagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification
-  let settingSentrySettings = combineToSentrySettings flagSentryFlags envSentryEnvironment $ mc confSentryConfiguration
   let settingImageGarbageCollectorLooperSettings = deriveLooperSettings (seconds 30) (hours 24) flagImageGarbageCollectorLooperFlags envImageGarbageCollectorLooperEnvironment (mc confImageGarbageCollectorLooperConfiguration)
   let settingEventsInfoImportLooperSettings = deriveLooperSettings (minutes 1) (hours 24) flagEventsInfoImportLooperFlags envEventsInfoImportLooperEnvironment (mc confEventsInfoImportLooperConfiguration)
   let settingGolatindanceComImportLooperSettings = deriveLooperSettings (minutes 2) (hours 24) flagGolatindanceComImportLooperFlags envGolatindanceComImportLooperEnvironment (mc confGolatindanceComImportLooperConfiguration)
@@ -91,10 +91,10 @@ data Configuration = Configuration
     confAdmin :: !(Maybe Text),
     confEnableOSMGeocoding :: !(Maybe Bool),
     confEnableGoogleGeocoding :: !(Maybe Bool),
+    confSentryConfiguration :: !(Maybe SentryConfiguration),
     confGoogleAPIKey :: !(Maybe Text),
     confGoogleAnalyticsTracking :: !(Maybe Text),
     confGoogleSearchConsoleVerification :: !(Maybe Text),
-    confSentryConfiguration :: !(Maybe SentryConfiguration),
     confImageGarbageCollectorLooperConfiguration :: !(Maybe LooperConfiguration),
     confEventsInfoImportLooperConfiguration :: !(Maybe LooperConfiguration),
     confGolatindanceComImportLooperConfiguration :: !(Maybe LooperConfiguration)
@@ -115,10 +115,10 @@ instance YamlSchema Configuration where
         <*> optionalField "admin" "The email address of the admin user"
         <*> optionalField "enable-osm-geocoding" "Enable OpenStreetMaps Geocoding"
         <*> optionalField "enable-google-geocoding" "Enable Google Geocoding"
+        <*> optionalField "sentry" "Sentry configuration"
         <*> optionalField "google-api-key" "Google API key"
         <*> optionalField "google-analytics-tracking" "Google analytics tracking code"
         <*> optionalField "google-search-console-verification" "Google search console html element verification code"
-        <*> optionalField "sentry" "Sentry configuration"
         <*> optionalField "image-garbage-collector" "The image garbage collector looper"
         <*> optionalField "events-info-importer" "The events.info import looper"
         <*> optionalField "danceus-org-importer" "The danceus.org import looper"
@@ -161,10 +161,10 @@ data Environment = Environment
     envAdmin :: !(Maybe Text),
     envEnableOSMGeocoding :: !(Maybe Bool),
     envEnableGoogleGeocoding :: !(Maybe Bool),
+    envSentryEnvironment :: !SentryEnvironment,
     envGoogleAPIKey :: !(Maybe Text),
     envGoogleAnalyticsTracking :: !(Maybe Text),
     envGoogleSearchConsoleVerification :: !(Maybe Text),
-    envSentryEnvironment :: !SentryEnvironment,
     envImageGarbageCollectorLooperEnvironment :: !LooperEnvironment,
     envEventsInfoImportLooperEnvironment :: !LooperEnvironment,
     envGolatindanceComImportLooperEnvironment :: !LooperEnvironment
@@ -193,10 +193,10 @@ environmentParser =
       <*> Env.var (fmap Just . Env.str) "ADMIN" (mE <> Env.help "The email address of the admin user")
       <*> Env.var (fmap Just . Env.auto) "ENABLE_OSM_GEOCODING" (mE <> Env.help "Enable OpenStreetMaps Geocoding")
       <*> Env.var (fmap Just . Env.auto) "ENABLE_GOOGLE_GEOCODING" (mE <> Env.help "Enable Google Geocoding")
+      <*> sentryEnvironmentParser
       <*> Env.var (fmap Just . Env.str) "GOOGLE_API_KEY" (mE <> Env.help "Google api key")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_ANALYTICS_TRACKING" (mE <> Env.help "Google analytics tracking code")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (mE <> Env.help "Google search console html element verification code")
-      <*> sentryEnvironmentParser
       <*> looperEnvironmentParser "IMAGE_GARBAGE_COLLECTOR"
       <*> looperEnvironmentParser "EVENTS_INFO_IMPORTER"
       <*> looperEnvironmentParser "GOLATINDANCE_COM_IMPORTER"
@@ -245,10 +245,10 @@ data Flags = Flags
     flagAdmin :: !(Maybe Text),
     flagEnableOSMGeocoding :: !(Maybe Bool),
     flagEnableGoogleGeocoding :: !(Maybe Bool),
+    flagSentryFlags :: !SentryFlags,
     flagGoogleAPIKey :: !(Maybe Text),
     flagGoogleAnalyticsTracking :: !(Maybe Text),
     flagGoogleSearchConsoleVerification :: !(Maybe Text),
-    flagSentryFlags :: !SentryFlags,
     flagImageGarbageCollectorLooperFlags :: !LooperFlags,
     flagEventsInfoImportLooperFlags :: !LooperFlags,
     flagGolatindanceComImportLooperFlags :: !LooperFlags
@@ -353,6 +353,7 @@ parseFlags =
                 ]
             )
       )
+    <*> parseSentryFlags
     <*> optional
       ( strOption
           ( mconcat
@@ -380,7 +381,6 @@ parseFlags =
               ]
           )
       )
-    <*> parseSentryFlags
     <*> getLooperFlags "image-garbage-collector"
     <*> getLooperFlags "events-info-importer"
     <*> getLooperFlags "dance-us-importer"

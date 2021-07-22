@@ -60,6 +60,7 @@ serverSetupFunc man = do
         appSendEmails = False,
         appAdmin = Just adminEmail,
         appOSMRateLimiter = Nothing,
+        appSentrySettings = Nothing,
         appGoogleAPIKey = Nothing,
         appGoogleAnalyticsTracking = Nothing,
         appGoogleSearchConsoleVerification = Nothing
