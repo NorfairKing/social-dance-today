@@ -39,9 +39,12 @@ document.querySelector('#find-me').addEventListener('click', geoFindMe);
 
 
 document.addEventListener("DOMContentLoaded", function() {
-  navigator.permissions.query({name: 'geolocation'}).then(function(result) { 
-    if (result.state == 'granted') {
-      geoFindMe();
-    };
-})});
+  if (navigator && navigator.permissions) {
+    navigator.permissions.query({name: 'geolocation'}).then(function(result) { 
+      if (result.state == 'granted') {
+        geoFindMe();
+      };
+    });
+  }
+});
 
