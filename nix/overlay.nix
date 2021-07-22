@@ -61,13 +61,13 @@ in
         }
       );
       salsa-party-web-server = withStaticResources (salsaPartyPkg "salsa-party-web-server") {
-        "static/favicon.ico" = builtins.fetchurl {
-          url = "https://cs-syd.eu/logo/res/favicon.ico";
-          sha256 = "0ahvcky6lrcpk2vd41558bjgh3x80mpkz4cl7smka534ypm5arz9";
-        };
         "static/bulma.css" = builtins.fetchurl {
           url = "https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css";
           sha256 = "0nbwcsa1gi36f2aq9y96bap7glkp40k3g2bjb9s1vmg0011sri1v";
+        };
+        "static/sentry.js" = builtins.fetchurl {
+          url = "https://browser.sentry-cdn.com/6.10.0/bundle.tracing.min.js";
+          sha256 = "sha256:0idyjhnhv6sc6q8mr5f820qcy72s5x4al04llhz5cvgjgixlg3x5";
         };
       };
     in

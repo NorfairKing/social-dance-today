@@ -138,11 +138,7 @@ instance Yesod App where
 
 sentryWidget :: SentrySettings -> Widget
 sentryWidget SentrySettings {..} = do
-  addScriptRemoteAttrs
-    "https://browser.sentry-cdn.com/6.10.0/bundle.tracing.min.js"
-    [ ("integrity", "sha384-WPWd3xprDfTeciiueRO3yyPDiTpeh3M238axk2b+A0TuRmqebVE3hLm3ALEnnXtU"),
-      ("crossorigin", "anonymous")
-    ]
+  addScript $ StaticR sentry_js
   $(widgetFile "sentry")
 
 instance RenderMessage App FormMessage where

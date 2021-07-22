@@ -33,6 +33,7 @@ mkStatic = do
     development
     "salsaPartyWebServerStatic"
     [ remoteStatic "bulma.css" "https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css",
+      remoteStatic "sentry.js" "https://browser.sentry-cdn.com/6.10.0/bundle.tracing.min.js",
       embedDir "assets",
       locationPicturesGenerator
     ]
