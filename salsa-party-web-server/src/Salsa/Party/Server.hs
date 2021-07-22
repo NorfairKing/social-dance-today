@@ -57,7 +57,8 @@ runSalsaPartyServer settings@Settings {..} = do
                     guard settingEnableGoogleGeocoding
                     settingGoogleAPIKey,
                   appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
-                  appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
+                  appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification,
+                  appSentrySettings = settingSentrySettings
                 }
         concurrently_
           (runLoopers settings app)

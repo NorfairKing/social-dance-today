@@ -41,6 +41,7 @@ import qualified Network.AWS.SES as SES
 import Network.HTTP.Client as HTTP
 import Path
 import Salsa.Party.DB
+import Salsa.Party.OptParse
 import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.Poster
 import Salsa.Party.Web.Server.Static
@@ -71,7 +72,8 @@ data App = App
     appOSMRateLimiter :: !(Maybe RateLimiter), -- Nothing means disabled.
     appGoogleAPIKey :: !(Maybe Text), -- Nothing means disabled.
     appGoogleAnalyticsTracking :: !(Maybe Text), -- Nothing means disabled.
-    appGoogleSearchConsoleVerification :: !(Maybe Text) -- Nothing means disabled.
+    appGoogleSearchConsoleVerification :: !(Maybe Text), -- Nothing means disabled.
+    appSentrySettings :: !(Maybe SentrySettings) -- Nothing means disabled.
   }
 
 mkMessage "App" "messages" "en"
@@ -87,8 +89,12 @@ instance Yesod App where
           if development
             then (<> autoReloadWidgetFor ReloadR)
             else id
+    let withSentry =
+          case appSentrySettings app of
+            Nothing -> id
+            Just sentrySettings -> (<> sentryWidget sentrySettings)
     currentRoute <- getCurrentRoute
-    let body = withAutoReload $(widgetFile "default-body")
+    let body = withSentry $ withAutoReload $(widgetFile "default-body")
     pageContent <- widgetToPageContent body
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
 
@@ -129,6 +135,15 @@ instance Yesod App where
               then pure Authorized
               else notFound
       _ -> pure Authorized
+
+sentryWidget :: SentrySettings -> Widget
+sentryWidget SentrySettings {..} = do
+  addScriptRemoteAttrs
+    "https://browser.sentry-cdn.com/6.10.0/bundle.tracing.min.js"
+    [ ("integrity", "sha384-WPWd3xprDfTeciiueRO3yyPDiTpeh3M238axk2b+A0TuRmqebVE3hLm3ALEnnXtU"),
+      ("crossorigin", "anonymous")
+    ]
+  $(widgetFile "sentry")
 
 instance RenderMessage App FormMessage where
   renderMessage _ _ = defaultFormMessage

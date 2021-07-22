@@ -1,0 +1,9 @@
+Sentry.init({
+  dsn: #{sentrySettingDSN},
+  release: #{sentrySettingRelease},
+  integrations: [new Sentry.Integrations.BrowserTracing()],
+
+  // We recommend adjusting this value in production, or using tracesSampler
+  // for finer control
+  tracesSampleRate: 1.0,
+});

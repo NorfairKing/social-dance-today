@@ -23,6 +23,5 @@ $doctype 5
 
         gtag('config', '#{trackingId}');
 
-
   <body>
     ^{pageBody pageContent}
