@@ -8,7 +8,6 @@ import Control.Exception (AsyncException)
 import Control.Monad.Logger
 import qualified Data.Text as T
 import Data.Time
-import Database.Persist.Sql
 import GHC.Clock (getMonotonicTimeNSec)
 import Looper
 import Salsa.Party.Importer
@@ -25,7 +24,7 @@ runLoopers settings@Settings {..} app = do
           ++ [ mkLooperDef
                  "image-garbage-collector"
                  settingImageGarbageCollectorLooperSettings
-                 (runSqlPool runImageGarbageCollector (appConnectionPool app))
+                 (runImageGarbageCollector app)
              ]
       looperRunner LooperDef {..} = do
         logInfoNS looperDefName "Starting"
