@@ -12,6 +12,7 @@ build-type:     Simple
 library
   exposed-modules:
       Google.Geocoding
+      Network.HTTP.Client.Retry
       OpenStreetMaps.Geocoding
       Salsa.Party.DB
       Salsa.Party.DB.CASKey

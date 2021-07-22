@@ -12,7 +12,6 @@ module Salsa.Party.Web.Server.Handler.Admin.SiteTest
   )
 where
 
-import qualified Control.Exception as Exception
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
 import Data.Aeson.Types as JSON
@@ -20,7 +19,7 @@ import qualified Data.ByteString.Lazy as LB
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Network.HTTP.Client as HTTP
-import Network.HTTP.Client.Internal as HTTP
+import Network.HTTP.Client.Retry as HTTP
 import Network.HTTP.Types as HTTP
 import Network.URI (URI)
 import Salsa.Party.Web.Server.Handler.Import
@@ -183,8 +182,4 @@ testAcceptXMLResult siteTestUrl = do
 handleRequest :: Request -> Handler (Either HttpException (Response LB.ByteString))
 handleRequest request = do
   man <- getsYesod appHTTPManager
-  liftIO $
-    (Right <$> httpLbs request man)
-      `Exception.catches` [ Exception.Handler $ \e -> pure (Left (toHttpException request e)),
-                            Exception.Handler $ \e -> pure (Left (e :: HttpException))
-                          ]
+  httpLbsWithRetry request man

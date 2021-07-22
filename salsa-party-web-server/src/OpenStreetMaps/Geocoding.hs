@@ -6,6 +6,7 @@ module OpenStreetMaps.Geocoding where
 
 import Control.Concurrent.TokenLimiter
 import Control.Exception
+import Control.Monad.Logger
 import Data.Aeson as JSON
 import Data.Aeson.Types as JSON
 import Data.Fixed
@@ -15,6 +16,7 @@ import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
 import GHC.Generics (Generic)
 import Network.HTTP.Client as HTTP
+import Network.HTTP.Client.Retry as HTTP
 import Text.Read
 
 -- From https://nominatim.org/release-docs/develop/api/Search/#search-queries
@@ -63,12 +65,13 @@ instance Exception GeocodingException
 
 -- https://operations.osmfoundation.org/policies/nominatim
 -- says: "an absolute maximum of 1 request per second"
+-- so we'll do one every two seconds maximum
 
 limitConfig :: LimitConfig
 limitConfig =
   defaultLimitConfig
-    { maxBucketTokens = 1,
-      initialBucketTokens = 1,
+    { maxBucketTokens = 2,
+      initialBucketTokens = 2,
       bucketRefillTokensPerSecond = 1
     }
 
@@ -81,8 +84,11 @@ makeGeocodingRequest manager GeocodingRequest {..} = do
           requestPrototype
             { requestHeaders = [("User-Agent", "salsa-parties.today")]
             }
-  response <- httpLbs request manager
-  case eitherDecode' (responseBody response) of
-    -- We throw this exception because it should not happen and we can't fix it.
-    Left err -> throwIO $ DecodingGeocodingResponseFailed err
-    Right gcr -> pure $ GeocodingResponse $ sortBy (comparing placeRank <> comparing (Down . placeImportance)) gcr
+  errOrResponse <- runNoLoggingT $ httpLbsWithRetry request manager
+  case errOrResponse of
+    Left httpException -> throwIO httpException
+    Right response ->
+      case eitherDecode' (responseBody response) of
+        -- We throw this exception because it should not happen and we can't fix it.
+        Left err -> throwIO $ DecodingGeocodingResponseFailed err
+        Right gcr -> pure $ GeocodingResponse $ sortBy (comparing placeRank <> comparing (Down . placeImportance)) gcr

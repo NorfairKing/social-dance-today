@@ -5,12 +5,14 @@
 module Google.Geocoding where
 
 import Control.Exception
+import Control.Monad.Logger
 import Data.Aeson as JSON
 import Data.Fixed
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
 import GHC.Generics (Generic)
 import Network.HTTP.Client as HTTP
+import Network.HTTP.Client.Retry as HTTP
 
 -- From https://nominatim.org/release-docs/develop/api/Search/#search-queries
 --
@@ -56,8 +58,11 @@ makeGeocodingRequest manager GeocodingRequest {..} = do
           requestPrototype
             { requestHeaders = [("User-Agent", "salsa-parties.today")]
             }
-  response <- httpLbs request manager
-  case eitherDecode' (responseBody response) of
-    -- We throw this exception because it should not happen and we can't fix it.
-    Left err -> throwIO $ DecodingGeocodingResponseFailed err
-    Right gcr -> pure gcr
+  errOrResponse <- runNoLoggingT $ httpLbsWithRetry request manager
+  case errOrResponse of
+    Left httpException -> throwIO httpException
+    Right response ->
+      case eitherDecode' (responseBody response) of
+        -- We throw this exception because it should not happen and we can't fix it.
+        Left err -> throwIO $ DecodingGeocodingResponseFailed err
+        Right gcr -> pure gcr

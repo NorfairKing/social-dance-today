@@ -1,6 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -12,7 +11,6 @@ import Control.Concurrent.TokenLimiter
 import Control.Exception (AsyncException)
 import Control.Monad.Logger
 import Control.Monad.Reader
-import Control.Retry
 import Data.Aeson as JSON
 import Data.Aeson.Types as JSON
 import Data.ByteString (ByteString)
@@ -29,8 +27,7 @@ import GHC.Clock (getMonotonicTimeNSec)
 import GHC.Generics (Generic)
 import Looper
 import Network.HTTP.Client as HTTP
-import Network.HTTP.Client.Internal as HTTP
-import Network.HTTP.Types as HTTP
+import Network.HTTP.Client.Retry
 import Network.URI
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation
@@ -272,48 +269,7 @@ doHttpRequest requestPrototype = do
   liftIO $ waitDebit limitConfig rateLimiter 10 -- Need 10 tokens
   let request = requestPrototype {requestHeaders = ("User-Agent", userAgent) : requestHeaders requestPrototype}
   logInfoN $ "fetching: " <> T.pack (show (getUri request))
-  let policy :: RetryPolicy
-      policy = exponentialBackoff 1_000_000 <> limitRetries 5
-      tryOnce :: RetryStatus -> Import (Either HttpException (HTTP.Response LB.ByteString))
-      tryOnce retryStatus = do
-        when (rsIterNumber retryStatus > 0) $
-          logWarnN $
-            T.pack $
-              unwords
-                [ "Retrying, iteration",
-                  show $ rsIterNumber retryStatus
-                ]
-        liftIO $ Right <$> httpLbs request man
-      shouldRetry :: RetryStatus -> Either HttpException (Response LB.ByteString) -> Import Bool
-      shouldRetry _ = \case
-        Left exception -> do
-          case exception of
-            InvalidUrlException _ _ -> pure False
-            HttpExceptionRequest request_ exceptionContent -> do
-              logErrorN $ T.pack $ unwords ["Something went wrong while fetching", show (getUri request_)]
-              pure $ case exceptionContent of
-                ResponseTimeout -> True
-                ConnectionTimeout -> True
-                ConnectionFailure _ -> True
-                InternalException _ -> True
-                ProxyConnectException _ _ _ -> True
-                NoResponseDataReceived -> True
-                ResponseBodyTooShort _ _ -> True
-                InvalidChunkHeaders -> True
-                IncompleteHeaders -> True
-                HttpZlibException _ -> True
-                ConnectionClosed -> True
-                _ -> False
-        Right response ->
-          pure $
-            let c = HTTP.statusCode $ responseStatus response
-             in c >= 500 && c < 600
-
-  retrying policy shouldRetry $ \retryStatus ->
-    tryOnce retryStatus
-      `catches` [ Handler $ \e -> pure (Left (toHttpException request e)),
-                  Handler $ \e -> pure (Left (e :: HttpException))
-                ]
+  httpLbsWithRetry request man
 
 chooseUserAgent :: IO ByteString
 chooseUserAgent = do
