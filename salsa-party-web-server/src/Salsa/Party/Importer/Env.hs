@@ -33,6 +33,7 @@ import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Poster
 import System.Random (randomRIO)
+import qualified Text.HTML.TagSoup as HTML
 import Text.Printf
 import Text.Show.Pretty (ppShow)
 import UnliftIO
@@ -331,3 +332,13 @@ tryToImportImage uri = do
                         )
                         [] -- No need to update anything, the casKey makes the image unique.
                   pure $ Just imageId
+
+logRequestErrors ::
+  ConduitT
+    (HTTP.Request, Either HttpException (Response LB.ByteString))
+    (HTTP.Request, Response LB.ByteString)
+    Import
+    ()
+logRequestErrors = awaitForever $ \(request, errOrResponse) -> case errOrResponse of
+  Left err -> logErrorN $ T.pack $ unlines ["Error while fetching calendar page: " <> ppShow err]
+  Right response -> yield (request, response)

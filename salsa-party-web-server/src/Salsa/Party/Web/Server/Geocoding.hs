@@ -58,7 +58,12 @@ lookupPlaceRaw query = do
           debitSucceeded <- liftIO $ tryDebit OSM.limitConfig osmRateLimiter 1
           mCoords <-
             if debitSucceeded
-              then geocodeviaOSM query
+              then do
+                mOSMResult <- geocodeviaOSM query
+                case mOSMResult of
+                  Just _ -> pure mOSMResult
+                  -- Try using google if OSM fails.
+                  Nothing -> geocodeViaGoogle googleAPIKey query
               else pure Nothing
           case mCoords of
             Just coords -> pure $ Just coords

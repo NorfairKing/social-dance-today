@@ -5,6 +5,7 @@ module Salsa.Party.Importer where
 
 import Control.Monad.Logger
 import Looper
+import Salsa.Party.Importer.DanceplaceCom
 import Salsa.Party.Importer.Env
 import Salsa.Party.Importer.EventsInfo
 import Salsa.Party.Importer.GolatindanceCom
@@ -21,5 +22,6 @@ importerLoopers Settings {..} app =
           sets
           (runImporter app importer)
    in [ importerLooper eventsInfoImporter settingEventsInfoImportLooperSettings,
-        importerLooper golatindanceComImporter settingGolatindanceComImportLooperSettings
+        importerLooper golatindanceComImporter settingGolatindanceComImportLooperSettings,
+        importerLooper danceplaceComImporter settingDanceplaceComImportLooperSettings
       ]

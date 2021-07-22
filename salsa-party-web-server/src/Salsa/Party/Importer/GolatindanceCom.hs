@@ -142,16 +142,6 @@ makeCalendarRequest city = do
       ]
       $ requestPrototype {requestHeaders = ("Accept", "application/calendar") : requestHeaders requestPrototype}
 
-logRequestErrors ::
-  ConduitT
-    (HTTP.Request, Either HttpException (Response LB.ByteString))
-    (HTTP.Request, Response LB.ByteString)
-    Import
-    ()
-logRequestErrors = awaitForever $ \(request, errOrResponse) -> case errOrResponse of
-  Left err -> logErrorN $ T.pack $ unlines ["Error while fetching calendar page: " <> ppShow err]
-  Right response -> yield (request, response)
-
 parseUrlsInCalendars :: ConduitT (HTTP.Request, Response LB.ByteString) Text Import ()
 parseUrlsInCalendars =
   C.map (responseBody . snd)

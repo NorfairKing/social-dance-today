@@ -21,6 +21,7 @@ library
       Salsa.Party.DB.URI
       Salsa.Party.DB.UUID
       Salsa.Party.Importer
+      Salsa.Party.Importer.DanceplaceCom
       Salsa.Party.Importer.Env
       Salsa.Party.Importer.EventsInfo
       Salsa.Party.Importer.GolatindanceCom

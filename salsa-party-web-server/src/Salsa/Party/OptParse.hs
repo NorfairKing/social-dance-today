@@ -44,7 +44,9 @@ data Settings = Settings
     -- https://events.info
     settingEventsInfoImportLooperSettings :: !LooperSettings,
     -- https://golatindance.com
-    settingGolatindanceComImportLooperSettings :: !LooperSettings
+    settingGolatindanceComImportLooperSettings :: !LooperSettings,
+    -- https://danceplace.com
+    settingDanceplaceComImportLooperSettings :: !LooperSettings
   }
   deriving (Show, Eq, Generic)
 
@@ -72,6 +74,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingImageGarbageCollectorLooperSettings = deriveLooperSettings (seconds 30) (hours 24) flagImageGarbageCollectorLooperFlags envImageGarbageCollectorLooperEnvironment (mc confImageGarbageCollectorLooperConfiguration)
   let settingEventsInfoImportLooperSettings = deriveLooperSettings (minutes 1) (hours 24) flagEventsInfoImportLooperFlags envEventsInfoImportLooperEnvironment (mc confEventsInfoImportLooperConfiguration)
   let settingGolatindanceComImportLooperSettings = deriveLooperSettings (minutes 2) (hours 24) flagGolatindanceComImportLooperFlags envGolatindanceComImportLooperEnvironment (mc confGolatindanceComImportLooperConfiguration)
+  let settingDanceplaceComImportLooperSettings = deriveLooperSettings (minutes 3) (hours 24) flagDanceplaceComImportLooperFlags envDanceplaceComImportLooperEnvironment (mc confDanceplaceComImportLooperConfiguration)
   pure Settings {..}
   where
     mc :: (Configuration -> Maybe a) -> Maybe a
@@ -97,7 +100,8 @@ data Configuration = Configuration
     confGoogleSearchConsoleVerification :: !(Maybe Text),
     confImageGarbageCollectorLooperConfiguration :: !(Maybe LooperConfiguration),
     confEventsInfoImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confGolatindanceComImportLooperConfiguration :: !(Maybe LooperConfiguration)
+    confGolatindanceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
+    confDanceplaceComImportLooperConfiguration :: !(Maybe LooperConfiguration)
   }
   deriving (Show, Eq, Generic)
 
@@ -121,7 +125,8 @@ instance YamlSchema Configuration where
         <*> optionalField "google-search-console-verification" "Google search console html element verification code"
         <*> optionalField "image-garbage-collector" "The image garbage collector looper"
         <*> optionalField "events-info-importer" "The events.info import looper"
-        <*> optionalField "danceus-org-importer" "The danceus.org import looper"
+        <*> optionalField "golatindance-com-importer" "The golatindance.com import looper"
+        <*> optionalField "danceplace-com-importer" "The danceplace.com import looper"
 
 data SentryConfiguration = SentryConfiguration
   { sentryConfDSN :: !(Maybe Text),
@@ -167,7 +172,8 @@ data Environment = Environment
     envGoogleSearchConsoleVerification :: !(Maybe Text),
     envImageGarbageCollectorLooperEnvironment :: !LooperEnvironment,
     envEventsInfoImportLooperEnvironment :: !LooperEnvironment,
-    envGolatindanceComImportLooperEnvironment :: !LooperEnvironment
+    envGolatindanceComImportLooperEnvironment :: !LooperEnvironment,
+    envDanceplaceComImportLooperEnvironment :: !LooperEnvironment
   }
   deriving (Show, Eq, Generic)
 
@@ -200,6 +206,7 @@ environmentParser =
       <*> looperEnvironmentParser "IMAGE_GARBAGE_COLLECTOR"
       <*> looperEnvironmentParser "EVENTS_INFO_IMPORTER"
       <*> looperEnvironmentParser "GOLATINDANCE_COM_IMPORTER"
+      <*> looperEnvironmentParser "DANCEPLACE_COM_IMPORTER"
   where
     mE = Env.def Nothing
 
@@ -251,7 +258,8 @@ data Flags = Flags
     flagGoogleSearchConsoleVerification :: !(Maybe Text),
     flagImageGarbageCollectorLooperFlags :: !LooperFlags,
     flagEventsInfoImportLooperFlags :: !LooperFlags,
-    flagGolatindanceComImportLooperFlags :: !LooperFlags
+    flagGolatindanceComImportLooperFlags :: !LooperFlags,
+    flagDanceplaceComImportLooperFlags :: !LooperFlags
   }
   deriving (Show, Eq, Generic)
 
@@ -383,7 +391,8 @@ parseFlags =
       )
     <*> getLooperFlags "image-garbage-collector"
     <*> getLooperFlags "events-info-importer"
-    <*> getLooperFlags "dance-us-importer"
+    <*> getLooperFlags "golatindance-com-importer"
+    <*> getLooperFlags "danceplace-com-importer"
 
 data SentryFlags = SentryFlags
   { sentryFlagDSN :: !(Maybe Text),
