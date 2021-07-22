@@ -35,16 +35,21 @@ function geoFindMe() {
 
 }
 
-document.querySelector('#find-me').addEventListener('click', geoFindMe);
+if (document) {
+  document.querySelector('#find-me').addEventListener('click', geoFindMe);
 
-
-document.addEventListener("DOMContentLoaded", function() {
-  if (navigator && navigator.permissions) {
-    navigator.permissions.query({name: 'geolocation'}).then(function(result) { 
-      if (result.state == 'granted') {
-        geoFindMe();
-      };
+  if (document.addEventListener) {
+    document.addEventListener("DOMContentLoaded", function() {
+      if (navigator && navigator.permissions && navigator.permissions.query) {
+        let query = navigator.permissions.query({name: 'geolocation'});
+        if (query.then) {
+          query.then(function(result) {
+            if (result && result.state && result.state == 'granted') {
+              geoFindMe();
+            }
+          });
+        }
+      }
     });
   }
-});
-
+}
