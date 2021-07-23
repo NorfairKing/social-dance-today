@@ -26,6 +26,7 @@ library
       Salsa.Party.Importer.EventsInfo
       Salsa.Party.Importer.GolatindanceCom
       Salsa.Party.Importer.Import
+      Salsa.Party.Importer.MapdanceCom
       Salsa.Party.Looper
       Salsa.Party.Looper.ImageGarbageCollector
       Salsa.Party.OptParse

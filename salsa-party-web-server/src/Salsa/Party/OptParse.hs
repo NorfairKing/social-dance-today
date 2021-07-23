@@ -46,7 +46,9 @@ data Settings = Settings
     -- https://golatindance.com
     settingGolatindanceComImportLooperSettings :: !LooperSettings,
     -- https://danceplace.com
-    settingDanceplaceComImportLooperSettings :: !LooperSettings
+    settingDanceplaceComImportLooperSettings :: !LooperSettings,
+    -- https://mapdance.com
+    settingMapdanceComImportLooperSettings :: !LooperSettings
   }
   deriving (Show, Eq, Generic)
 
@@ -75,6 +77,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingEventsInfoImportLooperSettings = deriveLooperSettings (minutes 1) (hours 24) flagEventsInfoImportLooperFlags envEventsInfoImportLooperEnvironment (mc confEventsInfoImportLooperConfiguration)
   let settingGolatindanceComImportLooperSettings = deriveLooperSettings (minutes 2) (hours 24) flagGolatindanceComImportLooperFlags envGolatindanceComImportLooperEnvironment (mc confGolatindanceComImportLooperConfiguration)
   let settingDanceplaceComImportLooperSettings = deriveLooperSettings (minutes 3) (hours 24) flagDanceplaceComImportLooperFlags envDanceplaceComImportLooperEnvironment (mc confDanceplaceComImportLooperConfiguration)
+  let settingMapdanceComImportLooperSettings = deriveLooperSettings (minutes 3) (hours 24) flagMapdanceComImportLooperFlags envMapdanceComImportLooperEnvironment (mc confMapdanceComImportLooperConfiguration)
   pure Settings {..}
   where
     mc :: (Configuration -> Maybe a) -> Maybe a
@@ -101,7 +104,8 @@ data Configuration = Configuration
     confImageGarbageCollectorLooperConfiguration :: !(Maybe LooperConfiguration),
     confEventsInfoImportLooperConfiguration :: !(Maybe LooperConfiguration),
     confGolatindanceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confDanceplaceComImportLooperConfiguration :: !(Maybe LooperConfiguration)
+    confDanceplaceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
+    confMapdanceComImportLooperConfiguration :: !(Maybe LooperConfiguration)
   }
   deriving (Show, Eq, Generic)
 
@@ -127,6 +131,7 @@ instance YamlSchema Configuration where
         <*> optionalField "events-info-importer" "The events.info import looper"
         <*> optionalField "golatindance-com-importer" "The golatindance.com import looper"
         <*> optionalField "danceplace-com-importer" "The danceplace.com import looper"
+        <*> optionalField "mapdance-com-importer" "The mapdance.com import looper"
 
 data SentryConfiguration = SentryConfiguration
   { sentryConfDSN :: !(Maybe Text),
@@ -173,7 +178,8 @@ data Environment = Environment
     envImageGarbageCollectorLooperEnvironment :: !LooperEnvironment,
     envEventsInfoImportLooperEnvironment :: !LooperEnvironment,
     envGolatindanceComImportLooperEnvironment :: !LooperEnvironment,
-    envDanceplaceComImportLooperEnvironment :: !LooperEnvironment
+    envDanceplaceComImportLooperEnvironment :: !LooperEnvironment,
+    envMapdanceComImportLooperEnvironment :: !LooperEnvironment
   }
   deriving (Show, Eq, Generic)
 
@@ -207,6 +213,7 @@ environmentParser =
       <*> looperEnvironmentParser "EVENTS_INFO_IMPORTER"
       <*> looperEnvironmentParser "GOLATINDANCE_COM_IMPORTER"
       <*> looperEnvironmentParser "DANCEPLACE_COM_IMPORTER"
+      <*> looperEnvironmentParser "MAPDANCE_COM_IMPORTER"
   where
     mE = Env.def Nothing
 
@@ -259,7 +266,8 @@ data Flags = Flags
     flagImageGarbageCollectorLooperFlags :: !LooperFlags,
     flagEventsInfoImportLooperFlags :: !LooperFlags,
     flagGolatindanceComImportLooperFlags :: !LooperFlags,
-    flagDanceplaceComImportLooperFlags :: !LooperFlags
+    flagDanceplaceComImportLooperFlags :: !LooperFlags,
+    flagMapdanceComImportLooperFlags :: !LooperFlags
   }
   deriving (Show, Eq, Generic)
 
@@ -393,6 +401,7 @@ parseFlags =
     <*> getLooperFlags "events-info-importer"
     <*> getLooperFlags "golatindance-com-importer"
     <*> getLooperFlags "danceplace-com-importer"
+    <*> getLooperFlags "mapdance-com-importer"
 
 data SentryFlags = SentryFlags
   { sentryFlagDSN :: !(Maybe Text),
