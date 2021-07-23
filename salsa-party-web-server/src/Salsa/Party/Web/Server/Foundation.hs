@@ -16,7 +16,7 @@
 module Salsa.Party.Web.Server.Foundation where
 
 import Control.Applicative
-import Control.Concurrent.TokenLimiter
+import Control.Concurrent.TokenLimiter.Concurrent
 import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
@@ -69,7 +69,7 @@ data App = App
     appSessionKeyFile :: !(Path Abs File),
     appSendEmails :: !Bool,
     appAdmin :: !(Maybe Text),
-    appOSMRateLimiter :: !(Maybe RateLimiter), -- Nothing means disabled.
+    appOSMRateLimiter :: !(Maybe TokenLimiter), -- Nothing means disabled.
     appSentrySettings :: !(Maybe SentrySettings), -- Nothing means disabled.
     appGoogleAPIKey :: !(Maybe Text), -- Nothing means disabled.
     appGoogleAnalyticsTracking :: !(Maybe Text), -- Nothing means disabled.

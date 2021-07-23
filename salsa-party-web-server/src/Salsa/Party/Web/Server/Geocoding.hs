@@ -4,7 +4,7 @@
 
 module Salsa.Party.Web.Server.Geocoding where
 
-import Control.Concurrent.TokenLimiter
+import Control.Concurrent.TokenLimiter.Concurrent
 import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Logger
@@ -50,12 +50,12 @@ lookupPlaceRaw query = do
               ]
           pure Nothing
         (Just osmRateLimiter, Nothing) -> do
-          liftIO $ waitDebit OSM.limitConfig osmRateLimiter 1
+          liftIO $ waitDebit osmRateLimiter 1
           geocodeviaOSM query
         (Nothing, Just googleAPIKey) -> do
           geocodeViaGoogle googleAPIKey query
         (Just osmRateLimiter, Just googleAPIKey) -> do
-          debitSucceeded <- liftIO $ tryDebit OSM.limitConfig osmRateLimiter 1
+          debitSucceeded <- liftIO $ tryDebit osmRateLimiter 1
           mCoords <-
             if debitSucceeded
               then do

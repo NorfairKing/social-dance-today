@@ -57,7 +57,7 @@ library:
   - template-haskell
   - text
   - time
-  - token-limiter
+  - token-limiter-concurrent
   - typed-uuid
   - unliftio
   - uuid

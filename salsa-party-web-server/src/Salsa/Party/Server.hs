@@ -3,7 +3,7 @@
 
 module Salsa.Party.Server where
 
-import Control.Concurrent.TokenLimiter
+import Control.Concurrent.TokenLimiter.Concurrent
 import Control.Monad
 import Control.Monad.Logger
 import qualified Data.Text as T
@@ -39,7 +39,7 @@ runSalsaPartyServer settings@Settings {..} = do
         runSqlPool (completeServerMigration False) pool
         sessionKeyFile <- resolveFile' "client_session_key.aes"
         man <- HTTP.newTlsManager
-        rateLimiter <- liftIO $ newRateLimiter OSM.limitConfig
+        rateLimiter <- liftIO $ makeTokenLimiter OSM.tokenLimitConfig
 
         let app =
               App

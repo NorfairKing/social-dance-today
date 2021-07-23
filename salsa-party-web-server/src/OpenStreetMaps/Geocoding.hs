@@ -4,7 +4,7 @@
 
 module OpenStreetMaps.Geocoding where
 
-import Control.Concurrent.TokenLimiter
+import Control.Concurrent.TokenLimiter.Concurrent
 import Control.Exception
 import Control.Monad.Logger
 import Data.Aeson as JSON
@@ -67,12 +67,12 @@ instance Exception GeocodingException
 -- says: "an absolute maximum of 1 request per second"
 -- so we'll do one every two seconds maximum
 
-limitConfig :: LimitConfig
-limitConfig =
-  defaultLimitConfig
-    { maxBucketTokens = 2,
-      initialBucketTokens = 2,
-      bucketRefillTokensPerSecond = 1
+tokenLimitConfig :: TokenLimitConfig
+tokenLimitConfig =
+  TokenLimitConfig
+    { tokenLimitConfigInitialTokens = 2,
+      tokenLimitConfigMaxTokens = 2,
+      tokenLimitConfigTokensPerSecond = 1
     }
 
 makeGeocodingRequest :: HTTP.Manager -> GeocodingRequest -> IO GeocodingResponse

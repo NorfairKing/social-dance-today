@@ -7,7 +7,7 @@
 module Salsa.Party.Importer.Env where
 
 import Conduit
-import Control.Concurrent.TokenLimiter
+import Control.Concurrent.TokenLimiter.Concurrent
 import Control.Monad.Logger
 import Control.Monad.Reader
 import Data.Aeson as JSON
@@ -108,20 +108,20 @@ runImporter a Importer {..} = do
         [ImporterMetadataLastRunStart =. begin]
 
   userAgent <- liftIO chooseUserAgent
-  let limitConfig =
-        defaultLimitConfig
-          { maxBucketTokens = 10, -- Ten tokens maximum, represents one request
-            initialBucketTokens = 10,
-            bucketRefillTokensPerSecond = 1
+  let tokenLimitConfig =
+        TokenLimitConfig
+          { tokenLimitConfigMaxTokens = 10, -- Ten tokens maximum, represents one request
+            tokenLimitConfigInitialTokens = 10,
+            tokenLimitConfigTokensPerSecond = 1
           }
-  rateLimiter <- liftIO $ newRateLimiter limitConfig
+  tokenLimiter <- liftIO $ makeTokenLimiter tokenLimitConfig
   let env =
         ImportEnv
           { importEnvApp = a,
             importEnvName = importerName,
             importEnvId = importerId,
             importEnvUserAgent = userAgent,
-            importEnvRateLimiter = (limitConfig, rateLimiter)
+            importEnvRateLimiter = tokenLimiter
           }
 
   runReaderT
@@ -173,7 +173,7 @@ data ImportEnv = ImportEnv
     importEnvName :: !Text,
     importEnvId :: !ImporterMetadataId,
     importEnvUserAgent :: !ByteString,
-    importEnvRateLimiter :: !(LimitConfig, RateLimiter)
+    importEnvRateLimiter :: !TokenLimiter
   }
 
 importDB :: SqlPersistT (LoggingT IO) a -> Import a
@@ -257,8 +257,8 @@ doHttpRequest :: HTTP.Request -> Import (Either HttpException (HTTP.Response LB.
 doHttpRequest requestPrototype = do
   man <- asks $ appHTTPManager . importEnvApp
   userAgent <- asks importEnvUserAgent
-  (limitConfig, rateLimiter) <- asks importEnvRateLimiter
-  liftIO $ waitDebit limitConfig rateLimiter 10 -- Need 10 tokens
+  tokenLimiter <- asks importEnvRateLimiter
+  liftIO $ waitDebit tokenLimiter 10 -- Need 10 tokens
   let request = requestPrototype {requestHeaders = ("User-Agent", userAgent) : requestHeaders requestPrototype}
   logInfoN $ "fetching: " <> T.pack (show (getUri request))
   httpLbsWithRetry request man

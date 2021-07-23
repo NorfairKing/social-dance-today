@@ -5,6 +5,8 @@ ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat
 allow-newer: true # Because of token-limiter
 extra-deps:
+- github: NorfairKing/token-limiter-concurrent
+  commit: 336f8bb6d1281c7a11e9b11da9bc1a86b5d89057
 - github: NorfairKing/looper
   commit: 8f9f944e8cf3cd8883a5600c115461ecea285c62
   subdirs:

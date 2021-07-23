@@ -117,8 +117,12 @@ in
                   yesod-autoreload = self.callCabal2nix "yesod-autoreload" sources.yesod-autoreload { };
                   # Tests access the internet
                   yesod-static-remote = dontCheck (self.callCabal2nix "yesod-static-remote" sources.yesod-static-remote { });
-                  # Not broken in practice.
-                  token-limiter = unmarkBroken (doJailbreak super.token-limiter);
+                  token-limiter-concurrent = self.callCabal2nix "token-limiter-concurrent"
+                    (builtins.fetchGit {
+                      url = "https://github.com/NorfairKing/token-limiter-concurrent";
+                      rev = "336f8bb6d1281c7a11e9b11da9bc1a86b5d89057";
+                    })
+                    { };
                   iCalendar = self.callCabal2nix "iCalendar"
                     (builtins.fetchGit {
                       url = "https://github.com/NorfairKing/iCalendar";
