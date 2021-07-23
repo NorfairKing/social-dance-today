@@ -116,16 +116,6 @@ parseEventFromPage request response = do
   now <- liftIO getCurrentTime
   let today = utctDay now
   let scraper = do
-        externalEventPlace <- do
-          rawAddressPieces <- chroot ("span" @: ["itemprop" @= "address"]) $ texts ("span" @: [hasClass "text-danger"])
-          rawAddress <- T.intercalate ", " . map T.strip <$> mapM utf8 rawAddressPieces
-          let address = T.replace " , " ", " $ T.strip rawAddress
-          app <- asks importEnvApp
-          mPlaceEntity <- lift $ runReaderT (lookupPlaceRaw address) app
-          case mPlaceEntity of
-            Nothing -> fail $ "Place not found: " <> show address
-            Just (Entity placeId _) -> pure placeId
-
         externalEventDay <- do
           rawDate <- attr "content" ("meta" @: ["itemprop" @= "startDate"])
           case maybeUtf8 rawDate >>= (parseTimeM True defaultTimeLocale "%FT%H:%M" . T.unpack) of
@@ -154,6 +144,17 @@ parseEventFromPage request response = do
         let externalEventOrigin = T.pack $ show $ getUri request
         externalEventUuid <- nextRandomUUID
         mImageUri <- mutf8 $ optional $ attr "content" $ "meta" @: ["itemprop" @= "image"]
+
+        externalEventPlace <- do
+          rawAddressPieces <- chroot ("span" @: ["itemprop" @= "address"]) $ texts ("span" @: [hasClass "text-danger"])
+          rawAddress <- T.intercalate ", " . map T.strip <$> mapM utf8 rawAddressPieces
+          let address = T.replace " , " ", " $ T.strip rawAddress
+          app <- asks importEnvApp
+          mPlaceEntity <- lift $ runReaderT (lookupPlaceRaw address) app
+          case mPlaceEntity of
+            Nothing -> fail $ "Place not found: " <> show address
+            Just (Entity placeId _) -> pure placeId
+
         pure (ExternalEvent {..}, mImageUri)
   mExternalEvent <- scrapeStringLikeT (responseBody response) scraper
   case mExternalEvent of
