@@ -30,6 +30,7 @@ FooterOpenstreetmapCopyright: © OpenStreetMap Mitwirkende
 
 # Navbar
 NavFind: Party suchen
+NavSubmitParty: Bewirb deine Party hier
 NavAccount: Konto
 NavOrganiser: Veranstalterprofil
 NavParties: Meine Partys

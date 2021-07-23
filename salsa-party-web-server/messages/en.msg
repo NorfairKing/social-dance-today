@@ -26,6 +26,7 @@ FooterOpenstreetmapCopyright: © OpenStreetMap contributors
 
 # Navbar
 NavFind: Find a party
+NavSubmitParty: Advertise your party here
 NavAccount: Account
 NavOrganiser: Organiser profile
 NavParties: My parties

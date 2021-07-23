@@ -29,6 +29,7 @@ FooterOpenstreetmapCopyright: © OpenStreetMap medewerkers
 
 # Navbar
 NavFind: Vind een feest
+NavSubmitParty: Adverteer uw feest hier
 NavAccount: Account
 NavOrganiser: Organisatorprofiel
 NavParties: Mijn feesten
