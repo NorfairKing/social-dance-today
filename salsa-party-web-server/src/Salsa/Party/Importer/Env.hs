@@ -43,25 +43,27 @@ data Importer = Importer
   }
   deriving (Generic)
 
-runImporterWithDoubleCheck :: App -> LooperDef (LoggingT IO) -> LoggingT IO ()
-runImporterWithDoubleCheck a LooperDef {..} = do
+runImporterWithDoubleCheck :: App -> LooperSettings -> Importer -> LoggingT IO ()
+runImporterWithDoubleCheck app LooperSettings {..} importer = do
   let runDBHere :: SqlPersistT (LoggingT IO) a -> LoggingT IO a
-      runDBHere = flip runSqlPool (appConnectionPool a)
+      runDBHere = flip runSqlPool (appConnectionPool app)
+
+      logName = "importer-" <> importerName importer
 
   -- We double-check whether to run the importer because we don't want to
   -- bash any external sites should the importers or the webserver
   -- crashloop, or we just deploy more often than once a day.
-  logInfoNS looperDefName "Checking whether to run"
+  logInfoNS logName "Checking whether to run"
   now <- liftIO getCurrentTime
-  mImporterMetadata <- runDBHere $ getBy $ UniqueImporterMetadataName looperDefName
+  mImporterMetadata <- runDBHere $ getBy $ UniqueImporterMetadataName $ importerName importer
   let mLastRun = importerMetadataLastRunStart . entityVal <$> mImporterMetadata
   shouldRun <- case mLastRun of
     Nothing -> do
-      logDebugNS looperDefName "Definitely running because it's never run before"
+      logDebugNS logName "Definitely running because it's never run before"
       pure True
     Just lastRun -> do
       let diff = diffUTCTime now lastRun
-      let shouldRun = diff >= looperDefPeriod
+      let shouldRun = diff >= looperSetPeriod
           showDiffTime = T.pack . printf "%.0f" . (realToFrac :: NominalDiffTime -> Double)
       let ctx =
             T.unwords
@@ -70,19 +72,19 @@ runImporterWithDoubleCheck a LooperDef {..} = do
                 "which is",
                 showDiffTime diff,
                 "seconds ago and the looper period is",
-                showDiffTime looperDefPeriod,
+                showDiffTime looperSetPeriod,
                 "seconds"
               ]
       if shouldRun
-        then logDebugNS looperDefName $ "Running " <> ctx
-        else logDebugNS looperDefName $ "Not running " <> ctx
+        then logDebugNS logName $ "Running " <> ctx
+        else logDebugNS logName $ "Not running " <> ctx
       pure shouldRun
   if shouldRun
     then do
-      logInfoNS looperDefName "Starting"
+      logInfoNS logName "Starting"
       begin <- liftIO getMonotonicTimeNSec
       errOrUnit <-
-        (Right <$> looperDefFunc)
+        (Right <$> runImporter app importer)
           `catches` [
                       -- Re-throw AsyncException, otherwise execution will not terminate on SIGINT (ctrl-c).
                       Handler (\e -> throwIO (e :: AsyncException)),
@@ -92,8 +94,8 @@ runImporterWithDoubleCheck a LooperDef {..} = do
       end <- liftIO getMonotonicTimeNSec
       case errOrUnit of
         Right () -> pure ()
-        Left err -> logErrorNS looperDefName $ "Looper threw an exception:\n" <> T.pack (displayException err)
-      logInfoNS looperDefName $ T.pack $ printf "Done, took %.2f seconds" (fromIntegral (end - begin) / (1_000_000_000 :: Double))
+        Left err -> logErrorNS logName $ "Looper threw an exception:\n" <> T.pack (displayException err)
+      logInfoNS logName $ T.pack $ printf "Done, took %.2f seconds" (fromIntegral (end - begin) / (1_000_000_000 :: Double))
     else pure ()
 
 runImporter :: App -> Importer -> LoggingT IO ()

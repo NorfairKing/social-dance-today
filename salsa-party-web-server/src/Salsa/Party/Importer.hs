@@ -20,7 +20,7 @@ importerLoopers Settings {..} app =
         mkLooperDef
           ("importer-" <> importerName importer)
           sets
-          (runImporter app importer)
+          (runImporterWithDoubleCheck app sets importer)
    in [ importerLooper eventsInfoImporter settingEventsInfoImportLooperSettings,
         importerLooper golatindanceComImporter settingGolatindanceComImportLooperSettings,
         importerLooper danceplaceComImporter settingDanceplaceComImportLooperSettings
