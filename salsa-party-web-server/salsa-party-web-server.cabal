@@ -107,6 +107,7 @@ library
     , random
     , resourcet
     , retry
+    , scalpel
     , scientific
     , shakespeare
     , tagsoup

@@ -33,7 +33,6 @@ import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Poster
 import System.Random (randomRIO)
-import qualified Text.HTML.TagSoup as HTML
 import Text.Printf
 import Text.Show.Pretty (ppShow)
 import UnliftIO
@@ -340,5 +339,5 @@ logRequestErrors ::
     Import
     ()
 logRequestErrors = awaitForever $ \(request, errOrResponse) -> case errOrResponse of
-  Left err -> logErrorN $ T.pack $ unlines ["Error while fetching calendar page: " <> ppShow err]
+  Left err -> logErrorN $ T.pack $ unlines ["Error while fetching page: " <> ppShow err]
   Right response -> yield (request, response)

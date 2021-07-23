@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -44,28 +43,19 @@ module Salsa.Party.Importer.DanceplaceCom (danceplaceComImporter) where
 
 import Conduit
 import Control.Applicative
-import Data.Aeson as JSON
-import Data.Aeson.Types as JSON
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Char8 as SB8
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.ByteString.Lazy.Char8 as LB8
-import Data.Char as Char
 import qualified Data.Conduit.Combinators as C
-import Data.List
 import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Network.HTTP.Client as HTTP
-import Network.HTTP.Client.Retry as HTTP
-import Network.HTTP.Types as HTTP
 import Network.URI
 import Salsa.Party.Importer.Import
 import Salsa.Party.Web.Server.Geocoding
-import qualified Text.HTML.TagSoup as HTML
-import qualified Text.HTML.TagSoup.Match as HTML
-import qualified Web.JSONLD as LD
-import qualified Web.JSONLD.Parse as LD
+import Text.HTML.Scalpel
 
 danceplaceComImporter :: Importer
 danceplaceComImporter =
@@ -74,6 +64,7 @@ danceplaceComImporter =
       importerFunc = func
     }
 
+baseUrl :: String
 baseUrl = "https://danceplace.com"
 
 func :: Import ()
@@ -109,121 +100,73 @@ func = do
 
 parseEventFromPage :: HTTP.Request -> HTTP.Response LB.ByteString -> Import ()
 parseEventFromPage request response = do
-  externalEventUuid <- nextRandomUUID
-  let externalEventKey =
-        let uriText = T.pack $ show $ getUri request
-         in case T.stripPrefix "https://www.danceplace.com/index/no/" uriText of
-              Nothing -> uriText
-              Just suffix -> suffix
-  let tags = HTML.parseTags $ responseBody response
-
-      maybeUtf8 sb = case TE.decodeUtf8' (LB.toStrict sb) of
+  let maybeUtf8 sb = case TE.decodeUtf8' (LB.toStrict sb) of
         Left _ -> Nothing
         Right t -> Just t
 
-  let parseMaybeUnder :: String -> LB.ByteString -> ([HTML.Attribute LB.ByteString] -> Bool) -> [HTML.Tag LB.ByteString] -> Maybe Text
-      parseMaybeUnder partName name attrMatch tags_ =
-        let relevantTags :: [HTML.Tag LB.ByteString]
-            relevantTags = getTagContentSafe name attrMatch tags_
-            relevantContents :: Text
-            relevantContents = T.intercalate " " $ map T.strip $ mapMaybe maybeUtf8 $ mapMaybe HTML.maybeTagText relevantTags
-            text = T.strip relevantContents
-         in if T.null text
-              then Nothing
-              else Just text
+      mutf8 :: ScraperT LB.ByteString Import (Maybe LB.ByteString) -> ScraperT LB.ByteString Import (Maybe Text)
+      mutf8 = fmap (>>= maybeUtf8)
 
-  let parseMaybe :: String -> LB.ByteString -> ([HTML.Attribute LB.ByteString] -> Bool) -> Maybe Text
-      parseMaybe partName name attrMatch = parseMaybeUnder partName name attrMatch tags
+      -- Only use this one when it's necessary.
+      utf8 :: LB.ByteString -> ScraperT LB.ByteString Import Text
+      utf8 lb = case maybeUtf8 lb of
+        Nothing -> fail "Invalid UTF8"
+        Just t -> pure t
 
-  let maybeItemPropContents :: LB.ByteString -> Maybe LB.ByteString
-      maybeItemPropContents name =
-        listToMaybe $
-          flip mapMaybe tags $ \case
-            HTML.TagOpen "meta" attrs -> do
-              propName <- lookup "itemprop" attrs
-              guard $ propName == name
-              lookup "content" attrs
-            _ -> Nothing
+  now <- liftIO getCurrentTime
+  let scraper = do
+        externalEventPlace <- do
+          rawAddressPieces <- chroot ("span" @: ["itemprop" @= "address"]) $ texts ("span" @: [hasClass "text-danger"])
+          rawAddress <- T.intercalate ", " . map T.strip <$> mapM utf8 rawAddressPieces
+          let address = T.replace " , " ", " $ T.strip rawAddress
+          app <- asks importEnvApp
+          mPlaceEntity <- lift $ runReaderT (lookupPlaceRaw address) app
+          case mPlaceEntity of
+            Nothing -> fail $ "Place not found: " <> show address
+            Just (Entity placeId _) -> pure placeId
 
-  let parseDateTimeAnd :: String -> LB.ByteString -> (Day -> Import ()) -> Import ()
-      parseDateTimeAnd partName name func = do
-        let mDay = do
-              contents <- maybeItemPropContents name
-              text <- maybeUtf8 contents
-              parseTimeM True defaultTimeLocale "%FT%H:%M" $ T.unpack text
-        case mDay of
-          Nothing -> logWarnN $ T.pack $ "Piece not found: " <> partName
-          Just day -> func day
-
-  let mTitle = do
-        let relevantTags = getTagContentSafe "div" (HTML.anyAttrLit ("class", "modal-header")) tags
-        parseMaybeUnder "title" "h3" (const True) relevantTags
-
-  today <- liftIO $ utctDay <$> getCurrentTime
-  parseDateTimeAnd "day" "startDate" $ \externalEventDay ->
-    if externalEventDay < today -- No point in getting old events.
-      then pure ()
-      else do
-        case mTitle of
-          Nothing -> logWarnN "Unable to parse title"
-          Just externalEventTitle ->
-            case parseMaybe
-              "address"
-              "a"
-              ( \ls ->
-                  HTML.anyAttrLit ("target", "_blank") ls
-                    && HTML.anyAttr (\(name, val) -> name == "href" && "https://maps.google.com/" `LB8.isPrefixOf` val) ls
-              ) of
-              Nothing -> logWarnN "Unable to parse address"
-              Just rawAddress -> do
-                let externalEventDescription = maybeItemPropContents "description" >>= maybeUtf8
-                let externalEventOrganiser = Nothing -- TODO this is sometimes on the page
-                let externalEventStart = Nothing
-                let externalEventHomepage = maybeItemPropContents "url" >>= maybeUtf8
-                let externalEventPrice = Nothing
-                let externalEventCancelled = case parseMaybe "attendance" "meta" (HTML.anyAttrLit ("itemprop", "eventStatus")) of
-                      Just "http://schema.org/EventPostponed" -> True -- TODO change this once we implement postponing
-                      Just "http://schema.org/EventCancelled" -> True
-                      _ -> False
-
-                now <- liftIO getCurrentTime
-                let externalEventCreated = now
-                let externalEventModified = Nothing
-                app <- asks importEnvApp
-                let address = T.replace " , " ", " $ T.strip rawAddress
-                mPlaceEntity <- runReaderT (lookupPlaceRaw address) app
-                case mPlaceEntity of
-                  Nothing -> logWarnN $ "Place not found: " <> address
-                  Just (Entity externalEventPlace _) -> do
-                    externalEventImporter <- Just <$> asks importEnvId
-                    let externalEventOrigin = T.pack $ show $ getUri request
-
-                    importExternalEventAnd ExternalEvent {..} $ \externalEventId -> do
-                      forM_ (maybeItemPropContents "image" >>= maybeUtf8 >>= (parseURI . T.unpack)) $ \uri -> do
-                        mImageId <- tryToImportImage uri
-                        forM_ mImageId $ \imageId -> do
-                          importDB $
-                            upsertBy
-                              (UniqueExternalEventPoster externalEventId)
-                              ( ExternalEventPoster
-                                  { externalEventPosterExternalEvent = externalEventId,
-                                    externalEventPosterImage = imageId,
-                                    externalEventPosterCreated = now,
-                                    externalEventPosterModified = Nothing
-                                  }
-                              )
-                              [ ExternalEventPosterImage =. imageId,
-                                ExternalEventPosterModified =. Just now
-                              ]
-
--- Refactor this piece
-getTagContentSafe :: Eq str => str -> ([HTML.Attribute str] -> Bool) -> [HTML.Tag str] -> [HTML.Tag str]
-getTagContentSafe name pAttrs tags =
-  case listToMaybe $ sections (HTML.tagOpenLit name pAttrs) tags of
-    Nothing -> []
-    Just l -> takeWhile (not . HTML.tagCloseLit name) $ drop 1 l
-
-sections :: (a -> Bool) -> [a] -> [[a]]
-sections p = \case
-  [] -> []
-  l -> filter (p . head) $ init $ tails l
+        let externalEventKey =
+              let uriText = T.pack $ show $ getUri request
+               in case T.stripPrefix "https://www.danceplace.com/index/no/" uriText of
+                    Nothing -> uriText
+                    Just suffix -> suffix
+        externalEventTitle <- text "title" >>= utf8
+        externalEventDescription <- mutf8 $ optional $ attr "content" ("meta" @: ["name" @= "description"])
+        -- SOMETIMES the organiser is on the page, but it's probably not worth scraping.
+        let externalEventOrganiser = Nothing
+        externalEventDay <- do
+          rawDate <- attr "content" ("meta" @: ["itemprop" @= "startDate"])
+          case maybeUtf8 rawDate >>= (parseTimeM True defaultTimeLocale "%FT%H:%M" . T.unpack) of
+            Nothing -> fail "couldn't parse the day"
+            Just d -> pure d
+        let externalEventStart = Nothing
+        externalEventHomepage <- mutf8 $ optional $ attr "href" ("a" @: ["itemprop" @= "url"])
+        let externalEventPrice = Nothing
+        -- We can't accurately parse the cancelled state because the pages list PostPoned even when the events are not.
+        let externalEventCancelled = False
+        let externalEventCreated = now
+        let externalEventModified = Nothing
+        externalEventImporter <- Just <$> asks importEnvId
+        let externalEventOrigin = T.pack $ show $ getUri request
+        externalEventUuid <- nextRandomUUID
+        mImageUri <- mutf8 $ optional $ attr "content" $ "meta" @: ["itemprop" @= "image"]
+        pure (ExternalEvent {..}, mImageUri)
+  mExternalEvent <- scrapeStringLikeT (responseBody response) scraper
+  case mExternalEvent of
+    Nothing -> pure ()
+    Just (externalEvent, mImageUriText) -> importExternalEventAnd externalEvent $ \externalEventId -> forM_ (mImageUriText >>= parseURI . T.unpack) $ \uri -> do
+      mImageId <- tryToImportImage uri
+      forM_ mImageId $ \imageId -> do
+        importDB $
+          upsertBy
+            (UniqueExternalEventPoster externalEventId)
+            ( ExternalEventPoster
+                { externalEventPosterExternalEvent = externalEventId,
+                  externalEventPosterImage = imageId,
+                  externalEventPosterCreated = now,
+                  externalEventPosterModified = Nothing
+                }
+            )
+            [ ExternalEventPosterImage =. imageId,
+              ExternalEventPosterModified =. Just now
+            ]
