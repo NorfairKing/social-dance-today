@@ -51,8 +51,6 @@ import Control.Applicative
 import Data.Aeson as JSON
 import Data.Aeson.Types as JSON
 import qualified Data.ByteString.Lazy as LB
-import qualified Data.ByteString.Lazy.Char8 as LB8
-import Data.Char as Char
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
 import qualified Data.Text as T
@@ -62,6 +60,7 @@ import Network.HTTP.Types as HTTP
 import Network.URI
 import Salsa.Party.Importer.Import
 import Salsa.Party.Web.Server.Geocoding
+import Text.HTML.Scalpel
 import qualified Text.HTML.TagSoup as HTML
 import qualified Web.JSONLD as LD
 import qualified Web.JSONLD.Parse as LD
@@ -161,12 +160,7 @@ parseJSONLDPieces :: ConduitT (Request, Response LB.ByteString) (Request, JSON.V
 parseJSONLDPieces = C.concatMap $ \(request, response) -> do
   let c = HTTP.statusCode (responseStatus response)
   guard $ 200 <= c && c < 300
-  let pieces = LD.groupIntoJSONLDPieces $ HTML.parseTags $ responseBody response
-  -- Newer bytestring libraries actually have more efficient versions of
-  -- LB8.dropWhile Char.isSpace
-  -- Indeed what we want is a LB.strip instead.
-  let bytestrings = map (LB8.dropWhile Char.isSpace . HTML.innerText) pieces
-  value <- mapMaybe JSON.decode bytestrings
+  value <- fromMaybe [] $ scrapeStringLike (responseBody response) LD.scrapeJSONLDValues
   pure (request, value)
 
 parseJSONLDEvents ::

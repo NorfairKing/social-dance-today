@@ -114,6 +114,7 @@ parseEventFromPage request response = do
         Just t -> pure t
 
   now <- liftIO getCurrentTime
+  let today = utctDay now
   let scraper = do
         externalEventPlace <- do
           rawAddressPieces <- chroot ("span" @: ["itemprop" @= "address"]) $ texts ("span" @: [hasClass "text-danger"])
@@ -125,6 +126,14 @@ parseEventFromPage request response = do
             Nothing -> fail $ "Place not found: " <> show address
             Just (Entity placeId _) -> pure placeId
 
+        externalEventDay <- do
+          rawDate <- attr "content" ("meta" @: ["itemprop" @= "startDate"])
+          case maybeUtf8 rawDate >>= (parseTimeM True defaultTimeLocale "%FT%H:%M" . T.unpack) of
+            Nothing -> fail "couldn't parse the day"
+            Just d -> pure d
+
+        guard $ externalEventDay >= addDays (-1) today
+
         let externalEventKey =
               let uriText = T.pack $ show $ getUri request
                in case T.stripPrefix "https://www.danceplace.com/index/no/" uriText of
@@ -134,11 +143,6 @@ parseEventFromPage request response = do
         externalEventDescription <- mutf8 $ optional $ attr "content" ("meta" @: ["name" @= "description"])
         -- SOMETIMES the organiser is on the page, but it's probably not worth scraping.
         let externalEventOrganiser = Nothing
-        externalEventDay <- do
-          rawDate <- attr "content" ("meta" @: ["itemprop" @= "startDate"])
-          case maybeUtf8 rawDate >>= (parseTimeM True defaultTimeLocale "%FT%H:%M" . T.unpack) of
-            Nothing -> fail "couldn't parse the day"
-            Just d -> pure d
         let externalEventStart = Nothing
         externalEventHomepage <- mutf8 $ optional $ attr "href" ("a" @: ["itemprop" @= "url"])
         let externalEventPrice = Nothing

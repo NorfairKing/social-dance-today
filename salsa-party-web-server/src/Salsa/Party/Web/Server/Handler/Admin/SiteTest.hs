@@ -23,7 +23,7 @@ import Network.HTTP.Client.Retry as HTTP
 import Network.HTTP.Types as HTTP
 import Network.URI (URI)
 import Salsa.Party.Web.Server.Handler.Import
-import qualified Text.HTML.TagSoup as HTML
+import Text.HTML.Scalpel
 import qualified Text.XML as XML
 import qualified Web.JSONLD as LD
 import qualified Web.JSONLD.Parse as LD
@@ -126,16 +126,15 @@ testJSONLD siteTestUrl = do
       let c = HTTP.statusCode $ responseStatus response
        in if c >= 400 && c < 500
             then []
-            else
-              let tags = HTML.parseTags $ responseBody response
-                  groups = LD.groupIntoJSONLDPieces tags
-               in flip map groups $ \tagGroup ->
-                    let scriptBody = HTML.innerText tagGroup
-                     in case JSON.eitherDecode scriptBody of
-                          Left err -> ErrJSONLD $ ppShow err
-                          Right value -> case JSON.parseEither parseJSON value <|> (: []) <$> JSON.parseEither parseJSON value of
-                            Left e -> ErrJSONValue value e
-                            Right e -> JSONLD e
+            else case scrapeStringLike (responseBody response) LD.scrapeJSONLDText of
+              Nothing -> []
+              Just groups ->
+                flip map groups $ \scriptBody ->
+                  case JSON.eitherDecode scriptBody of
+                    Left err -> ErrJSONLD $ ppShow err
+                    Right value -> case JSON.parseEither parseJSON value <|> (: []) <$> JSON.parseEither parseJSON value of
+                      Left e -> ErrJSONValue value e
+                      Right e -> JSONLD e
 
 data AcceptJSONResult
   = ErrAcceptJSON !String
