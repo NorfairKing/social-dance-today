@@ -89,11 +89,13 @@ instance Yesod App where
           if development
             then (<> autoReloadWidgetFor ReloadR)
             else id
+    currentRoute <- getCurrentRoute
     let withSentry =
           case appSentrySettings app of
             Nothing -> id
-            Just sentrySettings -> (<> sentryWidget sentrySettings)
-    currentRoute <- getCurrentRoute
+            Just sentrySettings -> case currentRoute of
+              Just (AdminR _) -> id
+              _ -> (<> sentryWidget sentrySettings)
     let body = withSentry $ withAutoReload $(widgetFile "default-body")
     pageContent <- widgetToPageContent body
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
