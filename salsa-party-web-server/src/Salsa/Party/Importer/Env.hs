@@ -8,7 +8,6 @@ module Salsa.Party.Importer.Env where
 
 import Conduit
 import Control.Concurrent.TokenLimiter
-import Control.Exception (AsyncException)
 import Control.Monad.Logger
 import Control.Monad.Reader
 import Data.Aeson as JSON
@@ -43,23 +42,27 @@ data Importer = Importer
   }
   deriving (Generic)
 
+-- We double-check whether to run the importer because we don't want to
+-- bash any external sites should the importers or the webserver
+-- crashloop, or we just deploy more often than once a day.
+--
+-- This does mean that if we deploy often, importers might be stopped early and not re-run,
+-- but this shouldn't be a problem because:
+--
+--  * We try to fetch events at least a month in advance
+--  * There should be at least once day in a month where we don't deploy twice a day.
 runImporterWithDoubleCheck :: App -> LooperSettings -> Importer -> LoggingT IO ()
-runImporterWithDoubleCheck app LooperSettings {..} importer = do
+runImporterWithDoubleCheck app LooperSettings {..} importer = addImporterNameToLog (importerName importer) $ do
   let runDBHere :: SqlPersistT (LoggingT IO) a -> LoggingT IO a
       runDBHere = flip runSqlPool (appConnectionPool app)
 
-      logName = "importer-" <> importerName importer
-
-  -- We double-check whether to run the importer because we don't want to
-  -- bash any external sites should the importers or the webserver
-  -- crashloop, or we just deploy more often than once a day.
-  logInfoNS logName "Checking whether to run"
+  logInfoN "Checking whether to run"
   now <- liftIO getCurrentTime
   mImporterMetadata <- runDBHere $ getBy $ UniqueImporterMetadataName $ importerName importer
   let mLastRun = importerMetadataLastRunStart . entityVal <$> mImporterMetadata
   shouldRun <- case mLastRun of
     Nothing -> do
-      logDebugNS logName "Definitely running because it's never run before"
+      logDebugN "Definitely running because it's never run before"
       pure True
     Just lastRun -> do
       let diff = diffUTCTime now lastRun
@@ -76,15 +79,15 @@ runImporterWithDoubleCheck app LooperSettings {..} importer = do
                 "seconds"
               ]
       if shouldRun
-        then logDebugNS logName $ "Running " <> ctx
-        else logDebugNS logName $ "Not running " <> ctx
+        then logDebugN $ "Running " <> ctx
+        else logDebugN $ "Not running " <> ctx
       pure shouldRun
   when shouldRun $ do
-    logInfoNS logName "Starting"
+    logInfoN "Starting"
     begin <- liftIO getMonotonicTimeNSec
     runImporter app importer
     end <- liftIO getMonotonicTimeNSec
-    logInfoNS logName $ T.pack $ printf "Done, took %.2f seconds" (fromIntegral (end - begin) / (1_000_000_000 :: Double))
+    logInfoN $ T.pack $ printf "Done, took %.2f seconds" (fromIntegral (end - begin) / (1_000_000_000 :: Double))
 
 runImporter :: App -> Importer -> LoggingT IO ()
 runImporter a Importer {..} = do
@@ -120,21 +123,10 @@ runImporter a Importer {..} = do
             importEnvUserAgent = userAgent,
             importEnvRateLimiter = (limitConfig, rateLimiter)
           }
-  logFunc <- askLoggerIO
-  let importerLogFunc loc source level str =
-        let source' =
-              if source == ""
-                then "importer-" <> importerName
-                else source
-         in logFunc loc source' level str
 
-  liftIO $
-    runLoggingT
-      ( runReaderT
-          (unImport importerFunc)
-          env
-      )
-      importerLogFunc
+  runReaderT
+    (unImport importerFunc)
+    env
 
   end <- liftIO getCurrentTime
   -- We don't just use 'update' here because the admin could have deleted this metadata in the meantime.
@@ -151,6 +143,16 @@ runImporter a Importer {..} = do
         [ ImporterMetadataLastRunStart =. begin,
           ImporterMetadataLastRunEnd =. Just end
         ]
+
+addImporterNameToLog :: Text -> LoggingT m a -> LoggingT m a
+addImporterNameToLog importerName = modLogSource $ \source -> if source == "" then "importer-" <> importerName else source
+
+modLogSource :: (LogSource -> LogSource) -> LoggingT m a -> LoggingT m a
+modLogSource func (LoggingT mFunc) = LoggingT $ \logFunc ->
+  let newLogFunc loc source level str =
+        let source' = func source
+         in logFunc loc source' level str
+   in mFunc newLogFunc
 
 newtype Import a = Import {unImport :: ReaderT ImportEnv (LoggingT IO) a}
   deriving
