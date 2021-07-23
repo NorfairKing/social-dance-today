@@ -79,24 +79,12 @@ runImporterWithDoubleCheck app LooperSettings {..} importer = do
         then logDebugNS logName $ "Running " <> ctx
         else logDebugNS logName $ "Not running " <> ctx
       pure shouldRun
-  if shouldRun
-    then do
-      logInfoNS logName "Starting"
-      begin <- liftIO getMonotonicTimeNSec
-      errOrUnit <-
-        (Right <$> runImporter app importer)
-          `catches` [
-                      -- Re-throw AsyncException, otherwise execution will not terminate on SIGINT (ctrl-c).
-                      Handler (\e -> throwIO (e :: AsyncException)),
-                      -- Catch all the rest as a string
-                      Handler (\e -> return $ Left (e :: SomeException))
-                    ]
-      end <- liftIO getMonotonicTimeNSec
-      case errOrUnit of
-        Right () -> pure ()
-        Left err -> logErrorNS logName $ "Looper threw an exception:\n" <> T.pack (displayException err)
-      logInfoNS logName $ T.pack $ printf "Done, took %.2f seconds" (fromIntegral (end - begin) / (1_000_000_000 :: Double))
-    else pure ()
+  when shouldRun $ do
+    logInfoNS logName "Starting"
+    begin <- liftIO getMonotonicTimeNSec
+    runImporter app importer
+    end <- liftIO getMonotonicTimeNSec
+    logInfoNS logName $ T.pack $ printf "Done, took %.2f seconds" (fromIntegral (end - begin) / (1_000_000_000 :: Double))
 
 runImporter :: App -> Importer -> LoggingT IO ()
 runImporter a Importer {..} = do
