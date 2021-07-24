@@ -352,13 +352,7 @@ sendVerificationEmail userEmailAddress verificationKey = do
               & SES.dToAddresses .~ [userEmailAddress]
       let request = SES.sendEmail fromEmail destination message
 
-      logger <- mkAwsLogger
-      awsEnv <- liftIO $ AWS.newEnv AWS.Discover
-      let ourAwsEnv =
-            awsEnv
-              & AWS.envRegion .~ AWS.Ireland
-              & AWS.envLogger .~ logger
-      response <- AWS.runAWS ourAwsEnv $ AWS.trying AWS._Error $ AWS.send request
+      response <- runAWS $ AWS.send request
       case (^. SES.sersResponseStatus) <$> response of
         Right 200 -> do
           logInfoN $ "Succesfully send verification email to address: " <> userEmailAddress
@@ -398,17 +392,21 @@ sendAdminNotification notificationContents = do
                 & SES.dToAddresses .~ [adminEmailAddress]
         let request = SES.sendEmail fromEmail destination message
 
-        logger <- mkAwsLogger
-        awsEnv <- liftIO $ AWS.newEnv AWS.Discover
-        let ourAwsEnv =
-              awsEnv
-                & AWS.envRegion .~ AWS.Ireland
-                & AWS.envLogger .~ logger
-        response <- AWS.runResourceT $ AWS.runAWS ourAwsEnv $ AWS.trying AWS._Error $ AWS.send request
+        response <- runAWS $ AWS.send request
         case (^. SES.sersResponseStatus) <$> response of
           Right 200 -> logInfoN $ "Succesfully send admin notification email to address: " <> adminEmailAddress
           _ -> logErrorN $ T.unlines ["Failed to send admin notification email to address: " <> adminEmailAddress, T.pack (ppShow response)]
       else logInfoN $ "Not sending admin notification email (because sendEmail is turned of), to address: " <> adminEmailAddress
+
+runAWS :: (MonadUnliftIO m, MonadLoggerIO m) => AWS.AWS a -> m (Either AWS.Error a)
+runAWS func = do
+  logger <- mkAwsLogger
+  awsEnv <- liftIO $ AWS.newEnv AWS.Discover
+  let ourAwsEnv =
+        awsEnv
+          & AWS.envRegion .~ AWS.Ireland
+          & AWS.envLogger .~ logger
+  AWS.runResourceT $ AWS.runAWS ourAwsEnv $ AWS.trying AWS._Error func
 
 mkAwsLogger :: MonadLoggerIO m => m AWS.Logger
 mkAwsLogger = do
