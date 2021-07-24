@@ -352,15 +352,7 @@ sendVerificationEmail userEmailAddress verificationKey = do
               & SES.dToAddresses .~ [userEmailAddress]
       let request = SES.sendEmail fromEmail destination message
 
-      logFunc <- askLoggerIO
-      let logger :: AWS.Logger
-          logger awsLevel builder =
-            let ourLevel = case awsLevel of
-                  AWS.Info -> LevelInfo
-                  AWS.Error -> LevelError
-                  AWS.Debug -> LevelDebug
-                  AWS.Trace -> LevelDebug
-             in logFunc defaultLoc "aws-client" ourLevel $ toLogStr builder
+      logger <- mkAwsLogger
       awsEnv <- liftIO $ AWS.newEnv AWS.Discover
       let ourAwsEnv =
             awsEnv
@@ -406,15 +398,7 @@ sendAdminNotification notificationContents = do
                 & SES.dToAddresses .~ [adminEmailAddress]
         let request = SES.sendEmail fromEmail destination message
 
-        logFunc <- askLoggerIO
-        let logger :: AWS.Logger
-            logger awsLevel builder =
-              let ourLevel = case awsLevel of
-                    AWS.Info -> LevelInfo
-                    AWS.Error -> LevelError
-                    AWS.Debug -> LevelDebug
-                    AWS.Trace -> LevelDebug
-               in logFunc defaultLoc "aws-client" ourLevel $ toLogStr builder
+        logger <- mkAwsLogger
         awsEnv <- liftIO $ AWS.newEnv AWS.Discover
         let ourAwsEnv =
               awsEnv
@@ -422,9 +406,21 @@ sendAdminNotification notificationContents = do
                 & AWS.envLogger .~ logger
         response <- AWS.runResourceT $ AWS.runAWS ourAwsEnv $ AWS.trying AWS._Error $ AWS.send request
         case (^. SES.sersResponseStatus) <$> response of
-          Right 200 -> logInfoN $ "Succesfully send verification email to address: " <> adminEmailAddress
-          _ -> logErrorN $ T.unlines ["Failed to send verification email to address: " <> adminEmailAddress, T.pack (ppShow response)]
+          Right 200 -> logInfoN $ "Succesfully send admin notification email to address: " <> adminEmailAddress
+          _ -> logErrorN $ T.unlines ["Failed to send admin notification email to address: " <> adminEmailAddress, T.pack (ppShow response)]
       else logInfoN $ "Not sending admin notification email (because sendEmail is turned of), to address: " <> adminEmailAddress
+
+mkAwsLogger :: MonadLoggerIO m => m AWS.Logger
+mkAwsLogger = do
+  logFunc <- askLoggerIO
+  let logger awsLevel builder =
+        let ourLevel = case awsLevel of
+              AWS.Info -> LevelInfo
+              AWS.Error -> LevelError
+              AWS.Debug -> LevelDebug
+              AWS.Trace -> LevelDebug
+         in logFunc defaultLoc "aws-client" ourLevel $ toLogStr builder
+  pure logger
 
 verifyR :: Text -> Text -> Route Auth
 verifyR userEmailAddress verificationKey = PluginR salsaAuthPluginName ["verify", userEmailAddress, verificationKey]
