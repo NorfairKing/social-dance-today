@@ -35,15 +35,11 @@ module Salsa.Party.Importer.MapdanceCom (mapdanceComImporter) where
 
 import Conduit
 import Control.Applicative
-import qualified Data.ByteString as SB
-import qualified Data.ByteString.Char8 as SB8
 import qualified Data.ByteString.Lazy as LB
-import qualified Data.ByteString.Lazy.Char8 as LB8
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
 import Network.HTTP.Client as HTTP
 import Network.URI
 import Salsa.Party.Importer.Import
@@ -67,34 +63,28 @@ func = do
   case parseURI baseUrl of
     Nothing -> logErrorN "Unable to parse base url to uri"
     Just baseUri -> do
-      --     request <- parseRequest $ show baseUri <> "/Find"
-      --     errOrResponse <- doHttpRequest request
-      --     case errOrResponse of
-      --       Left err -> logErrorN $ T.pack $ "Failed to fetch the find page:\n" <> ppShow err
-      --       Right response -> case scrapeStringLike (responseBody response) scrapeDanceTypesFromFindPage of
-      --         Nothing -> pure ()
-      --         Just danceTypes -> do
-      --           runConduit $
-      -- yieldMany danceTypes
-      --   .| teePrint
-      --   .| C.concatMap (\style -> parseRequest $ baseUrl <> "/festivals/" <> T.unpack style :: Maybe Request)
-      --   .| doHttpRequestWith
-      --   .| logRequestErrors
-      --   .| C.concatMap (\(_, response) -> fromMaybe [] $ scrapeStringLike (responseBody response) scrapeCountryPagesFromFestivalStylePage :: [Text])
-      --   .| teePrint
-      --   .| C.concatMap (\relativeURL -> parseRequest $ show baseUri <> T.unpack relativeURL :: Maybe Request)
-      --   .| teePrint
-      --   .| doHttpRequestWith
-      --   .| logRequestErrors
-      --   .| C.concatMap (\(_, response) -> fromMaybe [] $ scrapeStringLike (responseBody response) scrapeFestivalPagesFromCountryPage :: [Text])
-      --   .| C.filter ("/e/" `T.isPrefixOf`) -- Really only the event pages
-      --   .|
-      runConduit $
-        yield "/e/Brussels-Sensual-Dance-Festival-4100807248157?o=fest"
-          .| C.concatMap (\relativeURL -> parseRequest $ show baseUri <> T.unpack relativeURL :: Maybe Request)
-          .| doHttpRequestWith
-          .| logRequestErrors
-          .| importFestivalPage
+      request <- parseRequest $ show baseUri <> "/Find"
+      errOrResponse <- doHttpRequest request
+      case errOrResponse of
+        Left err -> logErrorN $ T.pack $ "Failed to fetch the find page:\n" <> ppShow err
+        Right response -> case scrapeStringLike (responseBody response) scrapeDanceTypesFromFindPage of
+          Nothing -> pure ()
+          Just danceTypes -> do
+            runConduit $
+              yieldMany danceTypes
+                .| C.concatMap (\style -> parseRequest $ baseUrl <> "/festivals/" <> T.unpack style :: Maybe Request)
+                .| doHttpRequestWith
+                .| logRequestErrors
+                .| C.concatMap (\(_, response_) -> fromMaybe [] $ scrapeStringLike (responseBody response_) scrapeCountryPagesFromFestivalStylePage :: [Text])
+                .| C.concatMap (\relativeURL -> parseRequest $ show baseUri <> T.unpack relativeURL :: Maybe Request)
+                .| doHttpRequestWith
+                .| logRequestErrors
+                .| C.concatMap (\(_, response_) -> fromMaybe [] $ scrapeStringLike (responseBody response_) scrapeFestivalPagesFromCountryPage :: [Text])
+                .| C.filter ("/e/" `T.isPrefixOf`) -- Really only the event pages
+                .| C.concatMap (\relativeURL -> parseRequest $ show baseUri <> T.unpack relativeURL :: Maybe Request)
+                .| doHttpRequestWith
+                .| logRequestErrors
+                .| importFestivalPage
 
 scrapeDanceTypesFromFindPage :: Scraper LB.ByteString [Text]
 scrapeDanceTypesFromFindPage = do
@@ -114,11 +104,9 @@ scrapeFestivalPagesFromCountryPage = do
 
 importFestivalPage :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Void Import ()
 importFestivalPage = awaitForever $ \(request, response) -> do
-  liftIO $ pPrint request
-  liftIO $ pPrint response
   now <- liftIO getCurrentTime
   let today = utctDay now
-  let scrapeExternalEventFromFestivalPage :: ScraperT LB.ByteString Import ExternalEvent
+  let scrapeExternalEventFromFestivalPage :: ScraperT LB.ByteString Import (ExternalEvent, Maybe Text)
       scrapeExternalEventFromFestivalPage = do
         externalEventUuid <- nextRandomUUID
         let externalEventKey =
@@ -126,38 +114,30 @@ importFestivalPage = awaitForever $ \(request, response) -> do
                in case T.stripPrefix "https://www.danceplace.com/index/no/" uriText of
                     Nothing -> uriText
                     Just suffix -> suffix
-        liftIO $ pPrint externalEventKey
 
         rawTitle <- chroot ("div" @: [hasClass "evt-title-name"]) $ text $ "h1" @: ["itemprop" @= "name"]
         externalEventTitle <- utf8 rawTitle
-        liftIO $ pPrint externalEventTitle
 
         externalEventDescription <- optional $
           chroot ("div" @: ["itemprop" @= "description", "lang" @= "en"]) $ do
             rawParagraphs <- texts $ "p" @: [hasClass "evt-descr-p"]
             paragraphs <- mapM utf8 rawParagraphs
             pure $ T.unlines paragraphs
-        liftIO $ pPrint externalEventDescription
 
         externalEventOrganiser <- optional $ do
           rawOrganiserName <- text $ "span" @: ["itemprop" @= "organizer.name"]
           utf8 rawOrganiserName
-        liftIO $ pPrint externalEventOrganiser
 
         localTime <- do
           rawStartDate <- attr "content" $ "div" @: ["itemprop" @= "startDate"]
-          liftIO $ pPrint rawStartDate
           case maybeUtf8 rawStartDate >>= (parseTimeM True defaultTimeLocale "%F %H:%M" . T.unpack) of
             Nothing -> fail "Date not found"
             Just localTime -> pure localTime
-        liftIO $ pPrint localTime
 
         let externalEventDay = localDay localTime
         guard $ externalEventDay >= addDays (-1) today
-        liftIO $ pPrint externalEventDay
 
         let externalEventStart = Just $ localTimeOfDay localTime
-        liftIO $ pPrint externalEventStart
 
         let externalEventHomepage = Nothing
         let externalEventPrice = Nothing
@@ -175,7 +155,6 @@ importFestivalPage = awaitForever $ \(request, response) -> do
           name <- text $ "div" @: ["itemprop" @= "name"]
           address <- text $ "div" @: ["itemprop" @= "address"]
           pure $ T.concat $ mapMaybe maybeUtf8 [name, address]
-        liftIO $ pPrint address
 
         mCoordinates <- optional $
           chroot ("div" @: ["itemprop" @= "geo"]) $ do
@@ -188,7 +167,6 @@ importFestivalPage = awaitForever $ \(request, response) -> do
               Nothing -> fail "could not read lon"
               Just lon -> pure lon
             pure Coordinates {..}
-        liftIO $ pPrint mCoordinates
 
         externalEventPlace <-
           entityKey <$> case mCoordinates of
@@ -200,17 +178,36 @@ importFestivalPage = awaitForever $ \(request, response) -> do
                 Just placeEntity -> pure placeEntity
             Just coords -> lift $ importDB $ insertPlace address coords
 
-        liftIO $ pPrint mCoordinates
-
         let externalEventCreated = now
         let externalEventModified = Nothing
         externalEventImporter <- Just <$> asks importEnvId
         let externalEventOrigin = T.pack $ show $ getUri request
 
-        pure ExternalEvent {..}
-  mExternalEvent <- lift $ scrapeStringLikeT (responseBody response) scrapeExternalEventFromFestivalPage
-  case mExternalEvent of
+        mImageUrl <- mutf8 $ optional $ attr "src" $ "img" @: ["itemprop" @= "image"]
+
+        pure (ExternalEvent {..}, mImageUrl)
+  mExternalEventAndUrl <- lift $ scrapeStringLikeT (responseBody response) scrapeExternalEventFromFestivalPage
+
+  case mExternalEventAndUrl of
     Nothing -> pure ()
-    Just externalEvent -> do
-      liftIO $ pPrint externalEvent
-      lift $ importExternalEvent externalEvent
+    Just (externalEvent, mImageUrl) -> do
+      lift $
+        importExternalEventAnd externalEvent $ \externalEventId -> do
+          case mImageUrl >>= (parseURI . T.unpack) of
+            Nothing -> pure ()
+            Just uri -> do
+              mImageId <- tryToImportImage uri
+              forM_ mImageId $ \imageId -> do
+                importDB $
+                  upsertBy
+                    (UniqueExternalEventPoster externalEventId)
+                    ( ExternalEventPoster
+                        { externalEventPosterExternalEvent = externalEventId,
+                          externalEventPosterImage = imageId,
+                          externalEventPosterCreated = now,
+                          externalEventPosterModified = Nothing
+                        }
+                    )
+                    [ ExternalEventPosterImage =. imageId,
+                      ExternalEventPosterModified =. Just now
+                    ]

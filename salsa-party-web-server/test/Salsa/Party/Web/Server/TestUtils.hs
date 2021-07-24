@@ -13,7 +13,7 @@ import Data.GenValidity
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
-import Database.Persist (Entity (..), (=.))
+import Database.Persist (Entity (..))
 import qualified Database.Persist as DB
 import qualified Database.Persist.Sql as DB
 import Database.Persist.Sqlite (fkEnabled, mkSqliteConnectionInfo, walEnabled, withSqlitePoolInfo)
@@ -220,7 +220,7 @@ testAddPartyWithPoster partyForm_ coordinates_ posterFile = testAddPartyHelper p
 testAddPartyHelper :: AddPartyForm -> Coordinates -> Maybe TestFile -> YesodClientM App EventUUID
 testAddPartyHelper partyForm_ loc mPosterFile = do
   -- Put the address in the database already so we don't need to use an external service for geocoding
-  testDB $ insertPlace (addPartyFormAddress partyForm_) loc
+  testDB $ insertPlace_ (addPartyFormAddress partyForm_) loc
   get $ AccountR AccountSubmitPartyR
   statusIs 200
   request $ addPartyFormRequestBuilder partyForm_ mPosterFile
@@ -294,7 +294,7 @@ testEditPartyWithPoster partyUuid_ partyForm_ coordinates_ posterFile = testEdit
 testEditPartyHelper :: EventUUID -> EditPartyForm -> Coordinates -> Maybe TestFile -> YesodClientM App ()
 testEditPartyHelper partyUuid_ partyForm_ loc mPosterFile = do
   -- Put the address in the database already so we don't need to use an external service for geocoding
-  testDB $ insertPlace (editPartyFormAddress partyForm_) loc
+  testDB $ insertPlace_ (editPartyFormAddress partyForm_) loc
   request $ editPartyFormRequestBuilder partyUuid_ partyForm_ mPosterFile
 
 editPartyFormRequestBuilder :: EventUUID -> EditPartyForm -> Maybe TestFile -> RequestBuilder App ()

@@ -50,7 +50,6 @@ import qualified Data.ByteString.Lazy.Char8 as LB8
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
 import Network.HTTP.Client as HTTP
 import Network.URI
 import Salsa.Party.Importer.Import
@@ -101,19 +100,6 @@ func = do
 
 parseEventFromPage :: HTTP.Request -> HTTP.Response LB.ByteString -> Import ()
 parseEventFromPage request response = do
-  let maybeUtf8 sb = case TE.decodeUtf8' (LB.toStrict sb) of
-        Left _ -> Nothing
-        Right t -> Just t
-
-      mutf8 :: ScraperT LB.ByteString Import (Maybe LB.ByteString) -> ScraperT LB.ByteString Import (Maybe Text)
-      mutf8 = fmap (>>= maybeUtf8)
-
-      -- Only use this one when it's necessary.
-      utf8 :: LB.ByteString -> ScraperT LB.ByteString Import Text
-      utf8 lb = case maybeUtf8 lb of
-        Nothing -> fail "Invalid UTF8"
-        Just t -> pure t
-
   now <- liftIO getCurrentTime
   let today = utctDay now
   let scraper = do
@@ -130,20 +116,30 @@ parseEventFromPage request response = do
                in case T.stripPrefix "https://www.danceplace.com/index/no/" uriText of
                     Nothing -> uriText
                     Just suffix -> suffix
+
         externalEventTitle <- text "title" >>= utf8
+
         externalEventDescription <- mutf8 $ optional $ attr "content" ("meta" @: ["name" @= "description"])
+
         -- SOMETIMES the organiser is on the page, but it's probably not worth scraping.
         let externalEventOrganiser = Nothing
+
+        -- There are starting times on the pages but they're most often wrong; 00:00
         let externalEventStart = Nothing
+
         externalEventHomepage <- mutf8 $ optional $ attr "href" ("a" @: ["itemprop" @= "url"])
+
         let externalEventPrice = Nothing
+
         -- We can't accurately parse the cancelled state because the pages list PostPoned even when the events are not.
         let externalEventCancelled = False
+
         let externalEventCreated = now
         let externalEventModified = Nothing
         externalEventImporter <- Just <$> asks importEnvId
         let externalEventOrigin = T.pack $ show $ getUri request
         externalEventUuid <- nextRandomUUID
+
         mImageUri <- mutf8 $ optional $ attr "content" $ "meta" @: ["itemprop" @= "image"]
 
         externalEventPlace <- do
