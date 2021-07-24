@@ -132,10 +132,18 @@ importFestivalPage = awaitForever $ \(request, response) -> do
         externalEventTitle <- utf8 rawTitle
         liftIO $ pPrint externalEventTitle
 
-        -- TODO this is on the page under itemprop="description" lang="en"
-        let externalEventDescription = Nothing
-        -- TODO this is on the page under itemprop="organiser"
-        let externalEventOrganiser = Nothing
+        externalEventDescription <- optional $
+          chroot ("div" @: ["itemprop" @= "description", "lang" @= "en"]) $ do
+            rawParagraphs <- texts $ "p" @: [hasClass "evt-descr-p"]
+            paragraphs <- mapM utf8 rawParagraphs
+            pure $ T.unlines paragraphs
+        liftIO $ pPrint externalEventDescription
+
+        externalEventOrganiser <- optional $ do
+          rawOrganiserName <- text $ "span" @: ["itemprop" @= "organizer.name"]
+          utf8 rawOrganiserName
+        liftIO $ pPrint externalEventOrganiser
+
         localTime <- do
           rawStartDate <- attr "content" $ "div" @: ["itemprop" @= "startDate"]
           liftIO $ pPrint rawStartDate
@@ -151,10 +159,17 @@ importFestivalPage = awaitForever $ \(request, response) -> do
         let externalEventStart = Just $ localTimeOfDay localTime
         liftIO $ pPrint externalEventStart
 
-        let externalEventHomepage = Nothing -- TODO check if this is on the page.
-        let externalEventPrice = Nothing -- TODO check if this is on the page.
-        -- TODO this is on the page in itemprop="eventStatus"
-        let externalEventCancelled = False
+        let externalEventHomepage = Nothing
+        let externalEventPrice = Nothing
+
+        mCancelled <- optional $ do
+          rawEventStatus <- attr "content" $ "meta" @: ["itemprop" @= "eventStatus"]
+          pure $ case rawEventStatus of
+            "https://schema.org/EventScheduled" -> False
+            "https://schema.org/EventPostponed" -> True
+            "https://schema.org/EventCancelled" -> True
+            _ -> False
+        let externalEventCancelled = fromMaybe False mCancelled
 
         address <- chroot ("div" @: ["itemprop" @= "location"]) $ do
           name <- text $ "div" @: ["itemprop" @= "name"]
@@ -165,11 +180,11 @@ importFestivalPage = awaitForever $ \(request, response) -> do
         mCoordinates <- optional $
           chroot ("div" @: ["itemprop" @= "geo"]) $ do
             rawLat <- attr "content" $ "meta" @: ["itemprop" @= "latitude"]
-            coordinatesLat <- case maybeUtf8 rawLat >>= (readMaybe . T.unpack latText) of
+            coordinatesLat <- case maybeUtf8 rawLat >>= (readMaybe . T.unpack) of
               Nothing -> fail "could not read lat"
               Just lat -> pure lat
             rawLon <- attr "content" $ "meta" @: ["itemprop" @= "longitude"]
-            coordinatesLon <- case maybeUtf8 rawLon >>= (readMaybe . T.unpack lonText) of
+            coordinatesLon <- case maybeUtf8 rawLon >>= (readMaybe . T.unpack) of
               Nothing -> fail "could not read lon"
               Just lon -> pure lon
             pure Coordinates {..}
