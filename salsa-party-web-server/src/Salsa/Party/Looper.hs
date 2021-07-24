@@ -11,6 +11,7 @@ import qualified Data.Text as T
 import Data.Time
 import GHC.Clock (getMonotonicTimeNSec)
 import Looper
+import Salsa.Party.AdminNotification
 import Salsa.Party.Importer
 import Salsa.Party.Looper.ImageGarbageCollector
 import Salsa.Party.OptParse

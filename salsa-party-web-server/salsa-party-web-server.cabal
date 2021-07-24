@@ -14,6 +14,7 @@ library
       Google.Geocoding
       Network.HTTP.Client.Retry
       OpenStreetMaps.Geocoding
+      Salsa.Party.AdminNotification
       Salsa.Party.DB
       Salsa.Party.DB.CASKey
       Salsa.Party.DB.Migration

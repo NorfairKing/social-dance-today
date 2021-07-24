@@ -362,42 +362,6 @@ sendVerificationEmail userEmailAddress verificationKey = do
           addMessageI "is-danger" MsgVerificationEmailFailure
     else logInfoN $ "Not sending verification email (because sendEmail is turned of), to address: " <> userEmailAddress
 
-sendAdminNotification :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => Text -> m ()
-sendAdminNotification notificationContents = do
-  shouldSendEmail <- asks appSendEmails
-  mAdminEmailAddress <- asks appAdmin
-  forM_ mAdminEmailAddress $ \adminEmailAddress ->
-    if shouldSendEmail
-      then do
-        logInfoN $ "Sending Admin Notification email to address: " <> adminEmailAddress
-
-        let subject = SES.content "Admin Notification"
-
-        let textBody = SES.content $ LT.toStrict $(stextFile "templates/email/admin-notification.txt")
-
-        let htmlBody = SES.content $ LT.toStrict $ renderHtml $(shamletFile "templates/email/admin-notification.hamlet")
-
-        let body =
-              SES.body
-                & SES.bText ?~ textBody
-                & SES.bHTML ?~ htmlBody
-
-        let message = SES.message subject body
-
-        let fromEmail = "no-reply@salsa-parties.today"
-
-        let destination =
-              SES.destination
-                & SES.dBCCAddresses .~ [fromEmail]
-                & SES.dToAddresses .~ [adminEmailAddress]
-        let request = SES.sendEmail fromEmail destination message
-
-        response <- runAWS $ AWS.send request
-        case (^. SES.sersResponseStatus) <$> response of
-          Right 200 -> logInfoN $ "Succesfully send admin notification email to address: " <> adminEmailAddress
-          _ -> logErrorN $ T.unlines ["Failed to send admin notification email to address: " <> adminEmailAddress, T.pack (ppShow response)]
-      else logInfoN $ "Not sending admin notification email (because sendEmail is turned of), to address: " <> adminEmailAddress
-
 runAWS :: (MonadUnliftIO m, MonadLoggerIO m) => AWS.AWS a -> m (Either AWS.Error a)
 runAWS func = do
   logger <- mkAwsLogger

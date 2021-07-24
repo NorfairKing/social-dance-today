@@ -15,6 +15,7 @@ import qualified Data.Text as T
 import Database.Persist
 import qualified Google.Geocoding as Google
 import qualified OpenStreetMaps.Geocoding as OSM
+import Salsa.Party.AdminNotification
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation
 import Yesod
