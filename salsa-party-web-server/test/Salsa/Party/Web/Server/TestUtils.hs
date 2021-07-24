@@ -175,21 +175,6 @@ withLoggedInAdmin func = do
   testRegister adminEmail adminPassword
   func
 
-insertPlace :: Text -> Coordinates -> DB.SqlPersistT IO ()
-insertPlace address Coordinates {..} =
-  void $
-    DB.upsertBy
-      (UniquePlaceQuery address)
-      ( Place
-          { placeLat = coordinatesLat,
-            placeLon = coordinatesLon,
-            placeQuery = address
-          }
-      )
-      [ PlaceLat =. coordinatesLat,
-        PlaceLon =. coordinatesLon
-      ]
-
 testSubmitOrganiser :: OrganiserForm -> YesodClientM App ()
 testSubmitOrganiser OrganiserForm {..} = do
   get $ AccountR AccountOrganiserR

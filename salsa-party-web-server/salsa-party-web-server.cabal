@@ -58,6 +58,7 @@ library
       Salsa.Party.Web.Server.Static
       Salsa.Party.Web.Server.Static.TH
       Salsa.Party.Web.Server.Widget
+      Text.HTML.Scalpel.Extended
       Web.JSONLD
       Web.JSONLD.Parse
   other-modules:

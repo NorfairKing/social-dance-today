@@ -56,6 +56,7 @@ import Network.URI
 import Salsa.Party.Importer.Import
 import Salsa.Party.Web.Server.Geocoding
 import Text.HTML.Scalpel
+import Text.HTML.Scalpel.Extended
 
 danceplaceComImporter :: Importer
 danceplaceComImporter =

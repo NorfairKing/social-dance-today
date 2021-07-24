@@ -31,7 +31,7 @@ import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Poster
 import System.Random (randomRIO)
 import Text.Printf
-import Text.Show.Pretty (ppShow)
+import Text.Show.Pretty (pPrint, ppShow)
 import UnliftIO
 
 data Importer = Importer
@@ -328,3 +328,7 @@ logRequestErrors ::
 logRequestErrors = awaitForever $ \(request, errOrResponse) -> case errOrResponse of
   Left err -> logErrorN $ T.pack $ unlines ["Error while fetching page: " <> ppShow err]
   Right response -> yield (request, response)
+
+teePrint ::
+  (Show a, MonadIO m) => ConduitT a a m ()
+teePrint = C.mapM (\a -> liftIO $ pPrint a >> pure a)

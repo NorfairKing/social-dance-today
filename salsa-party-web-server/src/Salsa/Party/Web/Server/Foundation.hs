@@ -415,6 +415,23 @@ instance PathPiece (Fixed a) where
 placeCoordinates :: Place -> Coordinates
 placeCoordinates Place {..} = Coordinates {coordinatesLat = placeLat, coordinatesLon = placeLon}
 
+insertPlace_ :: MonadIO m => Text -> Coordinates -> SqlPersistT m ()
+insertPlace_ address coordinates = void $ insertPlace address coordinates
+
+insertPlace :: MonadIO m => Text -> Coordinates -> SqlPersistT m (Entity Place)
+insertPlace address Coordinates {..} =
+  upsertBy
+    (UniquePlaceQuery address)
+    ( Place
+        { placeLat = coordinatesLat,
+          placeLon = coordinatesLon,
+          placeQuery = address
+        }
+    )
+    [ PlaceLat =. coordinatesLat,
+      PlaceLon =. coordinatesLon
+    ]
+
 posterImageWidget :: Party -> Organiser -> CASKey -> Widget
 posterImageWidget Party {..} Organiser {..} posterKey = do
   timeLocale <- getTimeLocale
