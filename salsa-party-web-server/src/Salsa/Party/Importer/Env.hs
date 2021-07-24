@@ -1,6 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -22,7 +21,6 @@ import qualified Data.Text.Encoding as TE
 import Data.Time
 import Database.Persist
 import Database.Persist.Sql
-import GHC.Clock (getMonotonicTimeNSec)
 import GHC.Generics (Generic)
 import Looper
 import Network.HTTP.Client as HTTP
@@ -84,10 +82,7 @@ runImporterWithDoubleCheck app LooperSettings {..} importer = addImporterNameToL
       pure shouldRun
   when shouldRun $ do
     logInfoN "Starting"
-    begin <- liftIO getMonotonicTimeNSec
     runImporter app importer
-    end <- liftIO getMonotonicTimeNSec
-    logInfoN $ T.pack $ printf "Done, took %.2f seconds" (fromIntegral (end - begin) / (1_000_000_000 :: Double))
 
 runImporter :: App -> Importer -> LoggingT IO ()
 runImporter a Importer {..} = do
