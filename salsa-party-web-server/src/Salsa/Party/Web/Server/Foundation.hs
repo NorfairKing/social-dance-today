@@ -379,60 +379,52 @@ sendVerificationEmail userEmailAddress verificationKey = do
 sendAdminNotification :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => Text -> m ()
 sendAdminNotification notificationContents = do
   shouldSendEmail <- asks appSendEmails
-  let adminEmailAddress = undefined
-  if shouldSendEmail
-    then do
-      logInfoN $ "Sending Admin Notification email to address: " <> adminEmailAddress
+  mAdminEmailAddress <- asks appAdmin
+  forM_ mAdminEmailAddress $ \adminEmailAddress ->
+    if shouldSendEmail
+      then do
+        logInfoN $ "Sending Admin Notification email to address: " <> adminEmailAddress
 
-      let subject = SES.content "Admin Notification"
+        let subject = SES.content "Admin Notification"
 
-      let textBody =
-            SES.content $
-              T.unlines
-                [ "Admin notification:",
-                  "",
-                  notificationContents,
-                  "",
-                  "You received this email because you are an admin at social dance today."
-                ]
+        let textBody = SES.content $ LT.toStrict $(stextFile "templates/email/admin-notification.txt")
 
-      -- TODO html body too
-      -- let htmlBody = SES.content $ LT.toStrict $ renderHtml $ $(hamletFile "templates/auth/email/verification-email.hamlet") (toHtml . messageRender) urlRender
+        let htmlBody = SES.content $ LT.toStrict $ renderHtml $(shamletFile "templates/email/admin-notification.hamlet")
 
-      let body =
-            SES.body
-              & SES.bText ?~ textBody
-      -- & SES.bHTML ?~ htmlBody
+        let body =
+              SES.body
+                & SES.bText ?~ textBody
+                & SES.bHTML ?~ htmlBody
 
-      let message = SES.message subject body
+        let message = SES.message subject body
 
-      let fromEmail = "no-reply@salsa-parties.today"
+        let fromEmail = "no-reply@salsa-parties.today"
 
-      let destination =
-            SES.destination
-              & SES.dBCCAddresses .~ [fromEmail]
-              & SES.dToAddresses .~ [adminEmailAddress]
-      let request = SES.sendEmail fromEmail destination message
+        let destination =
+              SES.destination
+                & SES.dBCCAddresses .~ [fromEmail]
+                & SES.dToAddresses .~ [adminEmailAddress]
+        let request = SES.sendEmail fromEmail destination message
 
-      logFunc <- askLoggerIO
-      let logger :: AWS.Logger
-          logger awsLevel builder =
-            let ourLevel = case awsLevel of
-                  AWS.Info -> LevelInfo
-                  AWS.Error -> LevelError
-                  AWS.Debug -> LevelDebug
-                  AWS.Trace -> LevelDebug
-             in logFunc defaultLoc "aws-client" ourLevel $ toLogStr builder
-      awsEnv <- liftIO $ AWS.newEnv AWS.Discover
-      let ourAwsEnv =
-            awsEnv
-              & AWS.envRegion .~ AWS.Ireland
-              & AWS.envLogger .~ logger
-      response <- AWS.runResourceT $ AWS.runAWS ourAwsEnv $ AWS.trying AWS._Error $ AWS.send request
-      case (^. SES.sersResponseStatus) <$> response of
-        Right 200 -> logInfoN $ "Succesfully send verification email to address: " <> adminEmailAddress
-        _ -> logErrorN $ T.unlines ["Failed to send verification email to address: " <> adminEmailAddress, T.pack (ppShow response)]
-    else logInfoN $ "Not sending admin notification email (because sendEmail is turned of), to address: " <> adminEmailAddress
+        logFunc <- askLoggerIO
+        let logger :: AWS.Logger
+            logger awsLevel builder =
+              let ourLevel = case awsLevel of
+                    AWS.Info -> LevelInfo
+                    AWS.Error -> LevelError
+                    AWS.Debug -> LevelDebug
+                    AWS.Trace -> LevelDebug
+               in logFunc defaultLoc "aws-client" ourLevel $ toLogStr builder
+        awsEnv <- liftIO $ AWS.newEnv AWS.Discover
+        let ourAwsEnv =
+              awsEnv
+                & AWS.envRegion .~ AWS.Ireland
+                & AWS.envLogger .~ logger
+        response <- AWS.runResourceT $ AWS.runAWS ourAwsEnv $ AWS.trying AWS._Error $ AWS.send request
+        case (^. SES.sersResponseStatus) <$> response of
+          Right 200 -> logInfoN $ "Succesfully send verification email to address: " <> adminEmailAddress
+          _ -> logErrorN $ T.unlines ["Failed to send verification email to address: " <> adminEmailAddress, T.pack (ppShow response)]
+      else logInfoN $ "Not sending admin notification email (because sendEmail is turned of), to address: " <> adminEmailAddress
 
 verifyR :: Text -> Text -> Route Auth
 verifyR userEmailAddress verificationKey = PluginR salsaAuthPluginName ["verify", userEmailAddress, verificationKey]

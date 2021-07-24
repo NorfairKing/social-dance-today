@@ -1,0 +1,5 @@
+Admin Notification
+
+#{notificationContents}
+
+You received this email because you are an admin at social dance today.

@@ -27,7 +27,7 @@ lookupPlace query = do
     Nothing -> invalidArgs ["Place not found: " <> query]
     Just p -> pure p
 
-lookupPlaceRaw :: (MonadReader App m, MonadLoggerIO m) => Text -> m (Maybe (Entity Place))
+lookupPlaceRaw :: (MonadUnliftIO m, MonadReader App m, MonadLoggerIO m) => Text -> m (Maybe (Entity Place))
 lookupPlaceRaw query = do
   mPlace <- appDB $ getBy $ UniquePlaceQuery query
   case mPlace of
@@ -42,12 +42,14 @@ lookupPlaceRaw query = do
 
       mCoordinates <- case (mOSMRateLimiter, mGoogleAPIKey) of
         (Nothing, Nothing) -> do
-          logErrorNS "geocoding" $
-            T.concat
-              [ "No geocoding service configured to geocode ",
-                T.pack (show query),
-                ", please contact the site administrators."
-              ]
+          let msg =
+                T.concat
+                  [ "No geocoding service configured to geocode ",
+                    T.pack (show query),
+                    ", please contact the site administrators."
+                  ]
+          logErrorNS "geocoding" msg
+          sendAdminNotification msg
           pure Nothing
         (Just osmRateLimiter, Nothing) -> do
           liftIO $ waitDebit osmRateLimiter 1
