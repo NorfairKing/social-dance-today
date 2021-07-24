@@ -6,6 +6,7 @@ module Salsa.Party.Looper where
 
 import Control.Exception (AsyncException)
 import Control.Monad.Logger
+import Control.Monad.Reader
 import qualified Data.Text as T
 import Data.Time
 import GHC.Clock (getMonotonicTimeNSec)
@@ -40,7 +41,10 @@ runLoopers settings@Settings {..} app = do
         end <- liftIO getMonotonicTimeNSec
         case errOrUnit of
           Right () -> pure ()
-          Left err -> logErrorNS looperDefName $ "Looper threw an exception:\n" <> T.pack (displayException err)
+          Left err -> do
+            let message = "Looper threw an exception:\n" <> T.pack (displayException err)
+            logErrorNS looperDefName message
+            runReaderT (sendAdminNotification message) app
         logInfoNS looperDefName $
           T.pack $
             formatTime
