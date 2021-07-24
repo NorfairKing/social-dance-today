@@ -59,7 +59,7 @@ searchResultPage :: Maybe Day -> Maybe Text -> Coordinates -> Handler Html
 searchResultPage mDay mAddress coordinates = do
   today <- liftIO $ utctDay <$> getCurrentTime -- today
   let day = fromMaybe today mDay
-  let daysAhead = 7
+  let daysAhead = 6
   let begin = day
   let end = addDays daysAhead begin
       prevDay = addDays (negate daysAhead) begin
