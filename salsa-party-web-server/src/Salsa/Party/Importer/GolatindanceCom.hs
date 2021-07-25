@@ -61,6 +61,7 @@ import Network.URI
 import Salsa.Party.Importer.Import
 import Salsa.Party.Web.Server.Geocoding
 import Text.HTML.Scalpel
+import Text.HTML.Scalpel.Extended
 import qualified Text.HTML.TagSoup as HTML
 import qualified Web.JSONLD as LD
 import qualified Web.JSONLD.Parse as LD
@@ -75,7 +76,12 @@ golatindanceComImporter =
 func :: Import ()
 func = do
   runConduit $
-    yieldMany categories
+    yield "https://golatindance.com/"
+      .| C.concatMap (parseRequest :: String -> Maybe Request)
+      .| doHttpRequestWith
+      .| logRequestErrors
+      .| parseCategoryUrls
+      .| andDays
       .| C.concatMap makeCalendarRequest
       .| doHttpRequestWith
       .| logRequestErrors
@@ -88,59 +94,32 @@ func = do
       .| parseJSONLDEvents
       .| importJSONLDEvents
 
-categories :: [Text]
-categories =
-  [ -- Australia
-    "melbourne",
-    "sydney",
-    -- Canada
-    "toronto",
-    "vancouver",
-    -- UK
-    "london",
-    -- USA - Midwest
-    "chicago",
-    "kansas-city",
-    "minneapolis",
-    -- USA - East
-    "boston",
-    "detroit",
-    "philadelphia",
-    "new-york-city",
-    "washington-dc-baltimore",
-    -- USA - South
-    "austin",
-    "dallas-forth-worth",
-    "houston",
-    "san-antonio",
-    -- USA - Southeast
-    "atlanta",
-    "miami",
-    "orlando",
-    "raleigh-durham",
-    "tampa",
-    -- USA - West
-    "denver",
-    "las-vegas",
-    "los-angeles",
-    "phoenix",
-    "portland",
-    "san-diego",
-    "san-francisco-bay-area",
-    "seattle"
-  ]
+parseCategoryUrls ::
+  ConduitM (Request, Response LB.ByteString) Text Import ()
+parseCategoryUrls = awaitForever $ \(_, response) -> do
+  let links = fromMaybe [] $
+        scrapeStringLike (responseBody response) $ do
+          refs <- attrs "href" "a"
+          pure $ mapMaybe maybeUtf8 $ filter ("https://golatindance.com/events/category/" `LB.isPrefixOf`) refs
+  yieldMany links
 
-makeCalendarRequest :: Text -> Maybe HTTP.Request
-makeCalendarRequest city = do
-  let baseUrl = "https://golatindance.com"
-      categoryIcalUrl category = baseUrl <> "/events/category/" <> category <> "/list"
-  requestPrototype <- parseRequest $ categoryIcalUrl $ T.unpack city
+andDays :: MonadIO m => ConduitT a (a, Day) m ()
+andDays = do
+  today <- liftIO $ utctDay <$> getCurrentTime
+  let days = [today, addDays 7 today .. addDays 28 today]
+  awaitForever $ \a -> yieldMany $ map ((,) a) days
+
+makeCalendarRequest :: (Text, Day) -> Maybe HTTP.Request
+makeCalendarRequest (link, day) = do
+  requestPrototype <- parseRequest $ T.unpack link <> "list"
   pure $
     setQueryString
-      [ ("tribe-bar-date", Just "2021-07-21"),
+      [ ("tribe-bar-date", Just $ TE.encodeUtf8 $ T.pack $ formatTime defaultTimeLocale "%F" day),
         ("ical", Just "1")
       ]
-      $ requestPrototype {requestHeaders = ("Accept", "application/calendar") : requestHeaders requestPrototype}
+      $ requestPrototype
+        { requestHeaders = ("Accept", "application/calendar") : requestHeaders requestPrototype
+        }
 
 parseUrlsInCalendars :: ConduitT (HTTP.Request, Response LB.ByteString) Text Import ()
 parseUrlsInCalendars =

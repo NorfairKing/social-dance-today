@@ -347,4 +347,6 @@ deduplicateC = () <$ go S.empty
         Just a ->
           if S.member a seen
             then go seen
-            else go $ S.insert a seen
+            else do
+              yield a
+              go $ S.insert a seen

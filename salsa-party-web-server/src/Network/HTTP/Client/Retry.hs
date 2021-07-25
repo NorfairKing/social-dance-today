@@ -12,6 +12,7 @@ import qualified Data.Text as T
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.Internal as HTTP
 import Network.HTTP.Types as HTTP
+import Text.Show.Pretty
 import UnliftIO
 
 tryHttpOnce :: (MonadLogger m, MonadIO m) => RetryStatus -> HTTP.Request -> HTTP.Manager -> m (Either HttpException (HTTP.Response LB.ByteString))
@@ -31,7 +32,12 @@ shouldRetryHttpRequest _ = \case
     case exception of
       InvalidUrlException _ _ -> pure False
       HttpExceptionRequest request_ exceptionContent -> do
-        logErrorN $ T.pack $ unwords ["Something went wrong while fetching", show (getUri request_)]
+        logWarnN $
+          T.pack $
+            unlines
+              [ unwords ["Something went wrong while fetching", show (getUri request_)],
+                ppShow exception
+              ]
         pure $ case exceptionContent of
           ResponseTimeout -> True
           ConnectionTimeout -> True
