@@ -55,6 +55,7 @@ runSiteTest SiteTest {..} = do
   siteTestResultRobotsTxt <- testRobotsTxt siteTestUrl
   siteTestResultSitemapXml <- testSitemapXml siteTestUrl
   siteTestResultJSONLD <- testJSONLD siteTestUrl
+  siteTestAcceptJSONLD <- testAcceptJSONLDResult siteTestUrl
   siteTestAcceptJSON <- testAcceptJSONResult siteTestUrl
   siteTestAcceptXML <- testAcceptXMLResult siteTestUrl
   pure SiteTestResult {..}
@@ -63,6 +64,7 @@ data SiteTestResult = SiteTestResult
   { siteTestResultRobotsTxt :: !RobotsTxtResult,
     siteTestResultSitemapXml :: !SitemapXmlResult,
     siteTestResultJSONLD :: ![JSONLDResult],
+    siteTestAcceptJSONLD :: !AcceptJSONResult,
     siteTestAcceptJSON :: !AcceptJSONResult,
     siteTestAcceptXML :: !AcceptXMLResult
   }
@@ -140,6 +142,22 @@ data AcceptJSONResult
   = ErrAcceptJSON !String
   | AcceptJSON !JSON.Value
   deriving (Show, Eq, Generic)
+
+testAcceptJSONLDResult :: Text -> Handler AcceptJSONResult
+testAcceptJSONLDResult siteTestUrl = do
+  requestPrototype <- parseRequest $ T.unpack siteTestUrl
+  let request = requestPrototype {requestHeaders = ("Accept", "application/ld+json") : requestHeaders requestPrototype}
+  errOrResponse <- handleRequest request
+  pure $ case errOrResponse of
+    Left err -> ErrAcceptJSON $ ppShow err
+    Right response ->
+      let sc = responseStatus response
+          c = HTTP.statusCode sc
+       in if c >= 400
+            then ErrAcceptJSON $ "Responded with: " <> show sc
+            else case JSON.eitherDecode $ responseBody response of
+              Left err -> ErrAcceptJSON $ "Got a response, but it doesn't look like JSON: " <> ppShow err
+              Right value -> AcceptJSON value
 
 testAcceptJSONResult :: Text -> Handler AcceptJSONResult
 testAcceptJSONResult siteTestUrl = do

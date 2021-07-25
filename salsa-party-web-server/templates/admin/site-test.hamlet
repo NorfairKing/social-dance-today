@@ -162,6 +162,27 @@ $maybe (siteTest, result) <- mSiteTest
                       #{ppShow event}
 
       <h3 .title .is-5>
+        JSON LD
+      $case siteTestAcceptJSONLD result
+        $of ErrAcceptJSON err
+          <p .content>
+            Error while fetching with
+            <code>
+              Accept: application/ld+json
+            :
+            <details>
+              <pre>
+                #{err}
+        $of AcceptJSON value
+          <p .content>
+            Found a JSON object on this page, this means there is something machine readible on this page (but not necessarily an event):
+            <details>
+              <summary>
+                Value
+              <pre>
+                #{TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty value}
+
+      <h3 .title .is-5>
         JSON
       $case siteTestAcceptJSON result
         $of ErrAcceptJSON err
