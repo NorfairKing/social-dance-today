@@ -84,7 +84,7 @@
           <th width=250px>
             Last Run End
           <th width=250px>
-            Last Run Timing
+            Latest Run
           <th width=50px>
             Events
           <th width=50px>
@@ -100,7 +100,12 @@
               #{maybe "" (formatTime timeLocale prettyDateTimeFormat) $ importerMetadataLastRunEnd importer}
             <td>
               $maybe end <- importerMetadataLastRunEnd importer
-                #{formatTime timeLocale "%Hh%Mm%Ss" $ diffUTCTime end $ importerMetadataLastRunStart importer}
+                $case diffUTCTime end $ importerMetadataLastRunStart importer
+                  $of diff
+                    $if diff >= 0
+                      Finished: #{formatTime timeLocale "%Hh%Mm%Ss" diff}
+                    $else
+                      Started: #{formatTime timeLocale "%Hh%Mm%Ss" $ diffUTCTime now $ importerMetadataLastRunStart importer}
             <td>
               <a .button href=@{AdminR $ AdminImporterEventsR importerId}>
                 Events

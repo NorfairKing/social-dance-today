@@ -11,7 +11,8 @@ import Salsa.Party.Web.Server.Handler.Import
 
 getAdminPanelR :: Handler Html
 getAdminPanelR = do
-  today <- liftIO $ utctDay <$> getCurrentTime
+  now <- liftIO getCurrentTime
+  let today = utctDay now
   nbOrganisers <- runDB $ count ([] :: [Filter Organiser])
   nbUpcomingParties <- runDB $ count ([PartyDay >=. today] :: [Filter Party])
   nbUpcomingExternalEvents <- runDB $ count ([ExternalEventDay >=. today] :: [Filter ExternalEvent])
