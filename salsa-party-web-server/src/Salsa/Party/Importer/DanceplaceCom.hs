@@ -64,40 +64,36 @@ danceplaceComImporter =
       importerFunc = func
     }
 
-baseUrl :: String
-baseUrl = "https://danceplace.com"
-
 func :: Import ()
 func = do
   now <- liftIO getCurrentTime
   let (currentYear, _, _) = toGregorian $ utctDay now
-  case parseRequest $ baseUrl <> "/robots.txt" of
-    Nothing -> logErrorN "Robots.txt url was invalid."
-    Just request -> do
-      errOrResponse <- doHttpRequest request
-      case errOrResponse of
-        Left err -> logErrorN $ T.pack $ "Could not reach robots.txt:\n" <> ppShow err
-        Right response -> do
-          let sitemapUrls = mapMaybe (SB.stripPrefix "Sitemap: ") $ SB8.lines $ LB.toStrict $ responseBody response
-          runConduit $
-            yieldMany sitemapUrls
-              .| C.concatMap (parseRequest . SB8.unpack :: ByteString -> Maybe Request)
-              .| doHttpRequestWith
-              .| logRequestErrors
-              .| C.map (responseBody . snd)
-              .| C.splitOnUnboundedE (== 0x0a)
-              .| C.filter ("+event" `LB8.isSuffixOf`)
-              .| C.map LB.toStrict
-              .| C.filter
-                ( \url ->
-                    SB8.pack (show currentYear) `SB8.isInfixOf` url
-                      || SB8.pack (show (succ currentYear)) `SB8.isInfixOf` url
-                )
-              .| deduplicateC
-              .| C.concatMap (parseRequest . SB8.unpack :: ByteString -> Maybe Request)
-              .| doHttpRequestWith
-              .| logRequestErrors
-              .| C.mapM_ (uncurry parseEventFromPage)
+  runConduit $
+    yield "https://danceplace.com"
+      .| C.concatMap (parseRequest . (<> "/robots.txt") :: String -> Maybe Request)
+      .| doHttpRequestWith
+      .| logRequestErrors
+      .| C.concatMap
+        ( \(_, response) ->
+            mapMaybe (SB.stripPrefix "Sitemap: ") $ SB8.lines $ LB.toStrict $ responseBody response
+        )
+      .| C.concatMap (parseRequest . SB8.unpack :: ByteString -> Maybe Request)
+      .| doHttpRequestWith
+      .| logRequestErrors
+      .| C.map (responseBody . snd)
+      .| C.splitOnUnboundedE (== 0x0a)
+      .| C.filter ("+event" `LB8.isSuffixOf`)
+      .| C.map LB.toStrict
+      .| C.filter
+        ( \url ->
+            SB8.pack (show currentYear) `SB8.isInfixOf` url
+              || SB8.pack (show (succ currentYear)) `SB8.isInfixOf` url
+        )
+      .| deduplicateC
+      .| C.concatMap (parseRequest . SB8.unpack :: ByteString -> Maybe Request)
+      .| doHttpRequestWith
+      .| logRequestErrors
+      .| C.mapM_ (uncurry parseEventFromPage)
 
 parseEventFromPage :: HTTP.Request -> HTTP.Response LB.ByteString -> Import ()
 parseEventFromPage request response = do
