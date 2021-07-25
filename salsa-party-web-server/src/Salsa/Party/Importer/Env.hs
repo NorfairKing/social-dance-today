@@ -2,6 +2,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Salsa.Party.Importer.Env where
 
@@ -15,6 +16,8 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
+import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -332,3 +335,16 @@ logRequestErrors = awaitForever $ \(request, errOrResponse) -> case errOrRespons
 teePrint ::
   (Show a, MonadIO m) => ConduitT a a m ()
 teePrint = C.mapM (\a -> liftIO $ pPrint a >> pure a)
+
+deduplicateC :: forall a m. (Ord a, Monad m) => ConduitT a a m ()
+deduplicateC = () <$ go S.empty
+  where
+    go :: Set a -> ConduitT a a m (Set a)
+    go seen = do
+      ma <- await
+      case ma of
+        Nothing -> pure seen
+        Just a ->
+          if S.member a seen
+            then go seen
+            else go $ S.insert a seen

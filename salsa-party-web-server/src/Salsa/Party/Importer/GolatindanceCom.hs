@@ -80,6 +80,7 @@ func = do
       .| doHttpRequestWith
       .| logRequestErrors
       .| parseUrlsInCalendars
+      .| deduplicateC
       .| C.concatMap makeEventPageRequest
       .| doHttpRequestWith
       .| logRequestErrors

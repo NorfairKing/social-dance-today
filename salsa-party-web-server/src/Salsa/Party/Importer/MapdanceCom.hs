@@ -81,6 +81,7 @@ func = do
                 .| logRequestErrors
                 .| C.concatMap (\(_, response_) -> fromMaybe [] $ scrapeStringLike (responseBody response_) scrapeFestivalPagesFromCountryPage :: [Text])
                 .| C.filter ("/e/" `T.isPrefixOf`) -- Really only the event pages
+                .| deduplicateC
                 .| C.concatMap (\relativeURL -> parseRequest $ show baseUri <> T.unpack relativeURL :: Maybe Request)
                 .| doHttpRequestWith
                 .| logRequestErrors

@@ -93,6 +93,7 @@ func = do
                     SB8.pack (show currentYear) `SB8.isInfixOf` url
                       || SB8.pack (show (succ currentYear)) `SB8.isInfixOf` url
                 )
+              .| deduplicateC
               .| C.concatMap (parseRequest . SB8.unpack :: ByteString -> Maybe Request)
               .| doHttpRequestWith
               .| logRequestErrors
