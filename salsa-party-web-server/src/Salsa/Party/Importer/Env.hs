@@ -113,7 +113,9 @@ runImporter a Importer {..} = do
               importerMetadataLastRunEnd = Nothing
             }
         )
-        [ImporterMetadataLastRunStart =. Just begin]
+        [ ImporterMetadataLastRunStart =. Just begin,
+          ImporterMetadataLastRunEnd =. Nothing
+        ]
 
   userAgent <- liftIO chooseUserAgent
   let tokenLimitConfig =
