@@ -86,13 +86,15 @@
           <th width=250px>
             Latest Run
           <th width=50px>
+            Upcoming Events
+          <th width=50px>
             Events
           <th width=50px>
             Reset
           <th width=50px>
             Delete
       <tbody>
-        $forall Entity importerId importer <- importers
+        $forall (Entity importerId importer, upcomingCount, count) <- importers
           <tr>
             <td>
               #{importerMetadataName importer}
@@ -109,8 +111,13 @@
                 $nothing
                   Started: #{formatTime timeLocale "%Hh%Mm%Ss" $ diffUTCTime now start}
             <td>
+              <a .button href=@{AdminR $ AdminImporterUpcomingEventsR importerId}>
+                #{upcomingCount}
+                upcoming events
+            <td>
               <a .button href=@{AdminR $ AdminImporterEventsR importerId}>
-                Events
+                #{count}
+                events
             <td>
               <form .form
                  method=post

@@ -16,7 +16,12 @@ getAdminPanelR = do
   nbOrganisers <- runDB $ count ([] :: [Filter Organiser])
   nbUpcomingParties <- runDB $ count ([PartyDay >=. today] :: [Filter Party])
   nbUpcomingExternalEvents <- runDB $ count ([ExternalEventDay >=. today] :: [Filter ExternalEvent])
-  importers <- runDB $ selectList [] [Asc ImporterMetadataId]
+  importers <- do
+    importers <- runDB $ selectList [] [Asc ImporterMetadataId]
+    forM importers $ \importer -> do
+      upcomingEvents <- runDB $ count [ExternalEventImporter ==. Just (entityKey importer), ExternalEventDay >=. today]
+      events <- runDB $ count [ExternalEventImporter ==. Just (entityKey importer)]
+      pure (importer, upcomingEvents, events)
   token <- genToken
   timeLocale <- getTimeLocale
   prettyDateTimeFormat <- getPrettyDateTimeFormat
@@ -106,6 +111,20 @@ getAdminImporterEventsPageR importerId =
       Asc ExternalEventId
     ]
     (AdminR . AdminImporterEventsPageR importerId)
+
+getAdminImporterUpcomingEventsR :: ImporterMetadataId -> Handler Html
+getAdminImporterUpcomingEventsR importerId = redirect $ AdminR $ AdminImporterUpcomingEventsPageR importerId paginatedFirstPage
+
+getAdminImporterUpcomingEventsPageR :: ImporterMetadataId -> PageNumber -> Handler Html
+getAdminImporterUpcomingEventsPageR importerId pn = do
+  today <- liftIO $ utctDay <$> getCurrentTime
+  externalEventsListPage
+    [ExternalEventImporter ==. Just importerId, ExternalEventDay >=. today]
+    [ Asc ExternalEventDay,
+      Asc ExternalEventId
+    ]
+    (AdminR . AdminImporterUpcomingEventsPageR importerId)
+    pn
 
 externalEventsListPage :: [Filter ExternalEvent] -> [SelectOpt ExternalEvent] -> (PageNumber -> Route App) -> PageNumber -> Handler Html
 externalEventsListPage filters sorters pageRoute pageNumber = do
