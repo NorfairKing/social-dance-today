@@ -23,24 +23,12 @@ getAdminChartsR :: Handler Html
 getAdminChartsR = do
   today <- liftIO $ utctDay <$> getCurrentTime
   acqExternalEventsSource <- runDB $ selectSourceRes [] [Asc ExternalEventCreated]
-  dayCountMapOfExternalEvents <- withAcquire acqExternalEventsSource $ \externalEventSource ->
-    runConduit $
-      externalEventSource
-        .| C.foldl
-          ( \m (Entity _ ExternalEvent {..}) ->
-              addToUpcomingEventsMap today m (utctDay externalEventCreated) externalEventDay
-          )
-          M.empty
+  dayCountMapOfExternalEvents <- makeUpcomingEventsMap today acqExternalEventsSource $ \(Entity _ ExternalEvent {..}) ->
+    (utctDay externalEventCreated, externalEventDay)
   acqPartiesSource <- runDB $ selectSourceRes [] [Asc PartyCreated]
-  dayCountMapOfParties <- withAcquire acqPartiesSource $ \partiesSource ->
-    runConduit $
-      partiesSource
-        .| C.foldl
-          ( \m (Entity _ Party {..}) ->
-              addToUpcomingEventsMap today m (utctDay partyCreated) partyDay
-          )
-          M.empty
-  let dayCountMap = M.unionWith (+) dayCountMapOfParties dayCountMapOfExternalEvents
+  dayCountMapOfParties <- makeUpcomingEventsMap today acqPartiesSource $ \(Entity _ Party {..}) ->
+    (utctDay partyCreated, partyDay)
+  let dayCountMap = combineUpcomingEventsMap dayCountMapOfParties dayCountMapOfExternalEvents
 
   let minDay = case (M.lookupMin dayCountMapOfExternalEvents, M.lookupMin dayCountMapOfParties) of
         (Nothing, Nothing) -> today
@@ -53,14 +41,30 @@ getAdminChartsR = do
     addScriptRemote "https://cdn.jsdelivr.net/npm/chart.js@3.4.1/dist/chart.min.js"
     $(widgetFile "admin/charts")
 
+makeUpcomingEventsMap :: MonadUnliftIO m => Day -> Acquire (ConduitT () a m ()) -> (a -> (Day, Day)) -> m (Map Day Word64)
+makeUpcomingEventsMap today source func =
+  makeDayMap
+    source
+    ( \m a ->
+        let (created, scheduled) = func a
+         in addToUpcomingEventsMap today m created scheduled
+    )
+
+makeDayMap :: MonadUnliftIO m => Acquire (ConduitT () a m ()) -> (Map Day Word64 -> a -> Map Day Word64) -> m (Map Day Word64)
+makeDayMap acqSource func = withAcquire acqSource $ \source ->
+  runConduit $ source .| C.foldl func M.empty
+
+combineUpcomingEventsMap :: Map Day Word64 -> Map Day Word64 -> Map Day Word64
+combineUpcomingEventsMap = M.unionWith (+)
+
 addToUpcomingEventsMap :: Day -> Map Day Word64 -> Day -> Day -> Map Day Word64
 addToUpcomingEventsMap today m created scheduled =
   let days = [created .. min today scheduled]
       mapOfOnes = M.fromAscList $ map (\d -> (d, 1)) days
    in M.unionWith (+) mapOfOnes m
 
-upcomingEventsChart :: Day -> Day -> [(Text, Map Day Word64)] -> Widget
-upcomingEventsChart minDay maxDay maps = do
+lineChartOverTime :: Day -> Day -> [(Text, Map Day Word64)] -> Widget
+lineChartOverTime minDay maxDay maps = do
   let days = [minDay .. maxDay]
       labels = toJSON $ map (formatTime defaultTimeLocale "%F") days
       datumsFor dayCountMap = toJSON $ map (\d -> fromMaybe 0 $ M.lookup d dayCountMap) days
@@ -80,7 +84,7 @@ upcomingEventsChart minDay maxDay maps = do
           ]
       datasets = toJSON $ iterateL datasetFor maps
   classIdent <- newIdent
-  $(widgetFile "admin/charts/upcoming-events")
+  $(widgetFile "admin/charts/line-chart")
 
 iterateL :: (Int -> a -> b) -> [a] -> [b]
 iterateL func = zipWith func [0 ..]
