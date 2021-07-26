@@ -1,0 +1,13 @@
+const data#{rawJS classIdent} = {
+  labels: #{labels},
+  datasets: #{datasets},
+};
+const config#{rawJS classIdent} = {
+  type: 'line',
+  data: data#{rawJS classIdent},
+  maintainAspectRatio: true,
+  aspectRatio: 1.77,
+};
+
+var ctx#{rawJS classIdent} = document.getElementById(#{classIdent});
+var myChart#{rawJS classIdent} = new Chart(ctx#{rawJS classIdent}, config#{rawJS classIdent});

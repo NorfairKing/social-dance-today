@@ -1,0 +1,3 @@
+<div .chart-container>
+  <canvas id=#{classIdent}>
+

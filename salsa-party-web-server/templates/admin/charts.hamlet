@@ -1,0 +1,25 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      Charts
+
+    <div .columns .is-multiline .is-centered>
+      <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
+        <h2 .title .is-4>
+          Parties
+        ^{upcomingEventsChart minDay maxDay [("Upcoming Parties", dayCountMapOfParties)]}
+
+      <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
+        <h2 .title .is-4>
+          External events
+        ^{upcomingEventsChart minDay maxDay [("Upcoming External Events", dayCountMapOfExternalEvents)]}
+
+      <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
+        <h2 .title .is-4>
+          Total Events
+        ^{upcomingEventsChart minDay maxDay [("Upcoming Events", dayCountMap)]}
+
+      <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
+        <h2 .title .is-4>
+          Combined chart
+        ^{upcomingEventsChart minDay maxDay [("Upcoming Parties", dayCountMapOfParties), ("Upcoming External Events", dayCountMapOfExternalEvents)]}

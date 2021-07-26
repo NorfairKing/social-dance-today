@@ -44,6 +44,7 @@ library
       Salsa.Party.Web.Server.Handler.Account.Overview
       Salsa.Party.Web.Server.Handler.Account.Party
       Salsa.Party.Web.Server.Handler.Admin
+      Salsa.Party.Web.Server.Handler.Admin.Charts
       Salsa.Party.Web.Server.Handler.Admin.Geocoding
       Salsa.Party.Web.Server.Handler.Admin.Panel
       Salsa.Party.Web.Server.Handler.Admin.SiteTest

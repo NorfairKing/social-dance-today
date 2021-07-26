@@ -7,6 +7,8 @@
     <h2 .title .is-4>
       Data
     <div .buttons>
+      <a .button href=@{AdminR AdminChartsR}>
+        Charts
       <a .button href=@{AdminR AdminUsersR}>
         #{nbUsers} users
       <a .button href=@{AdminR AdminOrganisersR}>
