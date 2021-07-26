@@ -76,18 +76,17 @@ golatindanceComImporter =
 func :: Import ()
 func = do
   runConduit $
-    -- yield "https://golatindance.com/"
-    --   .| C.concatMap (parseRequest :: String -> Maybe Request)
-    --   .| doHttpRequestWith
-    --   .| logRequestErrors
-    --   .| parseCategoryUrls
-    --   .| andDays
-    --   .| C.concatMap makeCalendarRequest
-    --   .| doHttpRequestWith
-    --   .| logRequestErrors
-    --   .| parseUrlsInCalendars
-    --   .| deduplicateC
-    yield "https://golatindance.com/event/salsa-mish-30-july/"
+    yield "https://golatindance.com/"
+      .| C.concatMap (parseRequest :: String -> Maybe Request)
+      .| doHttpRequestWith
+      .| logRequestErrors
+      .| parseCategoryUrls
+      .| andDays
+      .| C.concatMap makeCalendarRequest
+      .| doHttpRequestWith
+      .| logRequestErrors
+      .| parseUrlsInCalendars
+      .| deduplicateC
       .| C.concatMap makeEventPageRequest
       .| doHttpRequestWith
       .| logRequestErrors
@@ -205,8 +204,9 @@ importJSONLDEvents = awaitForever $ \(request, response, event) -> do
     then pure ()
     else do
       -- It's probably possible to find this on the event page, but not in the event LD
-      let externalEventHomepage = Nothing
-      -- It's probably possible to find this on the event page, but not in the event LD
+      let externalEventHomepage = scrapeStringLike (responseBody response) $ chroot ("dd" @: [hasClass "tribe-events-event-url"]) $ attr "href" "a" >>= utf8
+
+      -- Nowhere on the page as far as we can tell.
       let externalEventPrice = Nothing
       -- TODO the events may contain an attendance mode but in this case they don't seem to.
       -- We may want to try and parse it anyway in case that changes or we use this function somewhere else.

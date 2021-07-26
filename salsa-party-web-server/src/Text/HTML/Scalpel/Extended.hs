@@ -16,7 +16,7 @@ mutf8 :: Functor m => ScraperT LB.ByteString m (Maybe LB.ByteString) -> ScraperT
 mutf8 = fmap (>>= maybeUtf8)
 
 -- Only use this one when it's necessary.
-utf8 :: LB.ByteString -> ScraperT LB.ByteString Import Text
+utf8 :: Monad m => LB.ByteString -> ScraperT LB.ByteString m Text
 utf8 lb = case maybeUtf8 lb of
   Nothing -> fail "Invalid UTF8"
   Just t -> pure t
