@@ -150,7 +150,7 @@ Image sql=image
 
 ImporterMetadata sql=importer_metadata
     name Text
-    lastRunStart UTCTime sql=last_run
+    lastRunStart UTCTime Maybe sql=last_run
     lastRunEnd UTCTime Maybe sql=last_run_end
 
     UniqueImporterMetadataName name

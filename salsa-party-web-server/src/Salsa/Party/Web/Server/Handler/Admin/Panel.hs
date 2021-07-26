@@ -118,6 +118,16 @@ externalEventsListPage filters sorters pageRoute pageNumber = do
     setDescription "Admin overview of the external events"
     $(widgetFile "admin/external-events")
 
+postAdminImporterResetR :: ImporterMetadataId -> Handler Html
+postAdminImporterResetR importerId = do
+  runDB $
+    update
+      importerId
+      [ ImporterMetadataLastRunStart =. Nothing,
+        ImporterMetadataLastRunEnd =. Nothing
+      ]
+  redirect $ AdminR AdminPanelR
+
 postAdminImporterDeleteR :: ImporterMetadataId -> Handler Html
 postAdminImporterDeleteR importerId = do
   runDB $ do

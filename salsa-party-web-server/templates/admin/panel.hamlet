@@ -88,6 +88,8 @@
           <th width=50px>
             Events
           <th width=50px>
+            Reset
+          <th width=50px>
             Delete
       <tbody>
         $forall Entity importerId importer <- importers
@@ -95,20 +97,29 @@
             <td>
               #{importerMetadataName importer}
             <td>
-              #{formatTime timeLocale prettyDateTimeFormat $ importerMetadataLastRunStart importer}
-            <td>
-              #{maybe "" (formatTime timeLocale prettyDateTimeFormat) $ importerMetadataLastRunEnd importer}
+              $maybe start <- importerMetadataLastRunStart importer
+                #{formatTime timeLocale prettyDateTimeFormat start}
             <td>
               $maybe end <- importerMetadataLastRunEnd importer
-                $case diffUTCTime end $ importerMetadataLastRunStart importer
-                  $of diff
-                    $if diff >= 0
-                      Finished: #{formatTime timeLocale "%Hh%Mm%Ss" diff}
-                    $else
-                      Started: #{formatTime timeLocale "%Hh%Mm%Ss" $ diffUTCTime now $ importerMetadataLastRunStart importer}
+                #{formatTime timeLocale prettyDateTimeFormat end}
+            <td>
+              $maybe start <- importerMetadataLastRunStart importer
+                $maybe end <- importerMetadataLastRunEnd importer
+                  Finished: #{formatTime timeLocale "%Hh%Mm%Ss" $ diffUTCTime end start}
+                $nothing
+                  Started: #{formatTime timeLocale "%Hh%Mm%Ss" $ diffUTCTime now start}
             <td>
               <a .button href=@{AdminR $ AdminImporterEventsR importerId}>
                 Events
+            <td>
+              <form .form
+                 method=post
+                 action=@{AdminR $ AdminImporterResetR importerId}>
+                ^{token}
+                <button .button .is-warning
+                  type=submit
+                  onclick="return confirm('Are you sure you want to reset this importer importer? This cannot be undone.');">
+                  Reset
             <td>
               <form .form
                  method=post

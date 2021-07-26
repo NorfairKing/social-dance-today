@@ -59,8 +59,18 @@ runImporterWithDoubleCheck app LooperSettings {..} importer = addImporterNameToL
 
   logInfoN "Checking whether to run"
   now <- liftIO getCurrentTime
-  mImporterMetadata <- runDBHere $ getBy $ UniqueImporterMetadataName $ importerName importer
-  let mLastRun = importerMetadataLastRunStart . entityVal <$> mImporterMetadata
+  importerMetadataEntity <-
+    runDBHere $
+      upsertBy
+        (UniqueImporterMetadataName $ importerName importer)
+        ( ImporterMetadata
+            { importerMetadataName = importerName importer,
+              importerMetadataLastRunStart = Nothing,
+              importerMetadataLastRunEnd = Nothing
+            }
+        )
+        []
+  let mLastRun = importerMetadataLastRunStart $ entityVal importerMetadataEntity
   shouldRun <- case mLastRun of
     Nothing -> do
       logDebugN "Definitely running because it's never run before"
@@ -99,11 +109,11 @@ runImporter a Importer {..} = do
         (UniqueImporterMetadataName importerName)
         ( ImporterMetadata
             { importerMetadataName = importerName,
-              importerMetadataLastRunStart = begin,
+              importerMetadataLastRunStart = Just begin,
               importerMetadataLastRunEnd = Nothing
             }
         )
-        [ImporterMetadataLastRunStart =. begin]
+        [ImporterMetadataLastRunStart =. Just begin]
 
   userAgent <- liftIO chooseUserAgent
   let tokenLimitConfig =
@@ -134,11 +144,11 @@ runImporter a Importer {..} = do
         (UniqueImporterMetadataName importerName)
         ( ImporterMetadata
             { importerMetadataName = importerName,
-              importerMetadataLastRunStart = begin,
+              importerMetadataLastRunStart = Just begin,
               importerMetadataLastRunEnd = Just end
             }
         )
-        [ ImporterMetadataLastRunStart =. begin,
+        [ ImporterMetadataLastRunStart =. Just begin,
           ImporterMetadataLastRunEnd =. Just end
         ]
 
