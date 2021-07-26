@@ -13,9 +13,12 @@ getAdminPanelR :: Handler Html
 getAdminPanelR = do
   now <- liftIO getCurrentTime
   let today = utctDay now
+  nbUsers <- runDB $ count ([] :: [Filter User])
   nbOrganisers <- runDB $ count ([] :: [Filter Organiser])
   nbUpcomingParties <- runDB $ count ([PartyDay >=. today] :: [Filter Party])
+  nbParties <- runDB $ count ([] :: [Filter Party])
   nbUpcomingExternalEvents <- runDB $ count ([ExternalEventDay >=. today] :: [Filter ExternalEvent])
+  nbExternalEvents <- runDB $ count ([] :: [Filter ExternalEvent])
   importers <- do
     importers <- runDB $ selectList [] [Asc ImporterMetadataId]
     forM importers $ \importer -> do
@@ -99,6 +102,18 @@ getAdminExternalEventsR = redirect $ AdminR $ AdminExternalEventsPageR paginated
 
 getAdminExternalEventsPageR :: PageNumber -> Handler Html
 getAdminExternalEventsPageR = externalEventsListPage [] [Asc ExternalEventDay, Asc ExternalEventId] (AdminR . AdminExternalEventsPageR)
+
+getAdminUpcomingExternalEventsR :: Handler Html
+getAdminUpcomingExternalEventsR = redirect $ AdminR $ AdminUpcomingExternalEventsPageR paginatedFirstPage
+
+getAdminUpcomingExternalEventsPageR :: PageNumber -> Handler Html
+getAdminUpcomingExternalEventsPageR pn = do
+  today <- liftIO $ utctDay <$> getCurrentTime
+  externalEventsListPage
+    [ExternalEventDay >=. today]
+    [Asc ExternalEventDay, Asc ExternalEventId]
+    (AdminR . AdminUpcomingExternalEventsPageR)
+    pn
 
 getAdminImporterEventsR :: ImporterMetadataId -> Handler Html
 getAdminImporterEventsR importerId = redirect $ AdminR $ AdminImporterEventsPageR importerId paginatedFirstPage

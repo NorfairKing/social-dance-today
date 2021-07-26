@@ -8,13 +8,15 @@
       Data
     <div .buttons>
       <a .button href=@{AdminR AdminUsersR}>
-        Users
+        #{nbUsers} users
       <a .button href=@{AdminR AdminOrganisersR}>
-        Organisers
+        #{nbOrganisers} organisers
       <a .button href=@{AdminR AdminPartiesR}>
-        Parties
+        #{nbParties} parties
+      <a .button href=@{AdminR AdminUpcomingExternalEventsR}>
+        #{nbUpcomingExternalEvents} upcoming external Events
       <a .button href=@{AdminR AdminExternalEventsR}>
-        External Events
+        #{nbExternalEvents} external Events
 
 
     <h2 .title .is-4>
