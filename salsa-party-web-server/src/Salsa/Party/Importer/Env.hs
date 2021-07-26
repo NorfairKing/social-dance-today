@@ -199,6 +199,7 @@ importExternalEvent externalEvent = importExternalEventAnd externalEvent $ \_ ->
 -- We use this extra function to import images but only if the event has changed.
 importExternalEventAnd :: ExternalEvent -> (ExternalEventId -> Import ()) -> Import ()
 importExternalEventAnd externalEvent@ExternalEvent {..} func = do
+  logDebugN $ T.pack $ "Importing external event:\n" <> ppShow externalEvent
   now <- liftIO getCurrentTime
   importerId <- asks importEnvId
   mExternalEvent <- importDB $ getBy (UniqueExternalEventKey (Just importerId) externalEventKey)
@@ -307,6 +308,7 @@ tryToImportImage uri = do
   case requestFromURI uri of
     Nothing -> pure Nothing
     Just request -> do
+      logDebugN $ T.pack $ "Trying to import image:" <> show uri
       errOrResponse <- doHttpRequest request
       case errOrResponse of
         Left _ -> pure Nothing

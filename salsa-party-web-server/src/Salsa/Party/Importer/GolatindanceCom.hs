@@ -76,17 +76,18 @@ golatindanceComImporter =
 func :: Import ()
 func = do
   runConduit $
-    yield "https://golatindance.com/"
-      .| C.concatMap (parseRequest :: String -> Maybe Request)
-      .| doHttpRequestWith
-      .| logRequestErrors
-      .| parseCategoryUrls
-      .| andDays
-      .| C.concatMap makeCalendarRequest
-      .| doHttpRequestWith
-      .| logRequestErrors
-      .| parseUrlsInCalendars
-      .| deduplicateC
+    -- yield "https://golatindance.com/"
+    --   .| C.concatMap (parseRequest :: String -> Maybe Request)
+    --   .| doHttpRequestWith
+    --   .| logRequestErrors
+    --   .| parseCategoryUrls
+    --   .| andDays
+    --   .| C.concatMap makeCalendarRequest
+    --   .| doHttpRequestWith
+    --   .| logRequestErrors
+    --   .| parseUrlsInCalendars
+    --   .| deduplicateC
+    yield "https://golatindance.com/event/salsa-mish-30-july/"
       .| C.concatMap makeEventPageRequest
       .| doHttpRequestWith
       .| logRequestErrors
@@ -136,20 +137,20 @@ makeEventPageRequest url = do
   guard $ T.isPrefixOf "https://golatindance.com/event/" url
   parseRequest $ T.unpack url
 
-parseJSONLDPieces :: ConduitT (Request, Response LB.ByteString) (Request, JSON.Value) Import ()
+parseJSONLDPieces :: ConduitT (Request, Response LB.ByteString) (Request, Response LB.ByteString, JSON.Value) Import ()
 parseJSONLDPieces = C.concatMap $ \(request, response) -> do
   let c = HTTP.statusCode (responseStatus response)
   guard $ 200 <= c && c < 300
   value <- fromMaybe [] $ scrapeStringLike (responseBody response) LD.scrapeJSONLDValues
-  pure (request, value)
+  pure (request, response, value)
 
 parseJSONLDEvents ::
   ConduitT
-    (HTTP.Request, JSON.Value)
-    (HTTP.Request, LD.Event)
+    (HTTP.Request, HTTP.Response LB.ByteString, JSON.Value)
+    (HTTP.Request, HTTP.Response LB.ByteString, LD.Event)
     Import
     ()
-parseJSONLDEvents = awaitForever $ \(uri, value) ->
+parseJSONLDEvents = awaitForever $ \(request, response, value) ->
   case ((: []) <$> JSON.parseEither parseJSON value) <|> JSON.parseEither parseJSON value of
     Left _ ->
       -- We don't log this error.
@@ -159,10 +160,10 @@ parseJSONLDEvents = awaitForever $ \(uri, value) ->
       -- TODO: Maybe we could try checkning for the type of what we are parsing?
       -- JSONLD uses an @type field so that could work.
       pure ()
-    Right event -> yieldMany $ map ((,) uri) event
+    Right event -> yieldMany $ map ((,,) request response) event
 
-importJSONLDEvents :: ConduitT (HTTP.Request, LD.Event) Void Import ()
-importJSONLDEvents = awaitForever $ \(request, event) -> do
+importJSONLDEvents :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString, LD.Event) Void Import ()
+importJSONLDEvents = awaitForever $ \(request, response, event) -> do
   -- We use this 'unescapeHtml' function because
   -- there are still html entities in the tags that we get.
   -- I'm not sure whether that's a mistake on their part or on ours, but it's definitely weird.
@@ -176,7 +177,17 @@ importJSONLDEvents = awaitForever $ \(request, event) -> do
               Nothing -> uriText
               Just suffix -> suffix
   let externalEventTitle = unescapeHtml $ LD.eventName event
-  let externalEventDescription = Nothing
+  let externalEventDescription = scrapeStringLike (responseBody response) $
+        chroot ("div" @: [hasClass "tribe-events-content"]) $ do
+          rawHtmls <- htmls "p"
+          let pScraper = do
+                ls <- texts "p"
+                pure $ T.intercalate "\n" ls
+          -- We use forM_ instead of mayMaybe so that we never get partial descriptions
+          ts <- forM rawHtmls $ \rawHtml -> case maybeUtf8 rawHtml >>= (\t -> scrapeStringLike (T.replace "<br>" "" t) pScraper) of
+            Nothing -> fail "couldn't parse this tag"
+            Just t -> pure t
+          pure $ T.intercalate "\n\n" ts
   let externalEventOrganiser = do
         eventOrganizer <- LD.eventOrganizer event
         case eventOrganizer of
