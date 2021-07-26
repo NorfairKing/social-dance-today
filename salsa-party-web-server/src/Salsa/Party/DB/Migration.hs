@@ -82,7 +82,7 @@ locations =
     Location {locationPlace = Place {placeQuery = "Portland", placeLat = 33.897911600, placeLon = -117.310519500}},
     Location {locationPlace = Place {placeQuery = "Denver", placeLat = 39.734838100, placeLon = -104.965327100}},
     Location {locationPlace = Place {placeQuery = "Tampa", placeLat = 27.947759500, placeLon = -82.458444000}},
-    Location {locationPlace = Place {placeQuery = "Raleigh", placeLat = 33.695847600, placeLon = -117.773110600}},
+    Location {locationPlace = Place {placeQuery = "Raleigh-Durham", placeLat = 33.695847600, placeLon = -117.773110600}},
     Location {locationPlace = Place {placeQuery = "Orlando", placeLat = 28.542110900, placeLon = -81.379030400}},
     Location {locationPlace = Place {placeQuery = "Atlanta", placeLat = 33.748992400, placeLon = -84.390264400}},
     Location {locationPlace = Place {placeQuery = "San Antonio", placeLat = 29.424600200, placeLon = -98.495140500}},
