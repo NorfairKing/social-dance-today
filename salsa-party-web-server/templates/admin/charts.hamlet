@@ -7,19 +7,24 @@
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
           Parties
-        ^{lineChartOverTime minDay maxDay [("Upcoming Parties", dayCountMapOfParties)]}
+        ^{lineChart minDay maxDay [("Upcoming Parties", dayCountMapOfParties)]}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
           External events
-        ^{lineChartOverTime minDay maxDay [("Upcoming External Events", dayCountMapOfExternalEvents)]}
+        ^{lineChart minDay maxDay [("Upcoming External Events", dayCountMapOfExternalEvents)]}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
           Total Events
-        ^{lineChartOverTime minDay maxDay [("Upcoming Events", dayCountMap)]}
+        ^{lineChart minDay maxDay [("Upcoming Events", dayCountMapOfTotal)]}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
           Combined chart
-        ^{lineChartOverTime minDay maxDay [("Upcoming Parties", dayCountMapOfParties), ("Upcoming External Events", dayCountMapOfExternalEvents)]}
+        ^{lineChart minDay maxDay [("Upcoming Parties", dayCountMapOfParties), ("Upcoming External Events", dayCountMapOfExternalEvents)]}
+
+      <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
+        <h2 .title .is-4>
+          Users and Organisers
+        ^{lineChart minDay maxDay [("Users", dayCountOfUsers), ("Organisers", dayCountOfOrganisers)]}
