@@ -34,6 +34,7 @@ data Settings = Settings
     settingLogLevel :: !LogLevel,
     settingDbFile :: !(Path Abs File),
     settingSendEmails :: !Bool,
+    settingSendAddress :: !(Maybe Text),
     settingAdmin :: !(Maybe Text),
     settingEnableOSMGeocoding :: !Bool,
     settingEnableGoogleGeocoding :: !Bool,
@@ -69,6 +70,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
     Nothing -> resolveFile' "salsa-parties.sqlite3"
     Just dbf -> resolveFile' dbf
   let settingSendEmails = fromMaybe False $ flagSendEmails <|> envSendEmails <|> mc confSendEmails
+  let settingSendAddress = flagSendAddress <|> envSendAddress <|> mc confSendAddress
   let settingAdmin = flagAdmin <|> envAdmin <|> mc confAdmin
   let settingEnableOSMGeocoding = fromMaybe True $ flagEnableOSMGeocoding <|> envEnableOSMGeocoding <|> mc confEnableOSMGeocoding
   let settingEnableGoogleGeocoding = fromMaybe True $ flagEnableGoogleGeocoding <|> envEnableGoogleGeocoding <|> mc confEnableGoogleGeocoding
@@ -99,6 +101,7 @@ data Configuration = Configuration
     confLogLevel :: !(Maybe LogLevel),
     confDbFile :: !(Maybe FilePath),
     confSendEmails :: !(Maybe Bool),
+    confSendAddress :: !(Maybe Text),
     confAdmin :: !(Maybe Text),
     confEnableOSMGeocoding :: !(Maybe Bool),
     confEnableGoogleGeocoding :: !(Maybe Bool),
@@ -127,6 +130,7 @@ instance YamlSchema Configuration where
         <*> optionalFieldWith "log-level" "Minimal severity for log messages" viaRead
         <*> optionalField "database" "The path to the database file"
         <*> optionalField "send-emails" "Whether to send emails and require email verification"
+        <*> optionalField "send-address" "The email address to send emails from"
         <*> optionalField "admin" "The email address of the admin user"
         <*> optionalField "enable-osm-geocoding" "Enable OpenStreetMaps Geocoding"
         <*> optionalField "enable-google-geocoding" "Enable Google Geocoding"
@@ -177,6 +181,7 @@ data Environment = Environment
     envLogLevel :: !(Maybe LogLevel),
     envDbFile :: !(Maybe FilePath),
     envSendEmails :: !(Maybe Bool),
+    envSendAddress :: !(Maybe Text),
     envAdmin :: !(Maybe Text),
     envEnableOSMGeocoding :: !(Maybe Bool),
     envEnableGoogleGeocoding :: !(Maybe Bool),
@@ -213,6 +218,7 @@ environmentParser =
       <*> Env.var (fmap Just . Env.auto) "LOG_LEVEL" (mE <> Env.help "Minimal severity for log messages")
       <*> Env.var (fmap Just . Env.auto) "DATABASE" (mE <> Env.help "The path to the database file")
       <*> Env.var (fmap Just . Env.auto) "SEND_EMAILS" (mE <> Env.help "Whether to send emails and require email verification")
+      <*> Env.var (fmap Just . Env.str) "SEND_ADDRESS" (mE <> Env.help "The address to send emails from")
       <*> Env.var (fmap Just . Env.str) "ADMIN" (mE <> Env.help "The email address of the admin user")
       <*> Env.var (fmap Just . Env.auto) "ENABLE_OSM_GEOCODING" (mE <> Env.help "Enable OpenStreetMaps Geocoding")
       <*> Env.var (fmap Just . Env.auto) "ENABLE_GOOGLE_GEOCODING" (mE <> Env.help "Enable Google Geocoding")
@@ -269,6 +275,7 @@ data Flags = Flags
     flagLogLevel :: !(Maybe LogLevel),
     flagDbFile :: !(Maybe FilePath),
     flagSendEmails :: !(Maybe Bool),
+    flagSendAddress :: !(Maybe Text),
     flagAdmin :: !(Maybe Text),
     flagEnableOSMGeocoding :: !(Maybe Bool),
     flagEnableGoogleGeocoding :: !(Maybe Bool),
@@ -352,6 +359,14 @@ parseFlags =
                   help "Don't send emails or require email verification"
                 ]
             )
+      )
+    <*> optional
+      ( strOption
+          ( mconcat
+              [ long "send-address",
+                help "The email address to send emails from"
+              ]
+          )
       )
     <*> optional
       ( strOption

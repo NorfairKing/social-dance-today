@@ -50,6 +50,7 @@ runSalsaPartyServer settings@Settings {..} = do
                   appHTTPManager = man,
                   appSessionKeyFile = sessionKeyFile,
                   appSendEmails = settingSendEmails,
+                  appSendAddress = settingSendAddress,
                   appAdmin = settingAdmin,
                   appOSMRateLimiter = do
                     guard settingEnableOSMGeocoding

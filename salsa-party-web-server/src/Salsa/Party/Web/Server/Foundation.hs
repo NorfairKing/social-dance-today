@@ -69,6 +69,7 @@ data App = App
     appConnectionPool :: !ConnectionPool,
     appSessionKeyFile :: !(Path Abs File),
     appSendEmails :: !Bool,
+    appSendAddress :: !(Maybe Text),
     appAdmin :: !(Maybe Text),
     appOSMRateLimiter :: !(Maybe TokenLimiter), -- Nothing means disabled.
     appSentrySettings :: !(Maybe SentrySettings), -- Nothing means disabled.
@@ -326,43 +327,42 @@ postResendVerificationEmailR = do
 sendVerificationEmail :: Text -> Text -> Handler ()
 sendVerificationEmail userEmailAddress verificationKey = do
   shouldSendEmail <- getsYesod appSendEmails
-  if shouldSendEmail
-    then do
-      logInfoN $ "Sending verification email to address: " <> userEmailAddress
+  mSendAddress <- getsYesod appSendAddress
+  forM_ mSendAddress $ \sendAddress ->
+    if shouldSendEmail
+      then do
+        logInfoN $ "Sending verification email to address: " <> userEmailAddress
 
-      urlRender <- getUrlRenderParams
-      messageRender <- getMessageRender
+        urlRender <- getUrlRenderParams
+        messageRender <- getMessageRender
 
-      let subject = SES.content $ messageRender MsgVerificationEmailSubject
+        let subject = SES.content $ messageRender MsgVerificationEmailSubject
 
-      let textBody = SES.content $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/auth/email/verification-email.txt") urlRender
+        let textBody = SES.content $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/auth/email/verification-email.txt") urlRender
 
-      let htmlBody = SES.content $ LT.toStrict $ renderHtml $ $(ihamletFile "templates/auth/email/verification-email.hamlet") (toHtml . messageRender) urlRender
+        let htmlBody = SES.content $ LT.toStrict $ renderHtml $ $(ihamletFile "templates/auth/email/verification-email.hamlet") (toHtml . messageRender) urlRender
 
-      let body =
-            SES.body
-              & SES.bText ?~ textBody
-              & SES.bHTML ?~ htmlBody
+        let body =
+              SES.body
+                & SES.bText ?~ textBody
+                & SES.bHTML ?~ htmlBody
 
-      let message = SES.message subject body
+        let message = SES.message subject body
 
-      let fromEmail = "no-reply@salsa-parties.today"
+        let destination =
+              SES.destination
+                & SES.dToAddresses .~ [userEmailAddress]
+        let request = SES.sendEmail sendAddress destination message
 
-      let destination =
-            SES.destination
-              & SES.dBCCAddresses .~ [fromEmail]
-              & SES.dToAddresses .~ [userEmailAddress]
-      let request = SES.sendEmail fromEmail destination message
-
-      response <- runAWS $ AWS.send request
-      case (^. SES.sersResponseStatus) <$> response of
-        Right 200 -> do
-          logInfoN $ "Succesfully send verification email to address: " <> userEmailAddress
-          addMessageI "is-success" (ConfirmationEmailSent userEmailAddress)
-        _ -> do
-          logErrorN $ T.unlines ["Failed to send verification email to address: " <> userEmailAddress, T.pack (ppShow response)]
-          addMessageI "is-danger" MsgVerificationEmailFailure
-    else logInfoN $ "Not sending verification email (because sendEmail is turned of), to address: " <> userEmailAddress
+        response <- runAWS $ AWS.send request
+        case (^. SES.sersResponseStatus) <$> response of
+          Right 200 -> do
+            logInfoN $ "Succesfully send verification email to address: " <> userEmailAddress
+            addMessageI "is-success" (ConfirmationEmailSent userEmailAddress)
+          _ -> do
+            logErrorN $ T.unlines ["Failed to send verification email to address: " <> userEmailAddress, T.pack (ppShow response)]
+            addMessageI "is-danger" MsgVerificationEmailFailure
+      else logInfoN $ "Not sending verification email (because sendEmail is turned of), to address: " <> userEmailAddress
 
 runAWS :: (MonadUnliftIO m, MonadLoggerIO m) => AWS.AWS a -> m (Either AWS.Error a)
 runAWS func = do

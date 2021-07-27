@@ -59,6 +59,7 @@ serverSetupFunc man = do
         appConnectionPool = pool,
         appSessionKeyFile = sessionKeyFile,
         appSendEmails = False,
+        appSendAddress = Nothing,
         appAdmin = Just adminEmail,
         appOSMRateLimiter = Nothing,
         appSentrySettings = Nothing,

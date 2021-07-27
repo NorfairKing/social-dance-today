@@ -85,9 +85,9 @@ reminderInterval = 7 * nominalDay
 
 sendOrganiserReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => Text -> m ()
 sendOrganiserReminder emailAddress = do
-  mAdminEmailAddress <- asks appAdmin
-  forM_ mAdminEmailAddress $ \adminEmailAddress -> do
-    logInfoN $ "Sending Admin Notification email to address: " <> adminEmailAddress
+  mSendAddress <- asks appSendAddress
+  forM_ mSendAddress $ \sendAddress -> do
+    logInfoN $ "Sending reminder email to address: " <> emailAddress
 
     let subject = SES.content "Reminder to submit your parties to social dance today"
 
@@ -105,13 +105,10 @@ sendOrganiserReminder emailAddress = do
 
     let message = SES.message subject body
 
-    let fromEmail = "no-reply@salsa-parties.today"
-
     let destination =
           SES.destination
-            & SES.dBCCAddresses .~ [fromEmail]
-            & SES.dToAddresses .~ [adminEmailAddress]
-    let request = SES.sendEmail fromEmail destination message
+            & SES.dToAddresses .~ [emailAddress]
+    let request = SES.sendEmail sendAddress destination message
 
     response <- runAWS $ AWS.send request
     case (^. SES.sersResponseStatus) <$> response of

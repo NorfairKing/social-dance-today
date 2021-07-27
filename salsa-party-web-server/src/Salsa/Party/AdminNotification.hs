@@ -27,37 +27,36 @@ sendAdminNotification :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) =
 sendAdminNotification notificationContents = do
   shouldSendEmail <- asks appSendEmails
   mAdminEmailAddress <- asks appAdmin
-  forM_ mAdminEmailAddress $ \adminEmailAddress ->
-    if shouldSendEmail
-      then do
-        logInfoN $ "Sending Admin Notification email to address: " <> adminEmailAddress
+  mSendAddress <- asks appSendAddress
+  forM_ mSendAddress $ \sendAddress ->
+    forM_ mAdminEmailAddress $ \adminEmailAddress ->
+      if shouldSendEmail
+        then do
+          logInfoN $ "Sending Admin Notification email to address: " <> adminEmailAddress
 
-        let subject = SES.content "Admin Notification"
+          let subject = SES.content "Admin Notification"
 
-        app <- ask
-        let renderUrl = yesodRender app (fromMaybe "" $ appRoot app)
+          app <- ask
+          let renderUrl = yesodRender app (fromMaybe "" $ appRoot app)
 
-        let textBody = SES.content $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/admin-notification.txt") renderUrl
+          let textBody = SES.content $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/admin-notification.txt") renderUrl
 
-        let htmlBody = SES.content $ LT.toStrict $ renderHtml $ $(hamletFile "templates/email/admin-notification.hamlet") renderUrl
+          let htmlBody = SES.content $ LT.toStrict $ renderHtml $ $(hamletFile "templates/email/admin-notification.hamlet") renderUrl
 
-        let body =
-              SES.body
-                & SES.bText ?~ textBody
-                & SES.bHTML ?~ htmlBody
+          let body =
+                SES.body
+                  & SES.bText ?~ textBody
+                  & SES.bHTML ?~ htmlBody
 
-        let message = SES.message subject body
+          let message = SES.message subject body
 
-        let fromEmail = "no-reply@salsa-parties.today"
+          let destination =
+                SES.destination
+                  & SES.dToAddresses .~ [adminEmailAddress]
+          let request = SES.sendEmail sendAddress destination message
 
-        let destination =
-              SES.destination
-                & SES.dBCCAddresses .~ [fromEmail]
-                & SES.dToAddresses .~ [adminEmailAddress]
-        let request = SES.sendEmail fromEmail destination message
-
-        response <- runAWS $ AWS.send request
-        case (^. SES.sersResponseStatus) <$> response of
-          Right 200 -> logInfoN $ "Succesfully send admin notification email to address: " <> adminEmailAddress
-          _ -> logErrorN $ T.unlines ["Failed to send admin notification email to address: " <> adminEmailAddress, T.pack (ppShow response)]
-      else logInfoN $ "Not sending admin notification email (because sendEmail is turned of), to address: " <> adminEmailAddress
+          response <- runAWS $ AWS.send request
+          case (^. SES.sersResponseStatus) <$> response of
+            Right 200 -> logInfoN $ "Succesfully send admin notification email to address: " <> adminEmailAddress
+            _ -> logErrorN $ T.unlines ["Failed to send admin notification email to address: " <> adminEmailAddress, T.pack (ppShow response)]
+        else logInfoN $ "Not sending admin notification email (because sendEmail is turned of), to address: " <> adminEmailAddress
