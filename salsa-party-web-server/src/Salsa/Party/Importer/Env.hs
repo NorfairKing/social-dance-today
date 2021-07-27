@@ -77,7 +77,7 @@ runImporterWithDoubleCheck app LooperSettings {..} importer = addImporterNameToL
       pure True
     Just lastRun -> do
       let diff = diffUTCTime now lastRun
-      let shouldRun = diff >= looperSetPeriod
+      let shouldRun = diff >= hours 24 -- Crawl once per day.
           showDiffTime = T.pack . printf "%.0f" . (realToFrac :: NominalDiffTime -> Double)
       let ctx =
             T.unwords
