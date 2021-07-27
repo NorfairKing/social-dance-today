@@ -6,23 +6,8 @@
     <div .columns .is-multiline .is-centered>
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
-          Parties
-        ^{lineChart minDay maxDay [("Upcoming Parties", dayCountMapOfParties)]}
-
-      <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
-        <h2 .title .is-4>
-          External events
-        ^{lineChart minDay maxDay [("Upcoming External Events", dayCountMapOfExternalEvents)]}
-
-      <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
-        <h2 .title .is-4>
-          Total Events
-        ^{lineChart minDay maxDay [("Upcoming Events", dayCountMapOfTotal)]}
-
-      <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
-        <h2 .title .is-4>
-          Combined chart
-        ^{lineChart minDay maxDay [("Upcoming Parties", dayCountMapOfParties), ("Upcoming External Events", dayCountMapOfExternalEvents)]}
+          Upcoming Parties
+        ^{lineChart minDay maxDay [("Upcoming Parties", dayCountMapOfParties), ("Upcoming External Events", dayCountMapOfExternalEvents), ("Total Upcoming Events", dayCountMapOfTotal)]}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
