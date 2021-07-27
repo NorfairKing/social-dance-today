@@ -62,6 +62,8 @@
   /geocoding AdminGeocodingR GET POST
   /site-test AdminSiteTestR GET POST
 
+  /test-organiser-reminder AdminTestOrganiserReminderR POST
+
 /favicon.ico FaviconR GET
 /sitemap.xml SitemapR GET
 /robots.txt RobotsR GET

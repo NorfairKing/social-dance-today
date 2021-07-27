@@ -3,7 +3,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Salsa.Party.Looper.OrganiserReminder (runOrganiserReminder) where
+module Salsa.Party.Looper.OrganiserReminder (runOrganiserReminder, sendOrganiserReminder) where
 
 import Conduit
 import Control.Monad

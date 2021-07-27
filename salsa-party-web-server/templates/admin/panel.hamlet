@@ -30,6 +30,13 @@
         Geocoding
       <a .button href=@{AdminR AdminSiteTestR}>
         Site Tester
+      <form .form
+         method=post
+         action=@{AdminR AdminTestOrganiserReminderR}>
+        ^{token}
+        <button .button .is-warning
+          type=submit>
+          Send Test Organiser Reminder
 
     <h2 .title .is-4>
       Analytics
