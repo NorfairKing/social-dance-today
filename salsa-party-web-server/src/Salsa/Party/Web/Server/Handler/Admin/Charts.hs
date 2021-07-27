@@ -32,6 +32,14 @@ getAdminChartsR = do
 
   let dayCountMapOfTotal = combineUpcomingEventsMap dayCountMapOfParties dayCountMapOfExternalEvents
 
+  dayCountMapOfExternalEvents30Days <- makeUpcomingEventsMapWithLimit today 30 acqExternalEventsSource $ \(Entity _ ExternalEvent {..}) ->
+    (utctDay externalEventCreated, externalEventDay)
+
+  dayCountMapOfParties30Days <- makeUpcomingEventsMapWithLimit today 30 acqPartiesSource $ \(Entity _ Party {..}) ->
+    (utctDay partyCreated, partyDay)
+
+  let dayCountMapOfTotal30Days = combineUpcomingEventsMap dayCountMapOfParties30Days dayCountMapOfExternalEvents30Days
+
   acqUsersSource <- runDB $ selectSourceRes [] [Asc UserId]
   dayCountOfUsers <- makeDayCountMap today acqUsersSource $ utctDay . userCreated . entityVal
   acqOrganisersSource <- runDB $ selectSourceRes [] [Asc OrganiserId]
@@ -68,6 +76,21 @@ makeUpcomingEventsMap today source func =
 addToUpcomingEventsMap :: Day -> Map Day Word64 -> Day -> Day -> Map Day Word64
 addToUpcomingEventsMap today m created scheduled =
   let days = [created .. min today scheduled]
+      mapOfOnes = M.fromAscList $ map (\d -> (d, 1)) days
+   in M.unionWith (+) mapOfOnes m
+
+makeUpcomingEventsMapWithLimit :: MonadUnliftIO m => Day -> Integer -> Acquire (ConduitT () a m ()) -> (a -> (Day, Day)) -> m (Map Day Word64)
+makeUpcomingEventsMapWithLimit today limit source func =
+  makeDayMap
+    source
+    ( \m a ->
+        let (created, scheduled) = func a
+         in addToUpcomingEventsMapWithLimit today limit m created scheduled
+    )
+
+addToUpcomingEventsMapWithLimit :: Day -> Integer -> Map Day Word64 -> Day -> Day -> Map Day Word64
+addToUpcomingEventsMapWithLimit today limit m created scheduled =
+  let days = [max created (addDays (- limit) scheduled) .. min today scheduled]
       mapOfOnes = M.fromAscList $ map (\d -> (d, 1)) days
    in M.unionWith (+) mapOfOnes m
 

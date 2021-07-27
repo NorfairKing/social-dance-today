@@ -6,8 +6,13 @@
     <div .columns .is-multiline .is-centered>
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
-          Upcoming Parties
-        ^{lineChart minDay maxDay [("Upcoming Parties", dayCountMapOfParties), ("Upcoming External Events", dayCountMapOfExternalEvents), ("Total Upcoming Events", dayCountMapOfTotal)]}
+          Upcoming events
+        ^{lineChart minDay maxDay [("Upcoming parties", dayCountMapOfParties), ("Upcoming external events", dayCountMapOfExternalEvents), ("Total upcoming events", dayCountMapOfTotal)]}
+
+      <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
+        <h2 .title .is-4>
+          Upcoming events (30 days)
+        ^{lineChart minDay maxDay [("Upcoming parties (30 days)", dayCountMapOfParties30Days), ("Upcoming external events (30 days)", dayCountMapOfExternalEvents30Days), ("Total upcoming events (30 days)", dayCountMapOfTotal30Days)]}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
