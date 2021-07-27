@@ -53,27 +53,55 @@
       <div .level-item .has-text-centered>
         <div>
           <p .heading>
-            Organisers
+            Users
           <p .title>
-            #{nbOrganisers}
+            #{nbUsers}
       <div .level-item .has-text-centered>
         <div>
           <p .heading>
-            Upcoming Parties
+            Organisers
+          <p .title>
+            #{nbOrganisers}
+
+    <nav .level>
+      <div .level-item .has-text-centered>
+        <div>
+          <p .heading>
+            Upcoming parties
           <p .title>
             #{nbUpcomingParties}
       <div .level-item .has-text-centered>
         <div>
           <p .heading>
-            Upcoming External Events
+            Upcoming external events
           <p .title>
             #{nbUpcomingExternalEvents}
       <div .level-item .has-text-centered>
         <div>
           <p .heading>
-            Upcoming Events
+            Upcoming events
           <p .title>
             #{nbUpcomingParties + nbUpcomingExternalEvents}
+
+    <nav .level>
+      <div .level-item .has-text-centered>
+        <div>
+          <p .heading>
+            Upcoming parties (next 30 days)
+          <p .title>
+            #{nbUpcomingParties30Days}
+      <div .level-item .has-text-centered>
+        <div>
+          <p .heading>
+            Upcoming external events (next 30 days)
+          <p .title>
+            #{nbUpcomingExternalEvents30Days}
+      <div .level-item .has-text-centered>
+        <div>
+          <p .heading>
+            Upcoming events (next 30 days)
+          <p .title>
+            #{nbUpcomingParties30Days + nbUpcomingExternalEvents30Days}
 
 <section .section>
   <div .container>

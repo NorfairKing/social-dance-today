@@ -16,8 +16,10 @@ getAdminPanelR = do
   nbUsers <- runDB $ count ([] :: [Filter User])
   nbOrganisers <- runDB $ count ([] :: [Filter Organiser])
   nbUpcomingParties <- runDB $ count ([PartyDay >=. today] :: [Filter Party])
+  nbUpcomingParties30Days <- runDB $ count ([PartyDay >=. today, PartyDay <=. addDays 30 today] :: [Filter Party])
   nbParties <- runDB $ count ([] :: [Filter Party])
   nbUpcomingExternalEvents <- runDB $ count ([ExternalEventDay >=. today] :: [Filter ExternalEvent])
+  nbUpcomingExternalEvents30Days <- runDB $ count ([ExternalEventDay >=. today, ExternalEventDay <=. addDays 30 today] :: [Filter ExternalEvent])
   nbExternalEvents <- runDB $ count ([] :: [Filter ExternalEvent])
   importers <- do
     importers <- runDB $ selectList [] [Asc ImporterMetadataId]
