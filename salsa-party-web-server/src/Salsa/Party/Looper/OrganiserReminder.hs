@@ -55,7 +55,7 @@ checkToSendOrganiserReminder (Entity organiserId Organiser {..}) = do
           mLastReminder <- fmap (organiserReminderLast . entityVal) <$> getBy (UniqueOrganiserReminderOrganiser organiserId)
           let readyToSendReminder = case mLastReminder of
                 Nothing -> True
-                Just lastReminder -> addUTCTime reminderInterval lastReminder >= now
+                Just lastReminder -> addUTCTime reminderInterval lastReminder < now
 
           if readyToSendReminder
             then do
@@ -71,7 +71,7 @@ checkToSendOrganiserReminder (Entity organiserId Organiser {..}) = do
                     -- only organises parties monthly doesn't need to be sent
                     -- emails every week.
                     Just (Entity _ Party {..}) ->
-                      addUTCTime reminderInterval (max partyCreated (UTCTime partyDay 0)) >= now
+                      addUTCTime reminderInterval (max partyCreated (UTCTime partyDay 0)) < now
 
               if shouldSendReminder
                 then do
