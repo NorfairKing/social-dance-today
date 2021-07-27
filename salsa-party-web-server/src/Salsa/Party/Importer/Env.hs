@@ -35,7 +35,6 @@ import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Poster
 import System.Random (randomRIO)
-import Text.Printf
 import Text.Show.Pretty (pPrint, ppShow)
 import UnliftIO
 
@@ -79,16 +78,17 @@ runImporterWithDoubleCheck app LooperSettings {..} importer = addImporterNameToL
       pure True
     Just lastRun -> do
       let diff = diffUTCTime now lastRun
-      let shouldRun = diff >= hours 24 -- Crawl once per day.
-          showDiffTime = T.pack . printf "%.0f" . (realToFrac :: NominalDiffTime -> Double)
+          importerInterval = hours 24 -- Crawl once per day.
+      let shouldRun = diff >= importerInterval
+          showDiffTime = T.pack . formatTime defaultTimeLocale "%dd%Hh%Mm%Ss"
       let ctx =
             T.unwords
               [ "because the last run was",
                 T.pack (show lastRun),
                 "which is",
                 showDiffTime diff,
-                "seconds ago and the looper period is",
-                showDiffTime looperSetPeriod,
+                "seconds ago and the importer interval is",
+                showDiffTime importerInterval,
                 "seconds"
               ]
       if shouldRun
