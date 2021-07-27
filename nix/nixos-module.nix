@@ -116,8 +116,11 @@ in
                         });
                     };
                   image-garbage-collector = mkLooperOption "image-garbage-collector";
+                  organiser-reminder = mkLooperOption "organiser-reminder";
                   events-info-importer = mkLooperOption "events-info-importer";
                   golatindance-com-importer = mkLooperOption "golatindance-com-importer";
+                  danceplace-com-importer = mkLooperOption "danceplace-com-importer";
+                  mapdance-com-importer = mkLooperOption "mapdance-com-importer";
                 };
             });
           default = null;
@@ -165,8 +168,11 @@ in
           (nullOrOption "google-analytics-tracking" google-analytics-tracking)
           (nullOrOption "google-search-console-verification" google-search-console-verification)
           (nullOrOption "image-garbage-collector" image-garbage-collector)
+          (nullOrOption "organiser-reminder" organiser-reminder)
           (nullOrOption "events-info-importer" events-info-importer)
           (nullOrOption "golatindance-com-importer" golatindance-com-importer)
+          (nullOrOption "danceplace-com-importer" danceplace-com-importer)
+          (nullOrOption "mapdance-com-importer" mapdance-com-importer)
           (nullOrOption "sentry" sentry)
           cfg.web-server.config
         ];

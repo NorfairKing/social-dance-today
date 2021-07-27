@@ -67,7 +67,8 @@ checkToSendOrganiserReminder (Entity organiserId Organiser {..}) = do
                 -- we overload them with emails.  For example, an organiser who
                 -- only organises parties monthly doesn't need to be sent
                 -- emails every week.
-                Just (Entity _ Party {..}) -> addUTCTime reminderInterval partyCreated >= now
+                Just (Entity _ Party {..}) ->
+                  addUTCTime reminderInterval (max partyCreated (UTCTime partyDay 0)) >= now
 
           if shouldSendReminder
             then do
