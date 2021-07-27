@@ -43,7 +43,8 @@ runSalsaPartyServer settings@Settings {..} = do
 
         let app =
               App
-                { appLogLevel = settingLogLevel,
+                { appRoot = settingHost,
+                  appLogLevel = settingLogLevel,
                   appStatic = salsaPartyWebServerStatic,
                   appConnectionPool = pool,
                   appHTTPManager = man,

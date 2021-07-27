@@ -29,7 +29,8 @@ getSettings = do
   combineToSettings flags env config
 
 data Settings = Settings
-  { settingPort :: !Int,
+  { settingHost :: !Text,
+    settingPort :: !Int,
     settingLogLevel :: !LogLevel,
     settingDbFile :: !(Path Abs File),
     settingSendEmails :: !Bool,
@@ -62,6 +63,7 @@ data SentrySettings = SentrySettings
 combineToSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 combineToSettings Flags {..} Environment {..} mConf = do
   let settingPort = fromMaybe 8000 $ flagPort <|> envPort <|> mc confPort
+  let settingHost = maybe (T.pack $ "http://localhost:" <> show settingPort) ("https://" <>) $ flagHost <|> envHost <|> mc confHost
   let settingLogLevel = fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> mc confLogLevel
   settingDbFile <- case flagDbFile <|> envDbFile <|> mc confDbFile of
     Nothing -> resolveFile' "salsa-parties.sqlite3"
@@ -92,7 +94,8 @@ combineToSentrySettings SentryFlags {..} SentryEnvironment {..} mc =
     <*> (sentryFlagRelease <|> sentryEnvRelease <|> (mc >>= sentryConfRelease))
 
 data Configuration = Configuration
-  { confPort :: !(Maybe Int),
+  { confHost :: !(Maybe Text),
+    confPort :: !(Maybe Int),
     confLogLevel :: !(Maybe LogLevel),
     confDbFile :: !(Maybe FilePath),
     confSendEmails :: !(Maybe Bool),
@@ -119,7 +122,8 @@ instance YamlSchema Configuration where
   yamlSchema =
     objectParser "Configuration" $
       Configuration
-        <$> optionalField "port" "Port"
+        <$> optionalField "host" "The host, example: salsa-party.cs-syd.eu"
+        <*> optionalField "port" "Port"
         <*> optionalFieldWith "log-level" "Minimal severity for log messages" viaRead
         <*> optionalField "database" "The path to the database file"
         <*> optionalField "send-emails" "Whether to send emails and require email verification"
@@ -168,6 +172,7 @@ defaultConfigFile = do
 
 data Environment = Environment
   { envConfigFile :: !(Maybe FilePath),
+    envHost :: !(Maybe Text),
     envPort :: !(Maybe Int),
     envLogLevel :: !(Maybe LogLevel),
     envDbFile :: !(Maybe FilePath),
@@ -203,6 +208,7 @@ environmentParser =
   Env.prefixed "SALSA_PARTY_WEB_SERVER_" $
     Environment
       <$> Env.var (fmap Just . Env.str) "CONFIG_FILE" (mE <> Env.help "Config file")
+      <*> Env.var (fmap Just . Env.str) "HOST" (mE <> Env.help "Host, example: salsa-party.cs-syd.eu")
       <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "Port")
       <*> Env.var (fmap Just . Env.auto) "LOG_LEVEL" (mE <> Env.help "Minimal severity for log messages")
       <*> Env.var (fmap Just . Env.auto) "DATABASE" (mE <> Env.help "The path to the database file")
@@ -258,6 +264,7 @@ flagsParser =
 
 data Flags = Flags
   { flagConfigFile :: !(Maybe FilePath),
+    flagHost :: !(Maybe Text),
     flagPort :: !(Maybe Int),
     flagLogLevel :: !(Maybe LogLevel),
     flagDbFile :: !(Maybe FilePath),
@@ -287,6 +294,16 @@ parseFlags =
               [ long "config-file",
                 help "Path to an altenative config file",
                 metavar "FILEPATH"
+              ]
+          )
+      )
+    <*> optional
+      ( option
+          str
+          ( mconcat
+              [ long "host",
+                help "Host, example: salsa-party.cs-syd.eu",
+                metavar "HOST"
               ]
           )
       )

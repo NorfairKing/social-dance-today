@@ -62,7 +62,8 @@ import Yesod.AutoReload
 import Yesod.EmbeddedStatic (EmbeddedStatic)
 
 data App = App
-  { appLogLevel :: !LogLevel,
+  { appRoot :: !Text,
+    appLogLevel :: !LogLevel,
     appStatic :: !EmbeddedStatic,
     appHTTPManager :: !HTTP.Manager,
     appConnectionPool :: !ConnectionPool,
@@ -81,6 +82,7 @@ mkMessage "App" "messages" "en"
 mkYesodData "App" $(makeRelativeToProject "routes.txt" >>= parseRoutesFile)
 
 instance Yesod App where
+  approot = ApprootMaster appRoot
   defaultLayout widget = do
     app <- getYesod
     messages <- getMessages

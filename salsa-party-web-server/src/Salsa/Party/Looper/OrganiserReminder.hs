@@ -91,8 +91,7 @@ sendOrganiserReminder emailAddress = do
     let subject = SES.content "Reminder to submit your parties to social dance today"
 
     app <- ask
-    let approot = "https://social-dance.today"
-    let urlRender = yesodRender app approot
+    let urlRender = yesodRender app (appRoot app)
 
     let textBody = SES.content $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/organiser-reminder.txt") urlRender
 
