@@ -8,9 +8,11 @@ import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
 import Data.Function
+import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
+import qualified Data.Text.Lazy.Builder as LTB
 import Lens.Micro
 import qualified Network.AWS as AWS
 import qualified Network.AWS.SES as SES
@@ -32,9 +34,12 @@ sendAdminNotification notificationContents = do
 
         let subject = SES.content "Admin Notification"
 
-        let textBody = SES.content $ LT.toStrict $(stextFile "templates/email/admin-notification.txt")
+        app <- ask
+        let renderUrl = yesodRender app (fromMaybe "" $ appRoot app)
 
-        let htmlBody = SES.content $ LT.toStrict $ renderHtml $(shamletFile "templates/email/admin-notification.hamlet")
+        let textBody = SES.content $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/admin-notification.txt") renderUrl
+
+        let htmlBody = SES.content $ LT.toStrict $ renderHtml $ $(hamletFile "templates/email/admin-notification.hamlet") renderUrl
 
         let body =
               SES.body

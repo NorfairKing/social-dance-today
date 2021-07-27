@@ -56,6 +56,13 @@ shouldRetryHttpRequest _ = \case
       let c = HTTP.statusCode $ responseStatus response
        in c >= 500 && c < 600
 
+-- | Try five times:
+--
+--   *  after 1 second
+--   *  after 2 seconds
+--   *  after 4 seconds
+--   *  after 8 seconds
+--   *  after 16 seconds
 policy :: RetryPolicy
 policy = exponentialBackoff 1_000_000 <> limitRetries 5
 

@@ -29,7 +29,7 @@ getSettings = do
   combineToSettings flags env config
 
 data Settings = Settings
-  { settingHost :: !Text,
+  { settingHost :: !(Maybe Text),
     settingPort :: !Int,
     settingLogLevel :: !LogLevel,
     settingDbFile :: !(Path Abs File),
@@ -62,8 +62,8 @@ data SentrySettings = SentrySettings
 
 combineToSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 combineToSettings Flags {..} Environment {..} mConf = do
+  let settingHost = ("https://" <>) <$> flagHost <|> envHost <|> mc confHost
   let settingPort = fromMaybe 8000 $ flagPort <|> envPort <|> mc confPort
-  let settingHost = maybe (T.pack $ "http://localhost:" <> show settingPort) ("https://" <>) $ flagHost <|> envHost <|> mc confHost
   let settingLogLevel = fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> mc confLogLevel
   settingDbFile <- case flagDbFile <|> envDbFile <|> mc confDbFile of
     Nothing -> resolveFile' "salsa-parties.sqlite3"

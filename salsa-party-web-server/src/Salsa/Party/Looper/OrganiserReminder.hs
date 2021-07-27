@@ -11,6 +11,7 @@ import Control.Monad.Logger
 import Control.Monad.Reader
 import qualified Data.Conduit.Combinators as C
 import Data.Function
+import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
@@ -91,7 +92,7 @@ sendOrganiserReminder emailAddress = do
     let subject = SES.content "Reminder to submit your parties to social dance today"
 
     app <- ask
-    let urlRender = yesodRender app (appRoot app)
+    let urlRender = yesodRender app (fromMaybe "" $ appRoot app)
 
     let textBody = SES.content $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/organiser-reminder.txt") urlRender
 

@@ -52,7 +52,8 @@ serverSetupFunc man = do
   sessionKeyFile <- resolveFile tdir "session-key.aes"
   pure
     App
-      { appLogLevel = LevelWarn,
+      { appRoot = Nothing,
+        appLogLevel = LevelWarn,
         appStatic = salsaPartyWebServerStatic,
         appHTTPManager = man,
         appConnectionPool = pool,
@@ -187,7 +188,7 @@ testSubmitOrganiser OrganiserForm {..} = do
     setUrl $ AccountR AccountOrganiserR
     addToken
     addPostParam "name" organiserFormName
-    when organiserFormReminderConsent $ addPostParam "reminder-consent" "on"
+    when organiserFormConsentReminder $ addPostParam "reminder-consent" "on"
   statusIs 303
   locationShouldBe $ AccountR AccountOrganiserR
   _ <- followRedirect
