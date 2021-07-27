@@ -118,6 +118,7 @@ runImporter a Importer {..} = do
         ]
 
   userAgent <- liftIO chooseUserAgent
+  logDebugN $ T.pack $ "Chose user agent: " <> show userAgent
   let tokenLimitConfig =
         TokenLimitConfig
           { tokenLimitConfigMaxTokens = 10, -- Ten tokens maximum, represents one request
@@ -268,10 +269,11 @@ doHttpRequest :: HTTP.Request -> Import (Either HttpException (HTTP.Response LB.
 doHttpRequest requestPrototype = do
   man <- asks $ appHTTPManager . importEnvApp
   userAgent <- asks importEnvUserAgent
+  let request = requestPrototype {requestHeaders = ("User-Agent", userAgent) : requestHeaders requestPrototype}
+  logDebugN $ T.pack $ "Waiting to fetch: " <> show (getUri request)
   tokenLimiter <- asks importEnvRateLimiter
   liftIO $ waitDebit tokenLimiter 10 -- Need 10 tokens
-  let request = requestPrototype {requestHeaders = ("User-Agent", userAgent) : requestHeaders requestPrototype}
-  logInfoN $ "fetching: " <> T.pack (show (getUri request))
+  logInfoN $ T.pack $ "Fetching: " <> show (getUri request)
   httpLbsWithRetry request man
 
 chooseUserAgent :: IO ByteString
@@ -350,7 +352,7 @@ teePrint ::
   (Show a, MonadIO m) => ConduitT a a m ()
 teePrint = C.mapM (\a -> liftIO $ pPrint a >> pure a)
 
-deduplicateC :: forall a m. (Ord a, Monad m) => ConduitT a a m ()
+deduplicateC :: forall a m. (Show a, Ord a, MonadLogger m) => ConduitT a a m ()
 deduplicateC = () <$ go S.empty
   where
     go :: Set a -> ConduitT a a m (Set a)
@@ -360,7 +362,10 @@ deduplicateC = () <$ go S.empty
         Nothing -> pure seen
         Just a ->
           if S.member a seen
-            then go seen
+            then do
+              logDebugN $ T.pack $ "Already seen, not yielding: " <> show a
+              go seen
             else do
+              logDebugN $ T.pack $ "Not seen yet, yielding: " <> show a
               yield a
               go $ S.insert a seen
