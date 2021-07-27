@@ -7,22 +7,22 @@
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
           ⭐ Upcoming events (30 days)
-        ^{lineChart minDay maxDay [("Upcoming parties (30 days)", dayCountMapOfParties30Days), ("Upcoming external events (30 days)", dayCountMapOfExternalEvents30Days), ("Total upcoming events (30 days)", dayCountMapOfTotal30Days)]}
+        ^{lineChart minDay maxDay [("Parties", dayCountMapOfParties30Days), ("External events", dayCountMapOfExternalEvents30Days), ("Total", dayCountMapOfTotal30Days)]}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
           Upcoming parties (30 days)
-        ^{lineChart minDay maxDay [("Upcoming parties (30 days)", dayCountMapOfParties30Days)]}
+        ^{lineChart minDay maxDay [("parties", dayCountMapOfParties30Days)]}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
           Upcoming events
-        ^{lineChart minDay maxDay [("Upcoming parties", dayCountMapOfParties), ("Upcoming external events", dayCountMapOfExternalEvents), ("Total upcoming events", dayCountMapOfTotal)]}
+        ^{lineChart minDay maxDay [("Parties", dayCountMapOfParties), ("External events", dayCountMapOfExternalEvents), ("Total", dayCountMapOfTotal)]}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
           Upcoming parties
-        ^{lineChart minDay maxDay [("Upcoming parties", dayCountMapOfParties)]}
+        ^{lineChart minDay maxDay [("Parties", dayCountMapOfParties)]}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>

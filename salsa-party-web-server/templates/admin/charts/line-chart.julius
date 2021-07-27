@@ -5,8 +5,6 @@ const data#{rawJS classIdent} = {
 const config#{rawJS classIdent} = {
   type: 'line',
   data: data#{rawJS classIdent},
-  maintainAspectRatio: true,
-  aspectRatio: 1.77,
 };
 
 var ctx#{rawJS classIdent} = document.getElementById(#{classIdent});
