@@ -47,10 +47,11 @@ eventsInfoImporter =
 func :: Import ()
 func = do
   today <- liftIO $ utctDay <$> getCurrentTime
-  let days = [today, addDays 2 today .. addDays 30 today] -- One month ahead
+  let days = [today .. addDays 30 today] -- One month ahead
   runConduit $
     yieldMany days
       .| homePageConduit
+      .| deduplicateC
       .| eventPageConduit
       .| eventDetailsSink
 
