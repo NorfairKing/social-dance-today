@@ -128,7 +128,7 @@ AccountDeleteWarning: Are you sure you want to delete your account? This cannot 
 OrganiserProfileTitle: Organiser Profile
 OrganiserDisplayNameLabel: Display Name
 OrganiserConsentReminderLabel: I want to be reminded to submit parties.
-OrganiserConsentReminderHelp: We will send no more than one reminder email per week. You can turn this of at any time.
+OrganiserConsentReminderHelp: We will send no more than one reminder email per week. You can turn this off at any time.
 OrganiserSubmitButton: Submit
 OrganiserViewPublicProfileButton: View Public Profile
 OrganiserSaveSuccess: Succesfully saved organiser profile

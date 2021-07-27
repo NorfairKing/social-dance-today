@@ -129,11 +129,14 @@ AccountDangerZoneTitle:  Gefahrenzone
 AccountDeleteButton:  Konto löschen
 AccountDeleteWarning:  Sind Sie sicher, dass sie Ihr Konto löschen wollen? Das kann nicht rückgängig gemacht werden.
 
-# Veranstalterprofil
+# Organiser Profile
 OrganiserProfileTitle:  Veranstalterprofil
 OrganiserDisplayNameLabel:  Anzeigename
+OrganiserConsentReminderLabel: Ich möchte daran erinnert werden, Parties zu erstellen.
+OrganiserConsentReminderHelp: Wir versenden nicht mehr als eine Erinnerungs-E-Mail pro Woche. Sie können dies jederzeit deaktivieren.
 OrganiserSubmitButton:  Erstellen
 OrganiserViewPublicProfileButton:  Öffentliches Veranstalterprofil anzeigen
+OrganiserSaveSuccess: Veranstalterprofil erfolgreich gespeichert
 
 # Deine Parties
 YourPartiesTitle:  Ihre Parties

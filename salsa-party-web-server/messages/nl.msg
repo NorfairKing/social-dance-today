@@ -129,9 +129,12 @@ AccountDeleteWarning: Weet u zeker dat u uw account wilt verwijderen? Deze actie
 
 # Organiser Profile
 OrganiserProfileTitle: Organistorprofiel
-OrganiserDisplayNameLabel: Schermnaam
+OrganiserDisplayNameLabel: Weergavenaam
+OrganiserConsentReminderLabel: Ik wil eraan herinnerd worden om mijn feesten te adverteren.
+OrganiserConsentReminderHelp: We zullen u nooit meer dan één herinnering studen. U kan dit elk moment stopzetten.
 OrganiserSubmitButton: Indienen
 OrganiserViewPublicProfileButton: Bekijk openbaar profiel
+OrganiserSaveSuccess: Organisatorprofiel opgeslagen
 
 # Your parties
 YourPartiesTitle: Uw feesten
@@ -173,7 +176,7 @@ EditPartySuccess: Feest succesfully bewerkt
 EditPartyPublicPartyProfile: Openbaar feestprofiel
 EditPartyDayHelp: U kan de dag niet meer bewerken. Als u dat wilt doen, kan u dit feest annuleren en en nieuw feest aanmaken, of dit feest dupliceren en het feest herorganiseren.
 EditPartyErrorNoOrganiser: U moet eerst een organisatorprofiel aanmaken vooraleer u een feest kan bewerken.
-EditPartyErrorNotYourParty: This is not your party to edit.
+EditPartyErrorNotYourParty: Dit is niet uw feest. U kan dit feest niet bewerken.
 
 # Duplicate Party
 DuplicatePartyTitle: Feest dupliceren
