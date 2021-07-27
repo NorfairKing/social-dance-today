@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
@@ -20,6 +21,7 @@ import Control.Concurrent.TokenLimiter.Concurrent
 import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
+import Control.Retry
 import Data.FileEmbed
 import Data.Fixed
 import Data.Function
@@ -39,6 +41,7 @@ import Lens.Micro
 import qualified Network.AWS as AWS
 import qualified Network.AWS.SES as SES
 import Network.HTTP.Client as HTTP
+import Network.HTTP.Client.Retry
 import Path
 import Salsa.Party.DB
 import Salsa.Party.OptParse
@@ -372,7 +375,17 @@ runAWS func = do
         awsEnv
           & AWS.envRegion .~ AWS.Ireland
           & AWS.envLogger .~ logger
-  AWS.runResourceT $ AWS.runAWS ourAwsEnv $ AWS.trying AWS._Error func
+
+  let awsRetryPolicy = httpRetryPolicy
+  let shouldRetry = \case
+        Left awsError -> case awsError of
+          AWS.TransportError exception -> shouldRetryHttpException exception
+          AWS.SerializeError _ -> pure False
+          AWS.ServiceError se -> pure $ shouldRetryStatusCode $ AWS._serviceStatus se
+        Right _ -> pure False -- Didn't even fail.
+  let tryOnce = AWS.runResourceT $ AWS.runAWS ourAwsEnv $ AWS.trying AWS._Error func
+
+  retrying awsRetryPolicy (\_ -> shouldRetry) (\_ -> tryOnce)
 
 mkAwsLogger :: MonadLoggerIO m => m AWS.Logger
 mkAwsLogger = do
