@@ -53,37 +53,9 @@
       <div .level-item .has-text-centered>
         <div>
           <p .heading>
-            Users
+            ⭐ Upcoming events (next 30 days)
           <p .title>
-            #{nbUsers}
-      <div .level-item .has-text-centered>
-        <div>
-          <p .heading>
-            Organisers
-          <p .title>
-            #{nbOrganisers}
-
-    <nav .level>
-      <div .level-item .has-text-centered>
-        <div>
-          <p .heading>
-            Upcoming parties
-          <p .title>
-            #{nbUpcomingParties}
-      <div .level-item .has-text-centered>
-        <div>
-          <p .heading>
-            Upcoming external events
-          <p .title>
-            #{nbUpcomingExternalEvents}
-      <div .level-item .has-text-centered>
-        <div>
-          <p .heading>
-            Upcoming events
-          <p .title>
-            #{nbUpcomingParties + nbUpcomingExternalEvents}
-
-    <nav .level>
+            #{nbUpcomingParties30Days + nbUpcomingExternalEvents30Days}
       <div .level-item .has-text-centered>
         <div>
           <p .heading>
@@ -96,12 +68,40 @@
             Upcoming external events (next 30 days)
           <p .title>
             #{nbUpcomingExternalEvents30Days}
+
+    <nav .level>
       <div .level-item .has-text-centered>
         <div>
           <p .heading>
-            Upcoming events (next 30 days)
+            Upcoming events
           <p .title>
-            #{nbUpcomingParties30Days + nbUpcomingExternalEvents30Days}
+            #{nbUpcomingParties + nbUpcomingExternalEvents}
+      <div .level-item .has-text-centered>
+        <div>
+          <p .heading>
+            Upcoming parties
+          <p .title>
+            #{nbUpcomingParties}
+      <div .level-item .has-text-centered>
+        <div>
+          <p .heading>
+            Upcoming external events
+          <p .title>
+            #{nbUpcomingExternalEvents}
+
+    <nav .level>
+      <div .level-item .has-text-centered>
+        <div>
+          <p .heading>
+            Users
+          <p .title>
+            #{nbUsers}
+      <div .level-item .has-text-centered>
+        <div>
+          <p .heading>
+            Organisers
+          <p .title>
+            #{nbOrganisers}
 
 <section .section>
   <div .container>
