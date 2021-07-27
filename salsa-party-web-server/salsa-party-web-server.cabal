@@ -30,6 +30,7 @@ library
       Salsa.Party.Importer.MapdanceCom
       Salsa.Party.Looper
       Salsa.Party.Looper.ImageGarbageCollector
+      Salsa.Party.Looper.OrganiserReminder
       Salsa.Party.OptParse
       Salsa.Party.Server
       Salsa.Party.Web.Server

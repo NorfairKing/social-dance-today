@@ -89,6 +89,18 @@ Organiser sql=organiser
     deriving Generic
 
 
+OrganiserReminder sql=organiser_reminder
+    organiser OrganiserId
+    -- Last reminded
+    last UTCTime sql=last
+
+    UniqueOrganiserReminderOrganiser organiser
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
+
 Place sql=place
     query Text
     lat Nano

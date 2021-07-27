@@ -41,6 +41,7 @@ data Settings = Settings
     settingGoogleSearchConsoleVerification :: !(Maybe Text),
     settingSentrySettings :: !(Maybe SentrySettings),
     settingImageGarbageCollectorLooperSettings :: !LooperSettings,
+    settingOrganiserReminderLooperSettings :: !LooperSettings,
     -- https://events.info
     settingEventsInfoImportLooperSettings :: !LooperSettings,
     -- https://golatindance.com
@@ -74,10 +75,11 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingGoogleAnalyticsTracking = flagGoogleAnalyticsTracking <|> envGoogleAnalyticsTracking <|> mc confGoogleAnalyticsTracking
   let settingGoogleSearchConsoleVerification = flagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification
   let settingImageGarbageCollectorLooperSettings = deriveLooperSettings (seconds 30) (hours 24) flagImageGarbageCollectorLooperFlags envImageGarbageCollectorLooperEnvironment (mc confImageGarbageCollectorLooperConfiguration)
-  let settingEventsInfoImportLooperSettings = deriveLooperSettings (minutes 1 + seconds 1) (hours 1) flagEventsInfoImportLooperFlags envEventsInfoImportLooperEnvironment (mc confEventsInfoImportLooperConfiguration)
-  let settingGolatindanceComImportLooperSettings = deriveLooperSettings (minutes 2 + seconds 2) (hours 1) flagGolatindanceComImportLooperFlags envGolatindanceComImportLooperEnvironment (mc confGolatindanceComImportLooperConfiguration)
-  let settingDanceplaceComImportLooperSettings = deriveLooperSettings (minutes 3 + seconds 3) (hours 1) flagDanceplaceComImportLooperFlags envDanceplaceComImportLooperEnvironment (mc confDanceplaceComImportLooperConfiguration)
-  let settingMapdanceComImportLooperSettings = deriveLooperSettings (minutes 4 + seconds 4) (hours 1) flagMapdanceComImportLooperFlags envMapdanceComImportLooperEnvironment (mc confMapdanceComImportLooperConfiguration)
+  let settingOrganiserReminderLooperSettings = deriveLooperSettings (minutes 1 + seconds 30) (hours 24) flagOrganiserReminderLooperFlags envOrganiserReminderLooperEnvironment (mc confOrganiserReminderLooperConfiguration)
+  let settingEventsInfoImportLooperSettings = deriveLooperSettings (minutes 2 + seconds 1) (hours 1) flagEventsInfoImportLooperFlags envEventsInfoImportLooperEnvironment (mc confEventsInfoImportLooperConfiguration)
+  let settingGolatindanceComImportLooperSettings = deriveLooperSettings (minutes 3 + seconds 2) (hours 1) flagGolatindanceComImportLooperFlags envGolatindanceComImportLooperEnvironment (mc confGolatindanceComImportLooperConfiguration)
+  let settingDanceplaceComImportLooperSettings = deriveLooperSettings (minutes 4 + seconds 3) (hours 1) flagDanceplaceComImportLooperFlags envDanceplaceComImportLooperEnvironment (mc confDanceplaceComImportLooperConfiguration)
+  let settingMapdanceComImportLooperSettings = deriveLooperSettings (minutes 5 + seconds 4) (hours 1) flagMapdanceComImportLooperFlags envMapdanceComImportLooperEnvironment (mc confMapdanceComImportLooperConfiguration)
   pure Settings {..}
   where
     mc :: (Configuration -> Maybe a) -> Maybe a
@@ -101,6 +103,7 @@ data Configuration = Configuration
     confGoogleAPIKey :: !(Maybe Text),
     confGoogleAnalyticsTracking :: !(Maybe Text),
     confGoogleSearchConsoleVerification :: !(Maybe Text),
+    confOrganiserReminderLooperConfiguration :: !(Maybe LooperConfiguration),
     confImageGarbageCollectorLooperConfiguration :: !(Maybe LooperConfiguration),
     confEventsInfoImportLooperConfiguration :: !(Maybe LooperConfiguration),
     confGolatindanceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
@@ -128,6 +131,7 @@ instance YamlSchema Configuration where
         <*> optionalField "google-analytics-tracking" "Google analytics tracking code"
         <*> optionalField "google-search-console-verification" "Google search console html element verification code"
         <*> optionalField "image-garbage-collector" "The image garbage collector looper"
+        <*> optionalField "organiser-reminder" "The organiser reminder looper"
         <*> optionalField "events-info-importer" "The events.info import looper"
         <*> optionalField "golatindance-com-importer" "The golatindance.com import looper"
         <*> optionalField "danceplace-com-importer" "The danceplace.com import looper"
@@ -176,6 +180,7 @@ data Environment = Environment
     envGoogleAnalyticsTracking :: !(Maybe Text),
     envGoogleSearchConsoleVerification :: !(Maybe Text),
     envImageGarbageCollectorLooperEnvironment :: !LooperEnvironment,
+    envOrganiserReminderLooperEnvironment :: !LooperEnvironment,
     envEventsInfoImportLooperEnvironment :: !LooperEnvironment,
     envGolatindanceComImportLooperEnvironment :: !LooperEnvironment,
     envDanceplaceComImportLooperEnvironment :: !LooperEnvironment,
@@ -210,6 +215,7 @@ environmentParser =
       <*> Env.var (fmap Just . Env.str) "GOOGLE_ANALYTICS_TRACKING" (mE <> Env.help "Google analytics tracking code")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (mE <> Env.help "Google search console html element verification code")
       <*> looperEnvironmentParser "IMAGE_GARBAGE_COLLECTOR"
+      <*> looperEnvironmentParser "ORGANISER_REMINDER"
       <*> looperEnvironmentParser "EVENTS_INFO_IMPORTER"
       <*> looperEnvironmentParser "GOLATINDANCE_COM_IMPORTER"
       <*> looperEnvironmentParser "DANCEPLACE_COM_IMPORTER"
@@ -264,6 +270,7 @@ data Flags = Flags
     flagGoogleAnalyticsTracking :: !(Maybe Text),
     flagGoogleSearchConsoleVerification :: !(Maybe Text),
     flagImageGarbageCollectorLooperFlags :: !LooperFlags,
+    flagOrganiserReminderLooperFlags :: !LooperFlags,
     flagEventsInfoImportLooperFlags :: !LooperFlags,
     flagGolatindanceComImportLooperFlags :: !LooperFlags,
     flagDanceplaceComImportLooperFlags :: !LooperFlags,
@@ -398,6 +405,7 @@ parseFlags =
           )
       )
     <*> getLooperFlags "image-garbage-collector"
+    <*> getLooperFlags "organiser-reminder"
     <*> getLooperFlags "events-info-importer"
     <*> getLooperFlags "golatindance-com-importer"
     <*> getLooperFlags "danceplace-com-importer"

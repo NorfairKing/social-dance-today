@@ -1,0 +1,8 @@
+Organiser Reminder
+
+This is a gentle reminder to submit your parties to social dance today.
+Submitting your parties gives you a better chance at a bigger and more diverse audience at your event.
+
+You received this email because you are an organiser at social dance today and you consented to receiving this email.
+Should you wish to no longer receive reminder emails like this, then please update your email preferences in your organiser profile:
+@{AccountR AccountOrganiserR}
