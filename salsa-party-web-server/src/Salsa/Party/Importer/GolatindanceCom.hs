@@ -106,7 +106,7 @@ parseCategoryUrls = awaitForever $ \(_, response) -> do
 andDays :: MonadIO m => ConduitT a (a, Day) m ()
 andDays = do
   today <- liftIO $ utctDay <$> getCurrentTime
-  let days = [today, addDays 7 today .. addDays 28 today]
+  let days = [today .. addDays 28 today]
   awaitForever $ \a -> yieldMany $ map ((,) a) days
 
 makeCalendarRequest :: (Text, Day) -> Maybe HTTP.Request
