@@ -88,8 +88,19 @@ getAdminPartiesR :: Handler Html
 getAdminPartiesR = redirect $ AdminR $ AdminPartiesPageR paginatedFirstPage
 
 getAdminPartiesPageR :: PageNumber -> Handler Html
-getAdminPartiesPageR pageNumber = do
-  paginated <- runDB $ selectPaginated 10 [] [Asc PartyDay, Asc PartyId] pageNumber
+getAdminPartiesPageR = adminPartiesPage [] [Asc PartyDay, Asc PartyId] (AdminR . AdminPartiesPageR)
+
+getAdminUpcomingPartiesR :: Handler Html
+getAdminUpcomingPartiesR = redirect $ AdminR $ AdminUpcomingPartiesPageR paginatedFirstPage
+
+getAdminUpcomingPartiesPageR :: PageNumber -> Handler Html
+getAdminUpcomingPartiesPageR pageNumber = do
+  today <- liftIO $ utctDay <$> getCurrentTime
+  adminPartiesPage [PartyDay >=. today] [Asc PartyDay, Asc PartyId] (AdminR . AdminUpcomingPartiesPageR) pageNumber
+
+adminPartiesPage :: [Filter Party] -> [SelectOpt Party] -> (PageNumber -> Route App) -> PageNumber -> Handler Html
+adminPartiesPage filters sorters pageRoute pageNumber = do
+  paginated <- runDB $ selectPaginated 10 filters sorters pageNumber
   today <- liftIO $ utctDay <$> getCurrentTime
   withNavBar $ do
     timeLocale <- getTimeLocale

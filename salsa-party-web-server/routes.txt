@@ -42,6 +42,8 @@
 
   /parties AdminPartiesR GET
   /parties/#PageNumber AdminPartiesPageR GET
+  /upcoming-parties AdminUpcomingPartiesR GET
+  /upcoming-parties/#PageNumber AdminUpcomingPartiesPageR GET
 
   /party/#EventUUID/delete AdminDeleteEventR POST
 

@@ -4,7 +4,7 @@
       Parties
 
 
-    ^{paginationWidget (AdminR . AdminPartiesPageR) paginated pageNumber}
+    ^{paginationWidget pageRoute paginated pageNumber}
 
 <section .section>
   <div .container>

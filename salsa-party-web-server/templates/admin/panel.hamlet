@@ -13,6 +13,8 @@
         #{nbUsers} users
       <a .button href=@{AdminR AdminOrganisersR}>
         #{nbOrganisers} organisers
+      <a .button href=@{AdminR AdminUpcomingPartiesR}>
+        #{nbUpcomingParties} upcoming parties
       <a .button href=@{AdminR AdminPartiesR}>
         #{nbParties} parties
       <a .button href=@{AdminR AdminUpcomingExternalEventsR}>
