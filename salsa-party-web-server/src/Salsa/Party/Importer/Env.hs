@@ -8,6 +8,7 @@ module Salsa.Party.Importer.Env where
 
 import Conduit
 import Control.Concurrent.TokenLimiter.Concurrent
+import Control.Exception (AsyncException)
 import Control.Monad.Logger
 import Control.Monad.Reader
 import Data.Aeson as JSON
@@ -29,6 +30,7 @@ import Looper
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.Retry
 import Network.URI
+import Salsa.Party.AdminNotification
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Poster
@@ -135,9 +137,20 @@ runImporter a Importer {..} = do
             importEnvRateLimiter = tokenLimiter
           }
 
-  runReaderT
-    (unImport importerFunc)
-    env
+  errOrUnit <-
+    (Right <$> runReaderT (unImport importerFunc) env)
+      `catches` [
+                  -- Re-throw AsyncException, otherwise execution will not terminate on SIGINT (ctrl-c).
+                  Handler (\e -> throwIO (e :: AsyncException)),
+                  -- Catch all the rest as a string
+                  Handler (\e -> return $ Left (e :: SomeException))
+                ]
+  case errOrUnit of
+    Right () -> pure ()
+    Left err -> do
+      let message = "Importer threw an exception:\n" <> T.pack (displayException err)
+      logErrorN message
+      runReaderT (sendAdminNotification message) a
 
   end <- liftIO getCurrentTime
   -- We don't just use 'update' here because the admin could have deleted this metadata in the meantime.
