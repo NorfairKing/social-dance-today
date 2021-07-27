@@ -71,22 +71,22 @@ getSitemapR = do
             }
       )
     dbAcq
-      acqImages
-      ( \(Entity _ Image {..}) ->
-          SitemapUrl
-            { sitemapLoc = ImageR imageKey,
-              sitemapLastMod = Just imageCreated,
-              sitemapChangeFreq = Just Never,
-              sitemapPriority = Just 0.3
-            }
-      )
-    dbAcq
       acqExternalEvents
       ( \(Entity _ ExternalEvent {..}) ->
           SitemapUrl
             { sitemapLoc = PartyR externalEventUuid,
               sitemapLastMod = Just $ fromMaybe externalEventCreated externalEventModified,
               sitemapChangeFreq = Nothing,
+              sitemapPriority = Just 0.2
+            }
+      )
+    dbAcq
+      acqImages
+      ( \(Entity _ Image {..}) ->
+          SitemapUrl
+            { sitemapLoc = ImageR imageKey,
+              sitemapLastMod = Just imageCreated,
+              sitemapChangeFreq = Just Never,
               sitemapPriority = Just 0.1
             }
       )
