@@ -80,7 +80,10 @@ salsaConnectionPoolSetupFunc =
             _ <- runSqlPool (completeServerMigration True) pool
             liftIO $ func pool
 
-data TestUser = TestUser {testUserEmail :: Text, testUserPassword :: Text}
+data TestUser = TestUser
+  { testUserEmail :: Text,
+    testUserPassword :: Text
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity TestUser
@@ -184,6 +187,7 @@ testSubmitOrganiser OrganiserForm {..} = do
     setUrl $ AccountR AccountOrganiserR
     addToken
     addPostParam "name" organiserFormName
+    when organiserFormReminderConsent $ addPostParam "reminder-consent" "on"
   statusIs 303
   locationShouldBe $ AccountR AccountOrganiserR
   _ <- followRedirect

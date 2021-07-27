@@ -73,7 +73,11 @@ Organiser sql=organiser
     uuid OrganiserUUID
 
     user UserId
+
     name Text
+
+    consentReminder Bool default=true sql=consent_reminder
+
     created UTCTime
     modified UTCTime Maybe default=NULL
 

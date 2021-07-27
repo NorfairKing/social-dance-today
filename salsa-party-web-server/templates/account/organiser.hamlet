@@ -16,7 +16,17 @@
             name="name"
             value=#{tv organiserName}
             required>
-            
+      
+      <div .field>
+        <label .label>
+          _{MsgOrganiserConsentReminderLabel}
+        <div .control>
+          <input .checkbox
+            type=checkbox
+            name="consent-reminder"
+            :mv False organiserConsentReminder:checked>
+        <p .help>
+          _{MsgOrganiserConsentReminderHelp}
 
       ^{token}
       

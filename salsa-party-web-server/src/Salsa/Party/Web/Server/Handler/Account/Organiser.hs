@@ -14,7 +14,8 @@ import qualified Data.Text as T
 import Salsa.Party.Web.Server.Handler.Import
 
 data OrganiserForm = OrganiserForm
-  { organiserFormName :: Text
+  { organiserFormName :: !Text,
+    organiserFormConsentReminder :: !Bool
   }
   deriving (Show, Eq, Generic)
 
@@ -29,6 +30,7 @@ organiserForm :: FormInput Handler OrganiserForm
 organiserForm =
   OrganiserForm
     <$> ireq textField "name"
+    <*> ireq checkBoxField "consent-reminder"
 
 getAccountOrganiserR :: Handler Html
 getAccountOrganiserR = organiserFormPage Nothing
@@ -54,11 +56,13 @@ organiserFormPage mResult = do
                 { organiserUuid = uuid,
                   organiserUser = userId,
                   organiserName = organiserFormName,
+                  organiserConsentReminder = organiserFormConsentReminder,
                   organiserCreated = now,
                   organiserModified = Nothing
                 }
             )
             [ OrganiserName =. organiserFormName,
+              OrganiserConsentReminder =. organiserFormConsentReminder,
               OrganiserModified =. Just now
             ]
       redirect $ AccountR AccountOrganiserR
