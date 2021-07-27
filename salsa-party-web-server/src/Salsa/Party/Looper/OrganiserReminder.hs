@@ -48,38 +48,41 @@ checkToSendOrganiserReminder (Entity organiserId Organiser {..}) = do
   when organiserConsentReminder $ do
     now <- liftIO getCurrentTime
     mUser <- get organiserUser
-    forM_ mUser $ \User {..} -> do
-      mLastReminder <- fmap (organiserReminderLast . entityVal) <$> getBy (UniqueOrganiserReminderOrganiser organiserId)
-      let readyToSendReminder = case mLastReminder of
-            Nothing -> True
-            Just lastReminder -> addUTCTime reminderInterval lastReminder >= now
+    forM_ mUser $ \User {..} ->
+      if isJust userVerificationKey
+        then logDebugN $ "Not sending a reminder to unverified user: " <> userEmailAddress
+        else do
+          mLastReminder <- fmap (organiserReminderLast . entityVal) <$> getBy (UniqueOrganiserReminderOrganiser organiserId)
+          let readyToSendReminder = case mLastReminder of
+                Nothing -> True
+                Just lastReminder -> addUTCTime reminderInterval lastReminder >= now
 
-      if readyToSendReminder
-        then do
-          logDebugN "Ready to send a reminder in terms of how long it's been since the last."
-          mLastParty <- selectFirst [PartyOrganiser ==. organiserId] [Desc PartyCreated]
-          let shouldSendReminder = case mLastParty of
-                -- No parties yet, definitely don't send any reminders yet.
-                Nothing -> False
-                -- Should send a reminder if the organiser's latest party was more than a week ago.
-                --
-                -- TODO we would like to figure out an organisers cadence befor
-                -- we overload them with emails.  For example, an organiser who
-                -- only organises parties monthly doesn't need to be sent
-                -- emails every week.
-                Just (Entity _ Party {..}) ->
-                  addUTCTime reminderInterval (max partyCreated (UTCTime partyDay 0)) >= now
-
-          if shouldSendReminder
+          if readyToSendReminder
             then do
-              lift $ sendOrganiserReminder userEmailAddress
-              void $
-                upsertBy
-                  (UniqueOrganiserReminderOrganiser organiserId)
-                  (OrganiserReminder {organiserReminderOrganiser = organiserId, organiserReminderLast = now})
-                  [OrganiserReminderLast =. now]
-            else logDebugN "Not sending a reminder email because the organiser either hasn't organised anything yet or has organised something recently."
-        else logDebugN "Not sending a reminder because another one has been sent too recently."
+              logDebugN "Ready to send a reminder in terms of how long it's been since the last."
+              mLastParty <- selectFirst [PartyOrganiser ==. organiserId] [Desc PartyCreated]
+              let shouldSendReminder = case mLastParty of
+                    -- No parties yet, definitely don't send any reminders yet.
+                    Nothing -> False
+                    -- Should send a reminder if the organiser's latest party was more than a week ago.
+                    --
+                    -- TODO we would like to figure out an organisers cadence befor
+                    -- we overload them with emails.  For example, an organiser who
+                    -- only organises parties monthly doesn't need to be sent
+                    -- emails every week.
+                    Just (Entity _ Party {..}) ->
+                      addUTCTime reminderInterval (max partyCreated (UTCTime partyDay 0)) >= now
+
+              if shouldSendReminder
+                then do
+                  lift $ sendOrganiserReminder userEmailAddress
+                  void $
+                    upsertBy
+                      (UniqueOrganiserReminderOrganiser organiserId)
+                      (OrganiserReminder {organiserReminderOrganiser = organiserId, organiserReminderLast = now})
+                      [OrganiserReminderLast =. now]
+                else logDebugN "Not sending a reminder email because the organiser either hasn't organised anything yet or has organised something recently."
+            else logDebugN "Not sending a reminder because another one has been sent too recently."
 
 reminderInterval :: NominalDiffTime
 reminderInterval = 7 * nominalDay

@@ -63,7 +63,7 @@ data SentrySettings = SentrySettings
 
 combineToSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 combineToSettings Flags {..} Environment {..} mConf = do
-  let settingHost = ("https://" <>) <$> flagHost <|> envHost <|> mc confHost
+  let settingHost = ("https://" <>) <$> (flagHost <|> envHost <|> mc confHost)
   let settingPort = fromMaybe 8000 $ flagPort <|> envPort <|> mc confPort
   let settingLogLevel = fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> mc confLogLevel
   settingDbFile <- case flagDbFile <|> envDbFile <|> mc confDbFile of

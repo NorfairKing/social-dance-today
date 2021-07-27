@@ -86,7 +86,7 @@ mkMessage "App" "messages" "en"
 mkYesodData "App" $(makeRelativeToProject "routes.txt" >>= parseRoutesFile)
 
 instance Yesod App where
-  approot = ApprootMaster $ fromMaybe "" . appRoot
+  approot = guessApprootOr $ ApprootMaster $ fromMaybe "" . appRoot
   defaultLayout widget = do
     app <- getYesod
     messages <- getMessages
