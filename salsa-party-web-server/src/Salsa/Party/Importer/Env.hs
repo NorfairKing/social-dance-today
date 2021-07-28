@@ -53,8 +53,8 @@ data Importer = Importer
 --
 --  * We try to fetch events at least a month in advance
 --  * There should be at least once day in a month where we don't deploy twice a day.
-runImporterWithDoubleCheck :: App -> LooperSettings -> Importer -> LoggingT IO ()
-runImporterWithDoubleCheck app LooperSettings {..} importer = addImporterNameToLog (importerName importer) $ do
+runImporterWithDoubleCheck :: NominalDiffTime -> App -> LooperSettings -> Importer -> LoggingT IO ()
+runImporterWithDoubleCheck importerInterval app LooperSettings {..} importer = addImporterNameToLog (importerName importer) $ do
   let runDBHere :: SqlPersistT (LoggingT IO) a -> LoggingT IO a
       runDBHere = flip runSqlPool (appConnectionPool app)
 
@@ -78,7 +78,6 @@ runImporterWithDoubleCheck app LooperSettings {..} importer = addImporterNameToL
       pure True
     Just lastRun -> do
       let diff = diffUTCTime now lastRun
-          importerInterval = hours 24 -- Crawl once per day.
       let shouldRun = diff >= importerInterval
           showDiffTime = T.pack . formatTime defaultTimeLocale "%dd%Hh%Mm%Ss"
       let ctx =

@@ -11,6 +11,7 @@ import Control.Monad.Logger
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Time
 import Data.Yaml
 import qualified Env
 import GHC.Generics (Generic)
@@ -43,6 +44,7 @@ data Settings = Settings
     settingGoogleSearchConsoleVerification :: !(Maybe Text),
     settingSentrySettings :: !(Maybe SentrySettings),
     settingImageGarbageCollectorLooperSettings :: !LooperSettings,
+    settingImporterInterval :: NominalDiffTime,
     settingOrganiserReminderLooperSettings :: !LooperSettings,
     -- https://events.info
     settingEventsInfoImportLooperSettings :: !LooperSettings,
@@ -80,6 +82,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingGoogleSearchConsoleVerification = flagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification
   let settingImageGarbageCollectorLooperSettings = deriveLooperSettings (seconds 30) (hours 24) flagImageGarbageCollectorLooperFlags envImageGarbageCollectorLooperEnvironment (mc confImageGarbageCollectorLooperConfiguration)
   let settingOrganiserReminderLooperSettings = deriveLooperSettings (minutes 1 + seconds 30) (hours 24) flagOrganiserReminderLooperFlags envOrganiserReminderLooperEnvironment (mc confOrganiserReminderLooperConfiguration)
+  let settingImporterInterval = maybe (hours 24) fromIntegral $ flagImporterInterval <|> envImporterInterval <|> mc confImporterInterval
   let settingEventsInfoImportLooperSettings = deriveLooperSettings (minutes 2 + seconds 1) (hours 1) flagEventsInfoImportLooperFlags envEventsInfoImportLooperEnvironment (mc confEventsInfoImportLooperConfiguration)
   let settingGolatindanceComImportLooperSettings = deriveLooperSettings (minutes 3 + seconds 2) (hours 1) flagGolatindanceComImportLooperFlags envGolatindanceComImportLooperEnvironment (mc confGolatindanceComImportLooperConfiguration)
   let settingDanceplaceComImportLooperSettings = deriveLooperSettings (minutes 4 + seconds 3) (hours 1) flagDanceplaceComImportLooperFlags envDanceplaceComImportLooperEnvironment (mc confDanceplaceComImportLooperConfiguration)
@@ -109,8 +112,9 @@ data Configuration = Configuration
     confGoogleAPIKey :: !(Maybe Text),
     confGoogleAnalyticsTracking :: !(Maybe Text),
     confGoogleSearchConsoleVerification :: !(Maybe Text),
-    confOrganiserReminderLooperConfiguration :: !(Maybe LooperConfiguration),
     confImageGarbageCollectorLooperConfiguration :: !(Maybe LooperConfiguration),
+    confOrganiserReminderLooperConfiguration :: !(Maybe LooperConfiguration),
+    confImporterInterval :: !(Maybe Int),
     confEventsInfoImportLooperConfiguration :: !(Maybe LooperConfiguration),
     confGolatindanceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
     confDanceplaceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
@@ -140,6 +144,7 @@ instance YamlSchema Configuration where
         <*> optionalField "google-search-console-verification" "Google search console html element verification code"
         <*> optionalField "image-garbage-collector" "The image garbage collector looper"
         <*> optionalField "organiser-reminder" "The organiser reminder looper"
+        <*> optionalField "importer-interval" "The default interval for importers"
         <*> optionalField "events-info-importer" "The events.info import looper"
         <*> optionalField "golatindance-com-importer" "The golatindance.com import looper"
         <*> optionalField "danceplace-com-importer" "The danceplace.com import looper"
@@ -191,6 +196,7 @@ data Environment = Environment
     envGoogleSearchConsoleVerification :: !(Maybe Text),
     envImageGarbageCollectorLooperEnvironment :: !LooperEnvironment,
     envOrganiserReminderLooperEnvironment :: !LooperEnvironment,
+    envImporterInterval :: !(Maybe Int),
     envEventsInfoImportLooperEnvironment :: !LooperEnvironment,
     envGolatindanceComImportLooperEnvironment :: !LooperEnvironment,
     envDanceplaceComImportLooperEnvironment :: !LooperEnvironment,
@@ -228,6 +234,7 @@ environmentParser =
       <*> Env.var (fmap Just . Env.str) "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (mE <> Env.help "Google search console html element verification code")
       <*> looperEnvironmentParser "IMAGE_GARBAGE_COLLECTOR"
       <*> looperEnvironmentParser "ORGANISER_REMINDER"
+      <*> Env.var (fmap Just . Env.auto) "IMPORTER_INTERVAL" (mE <> Env.help "The default interval for the importers")
       <*> looperEnvironmentParser "EVENTS_INFO_IMPORTER"
       <*> looperEnvironmentParser "GOLATINDANCE_COM_IMPORTER"
       <*> looperEnvironmentParser "DANCEPLACE_COM_IMPORTER"
@@ -285,6 +292,7 @@ data Flags = Flags
     flagGoogleSearchConsoleVerification :: !(Maybe Text),
     flagImageGarbageCollectorLooperFlags :: !LooperFlags,
     flagOrganiserReminderLooperFlags :: !LooperFlags,
+    flagImporterInterval :: !(Maybe Int),
     flagEventsInfoImportLooperFlags :: !LooperFlags,
     flagGolatindanceComImportLooperFlags :: !LooperFlags,
     flagDanceplaceComImportLooperFlags :: !LooperFlags,
@@ -438,6 +446,16 @@ parseFlags =
       )
     <*> getLooperFlags "image-garbage-collector"
     <*> getLooperFlags "organiser-reminder"
+    <*> optional
+      ( option
+          auto
+          ( mconcat
+              [ long "importer-interval",
+                help "The default interval for importers",
+                metavar "SECONDS"
+              ]
+          )
+      )
     <*> getLooperFlags "events-info-importer"
     <*> getLooperFlags "golatindance-com-importer"
     <*> getLooperFlags "danceplace-com-importer"
