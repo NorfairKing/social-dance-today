@@ -121,6 +121,7 @@ in
                   golatindance-com-importer = mkLooperOption "golatindance-com-importer";
                   danceplace-com-importer = mkLooperOption "danceplace-com-importer";
                   mapdance-com-importer = mkLooperOption "mapdance-com-importer";
+                  salsachicago-com-importer = mkLooperOption "salsachicago-com-importer";
                 };
             });
           default = null;
@@ -173,6 +174,7 @@ in
           (nullOrOption "golatindance-com-importer" golatindance-com-importer)
           (nullOrOption "danceplace-com-importer" danceplace-com-importer)
           (nullOrOption "mapdance-com-importer" mapdance-com-importer)
+          (nullOrOption "salsachicago-com-importer" salsachicago-com-importer)
           (nullOrOption "sentry" sentry)
           cfg.web-server.config
         ];
