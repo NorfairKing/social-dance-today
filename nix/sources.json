@@ -29,10 +29,10 @@
         "homepage": "http://hackage.haskell.org/package/looper",
         "owner": "NorfairKing",
         "repo": "looper",
-        "rev": "8f9f944e8cf3cd8883a5600c115461ecea285c62",
-        "sha256": "1nc6iiwxp0gbxv4cwgv3jqmv0v59w8y462ax7g55gx7m8l8zg2a9",
+        "rev": "b7eae09b1bee5250eef5d31e4d1dba33d90bc0fc",
+        "sha256": "1v5ych65ywmc9ddw2l26gsdsbq67p418di3f9c94w6sj9nj479p5",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/looper/archive/8f9f944e8cf3cd8883a5600c115461ecea285c62.tar.gz",
+        "url": "https://github.com/NorfairKing/looper/archive/b7eae09b1bee5250eef5d31e4d1dba33d90bc0fc.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "niv": {
