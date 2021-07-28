@@ -19,6 +19,7 @@
 -- There is also a list-based calendar available for what seems an indeterminate amount of time forward
 -- using;
 -- https://golatindance.com/events/category/:city/list/?tribe-bar-date=YYYY-MM-DD&ical=1
+-- Note that the slash there is very important        ^
 --
 -- Events are also paginated, so when listing events you can do this too:
 -- https://golatindance.com/events/category/london/page/2/
@@ -81,6 +82,7 @@ func = do
       .| doHttpRequestWith
       .| logRequestErrors
       .| parseCategoryUrls
+      .| deduplicateC
       .| andDays
       .| C.concatMap makeCalendarRequest
       .| doHttpRequestWith
@@ -111,7 +113,7 @@ andDays = do
 
 makeCalendarRequest :: (Text, Day) -> Maybe HTTP.Request
 makeCalendarRequest (link, day) = do
-  requestPrototype <- parseRequest $ T.unpack link <> "list"
+  requestPrototype <- parseRequest $ T.unpack link <> "list/"
   pure $
     setQueryString
       [ ("tribe-bar-date", Just $ TE.encodeUtf8 $ T.pack $ formatTime defaultTimeLocale "%F" day),
