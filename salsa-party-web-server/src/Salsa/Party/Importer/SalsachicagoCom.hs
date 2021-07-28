@@ -12,23 +12,11 @@
 module Salsa.Party.Importer.SalsachicagoCom (salsachicagoComImporter) where
 
 import Conduit
-import Control.Applicative
-import qualified Data.ByteString as SB
-import qualified Data.ByteString.Char8 as SB8
-import qualified Data.ByteString.Lazy as LB
-import qualified Data.ByteString.Lazy.Char8 as LB8
 import qualified Data.Conduit.Combinators as C
-import Data.Maybe
-import qualified Data.Text as T
 import Network.HTTP.Client as HTTP
 import Network.URI
 import Salsa.Party.Importer.Import
 import Salsa.Party.Importer.TribeCalendar
-import Salsa.Party.Web.Server.Geocoding
-import Text.HTML.Scalpel
-import Text.HTML.Scalpel.Extended
-import qualified Web.JSONLD as LD
-import qualified Web.JSONLD.Parse as LD
 
 salsachicagoComImporter :: Importer
 salsachicagoComImporter =
@@ -48,4 +36,4 @@ func = do
       .| doHttpRequestWith
       .| logRequestErrors
       .| jsonLDEventsC
-      .| C.mapM_ (liftIO . pPrint)
+      .| importTribeCalendarJSONLDEvents
