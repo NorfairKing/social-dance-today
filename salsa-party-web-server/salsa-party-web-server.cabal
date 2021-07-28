@@ -28,6 +28,7 @@ library
       Salsa.Party.Importer.GolatindanceCom
       Salsa.Party.Importer.Import
       Salsa.Party.Importer.MapdanceCom
+      Salsa.Party.Importer.TribeCalendar
       Salsa.Party.Looper
       Salsa.Party.Looper.ImageGarbageCollector
       Salsa.Party.Looper.OrganiserReminder

@@ -55,11 +55,11 @@ import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Types as HTTP
 import Network.URI
 import Salsa.Party.Importer.Import
+import Salsa.Party.Importer.TribeCalendar
 import Salsa.Party.Web.Server.Geocoding
 import Text.HTML.Scalpel
 import Text.HTML.Scalpel.Extended
@@ -104,34 +104,6 @@ parseCategoryUrls = awaitForever $ \(_, response) -> do
           refs <- attrs "href" "a"
           pure $ mapMaybe maybeUtf8 $ filter ("https://golatindance.com/events/category/" `LB.isPrefixOf`) refs
   yieldMany links
-
-andDays :: MonadIO m => ConduitT a (a, Day) m ()
-andDays = do
-  today <- liftIO $ utctDay <$> getCurrentTime
-  let days = [today .. addDays 28 today]
-  awaitForever $ \a -> yieldMany $ map ((,) a) days
-
-makeCalendarRequest :: (Text, Day) -> Maybe HTTP.Request
-makeCalendarRequest (link, day) = do
-  requestPrototype <- parseRequest $ T.unpack link <> "list/"
-  pure $
-    setQueryString
-      [ ("tribe-bar-date", Just $ TE.encodeUtf8 $ T.pack $ formatTime defaultTimeLocale "%F" day),
-        ("ical", Just "1")
-      ]
-      $ requestPrototype
-        { requestHeaders = ("Accept", "application/calendar") : requestHeaders requestPrototype
-        }
-
-parseUrlsInCalendars :: ConduitT (HTTP.Request, Response LB.ByteString) Text Import ()
-parseUrlsInCalendars =
-  C.map (responseBody . snd)
-    -- Unbounded is not safe here, but not sure what to do about it ..
-    .| C.splitOnUnboundedE (== 0x0a)
-    .| C.concatMap (LB.stripPrefix "URL:")
-    .| C.map (\lb -> fromMaybe lb $ LB.stripSuffix "\r" lb) -- Strip \r if there is one.
-    .| C.map LB.toStrict
-    .| C.concatMap TE.decodeUtf8'
 
 makeEventPageRequest :: Text -> Maybe HTTP.Request
 makeEventPageRequest url = do

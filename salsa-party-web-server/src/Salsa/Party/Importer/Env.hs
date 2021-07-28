@@ -381,3 +381,9 @@ deduplicateC = () <$ go S.empty
               logDebugN $ T.pack $ "Not seen yet, yielding: " <> show a
               yield a
               go $ S.insert a seen
+
+andDays :: MonadIO m => ConduitT a (a, Day) m ()
+andDays = do
+  today <- liftIO $ utctDay <$> getCurrentTime
+  let days = [today .. addDays 28 today]
+  awaitForever $ \a -> yieldMany $ map ((,) a) days
