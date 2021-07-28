@@ -83,13 +83,9 @@ func = do
       .| logRequestErrors
       .| parseCategoryUrls
       .| deduplicateC
-      .| andDays
-      .| C.concatMap makeCalendarRequest
-      .| doHttpRequestWith
-      .| logRequestErrors
-      .| parseUrlsInCalendars
-      .| deduplicateC
-      .| C.concatMap makeEventPageRequest
+      .| tribeCalendarC
+      .| C.filter (isPrefixOf "https://golatindance.com/event/" . show)
+      .| C.concatMap (requestFromURI :: URI -> Maybe Request)
       .| doHttpRequestWith
       .| logRequestErrors
       .| parseJSONLDPieces
@@ -97,18 +93,13 @@ func = do
       .| importJSONLDEvents
 
 parseCategoryUrls ::
-  ConduitM (Request, Response LB.ByteString) Text Import ()
+  ConduitM (Request, Response LB.ByteString) URI Import ()
 parseCategoryUrls = awaitForever $ \(_, response) -> do
   let links = fromMaybe [] $
         scrapeStringLike (responseBody response) $ do
           refs <- attrs "href" "a"
           pure $ mapMaybe maybeUtf8 $ filter ("https://golatindance.com/events/category/" `LB.isPrefixOf`) refs
-  yieldMany links
-
-makeEventPageRequest :: Text -> Maybe HTTP.Request
-makeEventPageRequest url = do
-  guard $ T.isPrefixOf "https://golatindance.com/event/" url
-  parseRequest $ T.unpack url
+  yieldMany $ mapMaybe (parseURI . T.unpack) links
 
 parseJSONLDPieces :: ConduitT (Request, Response LB.ByteString) (Request, Response LB.ByteString, JSON.Value) Import ()
 parseJSONLDPieces = C.concatMap $ \(request, response) -> do

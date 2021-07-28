@@ -10,9 +10,10 @@ import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Network.HTTP.Client as HTTP
+import Network.URI
 import Salsa.Party.Importer.Import
 
-tribeCalendarC :: ConduitT Text Text Import ()
+tribeCalendarC :: ConduitT URI URI Import ()
 tribeCalendarC =
   andDays
     .| C.concatMap makeCalendarRequest
@@ -21,9 +22,9 @@ tribeCalendarC =
     .| parseUrlsInCalendars
     .| deduplicateC
 
-makeCalendarRequest :: (Text, Day) -> Maybe HTTP.Request
-makeCalendarRequest (link, day) = do
-  requestPrototype <- parseRequest $ T.unpack link <> "list/"
+makeCalendarRequest :: (URI, Day) -> Maybe HTTP.Request
+makeCalendarRequest (uri, day) = do
+  requestPrototype <- requestFromURI $ uri {uriPath = uriPath uri <> "/list/"}
   pure $
     setQueryString
       [ ("tribe-bar-date", Just $ TE.encodeUtf8 $ T.pack $ formatTime defaultTimeLocale "%F" day),
@@ -37,7 +38,7 @@ makeCalendarRequest (link, day) = do
 --
 -- Instead of parsing the actual ICS file, because they probably aren't valid
 -- (I tried), we just take the URLs that are on a line that says "URL: "
-parseUrlsInCalendars :: ConduitT (HTTP.Request, Response LB.ByteString) Text Import ()
+parseUrlsInCalendars :: ConduitT (HTTP.Request, Response LB.ByteString) URI Import ()
 parseUrlsInCalendars =
   C.map (responseBody . snd)
     -- Unbounded is not safe here, but not sure what to do about it ..
@@ -46,3 +47,4 @@ parseUrlsInCalendars =
     .| C.map (\lb -> fromMaybe lb $ LB.stripSuffix "\r" lb) -- Strip \r if there is one.
     .| C.map LB.toStrict
     .| C.concatMap TE.decodeUtf8'
+    .| C.concatMap (parseURI . T.unpack)
