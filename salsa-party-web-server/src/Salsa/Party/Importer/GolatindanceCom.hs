@@ -69,8 +69,7 @@ func = do
       .| C.concatMap (requestFromURI :: URI -> Maybe Request)
       .| doHttpRequestWith
       .| logRequestErrors
-      .| parseJSONLDPieces
-      .| parseJSONLDEvents
+      .| jsonLDEventsC
       .| importJSONLDEvents
 
 parseCategoryUrls ::
@@ -81,31 +80,6 @@ parseCategoryUrls = awaitForever $ \(_, response) -> do
           refs <- attrs "href" "a"
           pure $ mapMaybe maybeUtf8 $ filter ("https://golatindance.com/events/category/" `LB.isPrefixOf`) refs
   yieldMany $ mapMaybe (parseURI . T.unpack) links
-
-parseJSONLDPieces :: ConduitT (Request, Response LB.ByteString) (Request, Response LB.ByteString, JSON.Value) Import ()
-parseJSONLDPieces = C.concatMap $ \(request, response) -> do
-  let c = HTTP.statusCode (responseStatus response)
-  guard $ 200 <= c && c < 300
-  value <- fromMaybe [] $ scrapeStringLike (responseBody response) LD.scrapeJSONLDValues
-  pure (request, response, value)
-
-parseJSONLDEvents ::
-  ConduitT
-    (HTTP.Request, HTTP.Response LB.ByteString, JSON.Value)
-    (HTTP.Request, HTTP.Response LB.ByteString, LD.Event)
-    Import
-    ()
-parseJSONLDEvents = awaitForever $ \(request, response, value) ->
-  case ((: []) <$> JSON.parseEither parseJSON value) <|> JSON.parseEither parseJSON value of
-    Left _ ->
-      -- We don't log this error.
-      -- We _could_ log it if we were sure that it represented a failure in our event
-      -- but as it stands we cannot be sure of that.
-      --
-      -- TODO: Maybe we could try checkning for the type of what we are parsing?
-      -- JSONLD uses an @type field so that could work.
-      pure ()
-    Right event -> yieldMany $ map ((,,) request response) event
 
 importJSONLDEvents :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString, LD.Event) Void Import ()
 importJSONLDEvents = awaitForever $ \(request, response, event) -> do

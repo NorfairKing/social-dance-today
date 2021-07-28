@@ -10,6 +10,7 @@ import Salsa.Party.Importer.Env
 import Salsa.Party.Importer.EventsInfo
 import Salsa.Party.Importer.GolatindanceCom
 import Salsa.Party.Importer.MapdanceCom
+import Salsa.Party.Importer.SalsachicagoCom
 import Salsa.Party.OptParse
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
@@ -25,5 +26,6 @@ importerLoopers Settings {..} app =
    in [ importerLooper eventsInfoImporter settingEventsInfoImportLooperSettings,
         importerLooper golatindanceComImporter settingGolatindanceComImportLooperSettings,
         importerLooper danceplaceComImporter settingDanceplaceComImportLooperSettings,
-        importerLooper mapdanceComImporter settingMapdanceComImportLooperSettings
+        importerLooper mapdanceComImporter settingMapdanceComImportLooperSettings,
+        importerLooper salsachicagoComImporter settingSalsachicagoComImportLooperSettings
       ]

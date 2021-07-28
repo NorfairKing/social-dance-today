@@ -3,8 +3,8 @@
 module Text.HTML.Scalpel.Extended where
 
 import qualified Data.ByteString.Lazy as LB
+import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
-import Salsa.Party.Importer.Import
 import Text.HTML.Scalpel
 
 maybeUtf8 :: LB.ByteString -> Maybe Text

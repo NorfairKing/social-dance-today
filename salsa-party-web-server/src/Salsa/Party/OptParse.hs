@@ -53,7 +53,9 @@ data Settings = Settings
     -- https://danceplace.com
     settingDanceplaceComImportLooperSettings :: !LooperSettings,
     -- https://mapdance.com
-    settingMapdanceComImportLooperSettings :: !LooperSettings
+    settingMapdanceComImportLooperSettings :: !LooperSettings,
+    -- https://salsachicago.com
+    settingSalsachicagoComImportLooperSettings :: !LooperSettings
   }
   deriving (Show, Eq, Generic)
 
@@ -87,6 +89,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingGolatindanceComImportLooperSettings = deriveLooperSettings (minutes 3 + seconds 2) (hours 1) flagGolatindanceComImportLooperFlags envGolatindanceComImportLooperEnvironment (mc confGolatindanceComImportLooperConfiguration)
   let settingDanceplaceComImportLooperSettings = deriveLooperSettings (minutes 4 + seconds 3) (hours 1) flagDanceplaceComImportLooperFlags envDanceplaceComImportLooperEnvironment (mc confDanceplaceComImportLooperConfiguration)
   let settingMapdanceComImportLooperSettings = deriveLooperSettings (minutes 5 + seconds 4) (hours 1) flagMapdanceComImportLooperFlags envMapdanceComImportLooperEnvironment (mc confMapdanceComImportLooperConfiguration)
+  let settingSalsachicagoComImportLooperSettings = deriveLooperSettings (minutes 6 + seconds 5) (hours 1) flagSalsachicagoComImportLooperFlags envSalsachicagoComImportLooperEnvironment (mc confSalsachicagoComImportLooperConfiguration)
   pure Settings {..}
   where
     mc :: (Configuration -> Maybe a) -> Maybe a
@@ -118,7 +121,8 @@ data Configuration = Configuration
     confEventsInfoImportLooperConfiguration :: !(Maybe LooperConfiguration),
     confGolatindanceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
     confDanceplaceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confMapdanceComImportLooperConfiguration :: !(Maybe LooperConfiguration)
+    confMapdanceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
+    confSalsachicagoComImportLooperConfiguration :: !(Maybe LooperConfiguration)
   }
   deriving (Show, Eq, Generic)
 
@@ -149,6 +153,7 @@ instance YamlSchema Configuration where
         <*> optionalField "golatindance-com-importer" "The golatindance.com import looper"
         <*> optionalField "danceplace-com-importer" "The danceplace.com import looper"
         <*> optionalField "mapdance-com-importer" "The mapdance.com import looper"
+        <*> optionalField "salsachicago-com-importer" "The salsachicago.com import looper"
 
 data SentryConfiguration = SentryConfiguration
   { sentryConfDSN :: !(Maybe Text),
@@ -200,7 +205,8 @@ data Environment = Environment
     envEventsInfoImportLooperEnvironment :: !LooperEnvironment,
     envGolatindanceComImportLooperEnvironment :: !LooperEnvironment,
     envDanceplaceComImportLooperEnvironment :: !LooperEnvironment,
-    envMapdanceComImportLooperEnvironment :: !LooperEnvironment
+    envMapdanceComImportLooperEnvironment :: !LooperEnvironment,
+    envSalsachicagoComImportLooperEnvironment :: !LooperEnvironment
   }
   deriving (Show, Eq, Generic)
 
@@ -239,6 +245,7 @@ environmentParser =
       <*> looperEnvironmentParser "GOLATINDANCE_COM_IMPORTER"
       <*> looperEnvironmentParser "DANCEPLACE_COM_IMPORTER"
       <*> looperEnvironmentParser "MAPDANCE_COM_IMPORTER"
+      <*> looperEnvironmentParser "SALSACHICAGO_COM_IMPORTER"
   where
     mE = Env.def Nothing
 
@@ -296,7 +303,8 @@ data Flags = Flags
     flagEventsInfoImportLooperFlags :: !LooperFlags,
     flagGolatindanceComImportLooperFlags :: !LooperFlags,
     flagDanceplaceComImportLooperFlags :: !LooperFlags,
-    flagMapdanceComImportLooperFlags :: !LooperFlags
+    flagMapdanceComImportLooperFlags :: !LooperFlags,
+    flagSalsachicagoComImportLooperFlags :: !LooperFlags
   }
   deriving (Show, Eq, Generic)
 
@@ -460,6 +468,7 @@ parseFlags =
     <*> getLooperFlags "golatindance-com-importer"
     <*> getLooperFlags "danceplace-com-importer"
     <*> getLooperFlags "mapdance-com-importer"
+    <*> getLooperFlags "salsachicago-com-importer"
 
 data SentryFlags = SentryFlags
   { sentryFlagDSN :: !(Maybe Text),

@@ -7,6 +7,7 @@
 module Salsa.Party.Importer.Env where
 
 import Conduit
+import Control.Applicative
 import Control.Concurrent.TokenLimiter.Concurrent
 import Control.Exception (AsyncException)
 import Control.Monad.Logger
@@ -29,14 +30,18 @@ import GHC.Generics (Generic)
 import Looper
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.Retry
+import Network.HTTP.Types as HTTP
 import Network.URI
 import Salsa.Party.AdminNotification
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Poster
 import System.Random (randomRIO)
+import Text.HTML.Scalpel
 import Text.Show.Pretty (pPrint, ppShow)
 import UnliftIO
+import qualified Web.JSONLD as LD
+import qualified Web.JSONLD.Parse as LD
 
 data Importer = Importer
   { importerName :: Text,
@@ -123,7 +128,7 @@ runImporter a Importer {..} = do
   let tokenLimitConfig =
         TokenLimitConfig
           { tokenLimitConfigMaxTokens = 10, -- Ten tokens maximum, represents one request
-            tokenLimitConfigInitialTokens = 10,
+            tokenLimitConfigInitialTokens = 0,
             tokenLimitConfigTokensPerSecond = 1
           }
   tokenLimiter <- liftIO $ makeTokenLimiter tokenLimitConfig
@@ -387,3 +392,36 @@ andDays = do
   today <- liftIO $ utctDay <$> getCurrentTime
   let days = [today .. addDays 28 today]
   awaitForever $ \a -> yieldMany $ map ((,) a) days
+
+jsonLDEventsC ::
+  ConduitT
+    (Request, Response LB.ByteString)
+    (HTTP.Request, HTTP.Response LB.ByteString, LD.Event)
+    Import
+    ()
+jsonLDEventsC = parseJSONLDPieces .| parseJSONLDEvents
+
+parseJSONLDPieces :: ConduitT (Request, Response LB.ByteString) (Request, Response LB.ByteString, JSON.Value) Import ()
+parseJSONLDPieces = C.concatMap $ \(request, response) -> do
+  let c = HTTP.statusCode (responseStatus response)
+  guard $ 200 <= c && c < 300
+  value <- fromMaybe [] $ scrapeStringLike (responseBody response) LD.scrapeJSONLDValues
+  pure (request, response, value)
+
+parseJSONLDEvents ::
+  ConduitT
+    (HTTP.Request, HTTP.Response LB.ByteString, JSON.Value)
+    (HTTP.Request, HTTP.Response LB.ByteString, LD.Event)
+    Import
+    ()
+parseJSONLDEvents = awaitForever $ \(request, response, value) ->
+  case ((: []) <$> JSON.parseEither parseJSON value) <|> JSON.parseEither parseJSON value of
+    Left _ ->
+      -- We don't log this error.
+      -- We _could_ log it if we were sure that it represented a failure in our event
+      -- but as it stands we cannot be sure of that.
+      --
+      -- TODO: Maybe we could try checkning for the type of what we are parsing?
+      -- JSONLD uses an @type field so that could work.
+      pure ()
+    Right event -> yieldMany $ map ((,,) request response) event
