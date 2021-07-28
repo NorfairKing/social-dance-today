@@ -2,9 +2,12 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
---- 1. There are no terms of services.
---- 2. There is no explicit copyright notice.
---- 3. The robots.txt does not forbid crawling.
+-- | https://golatindance.com
+--
+-- This page has a large number of events in multiple cities
+-- - 1. There are no terms of services.
+-- - 2. There is no explicit copyright notice.
+-- - 3. The robots.txt does not forbid crawling.
 --
 -- All good so far, except the data is not machine readable.
 -- HOWER, there is a way to export events in ical format.
@@ -13,16 +16,7 @@
 -- The Monthly calendar is available at
 -- https://golatindance.com/events/category/:city/month/?ical=1
 --
--- There is also a monthly calendar available for months other than the current month at
--- https://golatindance.com/events/category/:city/YYYY-MM/?ical=1
---
--- There is also a list-based calendar available for what seems an indeterminate amount of time forward
--- using;
--- https://golatindance.com/events/category/:city/list/?tribe-bar-date=YYYY-MM-DD&ical=1
--- Note that the slash there is very important        ^
---
--- Events are also paginated, so when listing events you can do this too:
--- https://golatindance.com/events/category/london/page/2/
+-- And this is a Tribe Calendar, see 'Salsa.Party.Importer.TribeCalendar'
 --
 -- The event calendar is available at
 -- https://golatindance.com/event/:eventslug/:day
@@ -31,20 +25,7 @@
 --
 -- It looks like event pages DO actually contain JSON LD, but they contain multiple of them so we can't just parse the first one.
 --
--- First idea: Import events for the coming months directly from the monthly calendar exports.
---
--- Unfortunately the .ics files that the page generates don't actually parse.
---
--- HOWEVER: they do still contain lines like this:
--- https://golatindance.com/event/todo-latino-tuesdays-with-latin-collective-urban-kiz-uk/2021-08-03/
--- so we can actually ignore the fact that it's ICS and go look for those lines instead.
---
--- Second idea: Use the calendar exports to find the event pages to scrape from, then use JSON LD.
---
-
--- | https://golatindance.com
---
--- This page has a large number of events in multiple cities
+-- We use the calendar exports to find the event pages to scrape from, then use JSON LD.
 module Salsa.Party.Importer.GolatindanceCom (golatindanceComImporter) where
 
 import Conduit
