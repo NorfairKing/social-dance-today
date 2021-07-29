@@ -128,10 +128,10 @@ AccountDeleteButton: Verwijder account
 AccountDeleteWarning: Weet u zeker dat u uw account wilt verwijderen? Deze actie kunt u niet ongedaan maken.
 
 # Organiser Profile
-OrganiserProfileTitle: Organistorprofiel
+OrganiserProfileTitle: Organisatorprofiel
 OrganiserDisplayNameLabel: Weergavenaam
 OrganiserConsentReminderLabel: Ik wil eraan herinnerd worden om mijn feesten te adverteren.
-OrganiserConsentReminderHelp: We zullen u nooit meer dan één herinnering studen. U kan dit elk moment stopzetten.
+OrganiserConsentReminderHelp: We zullen u nooit meer dan één herinnering sturen. U kan dit elk moment stopzetten.
 OrganiserSubmitButton: Indienen
 OrganiserViewPublicProfileButton: Bekijk openbaar profiel
 OrganiserSaveSuccess: Organisatorprofiel opgeslagen
