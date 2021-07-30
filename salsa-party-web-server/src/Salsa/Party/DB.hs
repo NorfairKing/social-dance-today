@@ -76,6 +76,7 @@ Organiser sql=organiser
 
     name Text
 
+    -- TODO this field is now unused.
     consentReminder Bool default=true sql=consent_reminder
 
     created UTCTime
@@ -89,10 +90,17 @@ Organiser sql=organiser
     deriving Generic
 
 
+-- This table represents metadata about sending
+-- organisers reminder emails about submitting their parties.
+-- Every organiser that has given consent will have a row in this table.
+-- Every organiser that has revoked consent will still have a row but will have the consent column set to False.
+-- A missing row in this table should be considered "non-consent".
 OrganiserReminder sql=organiser_reminder
     organiser OrganiserId
+    consent Bool default=false sql=consent
+
     -- Last reminded
-    last UTCTime sql=last
+    last UTCTime Maybe sql=last
 
     UniqueOrganiserReminderOrganiser organiser
 

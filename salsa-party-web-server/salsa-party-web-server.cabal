@@ -186,6 +186,7 @@ test-suite salsa-party-web-server-test
       Salsa.Party.DB.ExternalEventSpec
       Salsa.Party.DB.PartySpec
       Salsa.Party.DBSpec
+      Salsa.Party.Looper.OrganiserReminderSpec
       Salsa.Party.Web.Server.DistanceSpec
       Salsa.Party.Web.Server.Gen
       Salsa.Party.Web.Server.Handler.Account.OrganiserSpec

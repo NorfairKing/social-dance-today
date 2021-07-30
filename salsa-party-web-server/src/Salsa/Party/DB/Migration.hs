@@ -10,6 +10,7 @@ module Salsa.Party.DB.Migration where
 import Conduit
 import Control.Monad
 import Control.Monad.Logger
+import qualified Data.Conduit.Combinators as C
 import qualified Data.Text as T
 import Database.Persist.Sql
 import Salsa.Party.DB
@@ -27,6 +28,7 @@ completeServerMigration quiet = do
   logInfoN "Autmatic migrations done, starting application-specific migrations."
   setUpPlaces
   cleanupOldExternalEvents
+  setupOrganiserReminderConsent
   logInfoN "Migrations done."
 
 setUpPlaces :: (MonadIO m, MonadLogger m) => SqlPersistT m ()
@@ -106,5 +108,26 @@ locations =
     Location {locationPlace = Place {placeQuery = "Melbourne", placeLat = -37.814217600, placeLon = 144.963160800}}
   ]
 
+-- TODO When we remove this, remove the maybe in the db
 cleanupOldExternalEvents :: MonadIO m => SqlPersistT m ()
-cleanupOldExternalEvents = deleteWhere [ExternalEventImporter ==. Nothing] -- TODO When we remove this, remove the maybe in the db
+cleanupOldExternalEvents = deleteWhere [ExternalEventImporter ==. Nothing]
+
+setupOrganiserReminderConsent :: MonadUnliftIO m => SqlPersistT m ()
+setupOrganiserReminderConsent = do
+  acqOrganiserSource <- selectSourceRes [] []
+  withAcquire acqOrganiserSource $ \organiserSource ->
+    runConduit $ organiserSource .| C.mapM_ setUpOrganiserConsent
+
+-- TODO When we remove this, also remove the consentReminder in the DB
+setUpOrganiserConsent :: MonadIO m => Entity Organiser -> SqlPersistT m ()
+setUpOrganiserConsent (Entity organiserId Organiser {..}) =
+  void $
+    upsertBy
+      (UniqueOrganiserReminderOrganiser organiserId)
+      ( OrganiserReminder
+          { organiserReminderOrganiser = organiserId,
+            organiserReminderConsent = organiserConsentReminder,
+            organiserReminderLast = Nothing
+          }
+      )
+      [OrganiserReminderConsent =. organiserConsentReminder]

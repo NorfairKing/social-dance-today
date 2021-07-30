@@ -49,22 +49,32 @@ organiserFormPage mResult = do
       now <- liftIO getCurrentTime
       _ <- do
         uuid <- nextRandomUUID
-        runDB $
+        runDB $ do
+          Entity organiserId _ <-
+            upsertBy
+              (UniqueOrganiserUser userId)
+              ( Organiser
+                  { organiserUuid = uuid,
+                    organiserUser = userId,
+                    organiserName = organiserFormName,
+                    organiserConsentReminder = organiserFormConsentReminder,
+                    organiserCreated = now,
+                    organiserModified = Nothing
+                  }
+              )
+              [ OrganiserName =. organiserFormName,
+                OrganiserConsentReminder =. organiserFormConsentReminder,
+                OrganiserModified =. Just now
+              ]
           upsertBy
-            (UniqueOrganiserUser userId)
-            ( Organiser
-                { organiserUuid = uuid,
-                  organiserUser = userId,
-                  organiserName = organiserFormName,
-                  organiserConsentReminder = organiserFormConsentReminder,
-                  organiserCreated = now,
-                  organiserModified = Nothing
+            (UniqueOrganiserReminderOrganiser organiserId)
+            ( OrganiserReminder
+                { organiserReminderOrganiser = organiserId,
+                  organiserReminderConsent = organiserFormConsentReminder,
+                  organiserReminderLast = Nothing
                 }
             )
-            [ OrganiserName =. organiserFormName,
-              OrganiserConsentReminder =. organiserFormConsentReminder,
-              OrganiserModified =. Just now
-            ]
+            [OrganiserReminderConsent =. organiserFormConsentReminder]
       redirect $ AccountR AccountOrganiserR
     _ -> do
       token <- genToken
