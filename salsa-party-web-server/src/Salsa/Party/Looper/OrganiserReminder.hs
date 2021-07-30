@@ -10,6 +10,8 @@ module Salsa.Party.Looper.OrganiserReminder
     makeOrganiserReminderDecision,
     reminderInterval,
     sendOrganiserReminder,
+    organiserReminderTextContent,
+    organiserReminderHtmlContent,
   )
 where
 
@@ -145,9 +147,8 @@ sendOrganiserReminder emailAddress = do
     app <- ask
     let urlRender = yesodRender app (fromMaybe "" $ appRoot app)
 
-    let textBody = SES.content $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/organiser-reminder.txt") urlRender
-
-    let htmlBody = SES.content $ LT.toStrict $ renderHtml $ $(hamletFile "templates/email/organiser-reminder.hamlet") urlRender
+    let textBody = SES.content $ organiserReminderTextContent urlRender
+    let htmlBody = SES.content $ organiserReminderHtmlContent urlRender
 
     let body =
           SES.body
@@ -165,3 +166,9 @@ sendOrganiserReminder emailAddress = do
     case (^. SES.sersResponseStatus) <$> response of
       Right 200 -> logInfoN $ "Succesfully send organiser reminder email to address: " <> emailAddress
       _ -> logErrorN $ T.unlines ["Failed to send organiser reminder email to address: " <> emailAddress, T.pack (ppShow response)]
+
+organiserReminderTextContent :: (Route App -> [(Text, Text)] -> Text) -> Text
+organiserReminderTextContent urlRender = LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/organiser-reminder.txt") urlRender
+
+organiserReminderHtmlContent :: (Route App -> [(Text, Text)] -> Text) -> Text
+organiserReminderHtmlContent urlRender = LT.toStrict $ renderHtml $ $(hamletFile "templates/email/organiser-reminder.hamlet") urlRender
