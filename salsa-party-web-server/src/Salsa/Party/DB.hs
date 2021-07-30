@@ -51,6 +51,11 @@ data O -- Phantom type anyway
 
 type OrganiserUUID = UUID O
 
+data R -- Phantom type anyway
+
+-- This will be a secret id that a user has to present to one-click unsubscribe from reminder emails
+type ReminderSecret = UUID R
+
 share
   [mkPersist sqlSettings, mkMigrate "automaticMigrations"]
   [persistLowerCase|
@@ -98,11 +103,13 @@ Organiser sql=organiser
 OrganiserReminder sql=organiser_reminder
     organiser OrganiserId
     consent Bool default=false sql=consent
+    secret ReminderSecret Maybe default=NULL -- TODO this shouldn't be a maybe
 
     -- Last reminded
     last UTCTime Maybe sql=last
 
     UniqueOrganiserReminderOrganiser organiser
+    UniqueOrganiserReminderSecret secret !force
 
     deriving Show
     deriving Eq

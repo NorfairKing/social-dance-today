@@ -12,6 +12,7 @@ import Control.Monad
 import Control.Monad.Logger
 import qualified Data.Conduit.Combinators as C
 import qualified Data.Text as T
+import Data.UUID.Typed
 import Database.Persist.Sql
 import Salsa.Party.DB
 import System.Exit
@@ -29,6 +30,7 @@ completeServerMigration quiet = do
   setUpPlaces
   cleanupOldExternalEvents
   setupOrganiserReminderConsent
+  setupOrganiserReminderSecrets
   logInfoN "Migrations done."
 
 setUpPlaces :: (MonadIO m, MonadLogger m) => SqlPersistT m ()
@@ -120,14 +122,28 @@ setupOrganiserReminderConsent = do
 
 -- TODO When we remove this, also remove the consentReminder in the DB
 setUpOrganiserConsent :: MonadIO m => Entity Organiser -> SqlPersistT m ()
-setUpOrganiserConsent (Entity organiserId Organiser {..}) =
+setUpOrganiserConsent (Entity organiserId Organiser {..}) = do
+  uuid <- nextRandomUUID
   void $
     upsertBy
       (UniqueOrganiserReminderOrganiser organiserId)
       ( OrganiserReminder
           { organiserReminderOrganiser = organiserId,
             organiserReminderConsent = organiserConsentReminder,
-            organiserReminderLast = Nothing
+            organiserReminderLast = Nothing,
+            organiserReminderSecret = Just uuid
           }
       )
       [OrganiserReminderConsent =. organiserConsentReminder]
+
+setupOrganiserReminderSecrets :: MonadUnliftIO m => SqlPersistT m ()
+setupOrganiserReminderSecrets = do
+  acqOrganiserSource <- selectKeysRes [OrganiserReminderSecret ==. Nothing] []
+  withAcquire acqOrganiserSource $ \organiserSource ->
+    runConduit $
+      organiserSource
+        .| C.mapM_
+          ( \organiserReminderId -> do
+              uuid <- nextRandomUUID
+              update organiserReminderId [OrganiserReminderSecret =. Just uuid]
+          )

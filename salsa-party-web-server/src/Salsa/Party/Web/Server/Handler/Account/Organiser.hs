@@ -66,12 +66,14 @@ organiserFormPage mResult = do
                 OrganiserConsentReminder =. organiserFormConsentReminder,
                 OrganiserModified =. Just now
               ]
+          secret <- nextRandomUUID
           upsertBy
             (UniqueOrganiserReminderOrganiser organiserId)
             ( OrganiserReminder
                 { organiserReminderOrganiser = organiserId,
                   organiserReminderConsent = organiserFormConsentReminder,
-                  organiserReminderLast = Nothing
+                  organiserReminderLast = Nothing,
+                  organiserReminderSecret = Just secret
                 }
             )
             [OrganiserReminderConsent =. organiserFormConsentReminder]
