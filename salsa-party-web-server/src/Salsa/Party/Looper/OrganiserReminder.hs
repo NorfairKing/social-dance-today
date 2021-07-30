@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -34,23 +35,20 @@ import Salsa.Party.Web.Server.Foundation
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet
 import Text.Shakespeare.Text
-import Text.Show.Pretty (pPrint, ppShow)
+import Text.Show.Pretty (ppShow)
 import Yesod
 
 -- TODO do this with a join
 runOrganiserReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => m ()
 runOrganiserReminder = do
-  sendEmails <- asks appSendEmails
-  logDebugN "Not running the organiser reminder looper checks because sendEmails is off."
-  when sendEmails $ do
-    pool <- asks appConnectionPool
-    let runDBHere func = runSqlPool func pool
-    acqOrganiserReminderSource <- runDBHere $ selectSourceRes [OrganiserReminderConsent ==. True] []
-    withAcquire acqOrganiserReminderSource $ \organiserReminderSource -> do
-      runConduit $
-        organiserReminderSource
-          .| C.mapM (runDBHere . makeOrganiserReminderDecision)
-          .| C.mapM_ (liftIO . pPrint)
+  pool <- asks appConnectionPool
+  let runDBHere func = runSqlPool func pool
+  acqOrganiserReminderSource <- runDBHere $ selectSourceRes [OrganiserReminderConsent ==. True] []
+  withAcquire acqOrganiserReminderSource $ \organiserReminderSource -> do
+    runConduit $
+      organiserReminderSource
+        .| C.mapM (runDBHere . makeOrganiserReminderDecision)
+        .| reminderDecisionSink
 
 data OrganiserReminderDecision
   = NoReminderConsent
@@ -68,7 +66,7 @@ makeOrganiserReminderDecision (Entity organiserReminderId OrganiserReminder {..}
   logDebugN $
     T.pack $
       unwords
-        [ "Checking whether to send an organiser reminder to ",
+        [ "Checking whether to send an organiser reminder to organiser",
           show (fromSqlKey organiserReminderOrganiser)
         ]
   if organiserReminderConsent
@@ -81,7 +79,6 @@ makeOrganiserReminderDecision (Entity organiserReminderId OrganiserReminder {..}
       case mReminderTooRecent of
         Just tooRecent -> pure $ SentReminderTooRecentlyAlready tooRecent
         Nothing -> do
-          logDebugN "Ready to send a reminder in terms of how long it's been since the last."
           mOrganiser <- get organiserReminderOrganiser
           case mOrganiser of
             Nothing -> pure $ OrganiserNotFound organiserReminderOrganiser
@@ -116,6 +113,27 @@ makeOrganiserReminderDecision (Entity organiserReminderId OrganiserReminder {..}
 reminderInterval :: NominalDiffTime
 reminderInterval = 7 * nominalDay
 
+reminderDecisionSink :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => ConduitT OrganiserReminderDecision void m ()
+reminderDecisionSink = awaitForever $ \case
+  NoReminderConsent -> logDebugN "Not sending a reminder because the organiser has revoked consent."
+  OrganiserNotFound organiserId -> logWarnN $ T.pack $ unwords ["Organiser not found:", show $ fromSqlKey organiserId]
+  UserNotFound userId -> logWarnN $ T.pack $ unwords ["User not found:", show $ fromSqlKey userId]
+  UserEmailNotVerified userId emailAddress -> logDebugN $ T.pack $ unwords ["Not sending a reminder because the user's email address has not been validated", show $ fromSqlKey userId, show emailAddress]
+  SentReminderTooRecentlyAlready recently -> logDebugN $ T.pack $ unwords ["Not sending a reminder because another reminder has already been sent too recently:", show recently]
+  PartyOrganisedTooRecently day -> logDebugN $ T.pack $ unwords ["Not sending a reminder because the organiser has recently organised a party:", show day]
+  ShouldSendReminder organiserReminderId emailAddress -> lift $ do
+    now <- liftIO getCurrentTime
+    sendEmails <- asks appSendEmails
+    if sendEmails
+      then sendOrganiserReminder emailAddress
+      else logDebugN "Not sending reminder email because sendEmails is off."
+    pool <- asks appConnectionPool
+    let runDBHere func = runSqlPool func pool
+    runDBHere $
+      update
+        organiserReminderId
+        [OrganiserReminderLast =. Just now]
+
 sendOrganiserReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => Text -> m ()
 sendOrganiserReminder emailAddress = do
   mSendAddress <- asks appSendAddress
@@ -147,8 +165,3 @@ sendOrganiserReminder emailAddress = do
     case (^. SES.sersResponseStatus) <$> response of
       Right 200 -> logInfoN $ "Succesfully send organiser reminder email to address: " <> emailAddress
       _ -> logErrorN $ T.unlines ["Failed to send organiser reminder email to address: " <> emailAddress, T.pack (ppShow response)]
-
--- void $
---   update
---     organiserReminderId
---     [OrganiserReminderLast =. Just now]
