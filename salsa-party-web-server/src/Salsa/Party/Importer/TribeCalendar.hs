@@ -153,6 +153,10 @@ importTribeCalendarJSONLDEvents = awaitForever $ \(request, response, event) -> 
                 Nothing -> lift $ do
                   app <- asks importEnvApp
                   runReaderT (lookupPlaceRaw address) app
+      let mImageURI = do
+            eventImage <- listToMaybe (LD.eventImages event)
+            case eventImage of
+              LD.EventImageURL t -> parseURI $ T.unpack t
       case mPlaceEntity of
         Nothing -> logWarnN "Place not found."
         Just (Entity externalEventPlace _) -> do
@@ -160,22 +164,19 @@ importTribeCalendarJSONLDEvents = awaitForever $ \(request, response, event) -> 
           let externalEventOrigin = T.pack $ show $ getUri request
           lift $
             importExternalEventAnd ExternalEvent {..} $ \externalEventId -> do
-              forM_ (listToMaybe (LD.eventImages event)) $ \eventImage -> case eventImage of
-                LD.EventImageURL t -> case parseURI $ T.unpack t of
-                  Nothing -> pure ()
-                  Just uri -> do
-                    mImageId <- tryToImportImage uri
-                    forM_ mImageId $ \imageId -> do
-                      importDB $
-                        upsertBy
-                          (UniqueExternalEventPoster externalEventId)
-                          ( ExternalEventPoster
-                              { externalEventPosterExternalEvent = externalEventId,
-                                externalEventPosterImage = imageId,
-                                externalEventPosterCreated = now,
-                                externalEventPosterModified = Nothing
-                              }
-                          )
-                          [ ExternalEventPosterImage =. imageId,
-                            ExternalEventPosterModified =. Just now
-                          ]
+              forM_ mImageURI $ \imageUri -> do
+                mImageId <- tryToImportImage imageUri
+                forM_ mImageId $ \imageId -> do
+                  importDB $
+                    upsertBy
+                      (UniqueExternalEventPoster externalEventId)
+                      ( ExternalEventPoster
+                          { externalEventPosterExternalEvent = externalEventId,
+                            externalEventPosterImage = imageId,
+                            externalEventPosterCreated = now,
+                            externalEventPosterModified = Nothing
+                          }
+                      )
+                      [ ExternalEventPosterImage =. imageId,
+                        ExternalEventPosterModified =. Just now
+                      ]
