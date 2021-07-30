@@ -7,12 +7,12 @@
 module Salsa.Party.Importer.Env where
 
 import Conduit
-import Control.Applicative
 import Control.Concurrent.TokenLimiter.Concurrent
 import Control.Exception (AsyncException)
 import Control.Monad.Logger
 import Control.Monad.Reader
 import Data.Aeson as JSON
+import Data.Aeson.Encode.Pretty as JSON
 import Data.Aeson.Types as JSON
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as LB
@@ -23,6 +23,8 @@ import qualified Data.Set as S
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Lazy as LT
+import qualified Data.Text.Lazy.Builder as LTB
 import Data.Time
 import Database.Persist
 import Database.Persist.Sql
@@ -415,13 +417,43 @@ parseJSONLDEvents ::
     Import
     ()
 parseJSONLDEvents = awaitForever $ \(request, response, value) ->
-  case ((: []) <$> JSON.parseEither parseJSON value) <|> JSON.parseEither parseJSON value of
-    Left _ ->
-      -- We don't log this error.
-      -- We _could_ log it if we were sure that it represented a failure in our event
-      -- but as it stands we cannot be sure of that.
-      --
-      -- TODO: Maybe we could try checkning for the type of what we are parsing?
-      -- JSONLD uses an @type field so that could work.
-      pure ()
-    Right event -> yieldMany $ map ((,,) request response) event
+  -- Try to parse as a single event first
+  case JSON.parseEither parseJSON value of
+    Right event -> yield (request, response, event)
+    Left errorMessageSingle -> do
+      -- Couldn't parse as a single event, check to
+      -- warn about our parser potentially being broken.
+      let typeParser :: Value -> JSON.Parser Text
+          typeParser = withObject "ValueWithType" $ \o -> o .: "@type"
+      case JSON.parseMaybe typeParser value of
+        Just typ -> case typ of
+          "Event" ->
+            logWarnN $
+              T.pack $
+                unlines
+                  [ "Found a json object with '@type' 'Event', but couldn't parse it as an event:",
+                    errorMessageSingle,
+                    T.unpack $ LT.toStrict $ LTB.toLazyText $ JSON.encodePrettyToTextBuilder value
+                  ]
+          _ -> pure ()
+        Nothing ->
+          case JSON.parseEither parseJSON value of
+            Right events -> yieldMany $ map ((,,) request response) events
+            Left errorMessageList -> do
+              let listTypeParser :: Value -> JSON.Parser [Text]
+                  listTypeParser value_ = do
+                    list <- parseJSON value_
+                    mapM typeParser list
+              case JSON.parseMaybe listTypeParser value of
+                Nothing -> pure ()
+                Just types ->
+                  if all (== "Event") types
+                    then
+                      logWarnN $
+                        T.pack $
+                          unlines
+                            [ "Found a list of json objects that all have '@type' 'Event', but couldn't parse it as a list of events:",
+                              errorMessageList,
+                              T.unpack $ LT.toStrict $ LTB.toLazyText $ JSON.encodePrettyToTextBuilder value
+                            ]
+                    else pure ()
