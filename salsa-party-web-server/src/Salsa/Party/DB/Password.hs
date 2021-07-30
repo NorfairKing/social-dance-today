@@ -9,8 +9,16 @@ where
 import Data.Password.Bcrypt
 import Data.Proxy
 import Data.Text (Text)
+import Data.Validity
+import Data.Validity.Text ()
 import Database.Persist
 import Database.Persist.Sql
+
+instance Validity Password where
+  validate = validate . unsafeShowPassword
+
+instance Validity (PasswordHash Bcrypt) where
+  validate = trivialValidation
 
 instance PersistField (PasswordHash Bcrypt) where
   toPersistValue = toPersistValue . unPasswordHash

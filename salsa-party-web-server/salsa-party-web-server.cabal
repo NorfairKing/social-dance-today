@@ -238,6 +238,7 @@ test-suite salsa-party-web-server-test
     , monad-logger
     , mtl
     , network-uri
+    , password
     , path
     , path-io
     , persistent

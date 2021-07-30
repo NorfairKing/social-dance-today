@@ -145,6 +145,7 @@ tests:
     - monad-logger
     - mtl
     - network-uri
+    - password
     - path
     - path-io
     - persistent

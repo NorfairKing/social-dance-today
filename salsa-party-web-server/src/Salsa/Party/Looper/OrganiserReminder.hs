@@ -5,8 +5,9 @@
 
 module Salsa.Party.Looper.OrganiserReminder
   ( runOrganiserReminder,
-    makeOrganiserReminderDecision,
     OrganiserReminderDecision (..),
+    makeOrganiserReminderDecision,
+    reminderInterval,
     sendOrganiserReminder,
   )
 where
@@ -36,7 +37,7 @@ import Text.Shakespeare.Text
 import Text.Show.Pretty (pPrint, ppShow)
 import Yesod
 
--- TODO do this with a RightOuterJoin of Organiser and OrganiserReminder
+-- TODO do this with a join
 runOrganiserReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => m ()
 runOrganiserReminder = do
   sendEmails <- asks appSendEmails
@@ -72,43 +73,44 @@ makeOrganiserReminderDecision (Entity organiserReminderId OrganiserReminder {..}
         ]
   if organiserReminderConsent
     then do
-      mOrganiser <- get organiserReminderOrganiser
-      case mOrganiser of
-        Nothing -> pure $ OrganiserNotFound organiserReminderOrganiser
-        Just Organiser {..} -> do
-          mUser <- get organiserUser
-          case mUser of
-            Nothing -> pure $ UserNotFound organiserUser
-            Just User {..} -> do
-              if isJust userVerificationKey
-                then pure $ UserEmailNotVerified organiserUser userEmailAddress
-                else do
-                  now <- liftIO getCurrentTime
-                  let mReminderTooRecent = do
-                        lastReminder <- organiserReminderLast
-                        guard $ addUTCTime reminderInterval lastReminder > now
-                        pure lastReminder
-                  case mReminderTooRecent of
-                    Just tooRecent -> pure $ SentReminderTooRecentlyAlready tooRecent
-                    Nothing -> do
-                      logDebugN "Ready to send a reminder in terms of how long it's been since the last."
-                      mLastParty <-
-                        selectFirst
-                          [PartyOrganiser ==. organiserReminderOrganiser]
-                          [Desc PartyDay]
-                      let mPartyTooRecent = do
-                            Entity _ Party {..} <- mLastParty
-                            -- Should send a reminder if the organiser's latest party was more than a week ago.
-                            --
-                            -- TODO we would like to figure out an organisers cadence befor
-                            -- we overload them with emails.  For example, an organiser who
-                            -- only organises parties monthly doesn't need to be sent
-                            -- emails every week.
-                            guard $ addUTCTime reminderInterval (max partyCreated (UTCTime partyDay 0)) > now
-                            pure partyDay
-                      pure $ case mPartyTooRecent of
-                        Just partyDay -> PartyOrganisedTooRecently partyDay
-                        Nothing -> ShouldSendReminder organiserReminderId userEmailAddress
+      now <- liftIO getCurrentTime
+      let mReminderTooRecent = do
+            lastReminder <- organiserReminderLast
+            guard $ addUTCTime reminderInterval lastReminder > now
+            pure lastReminder
+      case mReminderTooRecent of
+        Just tooRecent -> pure $ SentReminderTooRecentlyAlready tooRecent
+        Nothing -> do
+          logDebugN "Ready to send a reminder in terms of how long it's been since the last."
+          mOrganiser <- get organiserReminderOrganiser
+          case mOrganiser of
+            Nothing -> pure $ OrganiserNotFound organiserReminderOrganiser
+            Just Organiser {..} -> do
+              mLastParty <-
+                selectFirst
+                  [PartyOrganiser ==. organiserReminderOrganiser]
+                  [Desc PartyDay]
+              let mPartyTooRecent = do
+                    Entity _ Party {..} <- mLastParty
+                    -- Should send a reminder if the organiser's latest party was more than a week ago or if they have never sent any.
+                    --
+                    -- TODO we would like to figure out an organisers cadence befor
+                    -- we overload them with emails.  For example, an organiser who
+                    -- only organises parties monthly doesn't need to be sent
+                    -- emails every week.
+                    guard $ addUTCTime reminderInterval (max partyCreated (UTCTime partyDay 0)) > now
+                    pure partyDay
+              case mPartyTooRecent of
+                Just partyDay -> pure $ PartyOrganisedTooRecently partyDay
+                Nothing -> do
+                  mUser <- get organiserUser
+                  case mUser of
+                    Nothing -> pure $ UserNotFound organiserUser
+                    Just User {..} ->
+                      pure $
+                        if isJust userVerificationKey
+                          then UserEmailNotVerified organiserUser userEmailAddress
+                          else ShouldSendReminder organiserReminderId userEmailAddress
     else pure NoReminderConsent
 
 reminderInterval :: NominalDiffTime

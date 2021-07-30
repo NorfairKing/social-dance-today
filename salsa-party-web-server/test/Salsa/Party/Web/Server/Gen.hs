@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Salsa.Party.Web.Server.Gen where
@@ -9,11 +10,26 @@ import Data.GenValidity.Persist ()
 import Data.GenValidity.Text ()
 import Data.GenValidity.Time ()
 import Data.GenValidity.UUID.Typed ()
+import Data.Password.Bcrypt
 import qualified Data.Text as T
+import Salsa.Party.DB
 import Salsa.Party.Web.Server.Handler.Account.Organiser
 import Salsa.Party.Web.Server.Handler.Account.Party
 import Salsa.Party.Web.Server.Handler.Import
 import Test.QuickCheck
+
+instance GenValid Password where
+  genValid = mkPassword <$> genValid
+  shrinkValid _ = [] -- No point.
+
+instance GenValid (PasswordHash Bcrypt) where
+  -- This is technically more than necessary, but we can't do any better because hashPassword runs in IO.
+  genValid = PasswordHash <$> genValid
+  shrinkValid _ = [] -- No point.
+
+instance GenValid User where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
 
 instance GenValid Textarea where
   genValid = Textarea <$> genValid
@@ -44,6 +60,10 @@ instance GenValid Place where
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Organiser where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid OrganiserReminder where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 

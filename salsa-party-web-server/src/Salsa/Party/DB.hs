@@ -233,9 +233,13 @@ ExternalEventPoster sql=external_event_poster
     deriving Generic
 |]
 
+instance Validity User
+
 instance Validity Place
 
 instance Validity Organiser
+
+instance Validity OrganiserReminder
 
 instance Validity PartyPoster
 
