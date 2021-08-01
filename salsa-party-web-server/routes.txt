@@ -12,6 +12,8 @@
 /organiser/#OrganiserUUID OrganiserR GET
 /image/#CASKey ImageR GET
 
+/unsub/reminder/#ReminderSecret UnsubReminderR GET
+
 /account AccountR:
   / AccountOverviewR GET
   /organiser AccountOrganiserR GET POST

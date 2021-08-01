@@ -1,0 +1,6 @@
+<section .section .is-large>
+  <div .container>
+    <h1 .title .is-3>
+      _{MsgUnsubReminderTitle}
+    <p .content>
+      _{MsgUnsubReminderDescription}
