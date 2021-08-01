@@ -59,11 +59,17 @@ locations =
     Location {locationPlace = Place {placeQuery = "Leuven", placeLat = 50.876588950, placeLon = 4.838740993}},
     Location {locationPlace = Place {placeQuery = "Ghent", placeLat = 51.060032100, placeLon = 3.644079554}},
     Location {locationPlace = Place {placeQuery = "Bruges", placeLat = 51.192551500, placeLon = 3.202205278}},
+    --  ** Germany
+    Location {locationPlace = Place {placeQuery = "Berlin", placeLat = 52.501521700, placeLon = 13.402549800}},
+    --  ** France
+    Location {locationPlace = Place {placeQuery = "Paris", placeLat = 48.858889700, placeLon = 2.320041021}},
     --  ** England
     Location {locationPlace = Place {placeQuery = "London", placeLat = 51.5073219, placeLon = -0.1276474}},
     --  ** Spain
     Location {locationPlace = Place {placeQuery = "Barcelona", placeLat = 41.3948976, placeLon = 2.0787282}},
     Location {locationPlace = Place {placeQuery = "Cádiz", placeLat = 35.4524784, placeLon = -7.260937}},
+    --  ** The Netherlands
+    Location {locationPlace = Place {placeQuery = "Amsterdam", placeLat = 52.374540300, placeLon = 4.897975505}},
     --  * North America
     --  ** Canada
     Location {locationPlace = Place {placeQuery = "Toronto", placeLat = 43.653481700, placeLon = -79.383934700}},
