@@ -201,6 +201,7 @@ test-suite salsa-party-web-server-test
       Salsa.Party.Web.Server.Handler.I18NSpec
       Salsa.Party.Web.Server.Handler.OrganiserSpec
       Salsa.Party.Web.Server.Handler.PartySpec
+      Salsa.Party.Web.Server.Handler.ReminderSpec
       Salsa.Party.Web.Server.Handler.Search.QuerySpec
       Salsa.Party.Web.Server.Handler.SearchSpec
       Salsa.Party.Web.Server.Handler.SitemapSpec

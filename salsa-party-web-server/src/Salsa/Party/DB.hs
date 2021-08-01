@@ -103,7 +103,9 @@ Organiser sql=organiser
 OrganiserReminder sql=organiser_reminder
     organiser OrganiserId
     consent Bool default=false sql=consent
-    secret ReminderSecret Maybe default=NULL -- TODO this shouldn't be a maybe
+    -- TODO this shouldn't be a maybe
+    -- get rid of the maybe after the next deployment.
+    secret ReminderSecret Maybe default=NULL
 
     -- Last reminded
     last UTCTime Maybe sql=last

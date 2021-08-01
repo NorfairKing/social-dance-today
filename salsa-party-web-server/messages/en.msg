@@ -190,6 +190,10 @@ UnCancelPartyErrorNotYourParty: This is not your party to un-cancel.
 # Delete party
 DeletePartyErrorNotYourParty: This is not your party to delete.
 
+# Unsubscribe Reminder 
+UnsubReminderTitle: Unsubscribed from reminder emails
+UnsubReminderDescription: You have succesfully unsubscribed from reminder emails and revoked consent to receive any further reminder emails.
+
 
 # Pagination
 PaginationPrevious: Previous
@@ -244,3 +248,5 @@ DayInMoreThanAYear: more than a year from now
 
 # Errors
 NotFound: Page not found
+
+
