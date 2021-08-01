@@ -3,6 +3,8 @@
 module Salsa.Party.Looper.OrganiserReminderSpec (spec) where
 
 import Data.Time
+import Data.UUID as UUID
+import Data.UUID.Typed as Typed
 import Database.Persist
 import Salsa.Party.DB
 import Salsa.Party.Looper.OrganiserReminder
@@ -106,14 +108,21 @@ spec = do
                 organiserReminderId <- insert organiserReminder
                 let organiserReminderEntity = Entity organiserReminderId organiserReminder
                 decision <- makeOrganiserReminderDecision organiserReminderEntity
-                liftIO $ decision `shouldBe` ShouldSendReminder organiserReminderId (userEmailAddress user)
+                liftIO $
+                  decision
+                    `shouldBe` ShouldSendReminder
+                      organiserReminderId
+                      (userEmailAddress user)
+                      (organiserReminderSecret organiserReminder)
 
   managerSpec . setupAroundWith' (\man () -> serverSetupFunc man) $ do
     describe "organiserReminderTextContent" $
       it "looks the same as last time" $ \app ->
-        let urlRender = yesodRender app "localhost:8000"
-         in pureGoldenTextFile "test_resources/email/reminder.txt" $ organiserReminderTextContent urlRender
+        let urlRender = yesodRender app "http://localhost:8000"
+            secret = Typed.UUID $ UUID.fromWords 10 20 30 40
+         in pureGoldenTextFile "test_resources/email/reminder.txt" $ organiserReminderTextContent urlRender (Just secret)
     describe "organiserReminderHtmlContent" $
       it "looks the same as last time" $ \app ->
-        let urlRender = yesodRender app "localhost:8000"
-         in pureGoldenTextFile "test_resources/email/reminder.html" $ organiserReminderHtmlContent urlRender
+        let urlRender = yesodRender app "http://localhost:8000"
+            secret = Typed.UUID $ UUID.fromWords 10 20 30 40
+         in pureGoldenTextFile "test_resources/email/reminder.html" $ organiserReminderHtmlContent urlRender (Just secret)

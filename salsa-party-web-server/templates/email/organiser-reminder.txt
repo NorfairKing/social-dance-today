@@ -9,4 +9,4 @@ It is also great for your site's SEO because we link to it on the public party p
 
 You received this email because you are an organiser at social dance today and you consented to receiving this email.
 Should you wish to no longer receive reminder emails like this, then please update your email preferences in your organiser profile:
-@{AccountR AccountOrganiserR}
+@{maybe (AccountR AccountOrganiserR) UnsubReminderR secret}

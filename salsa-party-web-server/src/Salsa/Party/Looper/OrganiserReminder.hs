@@ -59,7 +59,10 @@ data OrganiserReminderDecision
   | UserEmailNotVerified !UserId !Text
   | SentReminderTooRecentlyAlready !UTCTime
   | PartyOrganisedTooRecently !Day -- The scheduled day of the most recent party
-  | ShouldSendReminder !OrganiserReminderId !Text -- Email Address
+  | ShouldSendReminder
+      !OrganiserReminderId
+      !Text -- Email Address
+      !(Maybe ReminderSecret)
   deriving (Show, Eq)
 
 -- Check whether to send an organiser reminder, return the email address to send it to if we should.
@@ -109,7 +112,7 @@ makeOrganiserReminderDecision (Entity organiserReminderId OrganiserReminder {..}
                       pure $
                         if isJust userVerificationKey
                           then UserEmailNotVerified organiserUser userEmailAddress
-                          else ShouldSendReminder organiserReminderId userEmailAddress
+                          else ShouldSendReminder organiserReminderId userEmailAddress organiserReminderSecret
     else pure NoReminderConsent
 
 reminderInterval :: NominalDiffTime
@@ -123,11 +126,11 @@ reminderDecisionSink = awaitForever $ \case
   UserEmailNotVerified userId emailAddress -> logDebugN $ T.pack $ unwords ["Not sending a reminder because the user's email address has not been validated", show $ fromSqlKey userId, show emailAddress]
   SentReminderTooRecentlyAlready recently -> logDebugN $ T.pack $ unwords ["Not sending a reminder because another reminder has already been sent too recently:", show recently]
   PartyOrganisedTooRecently day -> logDebugN $ T.pack $ unwords ["Not sending a reminder because the organiser has recently organised a party:", show day]
-  ShouldSendReminder organiserReminderId emailAddress -> lift $ do
+  ShouldSendReminder organiserReminderId emailAddress secret -> lift $ do
     now <- liftIO getCurrentTime
     sendEmails <- asks appSendEmails
     if sendEmails
-      then sendOrganiserReminder emailAddress
+      then sendOrganiserReminder emailAddress secret
       else logDebugN "Not sending reminder email because sendEmails is off."
     pool <- asks appConnectionPool
     let runDBHere func = runSqlPool func pool
@@ -136,8 +139,8 @@ reminderDecisionSink = awaitForever $ \case
         organiserReminderId
         [OrganiserReminderLast =. Just now]
 
-sendOrganiserReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => Text -> m ()
-sendOrganiserReminder emailAddress = do
+sendOrganiserReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => Text -> Maybe ReminderSecret -> m ()
+sendOrganiserReminder emailAddress secret = do
   mSendAddress <- asks appSendAddress
   forM_ mSendAddress $ \sendAddress -> do
     logInfoN $ "Sending reminder email to address: " <> emailAddress
@@ -147,8 +150,8 @@ sendOrganiserReminder emailAddress = do
     app <- ask
     let urlRender = yesodRender app (fromMaybe "" $ appRoot app)
 
-    let textBody = SES.content $ organiserReminderTextContent urlRender
-    let htmlBody = SES.content $ organiserReminderHtmlContent urlRender
+    let textBody = SES.content $ organiserReminderTextContent urlRender secret
+    let htmlBody = SES.content $ organiserReminderHtmlContent urlRender secret
 
     let body =
           SES.body
@@ -167,8 +170,8 @@ sendOrganiserReminder emailAddress = do
       Right 200 -> logInfoN $ "Succesfully send organiser reminder email to address: " <> emailAddress
       _ -> logErrorN $ T.unlines ["Failed to send organiser reminder email to address: " <> emailAddress, T.pack (ppShow response)]
 
-organiserReminderTextContent :: (Route App -> [(Text, Text)] -> Text) -> Text
-organiserReminderTextContent urlRender = LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/organiser-reminder.txt") urlRender
+organiserReminderTextContent :: (Route App -> [(Text, Text)] -> Text) -> Maybe ReminderSecret -> Text
+organiserReminderTextContent urlRender secret = LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/organiser-reminder.txt") urlRender
 
-organiserReminderHtmlContent :: (Route App -> [(Text, Text)] -> Text) -> Text
-organiserReminderHtmlContent urlRender = LT.toStrict $ renderHtml $ $(hamletFile "templates/email/organiser-reminder.hamlet") urlRender
+organiserReminderHtmlContent :: (Route App -> [(Text, Text)] -> Text) -> Maybe ReminderSecret -> Text
+organiserReminderHtmlContent urlRender secret = LT.toStrict $ renderHtml $ $(hamletFile "templates/email/organiser-reminder.hamlet") urlRender

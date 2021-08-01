@@ -16,5 +16,6 @@ postAdminTestOrganiserReminderR = do
   forM_ mAdminEmailAddress $ \adminEmailAddress -> do
     logDebugN $ "Sending test organiser reminder to admin: " <> adminEmailAddress
     app <- getYesod
-    runReaderT (sendOrganiserReminder adminEmailAddress) app
+    secret <- nextRandomUUID
+    runReaderT (sendOrganiserReminder adminEmailAddress (Just secret)) app
   redirect $ AdminR AdminPanelR
