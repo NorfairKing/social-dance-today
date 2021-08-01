@@ -33,7 +33,7 @@ spec = do
             externalEventCreated = UTCTime (fromGregorian 2021 07 05) 185621,
             externalEventModified = Nothing,
             externalEventPlace = toSqlKey 0,
-            externalEventImporter = Just $ toSqlKey 0,
+            externalEventImporter = toSqlKey 0,
             externalEventOrigin = "https://events.info/events/suavemente-cuban-party-2021-07-16-kultur-bistro-bern"
           }
 

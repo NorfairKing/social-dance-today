@@ -24,8 +24,8 @@ getAdminPanelR = do
   importers <- do
     importers <- runDB $ selectList [] [Asc ImporterMetadataId]
     forM importers $ \importer -> do
-      upcomingEvents <- runDB $ count [ExternalEventImporter ==. Just (entityKey importer), ExternalEventDay >=. today]
-      events <- runDB $ count [ExternalEventImporter ==. Just (entityKey importer)]
+      upcomingEvents <- runDB $ count [ExternalEventImporter ==. entityKey importer, ExternalEventDay >=. today]
+      events <- runDB $ count [ExternalEventImporter ==. entityKey importer]
       pure (importer, upcomingEvents, events)
   token <- genToken
   timeLocale <- getTimeLocale
@@ -135,7 +135,7 @@ getAdminImporterEventsR importerId = redirect $ AdminR $ AdminImporterEventsPage
 getAdminImporterEventsPageR :: ImporterMetadataId -> PageNumber -> Handler Html
 getAdminImporterEventsPageR importerId =
   externalEventsListPage
-    [ExternalEventImporter ==. Just importerId]
+    [ExternalEventImporter ==. importerId]
     [ Asc ExternalEventDay,
       Asc ExternalEventId
     ]
@@ -148,7 +148,9 @@ getAdminImporterUpcomingEventsPageR :: ImporterMetadataId -> PageNumber -> Handl
 getAdminImporterUpcomingEventsPageR importerId pn = do
   today <- liftIO $ utctDay <$> getCurrentTime
   externalEventsListPage
-    [ExternalEventImporter ==. Just importerId, ExternalEventDay >=. today]
+    [ ExternalEventImporter ==. importerId,
+      ExternalEventDay >=. today
+    ]
     [ Asc ExternalEventDay,
       Asc ExternalEventId
     ]
@@ -179,7 +181,7 @@ postAdminImporterResetR importerId = do
 postAdminImporterDeleteR :: ImporterMetadataId -> Handler Html
 postAdminImporterDeleteR importerId = do
   runDB $ do
-    deleteWhere [ExternalEventImporter ==. Just importerId]
+    deleteWhere [ExternalEventImporter ==. importerId]
     delete importerId
   redirect $ AdminR AdminPanelR
 

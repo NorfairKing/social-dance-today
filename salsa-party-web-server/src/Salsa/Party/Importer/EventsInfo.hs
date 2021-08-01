@@ -213,7 +213,7 @@ eventDetailsSink = awaitForever $ \(identifier, EventDetails {..}) -> do
           (Place {placeQuery = address, placeLat = venueLocationLat, placeLon = venueLocationLon})
           [] -- Don't change if it's already there, so that they can't fill our page with junk.
   let externalEventOrigin = "https://events.info/events/" <> eventDetailsId
-  externalEventImporter <- Just <$> asks importEnvId
+  externalEventImporter <- asks importEnvId
   -- Import the event and download its images if anything has changed.
   lift $
     importExternalEventAnd ExternalEvent {..} $ \externalEventId -> do

@@ -213,7 +213,7 @@ ExternalEvent sql=external_event
     place PlaceId
 
     -- The importer that imported this event
-    importer ImporterMetadataId Maybe default=NULL -- TODO remove the maybe once they all have ids.
+    importer ImporterMetadataId
 
     -- Where we got the event from, externally
     origin Text

@@ -181,7 +181,7 @@ importFestivalPage = awaitForever $ \(request, response) -> do
 
         let externalEventCreated = now
         let externalEventModified = Nothing
-        externalEventImporter <- Just <$> asks importEnvId
+        externalEventImporter <- asks importEnvId
         let externalEventOrigin = T.pack $ show $ getUri request
 
         mImageUrl <- mutf8 $ optional $ attr "src" $ "img" @: ["itemprop" @= "image"]

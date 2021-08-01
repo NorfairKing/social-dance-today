@@ -28,7 +28,6 @@ completeServerMigration quiet = do
             )
   logInfoN "Autmatic migrations done, starting application-specific migrations."
   setUpPlaces
-  cleanupOldExternalEvents
   setupOrganiserReminderSecrets
   logInfoN "Migrations done."
 
@@ -108,10 +107,6 @@ locations =
     Location {locationPlace = Place {placeQuery = "Sydney", placeLat = -33.8888621, placeLon = 151.204897861}},
     Location {locationPlace = Place {placeQuery = "Melbourne", placeLat = -37.814217600, placeLon = 144.963160800}}
   ]
-
--- TODO When we remove this, remove the maybe in the db
-cleanupOldExternalEvents :: MonadIO m => SqlPersistT m ()
-cleanupOldExternalEvents = deleteWhere [ExternalEventImporter ==. Nothing]
 
 setupOrganiserReminderSecrets :: MonadUnliftIO m => SqlPersistT m ()
 setupOrganiserReminderSecrets = do

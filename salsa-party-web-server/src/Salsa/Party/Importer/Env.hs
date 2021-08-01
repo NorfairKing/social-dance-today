@@ -222,7 +222,7 @@ importExternalEventAnd externalEvent@ExternalEvent {..} func = do
   logDebugN $ T.pack $ "Importing external event:\n" <> ppShow externalEvent
   now <- liftIO getCurrentTime
   importerId <- asks importEnvId
-  mExternalEvent <- importDB $ getBy (UniqueExternalEventKey (Just importerId) externalEventKey)
+  mExternalEvent <- importDB $ getBy (UniqueExternalEventKey importerId externalEventKey)
   case mExternalEvent of
     Nothing -> importDB (insert externalEvent) >>= func
     Just (Entity externalEventId oldExternalEvent) -> do
@@ -241,7 +241,7 @@ importExternalEventAnd externalEvent@ExternalEvent {..} func = do
                   ExternalEventModified =. Just now,
                   ExternalEventPlace =. externalEventPlace,
                   ExternalEventOrigin =. externalEventOrigin,
-                  ExternalEventImporter =. Just importerId
+                  ExternalEventImporter =. importerId
                 ]
           func externalEventId
         else pure ()

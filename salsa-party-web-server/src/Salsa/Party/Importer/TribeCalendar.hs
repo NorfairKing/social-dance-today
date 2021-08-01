@@ -160,7 +160,7 @@ importTribeCalendarJSONLDEvents = awaitForever $ \(request, response, event) -> 
       case mPlaceEntity of
         Nothing -> logWarnN "Place not found."
         Just (Entity externalEventPlace _) -> do
-          externalEventImporter <- Just <$> asks importEnvId
+          externalEventImporter <- asks importEnvId
           let externalEventOrigin = T.pack $ show $ getUri request
           lift $
             importExternalEventAnd ExternalEvent {..} $ \externalEventId -> do
