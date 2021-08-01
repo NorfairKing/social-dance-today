@@ -392,7 +392,7 @@ deduplicateC = () <$ go S.empty
 andDays :: MonadIO m => ConduitT a (a, Day) m ()
 andDays = do
   today <- liftIO $ utctDay <$> getCurrentTime
-  let days = [today .. addDays 28 today]
+  let days = [today .. addDays 45 today] -- A bit more than one month ahead.
   awaitForever $ \a -> yieldMany $ map ((,) a) days
 
 jsonLDEventsC ::

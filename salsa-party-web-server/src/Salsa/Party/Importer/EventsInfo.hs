@@ -45,11 +45,10 @@ eventsInfoImporter =
     }
 
 func :: Import ()
-func = do
-  today <- liftIO $ utctDay <$> getCurrentTime
-  let days = [today .. addDays 30 today] -- One month ahead
+func =
   runConduit $
-    yieldMany days
+    yield ()
+      .| andDays
       .| homePageConduit
       .| deduplicateC
       .| eventPageConduit
@@ -57,7 +56,7 @@ func = do
 
 homePageConduit ::
   ConduitT
-    Day
+    ((), Day)
     Text -- EventId
     Import
     ()
@@ -71,8 +70,8 @@ homePageConduit =
             (not . eventFromHomepageIsCourse)
       )
 
-makeHomepageRequest :: Day -> Maybe Request
-makeHomepageRequest day = do
+makeHomepageRequest :: ((), Day) -> Maybe Request
+makeHomepageRequest ((), day) = do
   let baseUrl = "https://events.info/"
   requestPrototype <- parseRequest baseUrl
   pure $
