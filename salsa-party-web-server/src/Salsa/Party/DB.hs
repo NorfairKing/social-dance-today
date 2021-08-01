@@ -1,4 +1,3 @@
-{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -80,9 +79,6 @@ Organiser sql=organiser
     user UserId
 
     name Text
-
-    -- TODO this field is now unused.
-    consentReminder Bool default=true sql=consent_reminder
 
     created UTCTime
     modified UTCTime Maybe default=NULL

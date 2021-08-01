@@ -14,7 +14,6 @@ getUnsubReminderR secret = do
     Just (Entity organiserReminderId OrganiserReminder {..}) -> do
       runDB $ do
         update organiserReminderId [OrganiserReminderConsent =. False]
-        update organiserReminderOrganiser [OrganiserConsentReminder =. False]
       withNavBar $ do
         setTitleI MsgUnsubReminderTitle
         setDescriptionI MsgUnsubReminderDescription

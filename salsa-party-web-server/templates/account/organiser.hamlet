@@ -24,7 +24,7 @@
           <input .checkbox
             type=checkbox
             name="consent-reminder"
-            :mv False organiserConsentReminder:checked>
+            :maybe False (organiserReminderConsent . entityVal) mOrganiserReminder:checked>
         <p .help>
           _{MsgOrganiserConsentReminderHelp}
 

@@ -57,13 +57,11 @@ organiserFormPage mResult = do
                   { organiserUuid = uuid,
                     organiserUser = userId,
                     organiserName = organiserFormName,
-                    organiserConsentReminder = organiserFormConsentReminder,
                     organiserCreated = now,
                     organiserModified = Nothing
                   }
               )
               [ OrganiserName =. organiserFormName,
-                OrganiserConsentReminder =. organiserFormConsentReminder,
                 OrganiserModified =. Just now
               ]
           secret <- nextRandomUUID
@@ -79,9 +77,10 @@ organiserFormPage mResult = do
             [OrganiserReminderConsent =. organiserFormConsentReminder]
       redirect $ AccountR AccountOrganiserR
     _ -> do
-      token <- genToken
       let mv :: a -> (Organiser -> a) -> a
           mv defaultValue func = maybe defaultValue (func . entityVal) mOrganiser
           tv :: (Organiser -> Text) -> Text
           tv = mv ""
+      token <- genToken
+      mOrganiserReminder <- fmap join $ forM mOrganiser $ \(Entity organiserId _) -> runDB $ getBy $ UniqueOrganiserReminderOrganiser organiserId
       withMFormResultNavBar mResult $(widgetFile "account/organiser")

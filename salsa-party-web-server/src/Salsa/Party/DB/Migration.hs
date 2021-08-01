@@ -29,7 +29,6 @@ completeServerMigration quiet = do
   logInfoN "Autmatic migrations done, starting application-specific migrations."
   setUpPlaces
   cleanupOldExternalEvents
-  setupOrganiserReminderConsent
   setupOrganiserReminderSecrets
   logInfoN "Migrations done."
 
@@ -113,28 +112,6 @@ locations =
 -- TODO When we remove this, remove the maybe in the db
 cleanupOldExternalEvents :: MonadIO m => SqlPersistT m ()
 cleanupOldExternalEvents = deleteWhere [ExternalEventImporter ==. Nothing]
-
-setupOrganiserReminderConsent :: MonadUnliftIO m => SqlPersistT m ()
-setupOrganiserReminderConsent = do
-  acqOrganiserSource <- selectSourceRes [] []
-  withAcquire acqOrganiserSource $ \organiserSource ->
-    runConduit $ organiserSource .| C.mapM_ setUpOrganiserConsent
-
--- TODO When we remove this, also remove the consentReminder in the DB
-setUpOrganiserConsent :: MonadIO m => Entity Organiser -> SqlPersistT m ()
-setUpOrganiserConsent (Entity organiserId Organiser {..}) = do
-  uuid <- nextRandomUUID
-  void $
-    upsertBy
-      (UniqueOrganiserReminderOrganiser organiserId)
-      ( OrganiserReminder
-          { organiserReminderOrganiser = organiserId,
-            organiserReminderConsent = organiserConsentReminder,
-            organiserReminderLast = Nothing,
-            organiserReminderSecret = Just uuid
-          }
-      )
-      [OrganiserReminderConsent =. organiserConsentReminder]
 
 setupOrganiserReminderSecrets :: MonadUnliftIO m => SqlPersistT m ()
 setupOrganiserReminderSecrets = do
