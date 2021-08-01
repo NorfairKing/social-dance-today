@@ -8,7 +8,7 @@ import Salsa.Party.Web.Server.Handler.Import
 
 getUnsubReminderR :: ReminderSecret -> Handler Html
 getUnsubReminderR secret = do
-  mOrganiserReminder <- runDB $ getBy $ UniqueOrganiserReminderSecret $ Just secret
+  mOrganiserReminder <- runDB $ getBy $ UniqueOrganiserReminderSecret secret
   case mOrganiserReminder of
     Nothing -> notFound
     Just (Entity organiserReminderId OrganiserReminder {..}) -> do

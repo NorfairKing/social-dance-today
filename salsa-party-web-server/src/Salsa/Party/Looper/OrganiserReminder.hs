@@ -62,7 +62,7 @@ data OrganiserReminderDecision
   | ShouldSendReminder
       !OrganiserReminderId
       !Text -- Email Address
-      !(Maybe ReminderSecret)
+      !ReminderSecret
   deriving (Show, Eq)
 
 -- Check whether to send an organiser reminder, return the email address to send it to if we should.
@@ -139,7 +139,7 @@ reminderDecisionSink = awaitForever $ \case
         organiserReminderId
         [OrganiserReminderLast =. Just now]
 
-sendOrganiserReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => Text -> Maybe ReminderSecret -> m ()
+sendOrganiserReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => Text -> ReminderSecret -> m ()
 sendOrganiserReminder emailAddress secret = do
   mSendAddress <- asks appSendAddress
   forM_ mSendAddress $ \sendAddress -> do
@@ -171,8 +171,8 @@ sendOrganiserReminder emailAddress secret = do
       Right 200 -> logInfoN $ "Succesfully send organiser reminder email to address: " <> emailAddress
       _ -> logErrorN $ T.unlines ["Failed to send organiser reminder email to address: " <> emailAddress, T.pack (ppShow response)]
 
-organiserReminderTextContent :: (Route App -> [(Text, Text)] -> Text) -> Maybe ReminderSecret -> Text
+organiserReminderTextContent :: (Route App -> [(Text, Text)] -> Text) -> ReminderSecret -> Text
 organiserReminderTextContent urlRender secret = LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/organiser-reminder.txt") urlRender
 
-organiserReminderHtmlContent :: (Route App -> [(Text, Text)] -> Text) -> Maybe ReminderSecret -> Text
+organiserReminderHtmlContent :: (Route App -> [(Text, Text)] -> Text) -> ReminderSecret -> Text
 organiserReminderHtmlContent urlRender secret = LT.toStrict $ renderHtml $ $(hamletFile "templates/email/organiser-reminder.hamlet") urlRender

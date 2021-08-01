@@ -71,7 +71,7 @@ organiserFormPage mResult = do
                 { organiserReminderOrganiser = organiserId,
                   organiserReminderConsent = organiserFormConsentReminder,
                   organiserReminderLast = Nothing,
-                  organiserReminderSecret = Just secret
+                  organiserReminderSecret = secret
                 }
             )
             [OrganiserReminderConsent =. organiserFormConsentReminder]

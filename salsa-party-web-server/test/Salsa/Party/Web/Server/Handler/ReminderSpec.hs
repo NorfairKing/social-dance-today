@@ -12,13 +12,11 @@ spec =
         get $ UnsubReminderR secret
         statusIs 404
       it "GETs a 200 for an existing reminder and revokes consent" $ \yc -> do
-        forAllValid $ \organiserReminderPrototype ->
-          forAllValid $ \secret -> runYesodClientM yc $ do
-            let organiserReminder = organiserReminderPrototype {organiserReminderSecret = Just secret}
-            testDB $ DB.insert_ organiserReminder
-            get $ UnsubReminderR secret
-            statusIs 200
-            mOrganiserReminder <- testDB $ DB.getBy $ UniqueOrganiserReminderSecret $ Just secret
-            liftIO $ case mOrganiserReminder of
-              Nothing -> expectationFailure "Expected an organiser reminder"
-              Just (Entity _ organiserReminder_) -> organiserReminderConsent organiserReminder_ `shouldBe` False
+        forAllValid $ \organiserReminder -> runYesodClientM yc $ do
+          testDB $ DB.insert_ organiserReminder
+          get $ UnsubReminderR $ organiserReminderSecret organiserReminder
+          statusIs 200
+          mOrganiserReminder <- testDB $ DB.getBy $ UniqueOrganiserReminderSecret $ organiserReminderSecret organiserReminder
+          liftIO $ case mOrganiserReminder of
+            Nothing -> expectationFailure "Expected an organiser reminder"
+            Just (Entity _ organiserReminder_) -> organiserReminderConsent organiserReminder_ `shouldBe` False

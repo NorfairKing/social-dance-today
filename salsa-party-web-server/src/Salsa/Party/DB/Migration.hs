@@ -10,9 +10,7 @@ module Salsa.Party.DB.Migration where
 import Conduit
 import Control.Monad
 import Control.Monad.Logger
-import qualified Data.Conduit.Combinators as C
 import qualified Data.Text as T
-import Data.UUID.Typed
 import Database.Persist.Sql
 import Salsa.Party.DB
 import System.Exit
@@ -28,7 +26,6 @@ completeServerMigration quiet = do
             )
   logInfoN "Autmatic migrations done, starting application-specific migrations."
   setUpPlaces
-  setupOrganiserReminderSecrets
   logInfoN "Migrations done."
 
 setUpPlaces :: (MonadIO m, MonadLogger m) => SqlPersistT m ()
@@ -107,15 +104,3 @@ locations =
     Location {locationPlace = Place {placeQuery = "Sydney", placeLat = -33.8888621, placeLon = 151.204897861}},
     Location {locationPlace = Place {placeQuery = "Melbourne", placeLat = -37.814217600, placeLon = 144.963160800}}
   ]
-
-setupOrganiserReminderSecrets :: MonadUnliftIO m => SqlPersistT m ()
-setupOrganiserReminderSecrets = do
-  acqOrganiserSource <- selectKeysRes [OrganiserReminderSecret ==. Nothing] []
-  withAcquire acqOrganiserSource $ \organiserSource ->
-    runConduit $
-      organiserSource
-        .| C.mapM_
-          ( \organiserReminderId -> do
-              uuid <- nextRandomUUID
-              update organiserReminderId [OrganiserReminderSecret =. Just uuid]
-          )

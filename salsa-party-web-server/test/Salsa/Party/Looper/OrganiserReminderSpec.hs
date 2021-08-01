@@ -116,13 +116,12 @@ spec = do
                       (organiserReminderSecret organiserReminder)
 
   managerSpec . setupAroundWith' (\man () -> serverSetupFunc man) $ do
+    let secret = Typed.UUID $ UUID.fromWords 10 20 30 40
     describe "organiserReminderTextContent" $
       it "looks the same as last time" $ \app ->
         let urlRender = yesodRender app "http://localhost:8000"
-            secret = Typed.UUID $ UUID.fromWords 10 20 30 40
-         in pureGoldenTextFile "test_resources/email/reminder.txt" $ organiserReminderTextContent urlRender (Just secret)
+         in pureGoldenTextFile "test_resources/email/reminder.txt" $ organiserReminderTextContent urlRender secret
     describe "organiserReminderHtmlContent" $
       it "looks the same as last time" $ \app ->
         let urlRender = yesodRender app "http://localhost:8000"
-            secret = Typed.UUID $ UUID.fromWords 10 20 30 40
-         in pureGoldenTextFile "test_resources/email/reminder.html" $ organiserReminderHtmlContent urlRender (Just secret)
+         in pureGoldenTextFile "test_resources/email/reminder.html" $ organiserReminderHtmlContent urlRender secret

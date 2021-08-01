@@ -99,9 +99,9 @@ Organiser sql=organiser
 OrganiserReminder sql=organiser_reminder
     organiser OrganiserId
     consent Bool default=false sql=consent
-    -- TODO this shouldn't be a maybe
-    -- get rid of the maybe after the next deployment.
-    secret ReminderSecret Maybe default=NULL
+
+    -- The secret that a user supplies to one-click unsubscribe.
+    secret ReminderSecret default=NULL
 
     -- Last reminded
     last UTCTime Maybe sql=last
