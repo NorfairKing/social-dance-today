@@ -193,6 +193,11 @@ UnCancelPartyErrorNotYourParty: Dit is niet uw feest. U kan dit feest niet ontan
 # Delete party
 DeletePartyErrorNotYourParty: Dit is niet uw feest. U kan dit feest niet verwijderen.
 
+# Unsubscribe Reminder 
+UnsubReminderTitle: Uitgeschreven
+UnsubReminderDescription: U krijgt voortaan geen herinneringsemails meer.
+
+
 # Pagination
 PaginationPrevious: Vorige
 PaginationNext: Volgende

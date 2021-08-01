@@ -194,6 +194,11 @@ UnCancelPartyErrorNotYourParty: Die Absage dieser Party können Sie nicht Rückg
 # Delete party
 DeletePartyErrorNotYourParty: Sie können diese Party nicht löschen, da es nicht Ihre Party ist.
 
+# Unsubscribe Reminder
+UnsubReminderTitle: Abgemeldet
+UnsubReminderDescription: Sie erhalten keine Erinnerungs-E-Mails mehr. 
+
+
 # Pagination
 PaginationPrevious:  Früher
 PaginationNext:  Später
