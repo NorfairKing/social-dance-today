@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Salsa.Party.Web.Server.Handler.Admin.TestOrganiserReminder
   ( postAdminTestOrganiserReminderR,
@@ -12,10 +13,18 @@ import Salsa.Party.Web.Server.Handler.Import
 
 postAdminTestOrganiserReminderR :: Handler Html
 postAdminTestOrganiserReminderR = do
-  mAdminEmailAddress <- getsYesod appAdmin
-  forM_ mAdminEmailAddress $ \adminEmailAddress -> do
-    logDebugN $ "Sending test organiser reminder to admin: " <> adminEmailAddress
-    app <- getYesod
-    secret <- nextRandomUUID
-    runReaderT (sendOrganiserReminder adminEmailAddress (Just secret)) app
-  redirect $ AdminR AdminPanelR
+  userId <- requireAuthId
+  mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
+  case mOrganiser of
+    Nothing -> invalidArgs ["Admin has no organiser profile."]
+    Just (Entity organiserId Organiser {..}) -> do
+      mOrganiserReminder <- runDB $ getBy $ UniqueOrganiserReminderOrganiser organiserId
+      case mOrganiserReminder of
+        Nothing -> invalidArgs ["Admin has not consented to organiser reminders."]
+        Just (Entity _ OrganiserReminder {..}) -> do
+          mAdminEmailAddress <- getsYesod appAdmin
+          forM_ mAdminEmailAddress $ \adminEmailAddress -> do
+            logDebugN $ "Sending test organiser reminder to admin: " <> adminEmailAddress
+            app <- getYesod
+            runReaderT (sendOrganiserReminder adminEmailAddress organiserReminderSecret) app
+          redirect $ AdminR AdminPanelR

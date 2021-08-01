@@ -166,6 +166,7 @@ sendOrganiserReminder emailAddress secret = do
     let request = SES.sendEmail sendAddress destination message
 
     response <- runAWS $ AWS.send request
+
     case (^. SES.sersResponseStatus) <$> response of
       Right 200 -> logInfoN $ "Succesfully send organiser reminder email to address: " <> emailAddress
       _ -> logErrorN $ T.unlines ["Failed to send organiser reminder email to address: " <> emailAddress, T.pack (ppShow response)]
