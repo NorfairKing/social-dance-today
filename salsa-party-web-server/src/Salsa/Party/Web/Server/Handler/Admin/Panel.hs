@@ -53,14 +53,15 @@ getAdminUserR userId = do
   timeLocale <- getTimeLocale
   today <- liftIO $ utctDay <$> getCurrentTime
   token <- genToken
-  (partiesCount, upcomingPartiesCount, mLastParty) <- case mOrganiser of
-    Nothing -> pure (0, 0, Nothing)
+  (partiesCount, upcomingPartiesCount, mLastParty, mOrganiserReminder) <- case mOrganiser of
+    Nothing -> pure (0, 0, Nothing, Nothing)
     Just (Entity organiserId _) ->
       runDB $
-        (,,)
+        (,,,)
           <$> count [PartyOrganiser ==. organiserId]
           <*> count [PartyOrganiser ==. organiserId, PartyDay >=. today]
           <*> selectFirst [PartyOrganiser ==. organiserId] [Desc PartyDay]
+          <*> getBy (UniqueOrganiserReminderOrganiser organiserId)
   withNavBar $(widgetFile "admin/user")
 
 postAdminUserImpersonateR :: UserId -> Handler Html

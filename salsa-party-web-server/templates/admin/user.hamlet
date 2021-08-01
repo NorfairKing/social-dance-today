@@ -51,6 +51,16 @@ $maybe Entity _ organiser <- mOrganiser
         <a .button href=@{OrganiserR $ organiserUuid organiser}>
           Public Organiser Profile
 
+      $maybe Entity _ organiserReminder <- mOrganiserReminder
+        <h3 .title .is-5>
+          Reminders
+
+        <p .content>
+          Reminder consent: #{organiserReminderConsent organiserReminder}
+
+        <p .content>
+          Last reminder: #{maybe "never" (formatTime timeLocale "%F %H:%M") (organiserReminderLast organiserReminder)}
+
       $maybe Entity _ party <- mLastParty
         <h3 .title .is-5>
           Last party
