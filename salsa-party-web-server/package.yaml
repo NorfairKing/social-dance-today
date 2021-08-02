@@ -133,8 +133,8 @@ tests:
     - genvalidity-bytestring
     - genvalidity-persistent
     - genvalidity-sydtest
-    - genvalidity-sydtest
     - genvalidity-sydtest-aeson
+    - genvalidity-sydtest-persistent
     - genvalidity-text
     - genvalidity-time
     - genvalidity-typed-uuid

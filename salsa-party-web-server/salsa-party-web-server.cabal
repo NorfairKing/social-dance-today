@@ -19,6 +19,7 @@ library
       Salsa.Party.DB.CASKey
       Salsa.Party.DB.Migration
       Salsa.Party.DB.Password
+      Salsa.Party.DB.Recurrence
       Salsa.Party.DB.URI
       Salsa.Party.DB.UUID
       Salsa.Party.Importer
@@ -186,6 +187,7 @@ test-suite salsa-party-web-server-test
   other-modules:
       Salsa.Party.DB.ExternalEventSpec
       Salsa.Party.DB.PartySpec
+      Salsa.Party.DB.RecurrenceSpec
       Salsa.Party.DBSpec
       Salsa.Party.Looper.OrganiserReminderSpec
       Salsa.Party.Web.Server.DistanceSpec
@@ -230,6 +232,7 @@ test-suite salsa-party-web-server-test
     , genvalidity-persistent
     , genvalidity-sydtest
     , genvalidity-sydtest-aeson
+    , genvalidity-sydtest-persistent
     , genvalidity-text
     , genvalidity-time
     , genvalidity-typed-uuid

@@ -36,6 +36,7 @@ extra-deps:
     - genvalidity-persistent
     - genvalidity-sydtest
     - genvalidity-sydtest-aeson
+    - genvalidity-sydtest-persistent
     - genvalidity-text
     - genvalidity-time
     - validity
