@@ -13,5 +13,16 @@
     $if null schedules
       _{MsgYourSchedulesNoSchedules}
     $else
-      $forall Entity _ schedule <- schedules
-        #{ppShow schedule}
+      $forall (Entity _ schedule, Entity _ p, mPosterKey) <- schedules
+        <h2 .title .is-4>
+          _{MsgScheduleTitle (scheduleTitle schedule)}
+        <h3 .subtitle .is-5>
+          ^{recurrenceDescriptionWidget (scheduleRecurrence schedule)}
+        <p .content>
+          #{placeQuery p}
+        $maybe posterKey <- mPosterKey
+          ^{schedulePosterImageWidget schedule organiser posterKey}
+        <p>
+          <div .buttons>
+            <a .button href=@{AccountR $ AccountScheduleR $ scheduleUuid schedule}>
+              _{MsgYourSchedulesEditScheduleButton}

@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
@@ -32,12 +33,24 @@ getAccountSchedulesR = do
       addMessageI "is-danger" MsgSubmitPartyErrorNoOrganiser
       redirect $ AccountR AccountOrganiserR
     Just (Entity organiserId organiser) -> do
-      schedules <- runDB $ selectList [ScheduleOrganiser ==. organiserId] [Asc ScheduleId]
+      schedules <- runDB $ getSchedulesOfOrganiser organiserId
       token <- genToken
       timeLocale <- getTimeLocale
       prettyDayFormat <- getPrettyDayFormat
       today <- liftIO $ utctDay <$> getCurrentTime
       withNavBar $(widgetFile "account/schedules")
+
+getSchedulesOfOrganiser :: MonadIO m => OrganiserId -> SqlPersistT m [(Entity Schedule, Entity Place, Maybe CASKey)]
+getSchedulesOfOrganiser organiserId = do
+  scheduleTups <- E.select $
+    E.from $ \(schedule `E.InnerJoin` p) -> do
+      E.on (schedule E.^. SchedulePlace E.==. p E.^. PlaceId)
+      E.where_ (schedule E.^. ScheduleOrganiser E.==. E.val organiserId)
+      pure (schedule, p)
+  forM scheduleTups $ \(scheduleEntity@(Entity scheduleId _), placeEntity) -> do
+    -- TODO this is potentially expensive, can we do it in one query?
+    mKey <- getPosterForSchedule scheduleId
+    pure (scheduleEntity, placeEntity, mKey)
 
 data AddScheduleForm = AddScheduleForm
   { addScheduleFormTitle :: !Text,
@@ -155,7 +168,6 @@ addSchedule organiserId AddScheduleForm {..} mFileInfo = do
               scheduleStart = addScheduleFormStart,
               scheduleHomepage = addScheduleFormHomepage,
               schedulePrice = addScheduleFormPrice,
-              scheduleCancelled = False,
               scheduleCreated = now,
               scheduleModified = Nothing,
               schedulePlace = placeId

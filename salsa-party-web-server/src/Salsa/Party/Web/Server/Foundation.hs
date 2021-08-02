@@ -468,6 +468,36 @@ posterImageWidget Party {..} Organiser {..} posterKey = do
       alt=_{MsgPosterAltFull partyTitle timeStr organiserName}>
   |]
 
+recurrenceDescriptionWidget :: Recurrence -> Widget
+recurrenceDescriptionWidget recurrence = do
+  msg <- recurrenceDescriptionMessage recurrence
+  [whamlet|_{msg}|]
+
+recurrenceDescriptionText :: Recurrence -> WidgetFor App Text
+recurrenceDescriptionText recurrence = do
+  messageRender <- getMessageRender
+  msg <- recurrenceDescriptionMessage recurrence
+  pure $ messageRender msg
+
+recurrenceDescriptionMessage :: Recurrence -> WidgetFor App AppMessage
+recurrenceDescriptionMessage recurrence = do
+  timeLocale <- getTimeLocale
+  pure $ case recurrence of
+    WeeklyRecurrence dow -> MsgRecurrenceWeeklyDescription $ formatTime timeLocale "%A" dow
+
+schedulePosterImageWidget :: Schedule -> Organiser -> CASKey -> Widget
+schedulePosterImageWidget Schedule {..} Organiser {..} posterKey = do
+  timeLocale <- getTimeLocale
+  prettyDayFormat <- getPrettyDayFormat
+  recurrenceDescription <- recurrenceDescriptionText scheduleRecurrence
+  [whamlet|
+    <img .poster
+      width=#{desiredWidth}
+      height=#{desiredHeight}
+      src=@{ImageR posterKey}
+      alt=_{MsgPosterAltSchedule scheduleTitle recurrenceDescription organiserName}>
+  |]
+
 externalEventPosterImageWidget :: ExternalEvent -> CASKey -> Widget
 externalEventPosterImageWidget ExternalEvent {..} posterKey = do
   timeLocale <- getTimeLocale

@@ -20,6 +20,9 @@ runImageGarbageCollector App {..} = do
 
 garbageCollectImage :: ImageId -> SqlPersistT (LoggingT IO) ()
 garbageCollectImage imageId = do
+  -- We need to count everything that could possible refer to an image.
+  -- Unfortunately I don't think there's a way to check for that.
+  -- TODO: maybe a golden test with fields of type ImageId?
   partyPosters <- count [PartyPosterImage ==. imageId]
   externalEventPosters <- count [ExternalEventPosterImage ==. imageId]
   schedulePosters <- count [SchedulePosterImage ==. imageId]

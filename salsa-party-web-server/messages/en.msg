@@ -81,6 +81,7 @@ OrganiserNoUpcomingParties: No upcoming parties
 # Poster
 PosterAltFull title@Text day@String organiser@Text: Poster for #{title} on #{day} by #{organiser}
 PosterAltTitle title@Text day@String: Poster for #{title} on #{day}
+PosterAltSchedule title@Text recurrenceDescription@Text organiser@Text: Poster for #{title}, #{recurrenceDescription} by #{organiser}
 
 # Registration
 RegistrationTitle: Salsa Parties Today: Registration
@@ -219,6 +220,10 @@ EditScheduleErrorNotYourSchedule: This is not your party to edit.
 YourSchedulesTitle: Your party schedules
 YourSchedulesSubmitButton: Submit a party schedule
 YourSchedulesNoSchedules: You have not submitted any party schedules yet.
+YourSchedulesEditScheduleButton: Edit
+YourSchedulesDeleteScheduleWarning: Are you sure you want to delete this party schedule? This cannot be undone. Note that parties that have already been scheduled will not be deleted.
+YourSchedulesDeleteScheduleButton: Delete
+ScheduleTitle title@Text: #{title}
 
 # Cancel party
 CancelPartyErrorNotYourParty: This is not your party to cancel.
