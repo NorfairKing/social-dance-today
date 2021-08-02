@@ -15,34 +15,28 @@ import Salsa.Party.Web.Server.Handler.TestImport
 spec :: Spec
 spec =
   describe "I18N" $ do
-    scenarioDir "messages" $ \fp ->
+    scenarioDir "messages" $ \fp -> do
       it (fp <> " has no more TODOs") $ do
         contents <- SB.readFile fp
         contents `shouldNotSatisfy` ("TODO" `SB.isInfixOf`)
-
-    it "Has translations for every string" $ do
-      translationsDir <- resolveDir' "messages"
-      mainFile <- resolveFile translationsDir "en.msg"
-      allFiles <- snd <$> listDir translationsDir
-      let otherFiles = filter (/= mainFile) allFiles
-      mainFileContents <- SB.readFile $ fromAbsFile mainFile
-      case TE.decodeUtf8' mainFileContents of
-        Left _ -> expectationFailure "main file did not contain valid utf8"
-        Right mainContents -> do
-          let mainMessages = messagesIn (T.unpack mainContents)
-          tups <- forM otherFiles $ \otherFile -> do
-            otherFileContents <- SB.readFile $ fromAbsFile otherFile
+      it (fp <> "has translations for every string") $ do
+        translationsDir <- resolveDir' "messages"
+        mainFile <- resolveFile translationsDir "en.msg"
+        allFiles <- snd <$> listDir translationsDir
+        mainFileContents <- SB.readFile $ fromAbsFile mainFile
+        case TE.decodeUtf8' mainFileContents of
+          Left _ -> expectationFailure "main file did not contain valid utf8"
+          Right mainContents -> do
+            let mainMessages = messagesIn (T.unpack mainContents)
+            otherFileContents <- SB.readFile fp
             case TE.decodeUtf8' otherFileContents of
-              Left _ -> pure (filename otherFile, [])
+              Left _ -> pure () -- Probably a .swp file, let's just ignore it.
               Right otherContents -> do
                 let missingMessages = mainMessages \\ messagesIn (T.unpack otherContents)
-                pure (filename otherFile, missingMessages)
-          when (not (all (null . snd) tups)) $
-            expectationFailure $
-              unlines $
-                flip map tups $ \(name, missingMessages) ->
-                  unlines $
-                    unwords ["Missing messages in", fromRelFile name] : missingMessages
+                when (not (null missingMessages)) $
+                  expectationFailure $
+                    unlines $
+                      unwords ["Missing messages in", fp] : missingMessages
 
 messagesIn :: String -> [String]
 messagesIn contents =
