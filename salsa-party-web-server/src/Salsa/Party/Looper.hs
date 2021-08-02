@@ -15,6 +15,7 @@ import Salsa.Party.AdminNotification
 import Salsa.Party.Importer
 import Salsa.Party.Looper.ImageGarbageCollector
 import Salsa.Party.Looper.OrganiserReminder
+import Salsa.Party.Looper.PartyScheduler
 import Salsa.Party.OptParse
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
@@ -25,13 +26,17 @@ runLoopers settings@Settings {..} app = do
   let looperDefs =
         importerLoopers settings app
           ++ [ mkLooperDef
+                 "organiser-reminder"
+                 settingOrganiserReminderLooperSettings
+                 (runReaderT runOrganiserReminder app),
+               mkLooperDef
                  "image-garbage-collector"
                  settingImageGarbageCollectorLooperSettings
                  (runImageGarbageCollector app),
                mkLooperDef
-                 "organiser-reminder"
-                 settingOrganiserReminderLooperSettings
-                 (runReaderT runOrganiserReminder app)
+                 "party-Scheduler"
+                 settingPartySchedulerLooperSettings
+                 (runReaderT runPartyScheduler app)
              ]
       looperRunner LooperDef {..} = do
         logInfoNS looperDefName "Starting"

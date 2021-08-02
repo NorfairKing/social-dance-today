@@ -48,7 +48,7 @@ instance PersistFieldSql Recurrence where
 -- The 'current' day will be the previous occurrence, or 'today' if the occurrence has never happened yet.
 nextOccurrence :: Recurrence -> Day -> Day
 nextOccurrence = \case
-  WeeklyRecurrence dow -> nextWeeklyRecurrence dow
+  WeeklyRecurrence dow -> nextWeeklyOccurrence dow
 
 nextWeeklyOccurrence :: DayOfWeek -> Day -> Day
 nextWeeklyOccurrence dow today = firstDayOfWeekOnAfter dow (addDays 1 today)

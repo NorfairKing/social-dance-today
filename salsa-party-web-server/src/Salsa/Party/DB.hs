@@ -179,6 +179,24 @@ Image sql=image
     deriving Generic
 
 
+Schedule
+    organiser OrganiserId
+    recurrence Recurrence
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
+
+ScheduleParty
+    schedule ScheduleId
+    party PartyId
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
+
 ImporterMetadata sql=importer_metadata
     name Text
     lastRunStart UTCTime Maybe sql=last_run

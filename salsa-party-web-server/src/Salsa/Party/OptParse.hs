@@ -43,9 +43,10 @@ data Settings = Settings
     settingGoogleAnalyticsTracking :: !(Maybe Text),
     settingGoogleSearchConsoleVerification :: !(Maybe Text),
     settingSentrySettings :: !(Maybe SentrySettings),
-    settingImageGarbageCollectorLooperSettings :: !LooperSettings,
-    settingImporterInterval :: NominalDiffTime,
     settingOrganiserReminderLooperSettings :: !LooperSettings,
+    settingImageGarbageCollectorLooperSettings :: !LooperSettings,
+    settingPartySchedulerLooperSettings :: !LooperSettings,
+    settingImporterInterval :: NominalDiffTime,
     -- https://events.info
     settingEventsInfoImportLooperSettings :: !LooperSettings,
     -- https://golatindance.com
@@ -82,8 +83,9 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingGoogleAPIKey = flagGoogleAPIKey <|> envGoogleAPIKey <|> mc confGoogleAPIKey
   let settingGoogleAnalyticsTracking = flagGoogleAnalyticsTracking <|> envGoogleAnalyticsTracking <|> mc confGoogleAnalyticsTracking
   let settingGoogleSearchConsoleVerification = flagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification
-  let settingImageGarbageCollectorLooperSettings = deriveLooperSettings (seconds 30) (hours 24) flagImageGarbageCollectorLooperFlags envImageGarbageCollectorLooperEnvironment (mc confImageGarbageCollectorLooperConfiguration)
-  let settingOrganiserReminderLooperSettings = deriveLooperSettings (minutes 1 + seconds 30) (hours 24) flagOrganiserReminderLooperFlags envOrganiserReminderLooperEnvironment (mc confOrganiserReminderLooperConfiguration)
+  let settingOrganiserReminderLooperSettings = deriveLooperSettings (seconds 30) (hours 24) flagOrganiserReminderLooperFlags envOrganiserReminderLooperEnvironment (mc confOrganiserReminderLooperConfiguration)
+  let settingImageGarbageCollectorLooperSettings = deriveLooperSettings (minutes 1 + seconds 30) (hours 24) flagImageGarbageCollectorLooperFlags envImageGarbageCollectorLooperEnvironment (mc confImageGarbageCollectorLooperConfiguration)
+  let settingPartySchedulerLooperSettings = deriveLooperSettings (minutes 2 + seconds 30) (hours 24) flagPartySchedulerLooperFlags envPartySchedulerLooperEnvironment (mc confPartySchedulerLooperConfiguration)
   let settingImporterInterval = maybe (hours 24) fromIntegral $ flagImporterInterval <|> envImporterInterval <|> mc confImporterInterval
   let settingEventsInfoImportLooperSettings = deriveLooperSettings (minutes 2 + seconds 1) (hours 1) flagEventsInfoImportLooperFlags envEventsInfoImportLooperEnvironment (mc confEventsInfoImportLooperConfiguration)
   let settingGolatindanceComImportLooperSettings = deriveLooperSettings (minutes 3 + seconds 2) (hours 1) flagGolatindanceComImportLooperFlags envGolatindanceComImportLooperEnvironment (mc confGolatindanceComImportLooperConfiguration)
@@ -115,8 +117,9 @@ data Configuration = Configuration
     confGoogleAPIKey :: !(Maybe Text),
     confGoogleAnalyticsTracking :: !(Maybe Text),
     confGoogleSearchConsoleVerification :: !(Maybe Text),
-    confImageGarbageCollectorLooperConfiguration :: !(Maybe LooperConfiguration),
     confOrganiserReminderLooperConfiguration :: !(Maybe LooperConfiguration),
+    confImageGarbageCollectorLooperConfiguration :: !(Maybe LooperConfiguration),
+    confPartySchedulerLooperConfiguration :: !(Maybe LooperConfiguration),
     confImporterInterval :: !(Maybe Int),
     confEventsInfoImportLooperConfiguration :: !(Maybe LooperConfiguration),
     confGolatindanceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
@@ -146,8 +149,9 @@ instance YamlSchema Configuration where
         <*> optionalField "google-api-key" "Google API key"
         <*> optionalField "google-analytics-tracking" "Google analytics tracking code"
         <*> optionalField "google-search-console-verification" "Google search console html element verification code"
-        <*> optionalField "image-garbage-collector" "The image garbage collector looper"
         <*> optionalField "organiser-reminder" "The organiser reminder looper"
+        <*> optionalField "image-garbage-collector" "The image garbage collector looper"
+        <*> optionalField "party-scheduler" "The party scheduler looper"
         <*> optionalField "importer-interval" "The default interval for importers"
         <*> optionalField "events-info-importer" "The events.info import looper"
         <*> optionalField "golatindance-com-importer" "The golatindance.com import looper"
@@ -199,8 +203,9 @@ data Environment = Environment
     envGoogleAPIKey :: !(Maybe Text),
     envGoogleAnalyticsTracking :: !(Maybe Text),
     envGoogleSearchConsoleVerification :: !(Maybe Text),
-    envImageGarbageCollectorLooperEnvironment :: !LooperEnvironment,
     envOrganiserReminderLooperEnvironment :: !LooperEnvironment,
+    envImageGarbageCollectorLooperEnvironment :: !LooperEnvironment,
+    envPartySchedulerLooperEnvironment :: !LooperEnvironment,
     envImporterInterval :: !(Maybe Int),
     envEventsInfoImportLooperEnvironment :: !LooperEnvironment,
     envGolatindanceComImportLooperEnvironment :: !LooperEnvironment,
@@ -238,8 +243,9 @@ environmentParser =
       <*> Env.var (fmap Just . Env.str) "GOOGLE_API_KEY" (mE <> Env.help "Google api key")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_ANALYTICS_TRACKING" (mE <> Env.help "Google analytics tracking code")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (mE <> Env.help "Google search console html element verification code")
-      <*> looperEnvironmentParser "IMAGE_GARBAGE_COLLECTOR"
       <*> looperEnvironmentParser "ORGANISER_REMINDER"
+      <*> looperEnvironmentParser "IMAGE_GARBAGE_COLLECTOR"
+      <*> looperEnvironmentParser "PARTY_SCHEDULER"
       <*> Env.var (fmap Just . Env.auto) "IMPORTER_INTERVAL" (mE <> Env.help "The default interval for the importers")
       <*> looperEnvironmentParser "EVENTS_INFO_IMPORTER"
       <*> looperEnvironmentParser "GOLATINDANCE_COM_IMPORTER"
@@ -297,8 +303,9 @@ data Flags = Flags
     flagGoogleAPIKey :: !(Maybe Text),
     flagGoogleAnalyticsTracking :: !(Maybe Text),
     flagGoogleSearchConsoleVerification :: !(Maybe Text),
-    flagImageGarbageCollectorLooperFlags :: !LooperFlags,
     flagOrganiserReminderLooperFlags :: !LooperFlags,
+    flagImageGarbageCollectorLooperFlags :: !LooperFlags,
+    flagPartySchedulerLooperFlags :: !LooperFlags,
     flagImporterInterval :: !(Maybe Int),
     flagEventsInfoImportLooperFlags :: !LooperFlags,
     flagGolatindanceComImportLooperFlags :: !LooperFlags,
@@ -452,8 +459,9 @@ parseFlags =
               ]
           )
       )
-    <*> getLooperFlags "image-garbage-collector"
     <*> getLooperFlags "organiser-reminder"
+    <*> getLooperFlags "image-garbage-collector"
+    <*> getLooperFlags "party-scheduler"
     <*> optional
       ( option
           auto
