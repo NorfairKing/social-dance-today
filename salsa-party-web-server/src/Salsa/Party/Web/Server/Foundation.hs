@@ -487,8 +487,6 @@ recurrenceDescriptionMessage recurrence = do
 
 schedulePosterImageWidget :: Schedule -> Organiser -> CASKey -> Widget
 schedulePosterImageWidget Schedule {..} Organiser {..} posterKey = do
-  timeLocale <- getTimeLocale
-  prettyDayFormat <- getPrettyDayFormat
   recurrenceDescription <- recurrenceDescriptionText scheduleRecurrence
   [whamlet|
     <img .poster

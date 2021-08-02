@@ -35,10 +35,6 @@ getAccountSchedulesR = do
       redirect $ AccountR AccountOrganiserR
     Just (Entity organiserId organiser) -> do
       schedules <- runDB $ getSchedulesOfOrganiser organiserId
-      token <- genToken
-      timeLocale <- getTimeLocale
-      prettyDayFormat <- getPrettyDayFormat
-      today <- liftIO $ utctDay <$> getCurrentTime
       withNavBar $(widgetFile "account/schedules")
 
 getSchedulesOfOrganiser :: MonadIO m => OrganiserId -> SqlPersistT m [(Entity Schedule, Entity Place, Maybe CASKey)]
@@ -110,8 +106,9 @@ recurrenceForm =
       "recurrence-day-of-week"
   where
     postProcess :: Text -> DayOfWeek -> Recurrence
-    postProcess typ dayOfWeek = case typ of
-      "weekly" -> WeeklyRecurrence dayOfWeek
+    postProcess typ dow = case typ of
+      "weekly" -> WeeklyRecurrence dow
+      _ -> WeeklyRecurrence dow -- TODO We will really need a way to fail, I guess?
 
 recurrenceFormFields :: Maybe Recurrence -> Widget
 recurrenceFormFields mRecurrence = do

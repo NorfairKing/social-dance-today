@@ -8,11 +8,9 @@ import Data.Aeson
 import Data.ByteString
 import Data.Fixed
 import Data.Proxy
-import qualified Data.Text as T
 import Data.Time
-import Data.Time.Calendar
 import Data.Validity
-import Data.Validity.Time
+import Data.Validity.Time ()
 import Database.Persist
 import Database.Persist.Sql
 import GHC.Generics (Generic)
