@@ -20,11 +20,7 @@
       <div .field>
         <label .label>
           _{MsgScheduleFormRecurrenceLabel}
-        <div .control>
-          <input .input
-            type=text
-            required
-            name="recurrence">
+        ^{recurrenceFormFields}
 
       <div .field>
         <label .label>

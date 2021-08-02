@@ -1,0 +1,10 @@
+  <div .control>
+    <input .input
+      type=hidden
+      name="recurrence-type"
+      value="weekly">
+
+    <select .select name="recurrence-day-of-week">
+      $forall dow <- daysOfWeek
+        <option value=#{show dow}>
+          #{formatTime timeLocale "%A" dow}

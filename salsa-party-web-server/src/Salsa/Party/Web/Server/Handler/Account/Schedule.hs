@@ -64,7 +64,7 @@ addScheduleForm :: FormInput Handler AddScheduleForm
 addScheduleForm =
   AddScheduleForm
     <$> ireq textField "title"
-    <*> ireq undefined "recurrence"
+    <*> recurrenceForm
     <*> ireq textField "address"
     <*> iopt textareaField "description"
     <*> iopt timeField "start"
@@ -72,6 +72,38 @@ addScheduleForm =
     -- The html still contains type="url" so invaild urls will have been submitted on purpose.
     <*> iopt textField "homepage"
     <*> iopt textField "price"
+
+-- Only works if you have only one recurrence field
+recurrenceForm :: FormInput Handler Recurrence
+recurrenceForm =
+  postProcess
+    <$> ireq hiddenField "recurrence-type"
+    <*> ireq
+      ( selectField $
+          pure $
+            mkOptionList
+              ( map
+                  ( \dow ->
+                      Option
+                        { optionDisplay = T.pack $ show dow,
+                          optionInternalValue = dow,
+                          optionExternalValue = T.pack $ show dow
+                        }
+                  )
+                  [Monday .. Sunday]
+              )
+      )
+      "recurrence-day-of-week"
+  where
+    postProcess :: Text -> DayOfWeek -> Recurrence
+    postProcess typ dayOfWeek = case typ of
+      "weekly" -> WeeklyRecurrence dayOfWeek
+
+recurrenceFormFields :: Widget
+recurrenceFormFields = do
+  timeLocale <- getTimeLocale
+  let daysOfWeek = [Monday .. Sunday]
+  $(widgetFile "recurrence-form")
 
 getAccountSubmitScheduleR :: Handler Html
 getAccountSubmitScheduleR = newSchedulePage Nothing
@@ -157,7 +189,7 @@ editScheduleForm :: FormInput Handler EditScheduleForm
 editScheduleForm =
   EditScheduleForm
     <$> ireq textField "title"
-    <*> ireq undefined "recurrence"
+    <*> recurrenceForm
     <*> ireq textField "address"
     <*> iopt textareaField "description"
     <*> iopt timeField "start"
