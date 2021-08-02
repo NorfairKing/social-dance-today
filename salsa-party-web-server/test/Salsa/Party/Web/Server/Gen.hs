@@ -87,6 +87,14 @@ instance GenValid Recurrence where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
+instance GenValid Schedule where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid ScheduleParty where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
 -- This isn't very general, but that's probably fine.
 genValidEmailAddress :: Gen Text
 genValidEmailAddress = do

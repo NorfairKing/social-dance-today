@@ -48,7 +48,7 @@
         Google Search Console
       <a .button href="https://sentry.io/organizations/cs-kerckhove/projects/salsa-parties">
         Sentry Apdex
-      <a .button href="https://sentry.io/organizations/cs-kerckhove/performance/?project=5875813">
+      <a .button href="https://sentry.io/organizations/cs-kerckhove/performance/?project=5875813&statsPeriod=30d">
         Sentry Performance
 
 <section .section>

@@ -191,6 +191,7 @@ test-suite salsa-party-web-server-test
       Salsa.Party.DB.RecurrenceSpec
       Salsa.Party.DBSpec
       Salsa.Party.Looper.OrganiserReminderSpec
+      Salsa.Party.Looper.PartySchedulerSpec
       Salsa.Party.Web.Server.DistanceSpec
       Salsa.Party.Web.Server.Gen
       Salsa.Party.Web.Server.Handler.Account.OrganiserSpec

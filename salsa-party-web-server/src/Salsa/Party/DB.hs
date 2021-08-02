@@ -192,6 +192,8 @@ ScheduleParty
     schedule ScheduleId
     party PartyId
 
+    UniqueScheduleParty schedule party
+
     deriving Show
     deriving Eq
     deriving Generic
@@ -273,6 +275,10 @@ instance Validity Party
 instance Validity ExternalEvent
 
 instance Validity Image
+
+instance Validity Schedule
+
+instance Validity ScheduleParty
 
 hasChangedComparedTo :: ExternalEvent -> ExternalEvent -> Bool
 hasChangedComparedTo ee1 ee2 =
