@@ -7,8 +7,10 @@
 
 module Salsa.Party.Web.Server.Handler.Account.Schedule
   ( getAccountSchedulesR,
+    AddScheduleForm (..),
     getAccountSubmitScheduleR,
     postAccountSubmitScheduleR,
+    EditScheduleForm (..),
     getAccountScheduleR,
     postAccountScheduleR,
   )
@@ -129,6 +131,40 @@ addSchedule organiserId AddScheduleForm {..} mFileInfo = do
         )
   addMessageI "is-success" MsgSubmitScheduleSuccess
   redirect $ AccountR $ AccountScheduleR uuid
+
+data EditScheduleForm = EditScheduleForm
+  { editScheduleFormTitle :: !Text,
+    editScheduleFormRecurrence :: !Recurrence,
+    editScheduleFormAddress :: !Text,
+    editScheduleFormDescription :: !(Maybe Textarea),
+    editScheduleFormStart :: !(Maybe TimeOfDay),
+    editScheduleFormHomepage :: !(Maybe Text),
+    editScheduleFormPrice :: !(Maybe Text)
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity EditScheduleForm where
+  validate pf@EditScheduleForm {..} =
+    mconcat
+      [ genericValidate pf,
+        declare "The title is nonempty" $ not $ T.null editScheduleFormTitle,
+        declare "The address is nonempty" $ not $ T.null editScheduleFormAddress,
+        declare "The homepage is nonempty" $ maybe True (not . T.null) editScheduleFormHomepage,
+        declare "The price is nonempty" $ maybe True (not . T.null) editScheduleFormPrice
+      ]
+
+editScheduleForm :: FormInput Handler EditScheduleForm
+editScheduleForm =
+  EditScheduleForm
+    <$> ireq textField "title"
+    <*> ireq undefined "recurrence"
+    <*> ireq textField "address"
+    <*> iopt textareaField "description"
+    <*> iopt timeField "start"
+    -- We don't use urlField here because we store the urls as text anyway.
+    -- The html still contains type="url" so invaild urls will have been submitted on purpose.
+    <*> iopt textField "homepage"
+    <*> iopt textField "price"
 
 getAccountScheduleR :: ScheduleUUID -> Handler Html
 getAccountScheduleR = undefined

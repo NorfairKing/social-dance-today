@@ -517,6 +517,9 @@ getPosterForExternalEvent externalEventId = do
       pure (image E.^. ImageKey)
   pure $ E.unValue <$> listToMaybe keys
 
+getPosterForSchedule :: MonadIO m => ScheduleId -> SqlPersistT m (Maybe CASKey)
+getPosterForSchedule = undefined
+
 deleteUserCompletely :: MonadIO m => UserId -> SqlPersistT m ()
 deleteUserCompletely userId = do
   organiserIds <- selectKeysList [OrganiserUser ==. userId] [Asc OrganiserId]
@@ -527,12 +530,19 @@ deleteOrganiserCompletely :: MonadIO m => OrganiserId -> SqlPersistT m ()
 deleteOrganiserCompletely organiserId = do
   partyIds <- selectKeysList [PartyOrganiser ==. organiserId] [Asc PartyId]
   mapM_ deletePartyCompletely partyIds
+  scheduleIds <- selectKeysList [ScheduleOrganiser ==. organiserId] [Asc ScheduleId]
+  mapM_ deleteScheduleCompletely scheduleIds
   delete organiserId
 
 deletePartyCompletely :: MonadIO m => PartyId -> SqlPersistT m ()
 deletePartyCompletely partyId = do
   deleteWhere [PartyPosterParty ==. partyId]
   delete partyId
+
+deleteScheduleCompletely :: MonadIO m => ScheduleId -> SqlPersistT m ()
+deleteScheduleCompletely scheduleId = do
+  -- deleteWhere [SchedulePosterSchedule ==. scheduleId] TODO delete poster
+  delete scheduleId
 
 appDB :: (MonadReader App m, MonadLoggerIO m) => SqlPersistT (LoggingT IO) a -> m a
 appDB func = do

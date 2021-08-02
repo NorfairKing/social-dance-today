@@ -28,6 +28,7 @@ import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Gen
 import Salsa.Party.Web.Server.Handler.Account.Organiser
 import Salsa.Party.Web.Server.Handler.Account.Party
+import Salsa.Party.Web.Server.Handler.Account.Schedule
 import Salsa.Party.Web.Server.Static
 import System.FilePath
 import Test.QuickCheck
@@ -349,6 +350,144 @@ editPartyFormShouldMatch EditPartyForm {..} Party {..} = do
     showMTime partyStart `shouldBe` showMTime editPartyFormStart
   context "homepage" $ partyHomepage `shouldBe` editPartyFormHomepage
   context "price" $ partyPrice `shouldBe` editPartyFormPrice
+  -- We can't check the poster because it's in a separate table.
+  pure ()
+
+testAddSchedule :: AddScheduleForm -> Coordinates -> YesodClientM App ScheduleUUID
+testAddSchedule scheduleForm_ coordinates_ = testAddScheduleHelper scheduleForm_ coordinates_ Nothing
+
+testAddScheduleWithPoster :: AddScheduleForm -> Coordinates -> TestFile -> YesodClientM App ScheduleUUID
+testAddScheduleWithPoster scheduleForm_ coordinates_ posterFile = testAddScheduleHelper scheduleForm_ coordinates_ (Just posterFile)
+
+-- For submitting a new schedule.
+-- This doesn't let you do edits using the UUID field.
+testAddScheduleHelper :: AddScheduleForm -> Coordinates -> Maybe TestFile -> YesodClientM App ScheduleUUID
+testAddScheduleHelper scheduleForm_ loc mPosterFile = do
+  -- Put the address in the database already so we don't need to use an external service for geocoding
+  testDB $ insertPlace_ (addScheduleFormAddress scheduleForm_) loc
+  get $ AccountR AccountSubmitScheduleR
+  statusIs 200
+  request $ addScheduleFormRequestBuilder scheduleForm_ mPosterFile
+  statusIs 303
+  errOrLoc <- getLocation
+  case errOrLoc of
+    Left err -> liftIO $ expectationFailure $ T.unpack err
+    Right redirectLocation -> case redirectLocation of
+      AccountR (AccountScheduleR scheduleUuid) -> pure scheduleUuid
+      _ -> liftIO $ expectationFailure $ "Coordinates should have been some AccountR AccountScheduleR after submitting a schedule, was this instead: " <> show redirectLocation
+
+addScheduleFormRequestBuilder :: AddScheduleForm -> Maybe TestFile -> RequestBuilder App ()
+addScheduleFormRequestBuilder AddScheduleForm {..} mPosterFile = do
+  setMethod methodPost
+  setUrl $ AccountR AccountSubmitScheduleR
+  addToken
+  addPostParam "title" addScheduleFormTitle
+  addPostParam "recurrence" $ T.pack $ show addScheduleFormRecurrence -- TODO
+  addPostParam "address" addScheduleFormAddress
+  forM_ addScheduleFormDescription $ \description -> addPostParam "description" $ unTextarea description
+  forM_ addScheduleFormStart $ \start -> addPostParam "start" $ T.pack $ formatTime defaultTimeLocale "%H:%M" start
+  forM_ addScheduleFormHomepage $ \homepage -> addPostParam "homepage" homepage
+  forM_ addScheduleFormPrice $ \price -> addPostParam "price" price
+  forM_ mPosterFile $ \TestFile {..} -> addFileWith "poster" testFilePath testFileContents testFileType
+
+verifyScheduleAdded :: ScheduleUUID -> AddScheduleForm -> YesodClientM App ()
+verifyScheduleAdded scheduleUuid_ addScheduleForm_ = verifyScheduleAddedHelper scheduleUuid_ addScheduleForm_ Nothing
+
+verifyScheduleAddedWithPoster :: ScheduleUUID -> AddScheduleForm -> TestFile -> YesodClientM App ()
+verifyScheduleAddedWithPoster scheduleUuid_ addScheduleForm_ poster = verifyScheduleAddedHelper scheduleUuid_ addScheduleForm_ (Just poster)
+
+verifyScheduleAddedHelper :: ScheduleUUID -> AddScheduleForm -> Maybe TestFile -> YesodClientM App ()
+verifyScheduleAddedHelper scheduleUuid_ addScheduleForm_ mPoster = do
+  mSchedule <- testDB $ DB.getBy $ UniqueScheduleUUID scheduleUuid_
+  case mSchedule of
+    Nothing -> liftIO $ expectationFailure "expected the added schedule to still exist."
+    Just (Entity scheduleId schedule) -> do
+      liftIO $ addScheduleForm_ `addScheduleFormShouldMatch` schedule
+      mPlace <- testDB $ DB.get $ schedulePlace schedule
+      liftIO $ case mPlace of
+        Nothing -> expectationFailure "expected the added schedule to still have a place"
+        Just place -> placeQuery place `shouldBe` addScheduleFormAddress addScheduleForm_
+      mCASKey <- testDB $ getPosterForSchedule scheduleId
+      liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
+
+addScheduleFormShouldMatch :: AddScheduleForm -> Schedule -> IO ()
+addScheduleFormShouldMatch AddScheduleForm {..} Schedule {..} = do
+  let AddScheduleForm _ _ _ _ _ _ _ = undefined -- We want to check every part of the schedule form
+  context "title" $ scheduleTitle `shouldBe` addScheduleFormTitle
+  context "recurrence" $ scheduleRecurrence `shouldBe` addScheduleFormRecurrence
+  -- We can't check the address because that's in the Place.
+  -- scheduleAddress `shouldBe` addScheduleFormAddress
+  context "description" $ scheduleDescription `shouldBe` unTextarea <$> addScheduleFormDescription
+  context "start" $ do
+    -- We only care about what the time looks like, nothing about precision.
+    let showMTime = maybe "" $ formatTime defaultTimeLocale "%H:%M"
+    showMTime scheduleStart `shouldBe` showMTime addScheduleFormStart
+  context "homepage" $ scheduleHomepage `shouldBe` addScheduleFormHomepage
+  context "price" $ schedulePrice `shouldBe` addScheduleFormPrice
+  -- We can't check the poster because it's in a separate table.
+  pure ()
+
+testEditSchedule :: ScheduleUUID -> EditScheduleForm -> Coordinates -> YesodClientM App ()
+testEditSchedule scheduleUuid_ scheduleForm_ coordinates_ = testEditScheduleHelper scheduleUuid_ scheduleForm_ coordinates_ Nothing
+
+testEditScheduleWithPoster :: ScheduleUUID -> EditScheduleForm -> Coordinates -> TestFile -> YesodClientM App ()
+testEditScheduleWithPoster scheduleUuid_ scheduleForm_ coordinates_ posterFile = testEditScheduleHelper scheduleUuid_ scheduleForm_ coordinates_ (Just posterFile)
+
+-- For submitting a new schedule.
+-- This doesn't let you do edits using the UUID field.
+testEditScheduleHelper :: ScheduleUUID -> EditScheduleForm -> Coordinates -> Maybe TestFile -> YesodClientM App ()
+testEditScheduleHelper scheduleUuid_ scheduleForm_ loc mPosterFile = do
+  -- Put the address in the database already so we don't need to use an external service for geocoding
+  testDB $ insertPlace_ (editScheduleFormAddress scheduleForm_) loc
+  request $ editScheduleFormRequestBuilder scheduleUuid_ scheduleForm_ mPosterFile
+
+editScheduleFormRequestBuilder :: ScheduleUUID -> EditScheduleForm -> Maybe TestFile -> RequestBuilder App ()
+editScheduleFormRequestBuilder scheduleUuid_ EditScheduleForm {..} mPosterFile = do
+  setMethod methodPost
+  setUrl $ AccountR $ AccountScheduleR scheduleUuid_
+  addToken
+  addPostParam "title" editScheduleFormTitle
+  addPostParam "address" editScheduleFormAddress
+  forM_ editScheduleFormDescription $ \description -> addPostParam "description" $ unTextarea description
+  forM_ editScheduleFormStart $ \start -> addPostParam "start" $ T.pack $ formatTime defaultTimeLocale "%H:%M" start
+  forM_ editScheduleFormHomepage $ \homepage -> addPostParam "homepage" homepage
+  forM_ editScheduleFormPrice $ \price -> addPostParam "price" price
+  forM_ mPosterFile $ \TestFile {..} -> addFileWith "poster" testFilePath testFileContents testFileType
+
+verifyScheduleEdited :: ScheduleUUID -> EditScheduleForm -> YesodClientM App ()
+verifyScheduleEdited scheduleUuid_ editScheduleForm_ = verifyScheduleEditedHelper scheduleUuid_ editScheduleForm_ Nothing
+
+verifyScheduleEditedWithPoster :: ScheduleUUID -> EditScheduleForm -> TestFile -> YesodClientM App ()
+verifyScheduleEditedWithPoster scheduleUuid_ editScheduleForm_ poster = verifyScheduleEditedHelper scheduleUuid_ editScheduleForm_ (Just poster)
+
+verifyScheduleEditedHelper :: ScheduleUUID -> EditScheduleForm -> Maybe TestFile -> YesodClientM App ()
+verifyScheduleEditedHelper scheduleUuid_ editScheduleForm_ mPoster = do
+  mSchedule <- testDB $ DB.getBy $ UniqueScheduleUUID scheduleUuid_
+  case mSchedule of
+    Nothing -> liftIO $ expectationFailure "expected the edited schedule to still exist."
+    Just (Entity scheduleId schedule) -> do
+      liftIO $ editScheduleForm_ `editScheduleFormShouldMatch` schedule
+      mPlace <- testDB $ DB.get $ schedulePlace schedule
+      liftIO $ case mPlace of
+        Nothing -> expectationFailure "expected the edited schedule to still have a place"
+        Just place -> placeQuery place `shouldBe` editScheduleFormAddress editScheduleForm_
+      mCASKey <- testDB $ getPosterForSchedule scheduleId
+      liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
+
+editScheduleFormShouldMatch :: EditScheduleForm -> Schedule -> IO ()
+editScheduleFormShouldMatch EditScheduleForm {..} Schedule {..} = do
+  let EditScheduleForm _ _ _ _ _ _ _ = undefined -- We want to check every part of the schedule form
+  context "title" $ scheduleTitle `shouldBe` editScheduleFormTitle
+  context "recurrence" $ scheduleRecurrence `shouldBe` editScheduleFormRecurrence
+  -- We can't check the address because that's in the Place.
+  -- scheduleAddress `shouldBe` editScheduleFormAddress
+  context "description" $ scheduleDescription `shouldBe` unTextarea <$> editScheduleFormDescription
+  context "start" $ do
+    -- We only care about what the time looks like, nothing about precision.
+    let showMTime = maybe "" $ formatTime defaultTimeLocale "%H:%M"
+    showMTime scheduleStart `shouldBe` showMTime editScheduleFormStart
+  context "homepage" $ scheduleHomepage `shouldBe` editScheduleFormHomepage
+  context "price" $ schedulePrice `shouldBe` editScheduleFormPrice
   -- We can't check the poster because it's in a separate table.
   pure ()
 

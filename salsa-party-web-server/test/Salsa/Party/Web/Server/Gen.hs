@@ -15,6 +15,7 @@ import qualified Data.Text as T
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Handler.Account.Organiser
 import Salsa.Party.Web.Server.Handler.Account.Party
+import Salsa.Party.Web.Server.Handler.Account.Schedule
 import Salsa.Party.Web.Server.Handler.Import
 import Test.QuickCheck
 
@@ -92,6 +93,14 @@ instance GenValid Schedule where
   shrinkValid = shrinkValidStructurally
 
 instance GenValid ScheduleParty where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid AddScheduleForm where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid EditScheduleForm where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
