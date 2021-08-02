@@ -4,7 +4,10 @@
       name="recurrence-type"
       value="weekly">
 
-    <select .select name="recurrence-day-of-week">
-      $forall dow <- daysOfWeek
-        <option value=#{show dow}>
-          #{formatTime timeLocale "%A" dow}
+    <div .select>
+      <select name="recurrence-day-of-week">
+        $forall dow <- daysOfWeek
+          <option value=#{show dow} data-description=_{MsgScheduleFormRecurrenceWeeklyDescription $ formatTime timeLocale "%A" dow}>
+            #{formatTime timeLocale "%A" dow}
+    <p .help>
+      _{MsgScheduleFormRecurrenceWeeklyType}

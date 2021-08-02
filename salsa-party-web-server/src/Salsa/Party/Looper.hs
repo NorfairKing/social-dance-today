@@ -34,7 +34,7 @@ runLoopers settings@Settings {..} app = do
                  settingImageGarbageCollectorLooperSettings
                  (runImageGarbageCollector app),
                mkLooperDef
-                 "party-Scheduler"
+                 "party-scheduler"
                  settingPartySchedulerLooperSettings
                  (runReaderT runPartyScheduler app)
              ]

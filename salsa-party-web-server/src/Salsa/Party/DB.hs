@@ -208,10 +208,24 @@ Schedule
     deriving Eq
     deriving Generic
 
+SchedulePoster sql=schedule_poster
+    schedule ScheduleId
+    image ImageId
+    created UTCTime
+    modified UTCTime Maybe default=NULL
+
+    UniqueSchedulePoster schedule
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
 
 ScheduleParty
     schedule ScheduleId
     party PartyId
+
+    scheduled UTCTime
 
     UniqueScheduleParty schedule party
 

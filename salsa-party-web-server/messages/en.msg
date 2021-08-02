@@ -196,6 +196,10 @@ ScheduleFormPosterChooseInstruction: Choose a poster image
 ScheduleFormPosterNoPoster: No poster selected
 ScheduleFormBackButton: Back
 
+## Recurrence
+ScheduleFormRecurrenceWeeklyType: Weekly
+ScheduleFormRecurrenceWeeklyDescription weekday@String: Every week on: #{weekday}
+
 # Submit Schedule
 SubmitScheduleTitle: Submit Schedule
 SubmitScheduleButton: Submit

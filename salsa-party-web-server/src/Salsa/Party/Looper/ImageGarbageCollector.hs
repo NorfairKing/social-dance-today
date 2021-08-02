@@ -22,5 +22,6 @@ garbageCollectImage :: ImageId -> SqlPersistT (LoggingT IO) ()
 garbageCollectImage imageId = do
   partyPosters <- count [PartyPosterImage ==. imageId]
   externalEventPosters <- count [ExternalEventPosterImage ==. imageId]
-  let total = partyPosters + externalEventPosters
+  schedulePosters <- count [SchedulePosterImage ==. imageId]
+  let total = partyPosters + externalEventPosters + schedulePosters
   when (total == 0) $ delete imageId

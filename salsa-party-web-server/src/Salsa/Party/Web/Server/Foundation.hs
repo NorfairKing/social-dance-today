@@ -508,6 +508,15 @@ getPosterForParty partyId = do
       pure (image E.^. ImageKey)
   pure $ E.unValue <$> listToMaybe keys
 
+getPosterForSchedule :: MonadIO m => ScheduleId -> SqlPersistT m (Maybe CASKey)
+getPosterForSchedule scheduleId = do
+  keys <- E.select $
+    E.from $ \(schedulePoster `E.InnerJoin` image) -> do
+      E.on (schedulePoster E.^. SchedulePosterImage E.==. image E.^. ImageId)
+      E.where_ (schedulePoster E.^. SchedulePosterSchedule E.==. E.val scheduleId)
+      pure (image E.^. ImageKey)
+  pure $ E.unValue <$> listToMaybe keys
+
 getPosterForExternalEvent :: MonadIO m => ExternalEventId -> SqlPersistT m (Maybe CASKey)
 getPosterForExternalEvent externalEventId = do
   keys <- E.select $
@@ -516,9 +525,6 @@ getPosterForExternalEvent externalEventId = do
       E.where_ (externalEventPoster E.^. ExternalEventPosterExternalEvent E.==. E.val externalEventId)
       pure (image E.^. ImageKey)
   pure $ E.unValue <$> listToMaybe keys
-
-getPosterForSchedule :: MonadIO m => ScheduleId -> SqlPersistT m (Maybe CASKey)
-getPosterForSchedule _ = pure Nothing -- TODO
 
 deleteUserCompletely :: MonadIO m => UserId -> SqlPersistT m ()
 deleteUserCompletely userId = do

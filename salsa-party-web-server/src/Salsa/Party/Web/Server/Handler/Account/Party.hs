@@ -303,9 +303,10 @@ editParty (Entity partyId party) form mFileInfo = do
           then Nothing
           else Just $ (PartyModified =. Just now) : fieldUpdates
   forM_ mUpdates $ \updates -> runDB $ update partyId updates
+
+  -- Update the poster if a new one has been submitted
   case mFileInfo of
     Nothing -> pure ()
-    -- Update the poster if a new one has been submitted
     Just posterFileInfo -> do
       imageBlob <- fileSourceByteString posterFileInfo
       let contentType = fileContentType posterFileInfo
@@ -338,6 +339,7 @@ editParty (Entity partyId party) form mFileInfo = do
                 [ PartyPosterImage =. imageId,
                   PartyPosterModified =. Just now
                 ]
+
   addMessageI "is-success" MsgEditPartySuccess
   redirect $ AccountR $ AccountPartyR $ partyUuid party
 

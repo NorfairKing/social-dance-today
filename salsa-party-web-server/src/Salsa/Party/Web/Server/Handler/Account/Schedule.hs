@@ -161,6 +161,38 @@ addSchedule organiserId AddScheduleForm {..} mFileInfo = do
               schedulePlace = placeId
             }
         )
+
+  case mFileInfo of
+    Nothing -> pure () -- No need to do anything
+    -- Add the poster if a new one has been submitted
+    Just posterFileInfo -> do
+      imageBlob <- fileSourceByteString posterFileInfo
+      let contentType = fileContentType posterFileInfo
+      case posterCropImage contentType imageBlob of
+        Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
+        Right (convertedImageType, convertedImageBlob) -> do
+          let casKey = mkCASKey convertedImageType convertedImageBlob
+          runDB $ do
+            Entity imageId _ <-
+              upsertBy
+                (UniqueImageKey casKey)
+                ( Image
+                    { imageKey = casKey,
+                      imageTyp = convertedImageType,
+                      imageBlob = convertedImageBlob,
+                      imageCreated = now
+                    }
+                )
+                [] -- No need to update anything, the casKey makes the image unique.
+            insert_
+              ( SchedulePoster
+                  { schedulePosterSchedule = scheduleId,
+                    schedulePosterImage = imageId,
+                    schedulePosterCreated = now,
+                    schedulePosterModified = Nothing
+                  }
+              )
+
   addMessageI "is-success" MsgSubmitScheduleSuccess
   redirect $ AccountR $ AccountScheduleR uuid
 
@@ -268,5 +300,42 @@ editSchedule (Entity scheduleId schedule) form mFileInfo = do
           then Nothing
           else Just $ (ScheduleModified =. Just now) : fieldUpdates
   forM_ mUpdates $ \updates -> runDB $ update scheduleId updates
+
+  -- Update the poster if a new one has been submitted
+  case mFileInfo of
+    Nothing -> pure ()
+    Just posterFileInfo -> do
+      imageBlob <- fileSourceByteString posterFileInfo
+      let contentType = fileContentType posterFileInfo
+      case posterCropImage contentType imageBlob of
+        Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
+        Right (convertedImageType, convertedImageBlob) -> do
+          let casKey = mkCASKey convertedImageType convertedImageBlob
+          runDB $ do
+            Entity imageId _ <-
+              upsertBy
+                (UniqueImageKey casKey)
+                ( Image
+                    { imageKey = casKey,
+                      imageTyp = convertedImageType,
+                      imageBlob = convertedImageBlob,
+                      imageCreated = now
+                    }
+                )
+                [] -- No need to update anything, the casKey makes the image unique.
+            void $
+              upsertBy
+                (UniqueSchedulePoster scheduleId)
+                ( SchedulePoster
+                    { schedulePosterSchedule = scheduleId,
+                      schedulePosterImage = imageId,
+                      schedulePosterCreated = now,
+                      schedulePosterModified = Nothing
+                    }
+                )
+                [ SchedulePosterImage =. imageId,
+                  SchedulePosterModified =. Just now
+                ]
+
   addMessageI "is-success" MsgEditScheduleSuccess
   redirect $ AccountR $ AccountScheduleR $ scheduleUuid schedule
