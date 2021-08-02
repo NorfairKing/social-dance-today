@@ -235,8 +235,7 @@ editPartyForm =
     <*> ((>>= (either (const Nothing) Just . parseCASKey)) <$> iopt textField "poster-key")
 
 getAccountPartyR :: EventUUID -> Handler Html
-getAccountPartyR partyUuid =
-  editPartyPage partyUuid Nothing
+getAccountPartyR partyUuid = editPartyPage partyUuid Nothing
 
 postAccountPartyR :: EventUUID -> Handler Html
 postAccountPartyR partyUuid = do

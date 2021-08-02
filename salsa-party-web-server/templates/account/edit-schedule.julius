@@ -1,0 +1,14 @@
+const fileInput = document.querySelector('#posterInput input[type=file]');
+fileInput.onchange = () => {
+  if (fileInput.files.length > 0) {
+    const fileName = document.querySelector('#posterInput .file-name');
+    const fileImg = document.querySelector('#posterInput .file-img');
+    fileName.textContent = fileInput.files[0].name;
+
+    var reader = new FileReader();
+    reader.onloadend = function() {
+         fileImg.src = reader.result;
+    }
+    reader.readAsDataURL(fileInput.files[0]);
+  }
+}

@@ -518,7 +518,7 @@ getPosterForExternalEvent externalEventId = do
   pure $ E.unValue <$> listToMaybe keys
 
 getPosterForSchedule :: MonadIO m => ScheduleId -> SqlPersistT m (Maybe CASKey)
-getPosterForSchedule = undefined
+getPosterForSchedule _ = pure Nothing -- TODO
 
 deleteUserCompletely :: MonadIO m => UserId -> SqlPersistT m ()
 deleteUserCompletely userId = do

@@ -199,7 +199,74 @@ editScheduleForm =
     <*> iopt textField "price"
 
 getAccountScheduleR :: ScheduleUUID -> Handler Html
-getAccountScheduleR = undefined
+getAccountScheduleR scheduleUuid = editSchedulePage scheduleUuid Nothing
 
 postAccountScheduleR :: ScheduleUUID -> Handler Html
-postAccountScheduleR = undefined
+postAccountScheduleR scheduleUuid = do
+  res <- runInputPostResult $ (,) <$> editScheduleForm <*> iopt fileField "poster"
+  editSchedulePage scheduleUuid (Just res)
+
+editSchedulePage :: ScheduleUUID -> Maybe (FormResult (EditScheduleForm, Maybe FileInfo)) -> Handler Html
+editSchedulePage scheduleUuid_ mResult = do
+  userId <- requireAuthId
+  mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
+  case mOrganiser of
+    Nothing -> do
+      addMessageI "is-danger" MsgEditScheduleErrorNoOrganiser
+      redirect $ AccountR AccountOrganiserR
+    Just (Entity organiserId _) -> do
+      mSchedule <- runDB $ getBy $ UniqueScheduleUUID scheduleUuid_
+      scheduleEntity <- case mSchedule of
+        Nothing -> notFound
+        Just scheduleEntity -> pure scheduleEntity
+      when (scheduleOrganiser (entityVal scheduleEntity) /= organiserId) $ permissionDeniedI MsgEditScheduleErrorNotYourSchedule
+      case mResult of
+        Just (FormSuccess (form, mFileInfo)) -> editSchedule scheduleEntity form mFileInfo
+        _ -> editScheduleFormPage scheduleEntity mResult
+
+editScheduleFormPage ::
+  Entity Schedule ->
+  -- | Just for errors
+  Maybe (FormResult a) ->
+  Handler Html
+editScheduleFormPage (Entity scheduleId schedule) mResult = do
+  place <- runDB $ get404 $ schedulePlace schedule
+  organiser <- runDB $ get404 $ scheduleOrganiser schedule
+  mPosterKey <- runDB $ getPosterForSchedule scheduleId
+  token <- genToken
+  withMFormResultNavBar mResult $(widgetFile "account/edit-schedule")
+
+editSchedule ::
+  Entity Schedule ->
+  EditScheduleForm ->
+  Maybe FileInfo ->
+  Handler Html
+editSchedule (Entity scheduleId schedule) form mFileInfo = do
+  now <- liftIO getCurrentTime
+  -- This place lookup relies on the caching for geocoding to be fast if nothing has changed.
+  Entity placeId _ <- lookupPlace (editScheduleFormAddress form)
+  let whenChanged :: (Eq a, PersistField a) => (Schedule -> a) -> (EditScheduleForm -> a) -> EntityField Schedule a -> Maybe (Update Schedule)
+      whenChanged scheduleFunc formFunc field = do
+        guard $ scheduleFunc schedule /= formFunc form
+        pure $ field =. formFunc form
+      fieldUpdates :: [Update Schedule]
+      fieldUpdates =
+        catMaybes
+          [ whenChanged scheduleTitle editScheduleFormTitle ScheduleTitle,
+            whenChanged scheduleRecurrence editScheduleFormRecurrence ScheduleRecurrence,
+            whenChanged scheduleDescription (fmap unTextarea . editScheduleFormDescription) ScheduleDescription,
+            -- Purposely don't update the day so that schedulegoers can't have the rug pulled under them
+            whenChanged scheduleStart editScheduleFormStart ScheduleStart,
+            whenChanged scheduleHomepage editScheduleFormHomepage ScheduleHomepage,
+            whenChanged schedulePrice editScheduleFormPrice SchedulePrice,
+            if schedulePlace schedule /= placeId
+              then Just (SchedulePlace =. placeId)
+              else Nothing
+          ]
+      mUpdates =
+        if null fieldUpdates
+          then Nothing
+          else Just $ (ScheduleModified =. Just now) : fieldUpdates
+  forM_ mUpdates $ \updates -> runDB $ update scheduleId updates
+  addMessageI "is-success" MsgEditScheduleSuccess
+  redirect $ AccountR $ AccountScheduleR $ scheduleUuid schedule

@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
@@ -382,7 +383,7 @@ addScheduleFormRequestBuilder AddScheduleForm {..} mPosterFile = do
   setUrl $ AccountR AccountSubmitScheduleR
   addToken
   addPostParam "title" addScheduleFormTitle
-  addPostParam "recurrence" $ T.pack $ show addScheduleFormRecurrence -- TODO
+  addRecurrenceParams addScheduleFormRecurrence
   addPostParam "address" addScheduleFormAddress
   forM_ addScheduleFormDescription $ \description -> addPostParam "description" $ unTextarea description
   forM_ addScheduleFormStart $ \start -> addPostParam "start" $ T.pack $ formatTime defaultTimeLocale "%H:%M" start
@@ -447,6 +448,7 @@ editScheduleFormRequestBuilder scheduleUuid_ EditScheduleForm {..} mPosterFile =
   setUrl $ AccountR $ AccountScheduleR scheduleUuid_
   addToken
   addPostParam "title" editScheduleFormTitle
+  addRecurrenceParams editScheduleFormRecurrence
   addPostParam "address" editScheduleFormAddress
   forM_ editScheduleFormDescription $ \description -> addPostParam "description" $ unTextarea description
   forM_ editScheduleFormStart $ \start -> addPostParam "start" $ T.pack $ formatTime defaultTimeLocale "%H:%M" start
@@ -490,6 +492,12 @@ editScheduleFormShouldMatch EditScheduleForm {..} Schedule {..} = do
   context "price" $ schedulePrice `shouldBe` editScheduleFormPrice
   -- We can't check the poster because it's in a separate table.
   pure ()
+
+addRecurrenceParams :: Recurrence -> RequestBuilder App ()
+addRecurrenceParams = \case
+  WeeklyRecurrence dow -> do
+    addPostParam "recurrence-type" "weekly"
+    addPostParam "recurrence-day-of-week" $ T.pack $ show dow
 
 testDB :: DB.SqlPersistT IO a -> YesodClientM App a
 testDB func = do

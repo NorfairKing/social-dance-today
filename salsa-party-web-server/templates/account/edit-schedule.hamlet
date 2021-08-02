@@ -1,0 +1,94 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      _{MsgSubmitScheduleTitle}
+
+    <form .form
+      enctype="multipart/form-data"
+      method=post
+      action=@{AccountR AccountSubmitScheduleR}>
+
+      <div .field>
+        <label .label>
+          _{MsgScheduleFormTitleLabel}
+        <div .control>
+          <input .input
+            type=text
+            name="title"
+            required>
+
+      <div .field>
+        <label .label>
+          _{MsgScheduleFormRecurrenceLabel}
+        ^{recurrenceFormFields}
+
+      <div .field>
+        <label .label>
+          _{MsgScheduleFormAddressLabel}
+        <div .control>
+          <input .input
+            type=text
+            required
+            name="address">
+
+      <div .field>
+        <label .label>
+          _{MsgScheduleFormDescriptionLabel}
+        <div .control>
+          <textarea .textarea
+            name="description">
+
+      <div .field>
+        <label .label>
+          _{MsgScheduleFormStartLabel}
+        <div .control>
+          <input .input
+            type=time
+            name="start">
+
+      <div .field>
+        <label .label>
+          _{MsgScheduleFormHomepageLabel}
+        <div .control>
+          <input .input
+            type=url
+            name="homepage">
+
+      <div .field>
+        <label .label>
+          _{MsgScheduleFormPriceLabel}
+        <div .control>
+          <input .input
+            type=text
+            name="price">
+        <p .help>
+          _{MsgScheduleFormPriceHelp}
+
+      <div .field>
+        <label .label>
+          _{MsgScheduleFormPosterLabel}
+        <div .control>
+          <div #posterInput .file .has-name>
+            <label .file-label>
+              <input .input .file-input .input name="poster" type="file">
+              <span .file-cta>
+                <span .file-icon>
+                  <i .fas .fa-upload>
+                <span .file-label>
+                  _{MsgScheduleFormPosterChooseInstruction}
+              <span .file-name>
+                _{MsgScheduleFormPosterNoPoster}
+          <figure #posterInput .py-3>
+            <img .file-img .is-16by9 style="max-width: 640px; max-height: 360px;">
+
+      <div .field>
+        <div .control>
+          ^{token}
+
+      <div .field>
+        <div .control>
+          <div .buttons>
+            <button .button .is-dark type="submit">
+              _{MsgSubmitScheduleButton}
+            <a .button href=@{AccountR AccountPartiesR}>
+              _{MsgScheduleFormBackButton}
