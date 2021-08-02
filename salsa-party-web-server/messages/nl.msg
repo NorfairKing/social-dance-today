@@ -209,6 +209,36 @@ ScheduleFormPosterChooseInstruction: Kies een afbeelding
 ScheduleFormPosterNoPoster: Geen poster geselecteerd
 ScheduleFormBackButton: Terug
 
+
+## Recurrence
+RecurrenceWeeklyType: Wekelijks
+RecurrenceWeeklyDescription weekday@String: Elke week op #{weekday}
+
+# Submit Schedule
+SubmitScheduleTitle: Terugkerend Feest
+SubmitScheduleButton: Indienen
+SubmitScheduleSuccess: Terugkerend Feest succesvol ingediend
+SubmitScheduleErrorUnverified: Uw account moet geverifieerd worden vooraleer u terugkerende feesten kan indienen.
+SubmitScheduleErrorNoOrganiser: U moet eerst een organisatorprofiel aanmaken vooraleer u een terugkerend feest kan indienen.
+
+# Edit Schedule
+EditScheduleTitle: Terugkerend feest aanpassen
+EditScheduleButton: Opslaan
+EditScheduleSuccess: Terugkerend feest succesvol opgeslagen
+EditScheduleErrorNoOrganiser: U moet eerst een organisatorprofiel aanmaken vooraleer u een terugkerend feest kan aanpassen.
+EditScheduleErrorNotYourSchedule: Dit is niet uw terugkerend feest. U kan dit terugkerend feest niet bewerken.
+
+# Your schedules
+YourSchedulesTitle: Uw terugkerende feesten
+YourSchedulesSubmitButton: Terugkerend feest indienen
+YourSchedulesNoSchedules: U heeft nog geen terugkerende feesten ingediend.
+YourSchedulesEditScheduleButton: Aanpassen
+YourSchedulesDeleteScheduleWarning: Weet u zeker dat u dit feest wilt verwijderen? Deze actie kunt u niet ongedaan maken. Feesten die door dit herhalingsschema zijn aangemaakt zullen niet verwijderd worden.
+YourSchedulesDeleteScheduleButton: Verwijderen
+ScheduleTitle title@Text: #{title}
+
+
+
 # Unsubscribe Reminder 
 UnsubReminderTitle: Uitgeschreven
 UnsubReminderDescription: U krijgt voortaan geen herinneringsemails meer.

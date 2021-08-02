@@ -221,7 +221,6 @@ SubmitScheduleErrorNoOrganiser: You must set up an organiser profile in the acco
 EditScheduleTitle: Submit Schedule
 EditScheduleButton: Submit
 EditScheduleSuccess: Succesfully edited party
-EditScheduleDayHelp: You can no longer edit the day for the party. If you were looking to do that, you can either cancel this party and organise another, or duplicate this party to re-organise it.
 EditScheduleErrorNoOrganiser: You must set up an organiser profile in the account overview before you can edit a party.
 EditScheduleErrorNotYourSchedule: This is not your party to edit.
 
