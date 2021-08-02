@@ -26,6 +26,8 @@
   /party/#EventUUID/cancel AccountPartyCancelR POST
   /party/#EventUUID/un-cancel AccountPartyUnCancelR POST
 
+  /schedules AccountSchedulesR GET
+
   /delete AccountDeleteR POST
 
 /admin AdminR:

@@ -1,0 +1,12 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      _{MsgYourSchedulesTitle}
+
+<section .section>
+  <div .container>
+    $if null schedules
+      _{MsgYourSchedulesNoSchedules}
+    $else
+      $forall Entity _ schedule <- schedules
+        #{ppShow schedule}

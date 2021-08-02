@@ -30,6 +30,7 @@ NavSubmitParty: Advertise your party here
 NavAccount: Account
 NavOrganiser: Organiser profile
 NavParties: My parties
+NavSchedules: My party schedules
 NavLanguage: Language
 NavAdmin: Admin panel
 NavSignUp: Sign up
@@ -144,6 +145,10 @@ YourPartiesCancelPartyButton: Cancel
 YourPartiesUnCancelPartyButton: Un-Cancel
 YourPartiesDeletePartyWarning: Are you sure you want to delete this party? This cannot be undone.
 YourPartiesDeletePartyButton: Delete
+
+# Your schedules
+YourSchedulesTitle: Your party schedules
+YourSchedulesNoSchedules: You have not submitted any party schedules yet.
 
 # Party form
 PartyFormTitleLabel: Title
