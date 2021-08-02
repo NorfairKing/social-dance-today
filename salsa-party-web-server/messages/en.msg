@@ -184,7 +184,7 @@ DuplicatePartyErrorNotYourParty: This is not your party to duplicate.
 
 # Schedule Form
 ScheduleFormTitleLabel: Title
-ScheduleFormDayLabel: Day
+ScheduleFormRecurrenceLabel: Recurrence
 ScheduleFormAddressLabel: Address
 ScheduleFormDescriptionLabel: Description
 ScheduleFormStartLabel: Start

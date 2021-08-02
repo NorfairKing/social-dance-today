@@ -100,7 +100,7 @@ newSchedulePage mResult = do
         Just (FormSuccess (form, mFileInfo)) -> addSchedule organiserId form mFileInfo
         _ -> do
           token <- genToken
-          withMFormResultNavBar mResult $(widgetFile "account/add-party")
+          withMFormResultNavBar mResult $(widgetFile "account/add-schedule")
 
 addSchedule ::
   Key Organiser ->
