@@ -116,6 +116,9 @@ recurrenceFormFields :: Maybe Recurrence -> Widget
 recurrenceFormFields mRecurrence = do
   timeLocale <- getTimeLocale
   let daysOfWeek = [Monday .. Sunday]
+  let dowSelected dow = case mRecurrence of
+        Just (WeeklyRecurrence dow') -> dow == dow'
+        _ -> False
   $(widgetFile "recurrence-form")
 
 getAccountSubmitScheduleR :: Handler Html

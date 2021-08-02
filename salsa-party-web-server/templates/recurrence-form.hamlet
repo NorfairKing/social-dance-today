@@ -7,7 +7,10 @@
     <div .select>
       <select name="recurrence-day-of-week">
         $forall dow <- daysOfWeek
-          <option .dow-option value=#{show dow} description=_{MsgRecurrenceWeeklyDescription $ formatTime timeLocale "%A" dow}>
+          <option .dow-option value=#{show dow} description=_{MsgRecurrenceWeeklyDescription $ formatTime timeLocale "%A" dow} :dowSelected dow:selected>
             #{formatTime timeLocale "%A" dow}
     <p #dow-help .help>
-      _{MsgRecurrenceWeeklyType}
+      $maybe recurrence <- mRecurrence
+        ^{recurrenceDescriptionWidget recurrence}
+      $nothing
+        _{MsgRecurrenceWeeklyType}
