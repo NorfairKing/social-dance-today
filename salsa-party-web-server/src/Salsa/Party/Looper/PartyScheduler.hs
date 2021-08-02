@@ -1,8 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TemplateHaskell #-}
 
 module Salsa.Party.Looper.PartyScheduler
   ( runPartyScheduler,
@@ -14,30 +12,16 @@ where
 
 import Conduit
 import Control.Monad
-import Control.Monad.Logger
 import Control.Monad.Reader
 import qualified Data.Conduit.Combinators as C
-import Data.Function
-import Data.Maybe
-import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.Lazy as LT
-import qualified Data.Text.Lazy.Builder as LTB
 import Data.Time
 import Database.Persist
 import Database.Persist.Sql
-import Lens.Micro
-import qualified Network.AWS as AWS
-import qualified Network.AWS.SES as SES
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation
-import Text.Blaze.Html.Renderer.Text (renderHtml)
-import Text.Hamlet
-import Text.Shakespeare.Text
-import Text.Show.Pretty (pPrint, ppShow)
-import Yesod
+import Text.Show.Pretty (pPrint)
 
-runPartyScheduler :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => m ()
+runPartyScheduler :: (MonadUnliftIO m, MonadReader App m) => m ()
 runPartyScheduler = do
   pool <- asks appConnectionPool
   let runDBHere func = runSqlPool func pool
@@ -53,7 +37,7 @@ data ScheduleDecision
   | ScheduleAParty Day
   deriving (Show, Eq)
 
-makeScheduleDecision :: (MonadUnliftIO m, MonadLoggerIO m) => Entity Schedule -> SqlPersistT m ScheduleDecision
+makeScheduleDecision :: MonadUnliftIO m => Entity Schedule -> SqlPersistT m ScheduleDecision
 makeScheduleDecision (Entity scheduleId Schedule {..}) = do
   -- The last-scheduled party of the same scheduler, or nothing if none has been scheduled yet.
   -- We assume that parties are scheduled in chronological order.

@@ -183,6 +183,15 @@ DuplicatePartyButton: Submit
 DuplicatePartyErrorNoOrganiser: You must set up an organiser profile in the account overview before you can duplicate a party.
 DuplicatePartyErrorNotYourParty: This is not your party to duplicate.
 
+# Cancel party
+CancelPartyErrorNotYourParty: This is not your party to cancel.
+
+# Un-Cancel party
+UnCancelPartyErrorNotYourParty: This is not your party to un-cancel.
+
+# Delete party
+DeletePartyErrorNotYourParty: This is not your party to delete.
+
 # Schedule Form
 ScheduleFormTitleLabel: Title
 ScheduleFormRecurrenceLabel: Recurrence
@@ -224,15 +233,6 @@ YourSchedulesEditScheduleButton: Edit
 YourSchedulesDeleteScheduleWarning: Are you sure you want to delete this party schedule? This cannot be undone. Note that parties that have already been scheduled will not be deleted.
 YourSchedulesDeleteScheduleButton: Delete
 ScheduleTitle title@Text: #{title}
-
-# Cancel party
-CancelPartyErrorNotYourParty: This is not your party to cancel.
-
-# Un-Cancel party
-UnCancelPartyErrorNotYourParty: This is not your party to un-cancel.
-
-# Delete party
-DeletePartyErrorNotYourParty: This is not your party to delete.
 
 # Unsubscribe Reminder 
 UnsubReminderTitle: Unsubscribed from reminder emails

@@ -22,7 +22,6 @@ spec =
       it (fp <> "has translations for every string") $ do
         translationsDir <- resolveDir' "messages"
         mainFile <- resolveFile translationsDir "en.msg"
-        allFiles <- snd <$> listDir translationsDir
         mainFileContents <- SB.readFile $ fromAbsFile mainFile
         case TE.decodeUtf8' mainFileContents of
           Left _ -> expectationFailure "main file did not contain valid utf8"
@@ -46,4 +45,4 @@ messagesIn contents =
         ':' : s -> s
         s -> s
       dropColumn = reverse . stripColumn . reverse
-   in map dropColumn $ filter (/= "#") firstWords
+   in map dropColumn $ filter (not . all (== '#')) firstWords

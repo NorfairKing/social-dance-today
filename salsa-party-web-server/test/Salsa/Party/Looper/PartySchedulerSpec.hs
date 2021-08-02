@@ -3,18 +3,13 @@
 module Salsa.Party.Looper.PartySchedulerSpec (spec) where
 
 import Data.Time
-import Data.UUID as UUID
-import Data.UUID.Typed as Typed
 import Database.Persist
 import Salsa.Party.DB
 import Salsa.Party.Looper.PartyScheduler
 import Salsa.Party.Web.Server.TestUtils
-import Test.QuickCheck
 import Test.Syd
 import Test.Syd.Persistent
 import Test.Syd.Validity
-import Test.Syd.Wai (managerSpec)
-import Yesod.Core
 
 spec :: Spec
 spec = do
@@ -36,7 +31,6 @@ spec = do
                 let recurrence = WeeklyRecurrence Friday
                     schedule = schedulePrototype {scheduleRecurrence = recurrence}
                 scheduleId <- insert schedule
-                today <- liftIO $ utctDay <$> getCurrentTime
                 let day = fromGregorian 2021 08 02
                 let party = partyPrototype {partyDay = day}
                 partyId <- insert party
