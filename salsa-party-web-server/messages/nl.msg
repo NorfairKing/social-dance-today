@@ -33,6 +33,7 @@ NavSubmitParty: Adverteer uw feest hier
 NavAccount: Account
 NavOrganiser: Organisatorprofiel
 NavParties: Mijn feesten
+NavSchedules: Mijn herhalende feesten
 NavLanguage: Taal
 NavAdmin: Beheerdersoverzicht
 NavSignUp: Registreren
@@ -84,6 +85,7 @@ OrganiserNoUpcomingParties: Geen komende feesten
 # Poster
 PosterAltFull title@Text day@String organiser@Text: Poster voor #{title} op #{day} door #{organiser}.
 PosterAltTitle title@Text day@String: Poster voor #{title} op #{day}
+PosterAltSchedule title@Text recurrenceDescription@Text organiser@Text: Poster voor #{title}, #{recurrenceDescription} door #{organiser}
 
 # Registration
 RegistrationTitle: Salsa Parties Today: Registreren
@@ -192,6 +194,20 @@ UnCancelPartyErrorNotYourParty: Dit is niet uw feest. U kan dit feest niet ontan
 
 # Delete party
 DeletePartyErrorNotYourParty: Dit is niet uw feest. U kan dit feest niet verwijderen.
+
+# Schedule Form
+ScheduleFormTitleLabel: Titel
+ScheduleFormRecurrenceLabel: Herhaling
+ScheduleFormAddressLabel: Address
+ScheduleFormDescriptionLabel: Beschrijving
+ScheduleFormStartLabel: Start
+ScheduleFormHomepageLabel: Website
+ScheduleFormPriceLabel: Prijs
+ScheduleFormPriceHelp: Schrijf GRATIS als het feest gratis is.
+ScheduleFormPosterLabel: Poster
+ScheduleFormPosterChooseInstruction: Kies een afbeelding
+ScheduleFormPosterNoPoster: Geen poster geselecteerd
+ScheduleFormBackButton: Terug
 
 # Unsubscribe Reminder 
 UnsubReminderTitle: Uitgeschreven
