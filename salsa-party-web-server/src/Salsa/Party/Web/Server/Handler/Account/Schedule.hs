@@ -5,6 +5,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Salsa.Party.Web.Server.Handler.Account.Schedule
   ( getAccountSchedulesR,
@@ -159,6 +160,7 @@ addSchedule organiserId AddScheduleForm {..} mFileInfo = do
   now <- liftIO getCurrentTime
   uuid <- nextRandomUUID
   Entity placeId _ <- lookupPlace addScheduleFormAddress
+  let AddScheduleForm _ _ _ _ _ _ _ = undefined
   scheduleId <-
     runDB $
       insert
@@ -292,6 +294,7 @@ editSchedule (Entity scheduleId schedule) form mFileInfo = do
   now <- liftIO getCurrentTime
   -- This place lookup relies on the caching for geocoding to be fast if nothing has changed.
   Entity placeId _ <- lookupPlace (editScheduleFormAddress form)
+  let EditScheduleForm _ _ _ _ _ _ _ = undefined
   let whenChanged :: (Eq a, PersistField a) => (Schedule -> a) -> (EditScheduleForm -> a) -> EntityField Schedule a -> Maybe (Update Schedule)
       whenChanged scheduleFunc formFunc field = do
         guard $ scheduleFunc schedule /= formFunc form

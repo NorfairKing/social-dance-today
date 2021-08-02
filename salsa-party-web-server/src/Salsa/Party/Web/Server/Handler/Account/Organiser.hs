@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Salsa.Party.Web.Server.Handler.Account.Organiser
   ( getAccountOrganiserR,
@@ -50,6 +51,7 @@ organiserFormPage mResult = do
       _ <- do
         uuid <- nextRandomUUID
         runDB $ do
+          let OrganiserForm _ _ = undefined
           Entity organiserId _ <-
             upsertBy
               (UniqueOrganiserUser userId)

@@ -4,6 +4,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Salsa.Party.Web.Server.Handler.Account.Party
   ( getAccountPartiesR,
@@ -130,6 +131,7 @@ addParty organiserId AddPartyForm {..} mFileInfo = do
   now <- liftIO getCurrentTime
   uuid <- nextRandomUUID
   Entity placeId _ <- lookupPlace addPartyFormAddress
+  let AddPartyForm _ _ _ _ _ _ _ _ = undefined
   partyId <-
     runDB $
       insert
@@ -281,6 +283,7 @@ editParty (Entity partyId party) form mFileInfo = do
   now <- liftIO getCurrentTime
   -- This place lookup relies on the caching for geocoding to be fast if nothing has changed.
   Entity placeId _ <- lookupPlace (editPartyFormAddress form)
+  let EditPartyForm _ _ _ _ _ _ _ = undefined
   let whenChanged :: (Eq a, PersistField a) => (Party -> a) -> (EditPartyForm -> a) -> EntityField Party a -> Maybe (Update Party)
       whenChanged partyFunc formFunc field = do
         guard $ partyFunc party /= formFunc form
