@@ -20,7 +20,7 @@
       <div .field>
         <label .label>
           _{MsgScheduleFormRecurrenceLabel}
-        ^{recurrenceFormFields}
+        ^{recurrenceFormFields Nothing}
 
       <div .field>
         <label .label>

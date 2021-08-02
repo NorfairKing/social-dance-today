@@ -112,8 +112,8 @@ recurrenceForm =
     postProcess typ dayOfWeek = case typ of
       "weekly" -> WeeklyRecurrence dayOfWeek
 
-recurrenceFormFields :: Widget
-recurrenceFormFields = do
+recurrenceFormFields :: Maybe Recurrence -> Widget
+recurrenceFormFields mRecurrence = do
   timeLocale <- getTimeLocale
   let daysOfWeek = [Monday .. Sunday]
   $(widgetFile "recurrence-form")

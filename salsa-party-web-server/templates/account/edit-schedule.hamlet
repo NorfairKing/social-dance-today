@@ -15,12 +15,13 @@
           <input .input
             type=text
             name="title"
+            value=#{scheduleTitle schedule}
             required>
 
       <div .field>
         <label .label>
           _{MsgScheduleFormRecurrenceLabel}
-        ^{recurrenceFormFields}
+        ^{recurrenceFormFields (Just (scheduleRecurrence schedule))}
 
       <div .field>
         <label .label>
@@ -28,6 +29,7 @@
         <div .control>
           <input .input
             type=text
+            value=#{placeQuery place}
             required
             name="address">
 
@@ -37,6 +39,7 @@
         <div .control>
           <textarea .textarea
             name="description">
+            #{fromMaybe "" (scheduleDescription schedule)}
 
       <div .field>
         <label .label>
@@ -44,6 +47,7 @@
         <div .control>
           <input .input
             type=time
+            value=#{maybe "" (formatTime defaultTimeLocale "%H:%M") (scheduleStart schedule)}
             name="start">
 
       <div .field>
@@ -52,6 +56,7 @@
         <div .control>
           <input .input
             type=url
+            value=#{fromMaybe "" (scheduleHomepage schedule)}
             name="homepage">
 
       <div .field>
@@ -60,6 +65,7 @@
         <div .control>
           <input .input
             type=text
+            value=#{fromMaybe "" (schedulePrice schedule)}
             name="price">
         <p .help>
           _{MsgScheduleFormPriceHelp}
@@ -81,6 +87,13 @@
           <figure #posterInput .py-3>
             <img .file-img .is-16by9 style="max-width: 640px; max-height: 360px;">
 
+
+      $maybe posterKey <- mPosterKey
+        <div .field>
+          <div .control>
+            <input .input name="poster-key" type="hidden" value=#{renderCASKey posterKey}>
+        ^{schedulePosterImageWidget schedule organiser posterKey}
+
       <div .field>
         <div .control>
           ^{token}
@@ -90,5 +103,5 @@
           <div .buttons>
             <button .button .is-dark type="submit">
               _{MsgSubmitScheduleButton}
-            <a .button href=@{AccountR AccountPartiesR}>
+            <a .button href=@{AccountR AccountSchedulesR}>
               _{MsgScheduleFormBackButton}
