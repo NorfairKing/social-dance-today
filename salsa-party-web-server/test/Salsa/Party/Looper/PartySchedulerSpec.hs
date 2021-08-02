@@ -28,13 +28,29 @@ spec = do
             case decision of
               ScheduleAParty _ -> pure ()
               _ -> liftIO $ expectationFailure $ "Should have decided to schedule a party, but decided this instead: " <> ppShow decision
-      it "decides not to send schedule a party when that party would be too far ahead" $ \pool ->
+      it "decides to schedule a party for the right day in this example case" $ \pool ->
         forAllValid $ \schedulePrototype ->
           forAllValid $ \schedulePartyPrototype ->
             forAllValid $ \partyPrototype ->
               runPersistentTest pool $ do
                 let recurrence = WeeklyRecurrence Friday
-                let schedule = schedulePrototype {scheduleRecurrence = recurrence}
+                    schedule = schedulePrototype {scheduleRecurrence = recurrence}
+                scheduleId <- insert schedule
+                today <- liftIO $ utctDay <$> getCurrentTime
+                let day = fromGregorian 2021 08 02
+                let party = partyPrototype {partyDay = day}
+                partyId <- insert party
+                let scheduleParty = schedulePartyPrototype {schedulePartySchedule = scheduleId, schedulePartyParty = partyId}
+                insert_ scheduleParty
+                decision <- makeScheduleDecision (Entity scheduleId schedule)
+                liftIO $ case decision of
+                  ScheduleAParty d -> d `shouldBe` fromGregorian 2021 08 06
+                  _ -> liftIO $ expectationFailure $ "Should have decided to schedule a party, but decided this instead: " <> ppShow decision
+      it "decides not to send schedule a party when that party would be too far ahead" $ \pool ->
+        forAllValid $ \schedule ->
+          forAllValid $ \schedulePartyPrototype ->
+            forAllValid $ \partyPrototype ->
+              runPersistentTest pool $ do
                 scheduleId <- insert schedule
                 today <- liftIO $ utctDay <$> getCurrentTime
                 let day = addDays (daysToScheduleAhead + 1) today
