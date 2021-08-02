@@ -146,10 +146,6 @@ YourPartiesUnCancelPartyButton: Un-Cancel
 YourPartiesDeletePartyWarning: Are you sure you want to delete this party? This cannot be undone.
 YourPartiesDeletePartyButton: Delete
 
-# Your schedules
-YourSchedulesTitle: Your party schedules
-YourSchedulesNoSchedules: You have not submitted any party schedules yet.
-
 # Party form
 PartyFormTitleLabel: Title
 PartyFormDayLabel: Day
@@ -185,6 +181,33 @@ DuplicatePartyTitle: Submit Party
 DuplicatePartyButton: Submit
 DuplicatePartyErrorNoOrganiser: You must set up an organiser profile in the account overview before you can duplicate a party.
 DuplicatePartyErrorNotYourParty: This is not your party to duplicate.
+
+# Schedule Form
+ScheduleFormTitleLabel: Title
+ScheduleFormDayLabel: Day
+ScheduleFormAddressLabel: Address
+ScheduleFormDescriptionLabel: Description
+ScheduleFormStartLabel: Start
+ScheduleFormHomepageLabel: Website
+ScheduleFormPriceLabel: Price
+ScheduleFormPriceHelp: Make sure to write FREE if the party is free.
+ScheduleFormPosterLabel: Poster
+ScheduleFormPosterChooseInstruction: Choose a poster image
+ScheduleFormPosterNoPoster: No poster selected
+ScheduleFormBackButton: Back
+
+# Submit Schedule
+SubmitScheduleTitle: Submit Schedule
+SubmitScheduleButton: Submit
+SubmitScheduleSuccess: Succesfully submitted party
+SubmitScheduleErrorUnverified: Your account needs to verified before you can submit parties.
+SubmitScheduleErrorNoOrganiser: You must set up an organiser profile in the account overview before you can submit a party.
+
+
+# Your schedules
+YourSchedulesTitle: Your party schedules
+YourSchedulesSubmitButton: Submit a party schedule
+YourSchedulesNoSchedules: You have not submitted any party schedules yet.
 
 # Cancel party
 CancelPartyErrorNotYourParty: This is not your party to cancel.

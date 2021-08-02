@@ -27,6 +27,8 @@
   /party/#EventUUID/un-cancel AccountPartyUnCancelR POST
 
   /schedules AccountSchedulesR GET
+  /submit-schedule AccountSubmitScheduleR GET POST
+  /schedule/#ScheduleUUID AccountScheduleR GET POST
 
   /delete AccountDeleteR POST
 

@@ -48,6 +48,10 @@ data P -- Phantom type anyway
 
 type EventUUID = UUID P
 
+data S -- Phantom type anyway
+
+type ScheduleUUID = UUID S
+
 data O -- Phantom type anyway
 
 type OrganiserUUID = UUID O
@@ -180,8 +184,25 @@ Image sql=image
 
 
 Schedule
+    uuid ScheduleUUID
+
     organiser OrganiserId
     recurrence Recurrence
+
+    title Text
+    description Text Maybe
+    start TimeOfDay Maybe
+    homepage Text Maybe
+    price Text Maybe default=NULL
+    cancelled Bool default=0 -- False
+
+    created UTCTime
+    modified UTCTime Maybe default=NULL
+
+    place PlaceId
+
+    UniqueScheduleUUID uuid !force
+
 
     deriving Show
     deriving Eq

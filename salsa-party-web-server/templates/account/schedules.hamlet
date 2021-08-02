@@ -3,6 +3,11 @@
     <h1 .title .is-3>
       _{MsgYourSchedulesTitle}
 
+    <p .content>
+      <a .button .is-dark href=@{AccountR AccountSubmitScheduleR}>
+        _{MsgYourSchedulesSubmitButton}
+
+
 <section .section>
   <div .container>
     $if null schedules
