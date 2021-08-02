@@ -197,8 +197,8 @@ ScheduleFormPosterNoPoster: No poster selected
 ScheduleFormBackButton: Back
 
 ## Recurrence
-ScheduleFormRecurrenceWeeklyType: Weekly
-ScheduleFormRecurrenceWeeklyDescription weekday@String: Every week on: #{weekday}
+RecurrenceWeeklyType: Weekly
+RecurrenceWeeklyDescription weekday@String: Every week on #{weekday}
 
 # Submit Schedule
 SubmitScheduleTitle: Submit Schedule
