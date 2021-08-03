@@ -10,6 +10,7 @@ pkgs.haskell.lib.buildStackProject {
     (import sources.niv { }).niv
     killall
     zlib
+    git
   ] ++ pre-commit.tools;
   shellHook = pre-commit.run.shellHook;
 }
