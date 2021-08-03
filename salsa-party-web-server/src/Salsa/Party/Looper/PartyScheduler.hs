@@ -32,7 +32,7 @@ runPartyScheduler = do
     runConduit $
       scheduleSource
         .| C.mapM (runDBHere . makeScheduleDecision)
-        .| scheduleDecisionSink
+        .| C.mapM_ handleScheduleDecision
 
 data ScheduleDecision
   = NextDayTooFarAhead Day
@@ -80,10 +80,10 @@ scheduleToPartyOn uuid now day Schedule {..} =
 daysToScheduleAhead :: Integer
 daysToScheduleAhead = 45
 
-scheduleDecisionSink :: (MonadUnliftIO m, MonadLogger m, MonadReader App m) => ConduitT ScheduleDecision Void m ()
-scheduleDecisionSink = awaitForever $ \case
+handleScheduleDecision :: (MonadUnliftIO m, MonadLogger m, MonadReader App m) => ScheduleDecision -> m ()
+handleScheduleDecision = \case
   NextDayTooFarAhead day -> logDebugN $ T.pack $ "Not scheduling a party because the next day would be too far ahead:" <> show day
-  ScheduleAParty scheduleId_ party mImageId -> lift $ do
+  ScheduleAParty scheduleId_ party mImageId -> do
     pool <- asks appConnectionPool
     let runDBHere func = runSqlPool func pool
     now <- liftIO getCurrentTime
