@@ -218,8 +218,8 @@ SubmitScheduleErrorUnverified: Your account needs to verified before you can sub
 SubmitScheduleErrorNoOrganiser: You must set up an organiser profile in the account overview before you can submit a party.
 
 # Edit Schedule
-EditScheduleTitle: Submit Schedule
-EditScheduleButton: Submit
+EditScheduleTitle: Edit Schedule
+EditScheduleButton: Save
 EditScheduleSuccess: Succesfully edited party
 EditScheduleErrorNoOrganiser: You must set up an organiser profile in the account overview before you can edit a party.
 EditScheduleErrorNotYourSchedule: This is not your party to edit.

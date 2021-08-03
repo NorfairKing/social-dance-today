@@ -34,6 +34,7 @@ NavSubmitParty: Bewirb deine Party hier
 NavAccount: Konto
 NavOrganiser: Veranstalterprofil
 NavParties: Meine Partys
+NavSchedules: Meine Partypläne
 NavLanguage: Sprache
 NavAdmin: Admin-Panel
 NavSignUp: Registrieren
@@ -86,6 +87,7 @@ OrganiserNoUpcomingParties: Keine bevorstehenden Parties
 # Poster
 PosterAltFull title@Text day@String organiser@Text: Bild für #{title} am #{day} organisiert durch #{organiser}
 PosterAltTitle title@Text day@String: Bild für #{title} am #{day}
+PosterAltSchedule title@Text recurrenceDescription@Text organiser@Text: Bild für #{title}, #{recurrenceDescription} durch #{organiser}
 
 # Registration
 RegistrationTitle: Salsa Parties Heute: Registrierung
@@ -140,7 +142,7 @@ OrganiserSaveSuccess: Veranstalterprofil erfolgreich gespeichert
 
 # Deine Parties
 YourPartiesTitle:  Ihre Parties
-YourPartiesSubmitButton:  Parties erstellen
+YourPartiesSubmitButton:  Party erstellen
 YourPartiesNoParties:  Sie haben noch keine Parties erstellt.
 YourPartiesEditPartyButton:  Bearbeiten
 YourPartiesPublicPartyButton:  Öffentliches Party-Profil
@@ -167,9 +169,10 @@ PartyFormBackButton:  Zurück
 # Submit Party
 SubmitPartyTitle:  Party erstellen
 SubmitPartyButton:  Speichern
-SubmitPartySuccess:  Erfolgreich erstellte Party
+SubmitPartySuccess:  Party erfolgreich erstellt
 SubmitPartyErrorUnverified:  Ihr Konto muss zuerst bestätigt werden, bevor Sie Parties erstellen können. 
 SubmitPartyErrorNoOrganiser:  Bevor Sie eine Party erstellen können, müssen Sie in der Kontoübersicht ein Veranstalterprofil anlegen.
+
 # Party bearbeiten
 EditPartyTitle:  Party bearbeiten 
 EditPartyButton:  Speichern
@@ -193,6 +196,50 @@ UnCancelPartyErrorNotYourParty: Die Absage dieser Party können Sie nicht Rückg
 
 # Delete party
 DeletePartyErrorNotYourParty: Sie können diese Party nicht löschen, da es nicht Ihre Party ist.
+
+
+# Schedule Form
+ScheduleFormTitleLabel: Partyplan erstellen
+ScheduleFormRecurrenceLabel: Wiederkehr
+ScheduleFormAddressLabel:  Adresse
+ScheduleFormDescriptionLabel: Beschreibung
+ScheduleFormStartLabel: Start
+ScheduleFormHomepageLabel: Webseite
+ScheduleFormPriceLabel: Preis
+ScheduleFormPriceHelp: Stellen Sie sicher, dass Sie KOSTENLOS schreiben, wenn die Party kostenlos ist.
+ScheduleFormPosterLabel: Bild
+ScheduleFormPosterChooseInstruction: Bild auswählen
+ScheduleFormPosterNoPoster: Kein Bild ausgewählt
+ScheduleFormBackButton: Zurück
+
+## Recurrence
+RecurrenceWeeklyType: wöchentlich
+RecurrenceWeeklyDescription weekday@String: jede Woche am #{weekday}
+
+# Submit Schedule
+SubmitScheduleTitle: Partyplan erstellen
+SubmitScheduleButton: Erstellen
+SubmitScheduleSuccess:  Partyplan erfolgreich erstellt
+SubmitScheduleErrorUnverified:  Ihr Konto muss zuerst bestätigt werden, bevor Sie Partypläne erstellen können. 
+SubmitScheduleErrorNoOrganiser:  Bevor Sie ein Partyplan erstellen können, müssen Sie in der Kontoübersicht ein Veranstalterprofil anlegen.
+
+# Edit Schedule
+EditScheduleTitle: Partyplan bearbeiten
+EditScheduleButton: Speichern
+EditScheduleSuccess: Partyplan erfolgreich gespeichert
+EditScheduleErrorNoOrganiser: Bevor Sie eine Party bearbeiten können, müssen Sie in der Kontoübersicht ein Veranstalterprofil einrichten.
+EditScheduleErrorNotYourSchedule: Diese Party können Sie nicht bearbeiten, da es nicht Ihre Party ist.
+
+# Your schedules
+YourSchedulesTitle: Ihre Partypläne
+YourSchedulesSubmitButton: Partyplan erstellen
+YourSchedulesNoSchedules: Sie haben noch keine Partypläne erstellt.
+YourSchedulesEditScheduleButton: Bearbeiten
+YourSchedulesDeleteScheduleWarning: Sind Sie sicher, dass Sie diese Party löschen wollen? Das kann nicht rückgängig gemacht werden. Bereits geplante Partys werden nicht gelöscht.
+YourSchedulesDeleteScheduleButton: löshen
+ScheduleTitle title@Text: #{title}
+
+
 
 # Unsubscribe Reminder
 UnsubReminderTitle: Abgemeldet
