@@ -130,6 +130,27 @@ driver.find_element_by_xpath('//a[contains(text(), "Public Party Profile")]').cl
 
 wait()
 
+# Cancel the party
+print("Cancelling the party")
+driver.find_element_by_xpath('//a[contains(text(), "My parties")]').click()
+driver.find_element_by_xpath(
+    '//button[contains(text(), "Cancel")]'
+).click()  # There's only one party so this should work.
+
+wait()
+
+# Delete the party
+print("Deleting the party")
+driver.find_element_by_xpath('//a[contains(text(), "My parties")]').click()
+driver.find_element_by_xpath(
+    '//button[contains(text(), "Delete")]'
+).click()  # There's only one party so this should work.
+WebDriverWait(driver, 10).until(EC.alert_is_present())
+driver.switch_to.alert.accept()
+driver.refresh()
+
+wait()
+
 # Submit a schedule
 print("Submitting a schedule")
 driver.find_element_by_xpath('//a[contains(text(), "My party schedules")]').click()
@@ -160,6 +181,18 @@ driver.find_element_by_name("description").send_keys(
 driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
 # Twice, just to make sure that editing without changing anything still doesn't crash.
 driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
+
+wait()
+
+# Delete the schedule
+print("Deleting the schedule")
+driver.find_element_by_xpath('//a[contains(text(), "My party schedules")]').click()
+driver.find_element_by_xpath(
+    '//button[contains(text(), "Delete")]'
+).click()  # There's only one party so this should work.
+WebDriverWait(driver, 10).until(EC.alert_is_present())
+driver.switch_to.alert.accept()
+driver.refresh()
 
 wait()
 
