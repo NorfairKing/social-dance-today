@@ -147,8 +147,8 @@ YourPartiesNoParties:  Sie haben noch keine Parties erstellt.
 YourPartiesEditPartyButton:  Bearbeiten
 YourPartiesPublicPartyButton:  Öffentliches Party-Profil
 YourPartiesDuplicatePartyButton:  Dublizieren
-YourPartiesCancelPartyButton:  Abbrechen
-YourPartiesUnCancelPartyButton:  Weiter
+YourPartiesCancelPartyButton:  Absagen
+YourPartiesUnCancelPartyButton:  Rückgängig machen
 YourPartiesDeletePartyWarning:  Sind Sie sicher, dass Sie diese Party löschen wollen? Das kann nicht rückgängig gemacht werden. 
 YourPartiesDeletePartyButton:  Löschen
 
