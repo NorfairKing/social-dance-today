@@ -180,3 +180,54 @@ spec = serverSpec $ do
                       testSubmitOrganiser organiser2Form_
                       testEditSchedule scheduleUuid_ editScheduleForm_ location
                       statusIs 403
+
+  describe "AccountScheduleDeleteR" $ do
+    it "can delete a schedule" $ \yc -> do
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \scheduleForm_ ->
+          forAllValid $ \location ->
+            withAnyLoggedInUser_ yc $ do
+              testSubmitOrganiser organiserForm_
+              scheduleId <-
+                testAddSchedule
+                  scheduleForm_
+                  location
+              get $ AccountR $ AccountScheduleR scheduleId
+              statusIs 200
+              request $ do
+                setMethod methodPost
+                setUrl $ AccountR $ AccountScheduleDeleteR scheduleId
+                addToken
+              statusIs 303
+              locationShouldBe $ AccountR AccountSchedulesR
+              _ <- followRedirect
+              statusIs 200
+              mSchedule <- testDB (DB.getBy (UniqueScheduleUUID scheduleId))
+              liftIO $ mSchedule `shouldBe` Nothing
+
+    it "cannot delete another user's schedule" $ \yc ->
+      forAllValid $ \testUser1 ->
+        forAllValid $ \testUser2 ->
+          forAllValid $ \organiserForm_ ->
+            forAllValid $ \scheduleForm_ ->
+              forAllValid $ \location -> runYesodClientM yc $ do
+                scheduleId <- asNewUser testUser1 $ do
+                  testSubmitOrganiser organiserForm_
+                  testAddSchedule scheduleForm_ location
+                asNewUser testUser2 $ do
+                  request $ do
+                    setMethod methodPost
+                    setUrl $ AccountR $ AccountScheduleDeleteR scheduleId
+                    addToken
+                  statusIs 403
+
+    it "cannot delete a nonexistent schedule" $ \yc ->
+      withAnyLoggedInUser_ yc $ do
+        get $ AccountR AccountOverviewR
+        statusIs 200
+        uuid <- nextRandomUUID
+        request $ do
+          setMethod methodPost
+          setUrl $ AccountR $ AccountScheduleDeleteR uuid
+          addToken
+        statusIs 404

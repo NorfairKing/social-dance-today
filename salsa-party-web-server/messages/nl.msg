@@ -237,6 +237,8 @@ YourSchedulesDeleteScheduleWarning: Weet u zeker dat u dit feest wilt verwijdere
 YourSchedulesDeleteScheduleButton: Verwijderen
 ScheduleTitle title@Text: #{title}
 
+# Delete schedule
+DeleteScheduleErrorNotYourSchedule: Dit is niet uw terugkerend feest. U kan dit terugkerend feest niet verwijderen.
 
 
 # Unsubscribe Reminder 

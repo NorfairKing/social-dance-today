@@ -239,6 +239,8 @@ YourSchedulesDeleteScheduleWarning: Sind Sie sicher, dass Sie diese Party lösch
 YourSchedulesDeleteScheduleButton: löshen
 ScheduleTitle title@Text: #{title}
 
+# Delete schedule
+DeleteScheduleErrorNotYourSchedule: Sie können diesen Partyplan nicht löschen, da es nicht Ihren Partyplan ist.
 
 
 # Unsubscribe Reminder

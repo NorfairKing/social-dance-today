@@ -15,6 +15,7 @@ module Salsa.Party.Web.Server.Handler.Account.Schedule
     EditScheduleForm (..),
     getAccountScheduleR,
     postAccountScheduleR,
+    postAccountScheduleDeleteR,
   )
 where
 
@@ -35,6 +36,7 @@ getAccountSchedulesR = do
       redirect $ AccountR AccountOrganiserR
     Just (Entity organiserId organiser) -> do
       schedules <- runDB $ getSchedulesOfOrganiser organiserId
+      token <- genToken
       withNavBar $(widgetFile "account/schedules")
 
 getSchedulesOfOrganiser :: MonadIO m => OrganiserId -> SqlPersistT m [(Entity Schedule, Entity Place, Maybe CASKey)]
@@ -354,3 +356,17 @@ editSchedule (Entity scheduleId schedule) form mFileInfo = do
 
   addMessageI "is-success" MsgEditScheduleSuccess
   redirect $ AccountR $ AccountScheduleR $ scheduleUuid schedule
+
+postAccountScheduleDeleteR :: ScheduleUUID -> Handler Html
+postAccountScheduleDeleteR scheduleUuid = do
+  mSchedule <- runDB $ getBy $ UniqueScheduleUUID scheduleUuid
+  case mSchedule of
+    Nothing -> notFound
+    Just (Entity scheduleId schedule) -> do
+      userId <- requireAuthId
+      mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
+      if Just (scheduleOrganiser schedule) == (entityKey <$> mOrganiser)
+        then do
+          runDB $ deleteScheduleCompletely scheduleId
+          redirect $ AccountR AccountSchedulesR
+        else permissionDeniedI MsgDeleteScheduleErrorNotYourSchedule

@@ -26,3 +26,10 @@
           <div .buttons>
             <a .button href=@{AccountR $ AccountScheduleR $ scheduleUuid schedule}>
               _{MsgYourSchedulesEditScheduleButton}
+            <form
+              method=post
+              action=@{AccountR $ AccountScheduleDeleteR $ scheduleUuid schedule}>
+              ^{token}
+              <button .button .is-danger type=submit
+                onclick="return confirm('_{MsgYourSchedulesDeleteScheduleWarning}');">
+                _{MsgYourSchedulesDeleteScheduleButton}

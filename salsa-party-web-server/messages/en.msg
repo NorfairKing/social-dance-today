@@ -233,6 +233,10 @@ YourSchedulesDeleteScheduleWarning: Are you sure you want to delete this party s
 YourSchedulesDeleteScheduleButton: Delete
 ScheduleTitle title@Text: #{title}
 
+# Delete schedule
+DeleteScheduleErrorNotYourSchedule: This is not your party schedule to delete.
+
+
 # Unsubscribe Reminder 
 UnsubReminderTitle: Unsubscribed from reminder emails
 UnsubReminderDescription: You have succesfully unsubscribed from reminder emails and revoked consent to receive any further reminder emails.
