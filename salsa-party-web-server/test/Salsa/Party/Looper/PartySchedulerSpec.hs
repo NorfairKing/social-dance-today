@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Salsa.Party.Looper.PartySchedulerSpec (spec) where
 
@@ -38,7 +39,15 @@ spec = do
                 insert_ scheduleParty
                 decision <- makeScheduleDecision (Entity scheduleId schedule)
                 liftIO $ case decision of
-                  ScheduleAParty d -> d `shouldBe` fromGregorian 2021 08 06
+                  ScheduleAParty Party {..} -> do
+                    partyDay `shouldBe` fromGregorian 2021 08 06
+                    partyTitle `shouldBe` scheduleTitle schedule
+                    partyDescription `shouldBe` scheduleDescription schedule
+                    partyOrganiser `shouldBe` scheduleOrganiser schedule
+                    partyStart `shouldBe` scheduleStart schedule
+                    partyHomepage `shouldBe` scheduleHomepage schedule
+                    partyPrice `shouldBe` schedulePrice schedule
+                    partyCancelled `shouldBe` False
                   _ -> liftIO $ expectationFailure $ "Should have decided to schedule a party, but decided this instead: " <> ppShow decision
       it "decides not to send schedule a party when that party would be too far ahead" $ \pool ->
         forAllValid $ \schedule ->
