@@ -130,6 +130,39 @@ driver.find_element_by_xpath('//a[contains(text(), "Public Party Profile")]').cl
 
 wait()
 
+# Submit a schedule
+print("Submitting a schedule")
+driver.find_element_by_xpath('//a[contains(text(), "My party schedules")]').click()
+driver.find_element_by_xpath('//a[contains(text(), "Submit a party schedule")]').click()
+driver.find_element_by_name("title").send_keys("Test Schedule")
+driver.find_element_by_xpath(
+    "//select[@name='recurrence-day-of-week']/option[text()='Friday']"
+).click()
+# The address must be something we definitely have in cache
+driver.find_element_by_name("address").send_keys("Zürich")
+driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
+# Twice, just to make sure that editing without changing anything at least doesn't crash.
+driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
+
+wait()
+
+# Edit the schedule
+print("Editing the schedule")
+driver.find_element_by_xpath('//a[contains(text(), "My party schedules")]').click()
+driver.find_element_by_xpath(
+    '//a[contains(text(), "Edit")]'
+).click()  # There's only one schedule so this should work.
+driver.find_element_by_name("title").clear()
+driver.find_element_by_name("title").send_keys("Test Schedule (Edited)")
+driver.find_element_by_name("description").send_keys(
+    "This is a Test\nDescription with\nnewlines."
+)
+driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
+# Twice, just to make sure that editing without changing anything still doesn't crash.
+driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
+
+wait()
+
 # Try to delete account
 print("Deleting account")
 driver.find_element_by_xpath('//a[contains(text(), "Account")]').click()
