@@ -19,7 +19,7 @@ spec =
       it (fp <> " has no more TODOs") $ do
         contents <- SB.readFile fp
         contents `shouldNotSatisfy` ("TODO" `SB.isInfixOf`)
-      it (fp <> "has translations for every string") $ do
+      it (fp <> " has translations for every string") $ do
         translationsDir <- resolveDir' "messages"
         mainFile <- resolveFile translationsDir "en.msg"
         mainFileContents <- SB.readFile $ fromAbsFile mainFile

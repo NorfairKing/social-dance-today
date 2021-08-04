@@ -1,0 +1,22 @@
+const data#{rawJS classIdent} = {
+  labels: #{labels},
+  datasets: #{datasets},
+};
+const config#{rawJS classIdent} = {
+  type: 'bar',
+  data: data#{rawJS classIdent},
+  options: {
+    responsive: true,
+    scales: {
+      x: {
+        stacked: true,
+      },
+      y: {
+        stacked: true
+      }
+    }
+  }
+};
+
+var ctx#{rawJS classIdent} = document.getElementById(#{classIdent});
+var myChart#{rawJS classIdent} = new Chart(ctx#{rawJS classIdent}, config#{rawJS classIdent});
