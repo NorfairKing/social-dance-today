@@ -126,7 +126,6 @@ adminPartiesPage filters sorters pageRoute pageNumber = do
   paginated <- runDB $ selectPaginated defaultPageSize filters sorters pageNumber
   today <- liftIO $ utctDay <$> getCurrentTime
   withNavBar $ do
-    timeLocale <- getTimeLocale
     setTitle "Salsa Parties Admin Parties"
     setDescription "Admin overview of the parties"
     $(widgetFile "admin/parties")
