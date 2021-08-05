@@ -16,8 +16,10 @@
         <tr>
           <th>
             Title
-          <th width=250px>
+          <th>
             Day
+          <th>
+            Created
           <th width=50px>
             Details
       <tbody>
@@ -28,9 +30,10 @@
                 CANCELLED: 
               #{partyTitle party}
             <td>
-              #{formatTime timeLocale "%F" $ partyDay party}
-              (_{autoDayMsg today $ partyDay party})
+              ^{formatAdminDay $ partyDay party}
             <td>
-              <a .button href=@{PartyR $ partyUuid party}>
+              ^{formatAdminTime $ partyCreated party}
+            <td>
+              <a .is-link href=@{PartyR $ partyUuid party}>
                 Details
 

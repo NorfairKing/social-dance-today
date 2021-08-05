@@ -246,16 +246,18 @@ defaultPageSize = 50
 
 formatAdminDay :: Day -> Widget
 formatAdminDay day = do
+  timeLocale <- getTimeLocale
   today <- liftIO $ utctDay <$> getCurrentTime
   [whamlet|
-    #{formatTime defaultTimeLocale "%F" day}
+    #{formatTime timeLocale "%F" day}
     (#{prettyDayAuto today day})
   |]
 
 formatAdminTime :: UTCTime -> Widget
 formatAdminTime time = do
+  timeLocale <- getTimeLocale
   now <- liftIO getCurrentTime
   [whamlet|
-    #{formatTime defaultTimeLocale "%F %H:%M" time}
+    #{formatTime timeLocale "%F %H:%M" time}
     (#{prettyTimeAuto now time})
   |]
