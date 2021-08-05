@@ -140,25 +140,6 @@ instance YesodPersist App where
     pool <- getsYesod appConnectionPool
     runSqlPool func pool
 
-instance YesodAuth App where
-  type AuthId App = UserId
-  loginDest _ = AccountR AccountOverviewR
-  logoutDest _ = HomeR
-  authenticate Creds {..} =
-    let byEmail = do
-          mUser <- liftHandler $ runDB $ getBy (UniqueUserEmailAddress credsIdent)
-          pure $ case mUser of
-            Nothing -> UserError $ IdentifierNotFound credsIdent
-            Just (Entity userId _) -> Authenticated userId
-     in case credsPlugin of
-          "impersonation" -> byEmail
-          "salsa" -> byEmail
-          _ -> pure $ ServerError "Unknown auth plugin"
-  onLogin = addMessageI "is-success" NowLoggedIn
-  authPlugins _ = [salsaAuthPlugin]
-
-instance YesodAuthPersist App
-
 type PageNumber = Int
 
 withMFormResultNavBar :: Maybe (FormResult a) -> Widget -> Handler Html

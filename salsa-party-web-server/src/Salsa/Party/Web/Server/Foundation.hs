@@ -164,16 +164,6 @@ instance YesodAuthPersist App
 getReloadR :: Handler ()
 getReloadR = getAutoReloadR
 
-genToken :: MonadHandler m => m Html
-genToken = do
-  alreadyExpired
-  req <- getRequest
-  let tokenKey = defaultCsrfParamName
-  pure $
-    case reqToken req of
-      Nothing -> mempty
-      Just n -> [shamlet|<input type=hidden name=#{tokenKey} value=#{n}>|]
-
 withMFormResultNavBar :: Maybe (FormResult a) -> Widget -> Handler Html
 withMFormResultNavBar = maybe withNavBar withFormResultNavBar
 

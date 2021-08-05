@@ -13,59 +13,55 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 
+-- We use a lot of type-class constraints here just to be able to put it in a separate module
 module Salsa.Party.Web.Server.Foundation.Auth where
 
-import Control.Applicative
 import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
 import Control.Retry
-import Data.FileEmbed
-import Data.Fixed
 import Data.Function
-import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LTB
 import Data.Time
-import Data.Validity
 import Data.Validity.Text ()
 import Data.Validity.Time ()
-import qualified Database.Esqueleto as E
 import Database.Persist.Sql
 import GHC.Generics (Generic)
 import Lens.Micro
 import qualified Network.AWS as AWS
 import qualified Network.AWS.SES as SES
 import Network.HTTP.Client.Retry
-import Path
 import Salsa.Party.DB
-import Salsa.Party.OptParse
-import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.Foundation.App
+import Salsa.Party.Web.Server.Foundation.Auth.Routes
 import Salsa.Party.Web.Server.Foundation.I18N.Messages
 import Salsa.Party.Web.Server.Foundation.NavBar
 import Salsa.Party.Web.Server.Foundation.Yesod.Data
-import Salsa.Party.Web.Server.Poster
-import Salsa.Party.Web.Server.Static
 import Salsa.Party.Web.Server.Widget
 import System.Random
 import Text.Blaze.Html.Renderer.Text (renderHtml)
-import Text.Blaze.Html5 ((!))
-import qualified Text.Blaze.Html5 as H
-import qualified Text.Blaze.Html5.Attributes as HA
 import Text.Hamlet
-import Text.Julius
 import Text.Shakespeare.Text
 import Text.Show.Pretty (ppShow)
 import Yesod
 import Yesod.Auth
 import Yesod.Auth.Message
-import Yesod.AutoReload
-import Yesod.EmbeddedStatic (EmbeddedStatic)
 
-salsaAuthPlugin :: AuthPlugin App
+salsaAuthPlugin ::
+  ( app ~ App,
+    YesodAuth app,
+    AuthId app ~ UserId,
+    YesodPersist app,
+    YesodAuthPersist app,
+    AuthEntity app ~ User,
+    BaseBackend (YesodPersistBackend app) ~ SqlBackend,
+    PersistUniqueRead (YesodPersistBackend app),
+    PersistStoreWrite (YesodPersistBackend app)
+  ) =>
+  AuthPlugin app
 salsaAuthPlugin = AuthPlugin salsaAuthPluginName dispatch salsaLoginHandler
   where
     dispatch "GET" ["register"] = getRegisterR >>= sendResponse
@@ -75,13 +71,14 @@ salsaAuthPlugin = AuthPlugin salsaAuthPluginName dispatch salsaLoginHandler
     dispatch "GET" ["verify", userEmailAddress, verificationKey] = getVerifyR userEmailAddress verificationKey >>= sendResponse
     dispatch _ _ = notFound
 
-salsaAuthPluginName :: Text
-salsaAuthPluginName = "salsa"
-
-registerR :: Route Auth
-registerR = PluginR salsaAuthPluginName ["register"]
-
-getRegisterR :: AuthHandler App Html
+getRegisterR ::
+  ( app ~ App,
+    YesodAuth app,
+    AuthId app ~ UserId,
+    YesodAuthPersist app,
+    AuthEntity app ~ User
+  ) =>
+  AuthHandler app Html
 getRegisterR = do
   messages <- getMessages
   token <- genToken
@@ -98,14 +95,26 @@ data RegisterForm = RegisterForm
   }
   deriving (Show, Generic)
 
-registerForm :: FormInput m RegisterForm
+registerForm ::
+  ( MonadHandler m,
+    RenderMessage (HandlerSite m) FormMessage
+  ) =>
+  FormInput m RegisterForm
 registerForm =
   RegisterForm
     <$> ireq emailField "email-address"
     <*> (mkPassword <$> ireq passwordField "passphrase")
     <*> (mkPassword <$> ireq passwordField "passphrase-confirm")
 
-postRegisterR :: AuthHandler App TypedContent
+postRegisterR ::
+  ( app ~ App,
+    YesodAuth app,
+    YesodPersist app,
+    BaseBackend (YesodPersistBackend app) ~ SqlBackend,
+    PersistUniqueRead (YesodPersistBackend app),
+    PersistStoreWrite (YesodPersistBackend app)
+  ) =>
+  AuthHandler app TypedContent
 postRegisterR = liftHandler $ do
   RegisterForm {..} <- runInputPost registerForm
   mUser <- runDB $ getBy (UniqueUserEmailAddress registerFormEmailAddress)
@@ -133,7 +142,10 @@ postRegisterR = liftHandler $ do
           addMessageI "is-danger" PassMismatch
           redirect $ AuthR registerR
 
-salsaLoginHandler :: (Route Auth -> Route m) -> WidgetFor m ()
+salsaLoginHandler ::
+  (app ~ App) =>
+  (Route Auth -> Route app) ->
+  WidgetFor app ()
 salsaLoginHandler _toParentRoute = do
   messages <- getMessages
   token <- genToken
@@ -147,13 +159,24 @@ data LoginForm = LoginForm
   }
   deriving (Show, Generic)
 
-loginForm :: FormInput (HandlerFor App) LoginForm
+loginForm ::
+  ( MonadHandler m,
+    RenderMessage (HandlerSite m) FormMessage
+  ) =>
+  FormInput m LoginForm
 loginForm =
   LoginForm
     <$> ireq emailField "email-address"
     <*> (mkPassword <$> ireq passwordField "passphrase")
 
-postLoginR :: AuthHandler App TypedContent
+postLoginR ::
+  ( app ~ App,
+    YesodAuth app,
+    YesodPersist app,
+    BaseBackend (YesodPersistBackend app) ~ SqlBackend,
+    PersistUniqueRead (YesodPersistBackend app)
+  ) =>
+  AuthHandler app TypedContent
 postLoginR = do
   LoginForm {..} <- liftHandler $ runInputPost loginForm
   mUser <- liftHandler $ runDB $ getBy (UniqueUserEmailAddress loginFormEmailAddress)
@@ -165,10 +188,16 @@ postLoginR = do
         PasswordCheckSuccess -> setCredsRedirect Creds {credsPlugin = salsaAuthPluginName, credsIdent = loginFormEmailAddress, credsExtra = []}
         PasswordCheckFail -> loginFail
 
-resendVerificationEmailR :: Route Auth
-resendVerificationEmailR = PluginR salsaAuthPluginName ["resend-verification-email"]
-
-postResendVerificationEmailR :: AuthHandler App TypedContent
+postResendVerificationEmailR ::
+  ( app ~ App,
+    YesodAuth app,
+    AuthId app ~ UserId,
+    YesodAuthPersist app,
+    AuthEntity app ~ User,
+    RenderMessage app AppMessage,
+    RedirectUrl app (Route App)
+  ) =>
+  AuthHandler app TypedContent
 postResendVerificationEmailR = do
   Entity _ User {..} <- requireAuth
   case userVerificationKey of
@@ -176,7 +205,14 @@ postResendVerificationEmailR = do
     Just verificationKey -> liftHandler $ sendVerificationEmail userEmailAddress verificationKey
   redirect $ AccountR AccountOverviewR
 
-sendVerificationEmail :: Text -> Text -> HandlerFor App ()
+sendVerificationEmail ::
+  ( app ~ App,
+    YesodAuth app,
+    RenderMessage app AppMessage
+  ) =>
+  Text ->
+  Text ->
+  HandlerFor app ()
 sendVerificationEmail userEmailAddress verificationKey = do
   shouldSendEmail <- getsYesod appSendEmails
   mSendAddress <- getsYesod appSendAddress
@@ -216,7 +252,12 @@ sendVerificationEmail userEmailAddress verificationKey = do
             addMessageI "is-danger" MsgVerificationEmailFailure
       else logInfoN $ "Not sending verification email (because sendEmail is turned of), to address: " <> userEmailAddress
 
-runAWS :: (MonadUnliftIO m, MonadLoggerIO m) => AWS.AWS a -> m (Either AWS.Error a)
+runAWS ::
+  ( MonadUnliftIO m,
+    MonadLoggerIO m
+  ) =>
+  AWS.AWS a ->
+  m (Either AWS.Error a)
 runAWS func = do
   logger <- mkAwsLogger
   awsEnv <- liftIO $ AWS.newEnv AWS.Discover
@@ -248,10 +289,17 @@ mkAwsLogger = do
          in logFunc defaultLoc "aws-client" ourLevel $ toLogStr builder
   pure logger
 
-verifyR :: Text -> Text -> Route Auth
-verifyR userEmailAddress verificationKey = PluginR salsaAuthPluginName ["verify", userEmailAddress, verificationKey]
-
-getVerifyR :: Text -> Text -> AuthHandler App Html
+getVerifyR ::
+  ( app ~ App,
+    YesodAuth app,
+    YesodPersist app,
+    BaseBackend (YesodPersistBackend app) ~ SqlBackend,
+    PersistUniqueRead (YesodPersistBackend app),
+    PersistStoreWrite (YesodPersistBackend app)
+  ) =>
+  Text ->
+  Text ->
+  AuthHandler app Html
 getVerifyR emailAddress verificationKey = liftHandler $ do
   runDB $ do
     mUser <- getBy (UniqueUserEmailAddress emailAddress)
