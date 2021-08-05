@@ -28,6 +28,7 @@ spec = do
             let organiserReminderEntity = Entity organiserReminderId organiserReminder
             decision <- makeOrganiserReminderDecision organiserReminderEntity
             liftIO $ decision `shouldBe` NoReminderConsent
+
       it "decides not to send a reminder if another reminder has been sent recently" $ \pool ->
         forAllValid $ \userPrototype ->
           forAllValid $ \organiserPrototype ->
@@ -49,19 +50,23 @@ spec = do
                   let organiserReminderEntity = Entity organiserReminderId organiserReminder
                   decision <- makeOrganiserReminderDecision organiserReminderEntity
                   liftIO $ decision `shouldBe` SentReminderTooRecentlyAlready tooRecently
+
       it "decides not to send a reminder if the organiser has recently organised a party" $ \pool ->
-        forAllValid $ \userPrototype ->
+        forAllValid $ \user ->
           forAllValid $ \organiserPrototype ->
             forAllValid $ \organiserReminderPrototype ->
               forAllValid $ \partyPrototype ->
-                forAll (genValid `suchThat` (< reminderInterval)) $ \notEnoughTime ->
+                forAll (genValid `suchThat` (< gracePeriodAfterParty)) $ \notEnoughDays ->
                   runPersistentTest pool $ do
-                    let user = userPrototype {userVerificationKey = Nothing}
                     userId <- insert user
                     organiserId <- insert $ organiserPrototype {organiserUser = userId}
                     now <- liftIO getCurrentTime
-                    let UTCTime tooRecentDay _ = addUTCTime (- notEnoughTime) now
-                    insert_ $ partyPrototype {partyOrganiser = organiserId, partyDay = tooRecentDay}
+                    let tooRecentDay = addDays (- notEnoughDays) (utctDay now)
+                    insert_ $
+                      partyPrototype
+                        { partyOrganiser = organiserId,
+                          partyDay = tooRecentDay
+                        }
                     let organiserReminder =
                           organiserReminderPrototype
                             { organiserReminderConsent = True,
@@ -72,6 +77,7 @@ spec = do
                     let organiserReminderEntity = Entity organiserReminderId organiserReminder
                     decision <- makeOrganiserReminderDecision organiserReminderEntity
                     liftIO $ decision `shouldBe` PartyOrganisedTooRecently tooRecentDay
+
       it "decides not to send a reminder to an unverified email address" $ \pool ->
         forAllValid $ \userPrototype ->
           forAllValid $ \verificationKey ->
@@ -91,29 +97,55 @@ spec = do
                   let organiserReminderEntity = Entity organiserReminderId organiserReminder
                   decision <- makeOrganiserReminderDecision organiserReminderEntity
                   liftIO $ decision `shouldBe` UserEmailNotVerified userId (userEmailAddress user)
+
+      it "decides not to send a reminder to a user before the grace period ends" $ \pool ->
+        forAll (genValid `suchThat` (< gracePeriodAfterRegistration)) $ \notLongEnough ->
+          forAllValid $ \userPrototype ->
+            forAllValid $ \organiserPrototype ->
+              forAllValid $ \organiserReminderPrototype ->
+                runPersistentTest pool $ do
+                  now <- liftIO getCurrentTime
+                  let created = addUTCTime (- notLongEnough) now
+                  let user = userPrototype {userCreated = created, userVerificationKey = Nothing}
+                  userId <- insert user
+                  organiserId <- insert $ organiserPrototype {organiserUser = userId}
+                  let organiserReminder =
+                        organiserReminderPrototype
+                          { organiserReminderConsent = True,
+                            organiserReminderOrganiser = organiserId,
+                            organiserReminderLast = Nothing
+                          }
+                  organiserReminderId <- insert organiserReminder
+                  let organiserReminderEntity = Entity organiserReminderId organiserReminder
+                  decision <- makeOrganiserReminderDecision organiserReminderEntity
+                  liftIO $ decision `shouldBe` UserTooNew userId created
+
       it "decides to send a reminder in this example case" $ \pool ->
-        forAllValid $ \userPrototype ->
-          forAllValid $ \organiserPrototype ->
-            forAllValid $ \organiserReminderPrototype ->
-              runPersistentTest pool $ do
-                let user = userPrototype {userVerificationKey = Nothing}
-                userId <- insert user
-                organiserId <- insert $ organiserPrototype {organiserUser = userId}
-                let organiserReminder =
-                      organiserReminderPrototype
-                        { organiserReminderConsent = True,
-                          organiserReminderOrganiser = organiserId,
-                          organiserReminderLast = Nothing
-                        }
-                organiserReminderId <- insert organiserReminder
-                let organiserReminderEntity = Entity organiserReminderId organiserReminder
-                decision <- makeOrganiserReminderDecision organiserReminderEntity
-                liftIO $
-                  decision
-                    `shouldBe` ShouldSendReminder
-                      organiserReminderId
-                      (userEmailAddress user)
-                      (organiserReminderSecret organiserReminder)
+        forAll (genValid `suchThat` (\dt -> dt > gracePeriodAfterRegistration && dt < 10 * gracePeriodAfterRegistration)) $ \longEnough ->
+          forAllValid $ \userPrototype ->
+            forAllValid $ \organiserPrototype ->
+              forAllValid $ \organiserReminderPrototype ->
+                runPersistentTest pool $ do
+                  now <- liftIO getCurrentTime
+                  let created = addUTCTime (- longEnough) now
+                  let user = userPrototype {userCreated = created, userVerificationKey = Nothing}
+                  userId <- insert user
+                  organiserId <- insert $ organiserPrototype {organiserUser = userId}
+                  let organiserReminder =
+                        organiserReminderPrototype
+                          { organiserReminderConsent = True,
+                            organiserReminderOrganiser = organiserId,
+                            organiserReminderLast = Nothing
+                          }
+                  organiserReminderId <- insert organiserReminder
+                  let organiserReminderEntity = Entity organiserReminderId organiserReminder
+                  decision <- makeOrganiserReminderDecision organiserReminderEntity
+                  liftIO $
+                    decision
+                      `shouldBe` ShouldSendReminder
+                        organiserReminderId
+                        (userEmailAddress user)
+                        (organiserReminderSecret organiserReminder)
 
   managerSpec . setupAroundWith' (\man () -> serverSetupFunc man) $ do
     let secret = Typed.UUID $ UUID.fromWords 10 20 30 40
