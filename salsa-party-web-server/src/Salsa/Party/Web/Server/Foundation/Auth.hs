@@ -13,13 +13,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 
-module Salsa.Party.Web.Server.Foundation
-  ( module Salsa.Party.Web.Server.Foundation,
-    module Salsa.Party.Web.Server.Foundation.I18N,
-    module Salsa.Party.Web.Server.Foundation.Yesod,
-    module Salsa.Party.Web.Server.Foundation.App,
-  )
-where
+module Salsa.Party.Web.Server.Foundation.Auth where
 
 import Control.Applicative
 import Control.Monad
@@ -50,8 +44,9 @@ import Salsa.Party.DB
 import Salsa.Party.OptParse
 import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.Foundation.App
-import Salsa.Party.Web.Server.Foundation.I18N
-import Salsa.Party.Web.Server.Foundation.Yesod
+import Salsa.Party.Web.Server.Foundation.I18N.Messages
+import Salsa.Party.Web.Server.Foundation.NavBar
+import Salsa.Party.Web.Server.Foundation.Yesod.Data
 import Salsa.Party.Web.Server.Poster
 import Salsa.Party.Web.Server.Static
 import Salsa.Party.Web.Server.Widget
@@ -69,133 +64,6 @@ import Yesod.Auth
 import Yesod.Auth.Message
 import Yesod.AutoReload
 import Yesod.EmbeddedStatic (EmbeddedStatic)
-
-mkYesodData "App" $(makeRelativeToProject "routes.txt" >>= parseRoutesFile)
-
-instance Yesod App where
-  approot = guessApprootOr $ ApprootMaster $ fromMaybe "" . appRoot
-  defaultLayout widget = do
-    app <- getYesod
-    messages <- getMessages
-    lang <- supportedLanguageAbbreviation <$> getFirstMatchingSupportedLanguage
-    let withAutoReload =
-          if development
-            then (<> autoReloadWidgetFor ReloadR)
-            else id
-    currentRoute <- getCurrentRoute
-    let withSentry =
-          case appSentrySettings app of
-            Nothing -> id
-            Just sentrySettings -> case currentRoute of
-              Just (AdminR _) -> id
-              _ -> (<> sentryWidget sentrySettings)
-    let body = withSentry $ withAutoReload $(widgetFile "default-body")
-    pageContent <- widgetToPageContent body
-    withUrlRenderer $(hamletFile "templates/default-page.hamlet")
-
-  makeSessionBackend a = Just <$> defaultClientSessionBackend (60 * 24 * 365 * 10) (fromAbsFile (appSessionKeyFile a))
-
-  shouldLogIO app _ ll = pure $ ll >= appLogLevel app
-
-  maximumContentLengthIO _ route = pure $ case route of
-    Just (AccountR AccountSubmitPartyR) -> Nothing -- No limit on the images.
-    _ -> Just $ 2 * 1024 * 1024 -- 2 megabytes
-
-  authRoute _ = Just $ AuthR LoginR
-
-  errorHandler NotFound = fmap toTypedContent $
-    withNavBar $ do
-      setTitleI MsgNotFound
-      $(widgetFile "error/404")
-  errorHandler route = defaultErrorHandler route
-
-  isAuthorized route _ =
-    -- List each route that a user can access without login
-    -- so we don't accidentally authorize anything.
-    case route of
-      AccountR _ -> do
-        -- Has to be logged-in
-        mAuthId <- maybeAuthId
-        case mAuthId of
-          Nothing -> pure AuthenticationRequired
-          Just _ -> pure Authorized
-      AdminR _ -> do
-        -- Has to be admin
-        mAuthId <- maybeAuth
-        case mAuthId of
-          Nothing -> notFound
-          Just (Entity _ u) -> do
-            mAdmin <- getsYesod appAdmin
-            if Just (userEmailAddress u) == mAdmin
-              then pure Authorized
-              else notFound
-      _ -> pure Authorized
-
-sentryWidget :: SentrySettings -> Widget
-sentryWidget SentrySettings {..} = do
-  addScript $ StaticR sentry_js
-  $(widgetFile "sentry")
-
-instance YesodPersist App where
-  type YesodPersistBackend App = SqlBackend
-  runDB func = do
-    pool <- getsYesod appConnectionPool
-    runSqlPool func pool
-
-instance YesodAuth App where
-  type AuthId App = UserId
-  loginDest _ = AccountR AccountOverviewR
-  logoutDest _ = HomeR
-  authenticate Creds {..} =
-    let byEmail = do
-          mUser <- liftHandler $ runDB $ getBy (UniqueUserEmailAddress credsIdent)
-          pure $ case mUser of
-            Nothing -> UserError $ IdentifierNotFound credsIdent
-            Just (Entity userId _) -> Authenticated userId
-     in case credsPlugin of
-          "impersonation" -> byEmail
-          "salsa" -> byEmail
-          _ -> pure $ ServerError "Unknown auth plugin"
-  onLogin = addMessageI "is-success" NowLoggedIn
-  authPlugins _ = [salsaAuthPlugin]
-
-instance YesodAuthPersist App
-
-getReloadR :: Handler ()
-getReloadR = getAutoReloadR
-
-genToken :: MonadHandler m => m Html
-genToken = do
-  alreadyExpired
-  req <- getRequest
-  let tokenKey = defaultCsrfParamName
-  pure $
-    case reqToken req of
-      Nothing -> mempty
-      Just n -> [shamlet|<input type=hidden name=#{tokenKey} value=#{n}>|]
-
-withMFormResultNavBar :: Maybe (FormResult a) -> Widget -> Handler Html
-withMFormResultNavBar = maybe withNavBar withFormResultNavBar
-
-withFormResultNavBar :: FormResult a -> Widget -> Handler Html
-withFormResultNavBar fr w =
-  case fr of
-    FormSuccess _ -> withNavBar w
-    FormFailure ts -> withFormFailureNavBar ts w
-    FormMissing -> withFormFailureNavBar ["Missing data"] w
-
-withNavBar :: Widget -> Handler Html
-withNavBar = withFormFailureNavBar []
-
-withFormFailureNavBar :: [Text] -> Widget -> Handler Html
-withFormFailureNavBar errorMessages body = do
-  mAuth <- maybeAuth
-  mAdmin <- getsYesod appAdmin
-  let isAdmin = case mAuth of
-        Nothing -> False
-        Just (Entity _ user) -> Just (userEmailAddress user) == mAdmin
-  lang <- getFirstMatchingSupportedLanguage
-  defaultLayout $(widgetFile "with-nav-bar")
 
 salsaAuthPlugin :: AuthPlugin App
 salsaAuthPlugin = AuthPlugin salsaAuthPluginName dispatch salsaLoginHandler
@@ -230,7 +98,7 @@ data RegisterForm = RegisterForm
   }
   deriving (Show, Generic)
 
-registerForm :: FormInput Handler RegisterForm
+registerForm :: FormInput m RegisterForm
 registerForm =
   RegisterForm
     <$> ireq emailField "email-address"
@@ -265,10 +133,7 @@ postRegisterR = liftHandler $ do
           addMessageI "is-danger" PassMismatch
           redirect $ AuthR registerR
 
-loginR :: Route Auth
-loginR = PluginR salsaAuthPluginName ["login"]
-
-salsaLoginHandler :: (Route Auth -> Route App) -> Widget
+salsaLoginHandler :: (Route Auth -> Route m) -> WidgetFor m ()
 salsaLoginHandler _toParentRoute = do
   messages <- getMessages
   token <- genToken
@@ -282,7 +147,7 @@ data LoginForm = LoginForm
   }
   deriving (Show, Generic)
 
-loginForm :: FormInput Handler LoginForm
+loginForm :: FormInput (HandlerFor App) LoginForm
 loginForm =
   LoginForm
     <$> ireq emailField "email-address"
@@ -311,7 +176,7 @@ postResendVerificationEmailR = do
     Just verificationKey -> liftHandler $ sendVerificationEmail userEmailAddress verificationKey
   redirect $ AccountR AccountOverviewR
 
-sendVerificationEmail :: Text -> Text -> Handler ()
+sendVerificationEmail :: Text -> Text -> HandlerFor App ()
 sendVerificationEmail userEmailAddress verificationKey = do
   shouldSendEmail <- getsYesod appSendEmails
   mSendAddress <- getsYesod appSendAddress
@@ -399,110 +264,3 @@ getVerifyR emailAddress verificationKey = liftHandler $ do
           addMessageI "is-success" EmailVerified
           update userId [UserVerificationKey =. Nothing]
   redirect $ AccountR AccountOverviewR
-
-getFaviconR :: Handler TypedContent
-getFaviconR = redirect $ StaticR favicon_ico
-
-data Coordinates = Coordinates
-  { coordinatesLat :: !Nano,
-    coordinatesLon :: !Nano
-  }
-  deriving (Show, Eq, Generic)
-
-instance Validity Coordinates
-
-instance Validity Textarea where
-  validate = validate . unTextarea
-
--- This could potentially be dangerous if a type is read than written
-instance PathPiece (Fixed a) where
-  fromPathPiece = fmap MkFixed . fromPathPiece
-  toPathPiece (MkFixed i) = toPathPiece i
-
-placeCoordinates :: Place -> Coordinates
-placeCoordinates Place {..} = Coordinates {coordinatesLat = placeLat, coordinatesLon = placeLon}
-
-insertPlace_ :: MonadIO m => Text -> Coordinates -> SqlPersistT m ()
-insertPlace_ address coordinates = void $ insertPlace address coordinates
-
-insertPlace :: MonadIO m => Text -> Coordinates -> SqlPersistT m (Entity Place)
-insertPlace address Coordinates {..} =
-  upsertBy
-    (UniquePlaceQuery address)
-    ( Place
-        { placeLat = coordinatesLat,
-          placeLon = coordinatesLon,
-          placeQuery = address
-        }
-    )
-    [ PlaceLat =. coordinatesLat,
-      PlaceLon =. coordinatesLon
-    ]
-
-getPosterForParty :: MonadIO m => PartyId -> SqlPersistT m (Maybe CASKey)
-getPosterForParty partyId = do
-  keys <- E.select $
-    E.from $ \(partyPoster `E.InnerJoin` image) -> do
-      E.on (partyPoster E.^. PartyPosterImage E.==. image E.^. ImageId)
-      E.where_ (partyPoster E.^. PartyPosterParty E.==. E.val partyId)
-      pure (image E.^. ImageKey)
-  pure $ E.unValue <$> listToMaybe keys
-
-getPosterForSchedule :: MonadIO m => ScheduleId -> SqlPersistT m (Maybe CASKey)
-getPosterForSchedule scheduleId = do
-  keys <- E.select $
-    E.from $ \(schedulePoster `E.InnerJoin` image) -> do
-      E.on (schedulePoster E.^. SchedulePosterImage E.==. image E.^. ImageId)
-      E.where_ (schedulePoster E.^. SchedulePosterSchedule E.==. E.val scheduleId)
-      pure (image E.^. ImageKey)
-  pure $ E.unValue <$> listToMaybe keys
-
-getPosterForExternalEvent :: MonadIO m => ExternalEventId -> SqlPersistT m (Maybe CASKey)
-getPosterForExternalEvent externalEventId = do
-  keys <- E.select $
-    E.from $ \(externalEventPoster `E.InnerJoin` image) -> do
-      E.on (externalEventPoster E.^. ExternalEventPosterImage E.==. image E.^. ImageId)
-      E.where_ (externalEventPoster E.^. ExternalEventPosterExternalEvent E.==. E.val externalEventId)
-      pure (image E.^. ImageKey)
-  pure $ E.unValue <$> listToMaybe keys
-
-deleteUserCompletely :: MonadIO m => UserId -> SqlPersistT m ()
-deleteUserCompletely userId = do
-  organiserIds <- selectKeysList [OrganiserUser ==. userId] [Asc OrganiserId]
-  mapM_ deleteOrganiserCompletely organiserIds
-  delete userId
-
-deleteOrganiserCompletely :: MonadIO m => OrganiserId -> SqlPersistT m ()
-deleteOrganiserCompletely organiserId = do
-  partyIds <- selectKeysList [PartyOrganiser ==. organiserId] [Asc PartyId]
-  mapM_ deletePartyCompletely partyIds
-  scheduleIds <- selectKeysList [ScheduleOrganiser ==. organiserId] [Asc ScheduleId]
-  mapM_ deleteScheduleCompletely scheduleIds
-  delete organiserId
-
-deletePartyCompletely :: MonadIO m => PartyId -> SqlPersistT m ()
-deletePartyCompletely partyId = do
-  deleteWhere [PartyPosterParty ==. partyId]
-  delete partyId
-
-deleteScheduleCompletely :: MonadIO m => ScheduleId -> SqlPersistT m ()
-deleteScheduleCompletely scheduleId = do
-  -- deleteWhere [SchedulePosterSchedule ==. scheduleId] TODO delete poster
-  delete scheduleId
-
-appDB :: (MonadReader App m, MonadLoggerIO m) => SqlPersistT (LoggingT IO) a -> m a
-appDB func = do
-  pool <- asks appConnectionPool
-  logFunc <- askLoggerIO
-  liftIO $ runLoggingT (runSqlPool func pool) logFunc
-
-newtype JSONLDData = JSONLDData Value
-
-toJSONLDData :: ToJSON a => a -> JSONLDData
-toJSONLDData = JSONLDData . toJSON
-
-instance ToWidgetHead App JSONLDData where
-  toWidgetHead (JSONLDData v) =
-    toWidgetHead $
-      H.script ! HA.type_ "application/ld+json" $
-        H.lazyText $ renderJavascript $ toJavascript v

@@ -43,6 +43,15 @@ library
       Salsa.Party.Web.Server.Distance
       Salsa.Party.Web.Server.Foundation
       Salsa.Party.Web.Server.Foundation.App
+      Salsa.Party.Web.Server.Foundation.Auth
+      Salsa.Party.Web.Server.Foundation.Auth.Routes
+      Salsa.Party.Web.Server.Foundation.I18N
+      Salsa.Party.Web.Server.Foundation.I18N.Messages
+      Salsa.Party.Web.Server.Foundation.I18N.SupportedLanguage
+      Salsa.Party.Web.Server.Foundation.NavBar
+      Salsa.Party.Web.Server.Foundation.Yesod
+      Salsa.Party.Web.Server.Foundation.Yesod.Data
+      Salsa.Party.Web.Server.Foundation.Yesod.Routes
       Salsa.Party.Web.Server.Geocoding
       Salsa.Party.Web.Server.Handler
       Salsa.Party.Web.Server.Handler.Account
