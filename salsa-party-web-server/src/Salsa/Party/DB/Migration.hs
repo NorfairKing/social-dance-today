@@ -96,7 +96,7 @@ locations =
     Location {locationPlace = Place {placeQuery = "Austin", placeLat = 29.891648800, placeLon = -96.244346700}},
     Location {locationPlace = Place {placeQuery = "Washington DC", placeLat = 38.894992400, placeLon = -77.036558100}},
     Location {locationPlace = Place {placeQuery = "Philadelphia", placeLat = 39.952723700, placeLon = -75.163526200}},
-    Location {locationPlace = Place {placeQuery = "Detroit", placeLat = 55.754332000, placeLon = 60.705435300}},
+    Location {locationPlace = Place {placeQuery = "Detroit", placeLat = 42.331550900, placeLon = -83.046640300}},
     Location {locationPlace = Place {placeQuery = "Boston", placeLat = 42.360082500, placeLon = -71.058880100}},
     Location {locationPlace = Place {placeQuery = "Minneapolis", placeLat = 44.977299500, placeLon = -93.265469200}},
     Location {locationPlace = Place {placeQuery = "Kansas City", placeLat = 39.100105000, placeLon = -94.578141600}},
