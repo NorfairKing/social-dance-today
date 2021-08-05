@@ -7,6 +7,7 @@
 
 module Salsa.Party.Web.Server.Handler.Admin.Panel where
 
+import Salsa.Party.Looper.OrganiserReminder
 import Salsa.Party.Web.Server.Handler.Import
 
 getAdminPanelR :: Handler Html
@@ -15,6 +16,7 @@ getAdminPanelR = do
   let today = utctDay now
   nbUsers <- runDB $ count ([] :: [Filter User])
   nbOrganisers <- runDB $ count ([] :: [Filter Organiser])
+  nbOrganiserReminders <- runDB $ count ([] :: [Filter OrganiserReminder])
   nbUpcomingParties <- runDB $ count ([PartyDay >=. today] :: [Filter Party])
   nbUpcomingParties30Days <- runDB $ count ([PartyDay >=. today, PartyDay <=. addDays 30 today] :: [Filter Party])
   nbParties <- runDB $ count ([] :: [Filter Party])
@@ -40,7 +42,7 @@ getAdminUsersR = redirect $ AdminR $ AdminUsersPageR paginatedFirstPage
 
 getAdminUsersPageR :: PageNumber -> Handler Html
 getAdminUsersPageR pageNumber = do
-  paginated <- runDB $ selectPaginated 10 [] [Asc UserCreated, Asc UserId] pageNumber
+  paginated <- runDB $ selectPaginated defaultPageSize [] [Asc UserCreated, Asc UserId] pageNumber
   withNavBar $ do
     setTitle "Salsa Users Admin Users"
     setDescription "Admin overview of the users"
@@ -76,11 +78,27 @@ getAdminOrganisersR = redirect $ AdminR $ AdminOrganisersPageR paginatedFirstPag
 
 getAdminOrganisersPageR :: PageNumber -> Handler Html
 getAdminOrganisersPageR pageNumber = do
-  paginated <- runDB $ selectPaginated 10 [] [Asc OrganiserCreated, Asc OrganiserId] pageNumber
+  paginated <- runDB $ selectPaginated defaultPageSize [] [Asc OrganiserCreated, Asc OrganiserId] pageNumber
   withNavBar $ do
     setTitle "Salsa Organisers Admin Organisers"
     setDescription "Admin overview of the organisers"
     $(widgetFile "admin/organisers")
+
+getAdminOrganiserRemindersR :: Handler Html
+getAdminOrganiserRemindersR = redirect $ AdminR $ AdminOrganiserRemindersPageR paginatedFirstPage
+
+getAdminOrganiserRemindersPageR :: PageNumber -> Handler Html
+getAdminOrganiserRemindersPageR pageNumber = do
+  paginated <- runDB $ selectPaginated defaultPageSize [] [Asc OrganiserReminderId] pageNumber
+  reminders <- runDB $
+    forM (paginatedElements paginated) $ \organiserReminderEntity@(Entity _ organiserReminder) -> do
+      mOrganiser <- get $ organiserReminderOrganiser organiserReminder
+      decision <- makeOrganiserReminderDecision organiserReminderEntity
+      pure (organiserReminder, mOrganiser, decision)
+  withNavBar $ do
+    setTitle "Salsa OrganiserReminders Admin Organiser Reminders"
+    setDescription "Admin overview of the organiser reminders"
+    $(widgetFile "admin/organiser-reminders")
 
 postAdminDeleteEventR :: EventUUID -> Handler Html
 postAdminDeleteEventR uuid = do
@@ -103,7 +121,7 @@ getAdminUpcomingPartiesPageR pageNumber = do
 
 adminPartiesPage :: [Filter Party] -> [SelectOpt Party] -> (PageNumber -> Route App) -> PageNumber -> Handler Html
 adminPartiesPage filters sorters pageRoute pageNumber = do
-  paginated <- runDB $ selectPaginated 10 filters sorters pageNumber
+  paginated <- runDB $ selectPaginated defaultPageSize filters sorters pageNumber
   today <- liftIO $ utctDay <$> getCurrentTime
   withNavBar $ do
     timeLocale <- getTimeLocale
@@ -159,7 +177,7 @@ getAdminImporterUpcomingEventsPageR importerId pn = do
 
 externalEventsListPage :: [Filter ExternalEvent] -> [SelectOpt ExternalEvent] -> (PageNumber -> Route App) -> PageNumber -> Handler Html
 externalEventsListPage filters sorters pageRoute pageNumber = do
-  paginated <- runDB $ selectPaginated 10 filters sorters pageNumber
+  paginated <- runDB $ selectPaginated defaultPageSize filters sorters pageNumber
   today <- liftIO $ utctDay <$> getCurrentTime
   token <- genToken
   withNavBar $ do
@@ -220,3 +238,6 @@ paginationWidget page Paginated {..} pageNumber =
   let shouldShowFirst = pageNumber /= paginatedFirstPage && Just paginatedFirstPage /= paginatedPreviousPage
       shouldShowLast = pageNumber /= paginatedLastPage && Just paginatedLastPage /= paginatedNextPage
    in $(widgetFile "pagination")
+
+defaultPageSize :: Int
+defaultPageSize = 50

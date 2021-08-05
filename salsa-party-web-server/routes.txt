@@ -45,6 +45,9 @@
   
   /organisers AdminOrganisersR GET
   /organisers/#PageNumber AdminOrganisersPageR GET
+  
+  /organiser-reminders AdminOrganiserRemindersR GET
+  /organiser-reminders/#PageNumber AdminOrganiserRemindersPageR GET
 
 
   /parties AdminPartiesR GET

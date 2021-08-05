@@ -1,0 +1,33 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      OrganiserReminders
+
+    ^{paginationWidget (AdminR . AdminOrganiserRemindersPageR) paginated pageNumber}
+
+
+<section .section>
+  <div .container>
+    <h2 .title .is-4>
+      OrganiserReminders
+
+    <table .table .is-fullwidth .is-striped>
+      <thead>
+        <tr>
+          <th>
+            Organiser
+          <th width=50px>
+            Consent
+          <th>
+            Decision
+      <tbody>
+        $forall (organiserReminder, mOrganiser, decision) <- reminders
+          <tr>
+            <td>
+              $maybe organiser <- mOrganiser
+                <a .is-link href=@{AdminR $ AdminUserR $ organiserUser organiser}>
+                  #{organiserName organiser}
+            <td>
+              #{organiserReminderConsent organiserReminder}
+            <td>
+              #{ppShow decision}
