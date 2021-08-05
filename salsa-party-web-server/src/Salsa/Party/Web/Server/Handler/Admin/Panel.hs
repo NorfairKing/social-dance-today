@@ -124,7 +124,6 @@ getAdminUpcomingPartiesPageR pageNumber = do
 adminPartiesPage :: [Filter Party] -> [SelectOpt Party] -> (PageNumber -> Route App) -> PageNumber -> Handler Html
 adminPartiesPage filters sorters pageRoute pageNumber = do
   paginated <- runDB $ selectPaginated defaultPageSize filters sorters pageNumber
-  today <- liftIO $ utctDay <$> getCurrentTime
   withNavBar $ do
     setTitle "Salsa Parties Admin Parties"
     setDescription "Admin overview of the parties"
@@ -179,10 +178,8 @@ getAdminImporterUpcomingEventsPageR importerId pn = do
 externalEventsListPage :: [Filter ExternalEvent] -> [SelectOpt ExternalEvent] -> (PageNumber -> Route App) -> PageNumber -> Handler Html
 externalEventsListPage filters sorters pageRoute pageNumber = do
   paginated <- runDB $ selectPaginated defaultPageSize filters sorters pageNumber
-  today <- liftIO $ utctDay <$> getCurrentTime
   token <- genToken
   withNavBar $ do
-    timeLocale <- getTimeLocale
     setTitle "Salsa Parties Admin External Events"
     setDescription "Admin overview of the external events"
     $(widgetFile "admin/external-events")

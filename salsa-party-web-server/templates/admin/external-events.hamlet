@@ -16,7 +16,9 @@
         <tr>
           <th>
             Title
-          <th width=250px>
+          <th>
+            Created
+          <th>
             Day
           <th width=50px>
             Delete
@@ -31,16 +33,18 @@
               $else
                 _{MsgPartyTitleScheduled (externalEventTitle externalEvent)}
             <td>
-              #{formatTime timeLocale "%F" $ externalEventDay externalEvent}
-              (_{autoDayMsg today $ externalEventDay externalEvent})
+              ^{formatAdminTime $ externalEventCreated externalEvent}
+            <td>
+              ^{formatAdminDay $ externalEventDay externalEvent}
             <td>
               <form
                 method=post
                 action=@{AdminR $ AdminDeleteEventR $ externalEventUuid externalEvent}>
                 ^{token}
-                <button .button .is-danger type=submit
+                <button .button .is-danger .is-small
+                  type=submit
                   onclick="return confirm('_{MsgYourPartiesDeletePartyWarning}');">
                   Delete
             <td>
-              <a .button href=@{PartyR $ externalEventUuid externalEvent}>
+              <a .is-link href=@{PartyR $ externalEventUuid externalEvent}>
                 Details
