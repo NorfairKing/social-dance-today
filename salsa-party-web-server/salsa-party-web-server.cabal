@@ -42,6 +42,7 @@ library
       Salsa.Party.Web.Server.Constants
       Salsa.Party.Web.Server.Distance
       Salsa.Party.Web.Server.Foundation
+      Salsa.Party.Web.Server.Foundation.App
       Salsa.Party.Web.Server.Geocoding
       Salsa.Party.Web.Server.Handler
       Salsa.Party.Web.Server.Handler.Account

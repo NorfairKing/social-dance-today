@@ -14,10 +14,13 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans -fno-warn-partial-fields #-}
 
-module Salsa.Party.Web.Server.Foundation where
+module Salsa.Party.Web.Server.Foundation
+  ( module Salsa.Party.Web.Server.Foundation,
+    module Salsa.Party.Web.Server.Foundation.App,
+  )
+where
 
 import Control.Applicative
-import Control.Concurrent.TokenLimiter.Concurrent
 import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
@@ -40,12 +43,12 @@ import GHC.Generics (Generic)
 import Lens.Micro
 import qualified Network.AWS as AWS
 import qualified Network.AWS.SES as SES
-import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.Retry
 import Path
 import Salsa.Party.DB
 import Salsa.Party.OptParse
 import Salsa.Party.Web.Server.Constants
+import Salsa.Party.Web.Server.Foundation.App
 import Salsa.Party.Web.Server.Poster
 import Salsa.Party.Web.Server.Static
 import Salsa.Party.Web.Server.Widget
@@ -63,23 +66,6 @@ import Yesod.Auth
 import Yesod.Auth.Message
 import Yesod.AutoReload
 import Yesod.EmbeddedStatic (EmbeddedStatic)
-
-data App = App
-  { appRoot :: !(Maybe Text),
-    appLogLevel :: !LogLevel,
-    appStatic :: !EmbeddedStatic,
-    appHTTPManager :: !HTTP.Manager,
-    appConnectionPool :: !ConnectionPool,
-    appSessionKeyFile :: !(Path Abs File),
-    appSendEmails :: !Bool,
-    appSendAddress :: !(Maybe Text),
-    appAdmin :: !(Maybe Text),
-    appOSMRateLimiter :: !(Maybe TokenLimiter), -- Nothing means disabled.
-    appSentrySettings :: !(Maybe SentrySettings), -- Nothing means disabled.
-    appGoogleAPIKey :: !(Maybe Text), -- Nothing means disabled.
-    appGoogleAnalyticsTracking :: !(Maybe Text), -- Nothing means disabled.
-    appGoogleSearchConsoleVerification :: !(Maybe Text) -- Nothing means disabled.
-  }
 
 mkMessage "App" "messages" "en"
 
