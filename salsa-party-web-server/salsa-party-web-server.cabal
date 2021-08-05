@@ -115,6 +115,7 @@ library
     , persistent
     , persistent-sqlite
     , persistent-template
+    , pretty-relative-time
     , pretty-show
     , random
     , resourcet

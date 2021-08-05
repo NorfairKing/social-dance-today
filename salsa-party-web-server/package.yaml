@@ -9,7 +9,6 @@ library:
   source-dirs: src
   dependencies:
   - JuicyPixels
-  - iCalendar
   - JuicyPixels-extra
   - aeson
   - aeson-pretty
@@ -33,6 +32,7 @@ library:
   - http-client-tls
   - http-date
   - http-types
+  - iCalendar
   - looper
   - microlens
   - monad-logger
@@ -46,6 +46,7 @@ library:
   - persistent
   - persistent-sqlite
   - persistent-template
+  - pretty-relative-time
   - pretty-show
   - random
   - resourcet

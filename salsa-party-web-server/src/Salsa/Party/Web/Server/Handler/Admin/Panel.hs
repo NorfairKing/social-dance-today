@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
@@ -9,6 +10,7 @@ module Salsa.Party.Web.Server.Handler.Admin.Panel where
 
 import Salsa.Party.Looper.OrganiserReminder
 import Salsa.Party.Web.Server.Handler.Import
+import Text.Time.Pretty
 
 getAdminPanelR :: Handler Html
 getAdminPanelR = do
@@ -78,7 +80,7 @@ getAdminOrganisersR = redirect $ AdminR $ AdminOrganisersPageR paginatedFirstPag
 
 getAdminOrganisersPageR :: PageNumber -> Handler Html
 getAdminOrganisersPageR pageNumber = do
-  paginated <- runDB $ selectPaginated defaultPageSize [] [Asc OrganiserCreated, Asc OrganiserId] pageNumber
+  paginated <- runDB $ selectPaginated defaultPageSize [] [Asc OrganiserId] pageNumber
   withNavBar $ do
     setTitle "Salsa Organisers Admin Organisers"
     setDescription "Admin overview of the organisers"
@@ -241,3 +243,19 @@ paginationWidget page Paginated {..} pageNumber =
 
 defaultPageSize :: Int
 defaultPageSize = 50
+
+formatAdminDay :: Day -> Widget
+formatAdminDay day = do
+  today <- liftIO $ utctDay <$> getCurrentTime
+  [whamlet|
+    #{formatTime defaultTimeLocale "%F" day}
+    (#{prettyDayAuto today day})
+  |]
+
+formatAdminTime :: UTCTime -> Widget
+formatAdminTime time = do
+  now <- liftIO getCurrentTime
+  [whamlet|
+    #{formatTime defaultTimeLocale "%F %H:%M" time}
+    (#{prettyTimeAuto now time})
+  |]

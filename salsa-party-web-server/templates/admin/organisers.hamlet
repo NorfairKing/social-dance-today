@@ -16,6 +16,10 @@
         <tr>
           <th>
             Display Name
+          <th>
+            Created
+          <th>
+            Modified
           <th width=50px>
             Details
       <tbody>
@@ -24,5 +28,10 @@
             <td>
               #{organiserName organiser}
             <td>
-              <a .button href=@{AdminR $ AdminUserR $ organiserUser organiser}>
+              ^{formatAdminTime $ organiserCreated organiser}
+            <td>
+              $maybe modified <- organiserModified organiser
+                ^{formatAdminTime modified}
+            <td>
+              <a .is-link href=@{AdminR $ AdminUserR $ organiserUser organiser}>
                 Details
