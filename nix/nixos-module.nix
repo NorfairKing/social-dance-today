@@ -13,6 +13,7 @@ let
   toYamlFile = pkgs.callPackage ./to-yaml.nix { };
 
   mkLooperOption = pkgs.callPackage (sources.looper + "/nix/looper-option.nix") { };
+  inherit (import sources.gitignore { inherit (pkgs) lib; }) gitignoreSource;
 in
 {
   options.services.salsa-party."${envname}" =
@@ -181,7 +182,7 @@ in
           (nullOrOption "mapdance-com-importer" mapdance-com-importer)
           (nullOrOption "salsachicago-com-importer" salsachicago-com-importer)
           (nullOrOption "sentry" sentry)
-          { static-dir = pkgs.gitignoreSource ../salsa-party-web-server/static; }
+          { static-dir = gitignoreSource ../salsa-party-web-server/static; }
           cfg.web-server.config
         ];
       web-server-config-file = toYamlFile "salsa-web-server-config" web-server-config;
