@@ -1,8 +1,8 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Salsa.Party.Web.Server.Handler.Event
-  ( getPartyR,
-    getPartyEventIcsR,
+  ( getEventR,
+    getEventIcsR,
   )
 where
 
@@ -12,8 +12,8 @@ import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Party
 import qualified Text.ICalendar as ICal
 
-getPartyR :: EventUUID -> Handler Html
-getPartyR eventUuid = do
+getEventR :: EventUUID -> Handler Html
+getEventR eventUuid = do
   mParty <- runDB $ getBy $ UniquePartyUUID eventUuid
   case mParty of
     Just partyEntity -> partyPage partyEntity
@@ -23,8 +23,8 @@ getPartyR eventUuid = do
         Just externalEventEntity -> externalEventPage externalEventEntity
         Nothing -> notFound
 
-getPartyEventIcsR :: EventUUID -> Handler ICal.VCalendar
-getPartyEventIcsR eventUuid = do
+getEventIcsR :: EventUUID -> Handler ICal.VCalendar
+getEventIcsR eventUuid = do
   mParty <- runDB $ getBy $ UniquePartyUUID eventUuid
   case mParty of
     Just (Entity _ party) -> do

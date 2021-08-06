@@ -9,10 +9,10 @@ import qualified Text.ICalendar as ICal
 
 spec :: Spec
 spec = serverSpec $ do
-  describe "PartyR" $ do
+  describe "EventR" $ do
     yit "GETs a 404 for a nonexistent party" $ do
       uuid <- nextRandomUUID
-      get $ PartyR uuid
+      get $ EventR uuid
       statusIs 404
 
     it "Can get the party page for an existing party" $ \yc ->
@@ -24,7 +24,7 @@ spec = serverSpec $ do
                 organiserId <- DB.insert organiser
                 placeId <- DB.insert place
                 DB.insert_ $ party {partyOrganiser = organiserId, partyPlace = placeId}
-              get $ PartyR $ partyUuid party
+              get $ EventR $ partyUuid party
               statusIs 200
 
     it "Can get the ical calendar for an existing party" $ \yc ->
@@ -37,7 +37,7 @@ spec = serverSpec $ do
                 placeId <- DB.insert place
                 DB.insert_ $ party {partyOrganiser = organiserId, partyPlace = placeId}
               request $ do
-                setUrl $ PartyEventIcsR $ partyUuid party
+                setUrl $ EventIcsR $ partyUuid party
                 addRequestHeader ("Accept", typeCalendar)
               statusIs 200
               mResp <- getResponse
@@ -61,7 +61,7 @@ spec = serverSpec $ do
             testDB $ do
               placeId <- DB.insert place
               DB.insert_ $ externalEvent {externalEventPlace = placeId}
-            get $ PartyR $ externalEventUuid externalEvent
+            get $ EventR $ externalEventUuid externalEvent
             statusIs 200
 
     it "Can get the ical calendar for an existing external event" $ \yc ->
@@ -72,7 +72,7 @@ spec = serverSpec $ do
               placeId <- DB.insert place
               DB.insert_ $ externalEvent {externalEventPlace = placeId}
             request $ do
-              setUrl $ PartyEventIcsR $ externalEventUuid externalEvent
+              setUrl $ EventIcsR $ externalEventUuid externalEvent
               addRequestHeader ("Accept", typeCalendar)
             statusIs 200
             mResp <- getResponse

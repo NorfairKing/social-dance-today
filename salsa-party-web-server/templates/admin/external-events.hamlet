@@ -46,5 +46,5 @@
                   onclick="return confirm('_{MsgYourPartiesDeletePartyWarning}');">
                   Delete
             <td>
-              <a .is-link href=@{PartyR $ externalEventUuid externalEvent}>
+              <a .is-link href=@{EventR $ externalEventUuid externalEvent}>
                 Details

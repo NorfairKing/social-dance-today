@@ -82,7 +82,7 @@ $maybe Entity _ organiser <- mOrganiser
             (_{autoDayMsg today $ utctDay modified})
           
         <p .content>
-          <a .button href=@{PartyR $ partyUuid party}>
+          <a .button href=@{EventR $ partyUuid party}>
             Public Party Profile
 
 

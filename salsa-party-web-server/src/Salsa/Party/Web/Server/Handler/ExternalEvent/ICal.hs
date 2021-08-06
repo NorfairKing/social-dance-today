@@ -116,7 +116,7 @@ externalEventCalendarEvent renderUrl ExternalEvent {..} Place {..} =
                 },
           ICal.veTransp = ICal.Transparent {timeTransparencyOther = noOther},
           ICal.veUrl = do
-            uri <- parseURI $ T.unpack $ renderUrl $ PartyR externalEventUuid
+            uri <- parseURI $ T.unpack $ renderUrl $ EventR externalEventUuid
             pure $ ICal.URL {ICal.urlValue = uri, ICal.urlOther = noOther},
           ICal.veRecurId = Nothing,
           ICal.veRRule = S.empty,

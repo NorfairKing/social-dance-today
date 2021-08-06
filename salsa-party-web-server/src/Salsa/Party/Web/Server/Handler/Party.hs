@@ -213,7 +213,7 @@ partyCalendarEvent renderUrl Party {..} Place {..} =
                 },
           ICal.veTransp = ICal.Transparent {timeTransparencyOther = noOther},
           ICal.veUrl = do
-            uri <- parseURI $ T.unpack $ renderUrl $ PartyR partyUuid
+            uri <- parseURI $ T.unpack $ renderUrl $ EventR partyUuid
             pure $ ICal.URL {ICal.urlValue = uri, ICal.urlOther = noOther},
           ICal.veRecurId = Nothing,
           ICal.veRRule = S.empty,

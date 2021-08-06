@@ -21,7 +21,7 @@ $forall day <- days
               $of Internal (Entity _ party) (Entity _ p) mPosterVal 
                 <div .column .is-two-thirds-tablet .is-half-desktop>
                   <div .zoom-without-container>
-                    <a  href=@{PartyR $ partyUuid party}>
+                    <a  href=@{EventR $ partyUuid party}>
                       <div .card>
                         $maybe posterKey <- mPosterVal
                           <div .card-image .has-text-centered>
@@ -41,7 +41,7 @@ $forall day <- days
               $of External (Entity _ externalEvent) ( Entity _ p) mPosterVal
                 <div .column .is-two-thirds-tablet .is-half-desktop>
                   <div .zoom-without-container>
-                    <a  href=@{PartyR $ externalEventUuid externalEvent}>
+                    <a  href=@{EventR $ externalEventUuid externalEvent}>
                       <div .card>
                         $maybe posterKey <- mPosterVal
                           <div .card-image .has-text-centered>

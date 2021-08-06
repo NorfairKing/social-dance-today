@@ -64,7 +64,7 @@ getSitemapR = do
       acqParties
       ( \(Entity _ Party {..}) ->
           SitemapUrl
-            { sitemapLoc = PartyR partyUuid,
+            { sitemapLoc = EventR partyUuid,
               sitemapLastMod = Just $ fromMaybe partyCreated partyModified,
               sitemapChangeFreq = Nothing,
               sitemapPriority = Just 0.4
@@ -74,7 +74,7 @@ getSitemapR = do
       acqExternalEvents
       ( \(Entity _ ExternalEvent {..}) ->
           SitemapUrl
-            { sitemapLoc = PartyR externalEventUuid,
+            { sitemapLoc = EventR externalEventUuid,
               sitemapLastMod = Just $ fromMaybe externalEventCreated externalEventModified,
               sitemapChangeFreq = Nothing,
               sitemapPriority = Just 0.2

@@ -7,8 +7,11 @@
 
 /query QueryR POST
 
-/party/#EventUUID PartyR GET
-/party/#EventUUID/event.ics PartyEventIcsR GET
+-- On the inside, an event can be internal or external,
+-- but from the outside, there are no external events.
+-- Only events.
+/party/#EventUUID EventR GET
+/party/#EventUUID/event.ics EventIcsR GET
 
 /organiser/#OrganiserUUID OrganiserR GET
 /image/#CASKey ImageR GET

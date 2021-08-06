@@ -137,6 +137,6 @@ addEventToGoogleCalendarLink renderUrl partyUuid partyDay partyStart placeQuery 
           ("dates", Just datesString),
           ("details", TE.encodeUtf8 <$> partyDescription),
           ("location", Just $ TE.encodeUtf8 placeQuery),
-          ("sprop", Just $ TE.encodeUtf8 $ "website:" <> renderUrl (PartyR partyUuid))
+          ("sprop", Just $ TE.encodeUtf8 $ "website:" <> renderUrl (EventR partyUuid))
         ]
   pure $ getUri $ setQueryString params requestPrototype

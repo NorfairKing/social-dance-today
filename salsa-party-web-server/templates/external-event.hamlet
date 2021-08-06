@@ -52,7 +52,7 @@
             src=#{googleMapsEmbedUrl}>
 
     <div .buttons>
-      <a .button href=@{PartyEventIcsR externalEventUuid} type="text/calendar">
+      <a .button href=@{EventIcsR externalEventUuid} type="text/calendar">
         _{MsgPartyDownloadCalendarEvent}
       $maybe addToGoogleLink <- mAddToGoogleLink
         <a .button href=#{show addToGoogleLink}>
@@ -68,7 +68,7 @@
 
 <!-- Facebook Open Graph metadata -->
 <meta property="og:type" content="website">
-<meta property="og:url" content=@{PartyR externalEventUuid}>
+<meta property="og:url" content=@{EventR externalEventUuid}>
 <meta property="og:title" content=#{externalEventTitle}>
 $maybe posterKey <- mPosterKey
   <meta property="og:image" content=@{ImageR posterKey}>
@@ -79,7 +79,7 @@ $maybe description <- externalEventDescription
 <!-- Twitter Meta tags -->
 <meta name="twitter:site" content="@kerckhove_ts">
 <meta property="twitter:domain" content=@{HomeR}>
-<meta property="twitter:url" content=@{PartyR externalEventUuid}>
+<meta property="twitter:url" content=@{EventR externalEventUuid}>
 <meta name="twitter:title" content=#{externalEventTitle}>
 $maybe description <- externalEventDescription
   <meta property="twitter:description" content=#{description}>

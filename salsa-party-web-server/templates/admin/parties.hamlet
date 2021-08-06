@@ -34,6 +34,6 @@
             <td>
               ^{formatAdminTime $ partyCreated party}
             <td>
-              <a .is-link href=@{PartyR $ partyUuid party}>
+              <a .is-link href=@{EventR $ partyUuid party}>
                 Details
 

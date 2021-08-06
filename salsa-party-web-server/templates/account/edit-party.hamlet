@@ -113,5 +113,5 @@
               _{MsgEditPartyButton}
             <a .button href=@{AccountR AccountPartiesR}>
               _{MsgPartyFormBackButton}
-            <a .button href=@{PartyR $ partyUuid party}>
+            <a .button href=@{EventR $ partyUuid party}>
               _{MsgEditPartyPublicPartyProfile}
