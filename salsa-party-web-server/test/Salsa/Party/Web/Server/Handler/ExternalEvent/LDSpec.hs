@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Salsa.Party.DB.ExternalEventSpec (spec) where
+module Salsa.Party.Web.Server.Handler.ExternalEvent.LDSpec (spec) where
 
 import qualified Data.ByteString.Builder as SBB
 import qualified Data.ByteString.Lazy as LB
