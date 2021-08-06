@@ -7,8 +7,8 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Salsa.Party.Web.Server.Handler.Party
-  ( getPartyR,
-    getPartyEventIcsR,
+  ( partyPage,
+    partyCalendar,
     partyToLDEvent,
   )
 where
@@ -22,21 +22,9 @@ import qualified Data.Text.Lazy as LT
 import Network.HTTP.Types
 import Network.URI
 import Salsa.Party.Web.Server.Handler.ExternalEvent
-import Salsa.Party.Web.Server.Handler.ExternalEvent.ICal
 import Salsa.Party.Web.Server.Handler.Import
 import qualified Text.ICalendar as ICal
 import qualified Web.JSONLD as LD
-
-getPartyR :: EventUUID -> Handler Html
-getPartyR eventUuid = do
-  mParty <- runDB $ getBy $ UniquePartyUUID eventUuid
-  case mParty of
-    Just partyEntity -> partyPage partyEntity
-    Nothing -> do
-      mExternalEvent <- runDB $ getBy $ UniqueExternalEventUUID eventUuid
-      case mExternalEvent of
-        Just externalEventEntity -> externalEventPage externalEventEntity
-        Nothing -> notFound
 
 partyPage :: Entity Party -> Handler Html
 partyPage (Entity partyId party@Party {..}) = do
@@ -123,23 +111,6 @@ partyToLDEvent renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
 addPartyToGoogleCalendarLink :: (Route App -> Text) -> Party -> Place -> Maybe URI
 addPartyToGoogleCalendarLink renderUrl Party {..} Place {..} =
   addEventToGoogleCalendarLink renderUrl partyUuid partyDay partyStart placeQuery partyTitle partyDescription
-
-getPartyEventIcsR :: EventUUID -> Handler ICal.VCalendar
-getPartyEventIcsR eventUuid = do
-  mParty <- runDB $ getBy $ UniquePartyUUID eventUuid
-  case mParty of
-    Just (Entity _ party) -> do
-      place@Place {..} <- runDB $ get404 $ partyPlace party
-      renderUrl <- getUrlRender
-      pure $ partyCalendar renderUrl party place
-    Nothing -> do
-      mExternalEvent <- runDB $ getBy $ UniqueExternalEventUUID eventUuid
-      case mExternalEvent of
-        Just (Entity _ externalEvent) -> do
-          place@Place {..} <- runDB $ get404 $ externalEventPlace externalEvent
-          renderUrl <- getUrlRender
-          pure $ externalEventCalendar renderUrl externalEvent place
-        Nothing -> notFound
 
 partyCalendar :: (Route App -> Text) -> Party -> Place -> ICal.VCalendar
 partyCalendar renderUrl party@Party {..} place =
