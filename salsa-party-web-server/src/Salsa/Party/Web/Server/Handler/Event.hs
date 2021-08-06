@@ -10,6 +10,7 @@ import Salsa.Party.Web.Server.Handler.ExternalEvent
 import Salsa.Party.Web.Server.Handler.ExternalEvent.ICal
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Party
+import Salsa.Party.Web.Server.Handler.Party.ICal
 import qualified Text.ICalendar as ICal
 
 getEventR :: EventUUID -> Handler Html
