@@ -75,6 +75,7 @@ library
       Salsa.Party.Web.Server.Handler.Organiser
       Salsa.Party.Web.Server.Handler.Party
       Salsa.Party.Web.Server.Handler.Party.ICal
+      Salsa.Party.Web.Server.Handler.Party.LD
       Salsa.Party.Web.Server.Handler.Reminder
       Salsa.Party.Web.Server.Handler.Search
       Salsa.Party.Web.Server.Handler.Search.Query

@@ -11,7 +11,7 @@ import qualified Data.UUID.Typed as Typed
 import Database.Persist.Sql
 import Network.HTTP.Types
 import Salsa.Party.DB
-import Salsa.Party.Web.Server.Handler.Party
+import Salsa.Party.Web.Server.Handler.Party.LD
 import Test.Syd
 import Test.Syd.Aeson
 import Yesod.Core
