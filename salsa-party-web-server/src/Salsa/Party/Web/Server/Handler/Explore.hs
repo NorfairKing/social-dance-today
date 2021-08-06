@@ -51,5 +51,7 @@ getExploreSkylineR locationName = do
       logDebugN $ T.pack $ unwords ["Skyline file for location", show locationName <> ":", fromAbsFile filepath]
       exists <- liftIO $ doesFileExist filepath
       if exists
-        then sendFile "image/jpeg" $ fromAbsFile filepath
+        then do
+          neverExpires
+          sendFile "image/jpeg" $ fromAbsFile filepath
         else notFound
