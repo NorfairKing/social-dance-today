@@ -8,7 +8,6 @@
 
 module Salsa.Party.Web.Server.Handler.Party
   ( getPartyR,
-    getImageR,
     getPartyEventIcsR,
     partyToLDEvent,
   )
@@ -120,18 +119,6 @@ partyToLDEvent renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
                 organizationUrl = Just $ renderUrl (OrganiserR organiserUuid)
               }
     }
-
-getImageR :: CASKey -> Handler TypedContent
-getImageR key = do
-  mImage <- runDB $ getBy $ UniqueImageKey key
-  case mImage of
-    Nothing -> notFound
-    Just (Entity _ Image {..}) -> do
-      -- Cache forever because of CAS
-      addHeader "Cache-Control" "max-age=31536000, public, immutable"
-      addHeader "Content-Disposition" "inline"
-      setEtag $ renderCASKey key
-      respond (TE.encodeUtf8 imageTyp) imageBlob
 
 addPartyToGoogleCalendarLink :: (Route App -> Text) -> Party -> Place -> Maybe URI
 addPartyToGoogleCalendarLink renderUrl Party {..} Place {..} =
