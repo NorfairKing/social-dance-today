@@ -53,6 +53,7 @@ getAdminChartsR = do
   externalEventsPerDayMap <- makePerDayCountMap acqExternalEventsSource $ externalEventDay . entityVal
 
   let minDay = minimum $ map fst $ mapMaybe M.lookupMin [dayCountMapOfExternalEvents, dayCountMapOfParties]
+      curDay = addDays (-1) today
       maxDay = addDays 30 today
 
   withNavBar $ do
