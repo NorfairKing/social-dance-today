@@ -4,18 +4,15 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -fno-warn-orphans -fno-warn-unused-pattern-binds #-}
 
 module Salsa.Party.Web.Server.Handler.ExternalEvent
   ( externalEventPage,
-    addEventToGoogleCalendarLink,
-    addExternalEventToGoogleCalendarLink,
   )
 where
 
-import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import Network.HTTP.Client
+import Google.Calendar
 import Network.HTTP.Types
 import Network.URI
 import Salsa.Party.Web.Server.Handler.ExternalEvent.LD
@@ -56,36 +53,5 @@ externalEventPage (Entity externalEventId externalEvent@ExternalEvent {..}) = do
 
 addExternalEventToGoogleCalendarLink :: (Route App -> Text) -> ExternalEvent -> Place -> Maybe URI
 addExternalEventToGoogleCalendarLink renderUrl ExternalEvent {..} Place {..} =
-  addEventToGoogleCalendarLink renderUrl externalEventUuid externalEventDay externalEventStart placeQuery externalEventTitle externalEventDescription
-
-addEventToGoogleCalendarLink :: (Route App -> Text) -> EventUUID -> Day -> Maybe TimeOfDay -> Text -> Text -> Maybe Text -> Maybe URI
-addEventToGoogleCalendarLink renderUrl partyUuid partyDay partyStart placeQuery partyTitle partyDescription = do
-  -- We go via request because URI doesn't have any functions for this.
-  requestPrototype <- parseRequest "https://calendar.google.com/calendar/r/eventedit"
-  -- Exlanation of this here:
-  -- https://github.com/InteractionDesignFoundation/add-event-to-calendar-docs/blob/master/services/google.md
-  let dayFormat = "%Y%m%d"
-      localTimeFormat = "%Y%m%dT%H%M%S"
-      formatDay :: Day -> String
-      formatDay = formatTime defaultTimeLocale dayFormat
-      formatLocalTime :: LocalTime -> String
-      formatLocalTime = formatTime defaultTimeLocale localTimeFormat
-  let startStr = case partyStart of
-        Nothing -> formatDay partyDay
-        Just start -> formatLocalTime $ LocalTime partyDay start
-  let endStr = case partyStart of
-        Nothing -> formatDay $ addDays 1 partyDay
-        Just start ->
-          formatLocalTime $
-            let startTime = LocalTime partyDay start
-             in addLocalTime (2 * 60 * 60) startTime -- Two hours later
-  let datesString = TE.encodeUtf8 $ T.pack $ startStr <> "/" <> endStr
-  let params =
-        [ ("action", Just "TEMPLATE"),
-          ("text", Just $ TE.encodeUtf8 partyTitle),
-          ("dates", Just datesString),
-          ("details", TE.encodeUtf8 <$> partyDescription),
-          ("location", Just $ TE.encodeUtf8 placeQuery),
-          ("sprop", Just $ TE.encodeUtf8 $ "website:" <> renderUrl (EventR partyUuid))
-        ]
-  pure $ getUri $ setQueryString params requestPrototype
+  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+   in addEventToGoogleCalendarLink (renderUrl (EventR externalEventUuid)) externalEventDay externalEventStart placeQuery externalEventTitle externalEventDescription

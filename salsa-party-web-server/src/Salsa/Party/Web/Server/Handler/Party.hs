@@ -4,7 +4,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -fno-warn-orphans -fno-warn-unused-pattern-binds #-}
 
 module Salsa.Party.Web.Server.Handler.Party
   ( partyPage,
@@ -12,9 +12,9 @@ module Salsa.Party.Web.Server.Handler.Party
 where
 
 import qualified Data.Text.Encoding as TE
+import Google.Calendar
 import Network.HTTP.Types
 import Network.URI
-import Salsa.Party.Web.Server.Handler.ExternalEvent
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Party.LD
 
@@ -54,4 +54,5 @@ partyPage (Entity partyId party@Party {..}) = do
 
 addPartyToGoogleCalendarLink :: (Route App -> Text) -> Party -> Place -> Maybe URI
 addPartyToGoogleCalendarLink renderUrl Party {..} Place {..} =
-  addEventToGoogleCalendarLink renderUrl partyUuid partyDay partyStart placeQuery partyTitle partyDescription
+  let Party _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+   in addEventToGoogleCalendarLink (renderUrl (EventR partyUuid)) partyDay partyStart placeQuery partyTitle partyDescription
