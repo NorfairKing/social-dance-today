@@ -69,6 +69,7 @@ library
       Salsa.Party.Web.Server.Handler.Explore
       Salsa.Party.Web.Server.Handler.ExternalEvent
       Salsa.Party.Web.Server.Handler.ExternalEvent.ICal
+      Salsa.Party.Web.Server.Handler.ExternalEvent.LD
       Salsa.Party.Web.Server.Handler.Home
       Salsa.Party.Web.Server.Handler.Image
       Salsa.Party.Web.Server.Handler.Import
