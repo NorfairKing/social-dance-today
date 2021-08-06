@@ -14,7 +14,7 @@
                     <img 
                       width=640
                       height=360
-                      src="@{HomeR}static/res/#{placeQuery location}.jpg"
+                      src="@{ExploreSkylineR (placeQuery location)}"
                       alt=_{MsgExploreSkylineAlt (placeQuery location)}>
                 <div .card-content>
                   <h2 .title .is-4 .has-text-centered>

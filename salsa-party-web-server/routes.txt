@@ -1,6 +1,7 @@
 / HomeR GET
 
 /explore ExploreR GET
+/explore/#Text/skyline.jpg ExploreSkylineR GET
 
 /select-language/#SupportedLanguage SelectLanguageR POST
 

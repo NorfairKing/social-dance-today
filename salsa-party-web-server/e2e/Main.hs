@@ -57,9 +57,15 @@ spec uri = do
       it "HomeR" $ do
         get HomeR
         statusIs 200
-      it "ExploreR" $ do
-        get ExploreR
-        statusIs 200
+      describe "Explore" $ do
+        it "ExploreR" $ do
+          get ExploreR
+          statusIs 200
+        forM_ locations $ \Location {..} ->
+          describe (T.unpack (placeQuery locationPlace)) $
+            it ("ExploreSkylineR " <> show (placeQuery locationPlace)) $ do
+              get $ ExploreSkylineR (placeQuery locationPlace)
+              statusIs 200
       it "SitemapR" $ do
         get SitemapR
         statusIs 200
@@ -68,15 +74,19 @@ spec uri = do
         statusIs 200
       describe "Search" $
         forM_ locations $ \Location {..} ->
-          describe (T.unpack (placeQuery locationPlace)) $
-            it "QueryR" $ do
-              request $ do
-                setUrl QueryR
-                setMethod methodPost
-                addPostParam "address" $ placeQuery locationPlace
-              statusIs 303
-              locationShouldBe $ SearchR $ placeQuery locationPlace
-              _ <- followRedirect
+          describe (T.unpack (placeQuery locationPlace)) $ do
+            it "QueryR" $
+              do
+                request $ do
+                  setUrl QueryR
+                  setMethod methodPost
+                  addPostParam "address" $ placeQuery locationPlace
+                statusIs 303
+                locationShouldBe $ SearchR $ placeQuery locationPlace
+                _ <- followRedirect
+                statusIs 200
+            it "SearchR" $ do
+              get $ SearchR (placeQuery locationPlace)
               statusIs 200
       doNotRandomiseExecutionOrder $
         sequential $ do
