@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Salsa.Party.Web.Server.Handler.ExternalEvent.ICal
   ( externalEventCalendar,
@@ -30,7 +31,8 @@ externalEventCalendar renderUrl externalEvent@ExternalEvent {..} place =
 
 externalEventCalendarEvent :: (Route App -> Text) -> ExternalEvent -> Place -> ICal.VEvent
 externalEventCalendarEvent renderUrl ExternalEvent {..} Place {..} =
-  let noOther = def
+  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+      noOther = def
    in ICal.VEvent
         { ICal.veDTStamp =
             ICal.DTStamp
