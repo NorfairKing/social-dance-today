@@ -14,59 +14,23 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans -fno-warn-partial-fields #-}
 
-module Salsa.Party.Web.Server.Foundation.I18N where
+module Salsa.Party.Web.Server.Foundation.I18N
+  ( module Salsa.Party.Web.Server.Foundation.I18N,
+    module Salsa.Party.Web.Server.Foundation.I18N.SupportedLanguage,
+    module Salsa.Party.Web.Server.Foundation.I18N.Messages,
+  )
+where
 
-import Control.Applicative
-import Control.Monad
-import Control.Monad.Logger
-import Control.Monad.Reader
-import Control.Retry
-import Data.FileEmbed
-import Data.Fixed
-import Data.Function
-import Data.Maybe
 import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.Lazy as LT
-import qualified Data.Text.Lazy.Builder as LTB
 import Data.Time
-import Data.Validity
-import Data.Validity.Text ()
-import Data.Validity.Time ()
-import qualified Database.Esqueleto as E
-import Database.Persist.Sql
-import GHC.Generics (Generic)
-import Lens.Micro
-import qualified Network.AWS as AWS
-import qualified Network.AWS.SES as SES
-import Network.HTTP.Client.Retry
-import Path
 import Salsa.Party.DB
-import Salsa.Party.OptParse
-import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.Foundation.App
+import Salsa.Party.Web.Server.Foundation.I18N.Messages
 import Salsa.Party.Web.Server.Foundation.I18N.SupportedLanguage
-import Salsa.Party.Web.Server.Foundation.Yesod
+import Salsa.Party.Web.Server.Foundation.Yesod.Data
 import Salsa.Party.Web.Server.Poster
-import Salsa.Party.Web.Server.Static
-import Salsa.Party.Web.Server.Widget
-import System.Random
-import Text.Blaze.Html.Renderer.Text (renderHtml)
-import Text.Blaze.Html5 ((!))
-import qualified Text.Blaze.Html5 as H
-import qualified Text.Blaze.Html5.Attributes as HA
 import Text.Hamlet
-import Text.Julius
-import Text.Shakespeare.Text
-import Text.Show.Pretty (ppShow)
 import Yesod
-import Yesod.Auth
-import Yesod.Auth.Message
-import Yesod.AutoReload
-import Yesod.EmbeddedStatic (EmbeddedStatic)
-
-instance RenderMessage App FormMessage where
-  renderMessage _ _ = defaultFormMessage
 
 posterImageWidget :: Party -> Organiser -> CASKey -> Widget
 posterImageWidget Party {..} Organiser {..} posterKey = do

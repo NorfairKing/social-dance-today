@@ -14,7 +14,11 @@
 {-# LANGUAGE ViewPatterns #-}
 
 -- We use a lot of type-class constraints here just to be able to put it in a separate module
-module Salsa.Party.Web.Server.Foundation.Auth where
+module Salsa.Party.Web.Server.Foundation.Auth
+  ( module Salsa.Party.Web.Server.Foundation.Auth,
+    module Salsa.Party.Web.Server.Foundation.Auth.Routes,
+  )
+where
 
 import Control.Monad
 import Control.Monad.Logger
