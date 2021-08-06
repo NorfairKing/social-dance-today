@@ -23,6 +23,7 @@ import qualified Data.Text.Lazy as LT
 import Network.HTTP.Types
 import Network.URI
 import Salsa.Party.Web.Server.Handler.ExternalEvent
+import Salsa.Party.Web.Server.Handler.ExternalEvent.ICal
 import Salsa.Party.Web.Server.Handler.Import
 import qualified Text.ICalendar as ICal
 import qualified Web.JSONLD as LD
