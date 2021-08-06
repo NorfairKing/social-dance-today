@@ -4,15 +4,15 @@
 
 module Salsa.Party.Web.Server.Handler.Explore where
 
-import Data.FileEmbed
+import Control.Monad.Logger
 import Data.List
 import Data.Ord
 import qualified Data.Text as T
-import Language.Haskell.TH.Syntax as TH
+import Path
+import Path.IO
 import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Query
-import System.Directory
 
 getExploreR :: Handler Html
 getExploreR = do
@@ -30,16 +30,6 @@ getExploreR = do
     setDescriptionI MsgExploreDescription
     $(widgetFile "explore")
 
-getExploreSkylineR :: Text -> Handler TypedContent
-getExploreSkylineR locationName = do
-  let locationsDir = $(makeRelativeToProject "static/locations/" >>= TH.lift)
-  let filepath = locationsDir <> T.unpack locationName <> ".jpg"
-  exists <- liftIO $ doesFileExist filepath
-  if exists
-    then do
-      sendFile "image/jpeg" filepath
-    else notFound
-
 -- TODO we can probably optimise this with a count query, or at least we don't have to fetch any posters.
 explorePartiesAroundLocationQuery :: MonadIO m => Day -> Coordinates -> SqlPersistT m Int
 explorePartiesAroundLocationQuery today coordinates =
@@ -48,3 +38,18 @@ explorePartiesAroundLocationQuery today coordinates =
       today
       Nothing
       coordinates
+
+getExploreSkylineR :: Text -> Handler TypedContent
+getExploreSkylineR locationName = do
+  staticDir <- getsYesod appStaticDir
+  locationsDir <- resolveDir staticDir "locations"
+  -- To make sure that the file is definitely in this dir and we don't leak filesystem access
+  case parseRelFile (T.unpack locationName <> ".jpg") of
+    Nothing -> notFound
+    Just relFile -> do
+      let filepath = locationsDir </> relFile
+      logDebugN $ T.pack $ unwords ["Skyline file for location", show locationName <> ":", fromAbsFile filepath]
+      exists <- liftIO $ doesFileExist filepath
+      if exists
+        then sendFile "image/jpeg" $ fromAbsFile filepath
+        else notFound

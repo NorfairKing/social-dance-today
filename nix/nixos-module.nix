@@ -137,6 +137,11 @@ in
               example = "https://staging.salsa-parties.today";
               description = "The url to the server to test";
             };
+            debug = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Debug options for the end-to-end test suite";
+            };
             time =
               mkOption {
                 type = types.str;
@@ -176,6 +181,7 @@ in
           (nullOrOption "mapdance-com-importer" mapdance-com-importer)
           (nullOrOption "salsachicago-com-importer" salsachicago-com-importer)
           (nullOrOption "sentry" sentry)
+          { static-dir = pkgs.gitignoreSource ../salsa-party-web-server/static; }
           cfg.web-server.config
         ];
       web-server-config-file = toYamlFile "salsa-web-server-config" web-server-config;
@@ -246,7 +252,7 @@ in
               };
             script =
               ''
-                ${salsaPartyPackages.salsa-party-web-server}/bin/salsa-party-web-server-e2e
+                ${salsaPartyPackages.salsa-party-web-server}/bin/salsa-party-web-server-e2e ${optionalString cfg.end-to-end-test.debug "--no-randomise-execution-order --synchronous"}
               '';
             serviceConfig =
               {

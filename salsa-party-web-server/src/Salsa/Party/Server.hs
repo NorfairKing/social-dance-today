@@ -52,6 +52,7 @@ runSalsaPartyServer settings@Settings {..} = do
                   appSendEmails = settingSendEmails,
                   appSendAddress = settingSendAddress,
                   appAdmin = settingAdmin,
+                  appStaticDir = settingStaticDir,
                   appOSMRateLimiter = do
                     guard settingEnableOSMGeocoding
                     pure rateLimiter,

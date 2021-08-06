@@ -52,6 +52,7 @@ serverSetupFunc man = do
   tdir <- tempDirSetupFunc "salsa"
   pool <- salsaConnectionPoolSetupFunc
   sessionKeyFile <- resolveFile tdir "session-key.aes"
+  staticDir <- resolveDir' "static" -- Read-only anyway.
   pure
     App
       { appRoot = Nothing,
@@ -63,6 +64,7 @@ serverSetupFunc man = do
         appSendEmails = False,
         appSendAddress = Nothing,
         appAdmin = Just adminEmail,
+        appStaticDir = staticDir,
         appOSMRateLimiter = Nothing,
         appSentrySettings = Nothing,
         appGoogleAPIKey = Nothing,

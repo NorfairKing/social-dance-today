@@ -40,4 +40,5 @@ export SALSA_PARTY_WEB_SERVER_SENTRY_RELEASE=manual
 
 export SALSA_PARTY_WEB_SERVER_LOG_LEVEL=LevelDebug
 export SALSA_PARTY_WEB_SERVER_ADMIN=syd@cs-syd.eu
+export SALSA_PARTY_WEB_SERVER_STATIC_DIR=static
 salsa-party-web-server &
