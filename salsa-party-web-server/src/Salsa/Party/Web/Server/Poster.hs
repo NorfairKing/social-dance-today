@@ -47,11 +47,12 @@ posterCropImage imageType contents = do
   let w = imageWidth jpegImage :: Int
       h = imageHeight jpegImage :: Int
 
-  if SB.length contents < desiredSize && w < desiredWidth && h < desiredHeight
+  let originalSize = SB.length contents
+  if originalSize <= desiredSize && w <= desiredWidth && h <= desiredHeight
     then pure (imageType, contents)
     else do
       convertedImage <-
-        if w < desiredWidth && h < desiredHeight
+        if w <= desiredWidth && h <= desiredHeight
           then reduceUntilSmallEnough jpegImage
           else
             let (actualWidth, actualHeight) =
@@ -73,7 +74,7 @@ posterCropImage imageType contents = do
                     --          == w / h
                     LT ->
                       let h' = desiredHeight
-                          w' = round $ fromIntegral desiredHeight * fromIntegral w / (fromIntegral h :: Float)
+                          w' = min desiredWidth $ round $ fromIntegral desiredHeight * fromIntegral w / (fromIntegral h :: Float)
                        in (w', h')
                     -- If width is greater than height, it's a landscape image.
                     -- In that case we want the width to be equal to the desired width
@@ -91,7 +92,7 @@ posterCropImage imageType contents = do
                     --         == w / h
                     GT ->
                       let w' = desiredWidth
-                          h' = round $ fromIntegral desiredWidth * fromIntegral h / (fromIntegral w :: Float)
+                          h' = min desiredHeight $ round $ fromIntegral desiredWidth * fromIntegral h / (fromIntegral w :: Float)
                        in (w', h')
                 convertedImage = scaleBilinear actualWidth actualHeight jpegImage
              in reduceUntilSmallEnough convertedImage
