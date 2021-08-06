@@ -66,6 +66,7 @@ library
       Salsa.Party.Web.Server.Handler.Admin.SiteTest
       Salsa.Party.Web.Server.Handler.Admin.TestOrganiserReminder
       Salsa.Party.Web.Server.Handler.Explore
+      Salsa.Party.Web.Server.Handler.ExternalEvent
       Salsa.Party.Web.Server.Handler.Home
       Salsa.Party.Web.Server.Handler.Import
       Salsa.Party.Web.Server.Handler.Organiser

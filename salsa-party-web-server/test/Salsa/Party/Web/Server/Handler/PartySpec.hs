@@ -4,7 +4,6 @@ module Salsa.Party.Web.Server.Handler.PartySpec (spec) where
 
 import Data.Default
 import qualified Database.Persist as DB
-import Salsa.Party.Web.Server.Handler.Party
 import Salsa.Party.Web.Server.Handler.TestImport
 import qualified Text.ICalendar as ICal
 

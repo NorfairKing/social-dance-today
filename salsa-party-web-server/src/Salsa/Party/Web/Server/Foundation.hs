@@ -20,6 +20,7 @@ where
 import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
+import Data.Default
 import Data.Fixed
 import Data.Maybe
 import Data.Text (Text)
@@ -39,6 +40,7 @@ import Salsa.Party.Web.Server.Static
 import Text.Blaze.Html5 ((!))
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
+import qualified Text.ICalendar as ICal
 import Text.Julius
 import Yesod
 import Yesod.AutoReload
@@ -152,3 +154,15 @@ instance ToWidgetHead App JSONLDData where
     toWidgetHead $
       H.script ! HA.type_ "application/ld+json" $
         H.lazyText $ renderJavascript $ toJavascript v
+
+instance HasContentType ICal.VCalendar where
+  getContentType _ = typeCalendar
+
+instance ToContent ICal.VCalendar where
+  toContent = toContent . ICal.printICalendar def
+
+instance ToTypedContent ICal.VCalendar where
+  toTypedContent vCalendar = TypedContent typeCalendar $ toContent vCalendar
+
+typeCalendar :: ContentType
+typeCalendar = "text/calendar"
