@@ -20,6 +20,7 @@ where
 import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
+import Data.Aeson as JSON
 import Data.Default
 import Data.Fixed
 import Data.Maybe
@@ -144,16 +145,28 @@ appDB func = do
   logFunc <- askLoggerIO
   liftIO $ runLoggingT (runSqlPool func pool) logFunc
 
-newtype JSONLDData = JSONLDData Value
+newtype JSONLDData = JSONLDData {unJSONLDData :: Value}
 
-toJSONLDData :: ToJSON a => a -> JSONLDData
-toJSONLDData = JSONLDData . toJSON
+instance HasContentType JSONLDData where
+  getContentType _ = typeLD
+
+instance ToContent JSONLDData where
+  toContent = toContent . unJSONLDData
+
+instance ToTypedContent JSONLDData where
+  toTypedContent ldData = TypedContent typeLD $ toContent ldData
 
 instance ToWidgetHead App JSONLDData where
   toWidgetHead (JSONLDData v) =
     toWidgetHead $
       H.script ! HA.type_ "application/ld+json" $
         H.lazyText $ renderJavascript $ toJavascript v
+
+typeLD :: ContentType
+typeLD = "application/ld+json"
+
+toJSONLDData :: ToJSON a => a -> JSONLDData
+toJSONLDData = JSONLDData . toJSON
 
 instance HasContentType ICal.VCalendar where
   getContentType _ = typeCalendar
