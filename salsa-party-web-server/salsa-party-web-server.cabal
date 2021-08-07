@@ -221,12 +221,14 @@ test-suite salsa-party-web-server-test
       Salsa.Party.Web.Server.Handler.Admin.SiteTestSpec
       Salsa.Party.Web.Server.Handler.AuthSpec
       Salsa.Party.Web.Server.Handler.ExploreSpec
+      Salsa.Party.Web.Server.Handler.ExternalEvent.ICalSpec
       Salsa.Party.Web.Server.Handler.ExternalEvent.LDSpec
       Salsa.Party.Web.Server.Handler.ExternalEventSpec
       Salsa.Party.Web.Server.Handler.HomeSpec
       Salsa.Party.Web.Server.Handler.I18NSpec
       Salsa.Party.Web.Server.Handler.ImageSpec
       Salsa.Party.Web.Server.Handler.OrganiserSpec
+      Salsa.Party.Web.Server.Handler.Party.ICalSpec
       Salsa.Party.Web.Server.Handler.Party.LDSpec
       Salsa.Party.Web.Server.Handler.PartySpec
       Salsa.Party.Web.Server.Handler.ReminderSpec
