@@ -18,8 +18,12 @@ import Network.URI
 import Salsa.Party.Web.Server.Handler.Event.Party.LD
 import Salsa.Party.Web.Server.Handler.Import
 
-partyPage :: Entity Party -> Handler Html
-partyPage (Entity partyId party@Party {..}) = do
+partyPage :: Entity Party -> Handler TypedContent
+partyPage partyEntity = selectRep $ do
+  provideRep $ partyPageHtml partyEntity
+
+partyPageHtml :: Entity Party -> Handler Html
+partyPageHtml (Entity partyId party@Party {..}) = do
   place@Place {..} <- runDB $ get404 partyPlace
   organiser@Organiser {..} <- runDB $ get404 partyOrganiser
   mPosterKey <- runDB $ getPosterForParty partyId

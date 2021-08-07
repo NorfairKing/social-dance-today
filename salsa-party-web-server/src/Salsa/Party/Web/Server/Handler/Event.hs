@@ -9,7 +9,7 @@ import Salsa.Party.Web.Server.Handler.Event.ICal
 import Salsa.Party.Web.Server.Handler.Event.Party
 import Salsa.Party.Web.Server.Handler.Import
 
-getEventR :: EventUUID -> Handler Html
+getEventR :: EventUUID -> Handler TypedContent
 getEventR eventUuid = do
   mParty <- runDB $ getBy $ UniquePartyUUID eventUuid
   case mParty of

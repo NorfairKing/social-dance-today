@@ -18,8 +18,12 @@ import Network.URI
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
 import Salsa.Party.Web.Server.Handler.Import
 
-externalEventPage :: Entity ExternalEvent -> Handler Html
-externalEventPage (Entity externalEventId externalEvent@ExternalEvent {..}) = do
+externalEventPage :: Entity ExternalEvent -> Handler TypedContent
+externalEventPage externalEventEntity = selectRep $ do
+  provideRep $ externalEventPageHtml externalEventEntity
+
+externalEventPageHtml :: Entity ExternalEvent -> Handler Html
+externalEventPageHtml (Entity externalEventId externalEvent@ExternalEvent {..}) = do
   place@Place {..} <- runDB $ get404 externalEventPlace
   mPosterKey <- runDB $ getPosterForExternalEvent externalEventId
   mGoogleAPIKey <- getsYesod appGoogleAPIKey
