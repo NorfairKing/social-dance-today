@@ -9,6 +9,14 @@
 module Salsa.Party.Web.Server.Handler.Admin.SiteTest
   ( getAdminSiteTestR,
     postAdminSiteTestR,
+    SiteTest (..),
+    SiteTestResult (..),
+    RobotsTxtResult (..),
+    SitemapXmlResult (..),
+    JSONLDResult (..),
+    AcceptJSONResult (..),
+    AcceptXMLResult (..),
+    runSiteTest,
   )
 where
 
@@ -43,21 +51,22 @@ postAdminSiteTestR = do
 
 adminSiteTesterPage :: Maybe (FormResult SiteTest) -> Handler Html
 adminSiteTesterPage mResult = do
+  man <- getsYesod appHTTPManager
   mSiteTest <- case mResult of
-    Just (FormSuccess siteTest) -> Just . (,) siteTest <$> runSiteTest siteTest
+    Just (FormSuccess siteTest) -> Just . (,) siteTest <$> runSiteTest man siteTest
     _ -> pure Nothing
   let xmlRenderSets = XML.def {XML.rsPretty = True}
   token <- genToken
   withMFormResultNavBar mResult $(widgetFile "admin/site-test")
 
-runSiteTest :: SiteTest -> Handler SiteTestResult
-runSiteTest SiteTest {..} = do
-  siteTestResultRobotsTxt <- testRobotsTxt siteTestUrl
-  siteTestResultSitemapXml <- testSitemapXml siteTestUrl
-  siteTestResultJSONLD <- testJSONLD siteTestUrl
-  siteTestAcceptJSONLD <- testAcceptJSONLDResult siteTestUrl
-  siteTestAcceptJSON <- testAcceptJSONResult siteTestUrl
-  siteTestAcceptXML <- testAcceptXMLResult siteTestUrl
+runSiteTest :: (MonadLogger m, MonadUnliftIO m) => HTTP.Manager -> SiteTest -> m SiteTestResult
+runSiteTest man SiteTest {..} = do
+  siteTestResultRobotsTxt <- testRobotsTxt man siteTestUrl
+  siteTestResultSitemapXml <- testSitemapXml man siteTestUrl
+  siteTestResultJSONLD <- testJSONLD man siteTestUrl
+  siteTestAcceptJSONLD <- testAcceptJSONLDResult man siteTestUrl
+  siteTestAcceptJSON <- testAcceptJSONResult man siteTestUrl
+  siteTestAcceptXML <- testAcceptXMLResult man siteTestUrl
   pure SiteTestResult {..}
 
 data SiteTestResult = SiteTestResult
@@ -76,11 +85,11 @@ data RobotsTxtResult
   | RobotsTxt !URI !Text
   deriving (Show, Eq, Generic)
 
-testRobotsTxt :: Text -> Handler RobotsTxtResult
-testRobotsTxt siteTestUrl = do
-  requestPrototype <- parseRequest $ T.unpack siteTestUrl
+testRobotsTxt :: (MonadLogger m, MonadUnliftIO m) => HTTP.Manager -> Text -> m RobotsTxtResult
+testRobotsTxt man siteTestUrl = do
+  requestPrototype <- liftIO $ parseRequest $ T.unpack siteTestUrl
   let request = requestPrototype {path = "/robots.txt"}
-  errOrResponse <- handleRequest request
+  errOrResponse <- httpLbsWithRetry request man
   pure $ case errOrResponse of
     Left err -> ErrRobotsTxt $ ppShow err
     Right response ->
@@ -97,11 +106,11 @@ data SitemapXmlResult
   | SitemapXml !URI !XML.Document
   deriving (Show, Eq, Generic)
 
-testSitemapXml :: Text -> Handler SitemapXmlResult
-testSitemapXml siteTestUrl = do
-  requestPrototype <- parseRequest $ T.unpack siteTestUrl
+testSitemapXml :: (MonadLogger m, MonadUnliftIO m) => HTTP.Manager -> Text -> m SitemapXmlResult
+testSitemapXml man siteTestUrl = do
+  requestPrototype <- liftIO $ parseRequest $ T.unpack siteTestUrl
   let request = requestPrototype {path = "/sitemap.xml"}
-  errOrResponse <- handleRequest request
+  errOrResponse <- httpLbsWithRetry request man
   pure $ case errOrResponse of
     Left err -> ErrSitemapXml $ ppShow err
     Right response ->
@@ -118,10 +127,10 @@ data JSONLDResult
   | JSONLD [LD.Event]
   deriving (Show, Eq, Generic)
 
-testJSONLD :: Text -> Handler [JSONLDResult]
-testJSONLD siteTestUrl = do
-  request <- parseRequest $ T.unpack siteTestUrl
-  errOrResponse <- handleRequest request
+testJSONLD :: (MonadLogger m, MonadUnliftIO m) => HTTP.Manager -> Text -> m [JSONLDResult]
+testJSONLD man siteTestUrl = do
+  request <- liftIO $ parseRequest $ T.unpack siteTestUrl
+  errOrResponse <- httpLbsWithRetry request man
   pure $ case errOrResponse of
     Left err -> [ErrJSONLD $ ppShow err]
     Right response ->
@@ -143,11 +152,11 @@ data AcceptJSONResult
   | AcceptJSON !JSON.Value
   deriving (Show, Eq, Generic)
 
-testAcceptJSONLDResult :: Text -> Handler AcceptJSONResult
-testAcceptJSONLDResult siteTestUrl = do
-  requestPrototype <- parseRequest $ T.unpack siteTestUrl
+testAcceptJSONLDResult :: (MonadLogger m, MonadUnliftIO m) => HTTP.Manager -> Text -> m AcceptJSONResult
+testAcceptJSONLDResult man siteTestUrl = do
+  requestPrototype <- liftIO $ parseRequest $ T.unpack siteTestUrl
   let request = requestPrototype {requestHeaders = ("Accept", "application/ld+json") : requestHeaders requestPrototype}
-  errOrResponse <- handleRequest request
+  errOrResponse <- httpLbsWithRetry request man
   pure $ case errOrResponse of
     Left err -> ErrAcceptJSON $ ppShow err
     Right response ->
@@ -159,11 +168,11 @@ testAcceptJSONLDResult siteTestUrl = do
               Left err -> ErrAcceptJSON $ "Got a response, but it doesn't look like JSON: " <> ppShow err
               Right value -> AcceptJSON value
 
-testAcceptJSONResult :: Text -> Handler AcceptJSONResult
-testAcceptJSONResult siteTestUrl = do
-  requestPrototype <- parseRequest $ T.unpack siteTestUrl
+testAcceptJSONResult :: (MonadLogger m, MonadUnliftIO m) => HTTP.Manager -> Text -> m AcceptJSONResult
+testAcceptJSONResult man siteTestUrl = do
+  requestPrototype <- liftIO $ parseRequest $ T.unpack siteTestUrl
   let request = requestPrototype {requestHeaders = ("Accept", "application/json") : requestHeaders requestPrototype}
-  errOrResponse <- handleRequest request
+  errOrResponse <- httpLbsWithRetry request man
   pure $ case errOrResponse of
     Left err -> ErrAcceptJSON $ ppShow err
     Right response ->
@@ -180,11 +189,11 @@ data AcceptXMLResult
   | AcceptXML !XML.Document
   deriving (Show, Eq, Generic)
 
-testAcceptXMLResult :: Text -> Handler AcceptXMLResult
-testAcceptXMLResult siteTestUrl = do
-  requestPrototype <- parseRequest $ T.unpack siteTestUrl
+testAcceptXMLResult :: (MonadLogger m, MonadUnliftIO m) => HTTP.Manager -> Text -> m AcceptXMLResult
+testAcceptXMLResult man siteTestUrl = do
+  requestPrototype <- liftIO $ parseRequest $ T.unpack siteTestUrl
   let request = requestPrototype {requestHeaders = ("Accept", "application/xml") : requestHeaders requestPrototype}
-  errOrResponse <- handleRequest request
+  errOrResponse <- httpLbsWithRetry request man
   pure $ case errOrResponse of
     Left err -> ErrAcceptXML $ ppShow err
     Right response ->
@@ -195,8 +204,3 @@ testAcceptXMLResult siteTestUrl = do
             else case XML.parseLBS XML.def $ responseBody response of
               Left err -> ErrAcceptXML $ "Got a response, but it doesn't look like XML: " <> ppShow err
               Right document -> AcceptXML document
-
-handleRequest :: Request -> Handler (Either HttpException (Response LB.ByteString))
-handleRequest request = do
-  man <- getsYesod appHTTPManager
-  httpLbsWithRetry request man

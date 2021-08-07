@@ -151,6 +151,7 @@ tests:
     - path-io
     - persistent
     - persistent-sqlite
+    - pretty-show
     - salsa-party-web-server
     - sydtest
     - sydtest-aeson

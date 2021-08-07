@@ -276,6 +276,7 @@ test-suite salsa-party-web-server-test
     , path-io
     , persistent
     , persistent-sqlite
+    , pretty-show
     , salsa-party-web-server
     , sydtest
     , sydtest-aeson
