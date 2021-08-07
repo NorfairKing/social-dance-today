@@ -1,19 +1,19 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
-module Salsa.Party.Web.Server.Handler.ExternalEvent.LD
-  ( externalEventToLDEvent,
+module Salsa.Party.Web.Server.Handler.Event.Party.LD
+  ( partyToLDEvent,
   )
 where
 
 import Salsa.Party.Web.Server.Handler.Import
 import qualified Web.JSONLD as LD
 
-externalEventToLDEvent :: (Route App -> Text) -> ExternalEvent -> Place -> Maybe CASKey -> LD.Event
-externalEventToLDEvent renderUrl ExternalEvent {..} Place {..} mPosterKey =
-  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+partyToLDEvent :: (Route App -> Text) -> Party -> Organiser -> Place -> Maybe CASKey -> LD.Event
+partyToLDEvent renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
+  let Party _ _ _ _ _ _ _ _ _ _ _ _ = undefined
    in LD.Event
-        { LD.eventName = externalEventTitle,
+        { LD.eventName = partyTitle,
           LD.eventLocation =
             LD.EventLocationPlace $
               LD.Place
@@ -27,35 +27,33 @@ externalEventToLDEvent renderUrl ExternalEvent {..} Place {..} mPosterKey =
                             LD.geoCoordinatesLongitude = placeLon
                           }
                 },
-          LD.eventStartDate = case externalEventStart of
-            Nothing -> LD.EventStartDate externalEventDay
+          LD.eventStartDate = case partyStart of
+            Nothing -> LD.EventStartDate partyDay
             Just timeOfDay ->
               LD.EventStartDateTime
                 LD.DateTime
                   { dateTimeLocalTime =
                       LocalTime
-                        { localDay = externalEventDay,
+                        { localDay = partyDay,
                           localTimeOfDay = timeOfDay
                         },
                     dateTimeTimeZone = Nothing
                   },
-          LD.eventDescription = externalEventDescription,
+          LD.eventDescription = partyDescription,
           LD.eventUrl = Nothing,
           LD.eventEndDate = Nothing,
           LD.eventAttendanceMode = Just LD.OfflineEventAttendanceMode,
           LD.eventStatus =
             Just $
-              if externalEventCancelled
+              if partyCancelled
                 then LD.EventCancelled
                 else LD.EventScheduled,
           LD.eventImages = [LD.EventImageURL (renderUrl (ImageR posterKey)) | posterKey <- maybeToList mPosterKey],
-          LD.eventOrganizer = case externalEventOrganiser of
-            Nothing -> Nothing
-            Just name ->
-              Just $
-                LD.EventOrganizerOrganization
-                  LD.Organization
-                    { LD.organizationName = name,
-                      organizationUrl = Nothing
-                    }
+          LD.eventOrganizer =
+            Just $
+              LD.EventOrganizerOrganization
+                LD.Organization
+                  { LD.organizationName = organiserName,
+                    organizationUrl = Just $ renderUrl (OrganiserR organiserUuid)
+                  }
         }

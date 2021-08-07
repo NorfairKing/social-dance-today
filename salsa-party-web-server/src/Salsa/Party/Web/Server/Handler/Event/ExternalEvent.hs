@@ -6,7 +6,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -fno-warn-orphans -fno-warn-unused-pattern-binds #-}
 
-module Salsa.Party.Web.Server.Handler.ExternalEvent
+module Salsa.Party.Web.Server.Handler.Event.ExternalEvent
   ( externalEventPage,
   )
 where
@@ -15,7 +15,7 @@ import qualified Data.Text.Encoding as TE
 import Google.Calendar
 import Network.HTTP.Types
 import Network.URI
-import Salsa.Party.Web.Server.Handler.ExternalEvent.LD
+import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
 import Salsa.Party.Web.Server.Handler.Import
 
 externalEventPage :: Entity ExternalEvent -> Handler Html

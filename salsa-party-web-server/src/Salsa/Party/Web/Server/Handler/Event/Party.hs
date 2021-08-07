@@ -6,7 +6,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -fno-warn-orphans -fno-warn-unused-pattern-binds #-}
 
-module Salsa.Party.Web.Server.Handler.Party
+module Salsa.Party.Web.Server.Handler.Event.Party
   ( partyPage,
   )
 where
@@ -15,8 +15,8 @@ import qualified Data.Text.Encoding as TE
 import Google.Calendar
 import Network.HTTP.Types
 import Network.URI
+import Salsa.Party.Web.Server.Handler.Event.Party.LD
 import Salsa.Party.Web.Server.Handler.Import
-import Salsa.Party.Web.Server.Handler.Party.LD
 
 partyPage :: Entity Party -> Handler Html
 partyPage (Entity partyId party@Party {..}) = do

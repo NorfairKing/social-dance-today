@@ -67,18 +67,18 @@ library
       Salsa.Party.Web.Server.Handler.Admin.SiteTest
       Salsa.Party.Web.Server.Handler.Admin.TestOrganiserReminder
       Salsa.Party.Web.Server.Handler.Event
+      Salsa.Party.Web.Server.Handler.Event.ExternalEvent
+      Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
+      Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
       Salsa.Party.Web.Server.Handler.Event.ICal
+      Salsa.Party.Web.Server.Handler.Event.Party
+      Salsa.Party.Web.Server.Handler.Event.Party.ICal
+      Salsa.Party.Web.Server.Handler.Event.Party.LD
       Salsa.Party.Web.Server.Handler.Explore
-      Salsa.Party.Web.Server.Handler.ExternalEvent
-      Salsa.Party.Web.Server.Handler.ExternalEvent.ICal
-      Salsa.Party.Web.Server.Handler.ExternalEvent.LD
       Salsa.Party.Web.Server.Handler.Home
       Salsa.Party.Web.Server.Handler.Image
       Salsa.Party.Web.Server.Handler.Import
       Salsa.Party.Web.Server.Handler.Organiser
-      Salsa.Party.Web.Server.Handler.Party
-      Salsa.Party.Web.Server.Handler.Party.ICal
-      Salsa.Party.Web.Server.Handler.Party.LD
       Salsa.Party.Web.Server.Handler.Reminder
       Salsa.Party.Web.Server.Handler.Search
       Salsa.Party.Web.Server.Handler.Search.Query
@@ -220,17 +220,17 @@ test-suite salsa-party-web-server-test
       Salsa.Party.Web.Server.Handler.Admin.PanelSpec
       Salsa.Party.Web.Server.Handler.Admin.SiteTestSpec
       Salsa.Party.Web.Server.Handler.AuthSpec
+      Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICalSpec
+      Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LDSpec
+      Salsa.Party.Web.Server.Handler.Event.ExternalEventSpec
+      Salsa.Party.Web.Server.Handler.Event.Party.ICalSpec
+      Salsa.Party.Web.Server.Handler.Event.Party.LDSpec
+      Salsa.Party.Web.Server.Handler.Event.PartySpec
       Salsa.Party.Web.Server.Handler.ExploreSpec
-      Salsa.Party.Web.Server.Handler.ExternalEvent.ICalSpec
-      Salsa.Party.Web.Server.Handler.ExternalEvent.LDSpec
-      Salsa.Party.Web.Server.Handler.ExternalEventSpec
       Salsa.Party.Web.Server.Handler.HomeSpec
       Salsa.Party.Web.Server.Handler.I18NSpec
       Salsa.Party.Web.Server.Handler.ImageSpec
       Salsa.Party.Web.Server.Handler.OrganiserSpec
-      Salsa.Party.Web.Server.Handler.Party.ICalSpec
-      Salsa.Party.Web.Server.Handler.Party.LDSpec
-      Salsa.Party.Web.Server.Handler.PartySpec
       Salsa.Party.Web.Server.Handler.ReminderSpec
       Salsa.Party.Web.Server.Handler.Search.QuerySpec
       Salsa.Party.Web.Server.Handler.SearchSpec

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Salsa.Party.Web.Server.Handler.Party.ICalSpec (spec) where
+module Salsa.Party.Web.Server.Handler.Event.Party.ICalSpec (spec) where
 
 import qualified Data.ByteString.Lazy as LB
 import Data.Default
@@ -8,7 +8,7 @@ import Data.Text (Text)
 import qualified Data.UUID as UUID
 import qualified Data.UUID.Typed as Typed
 import qualified Database.Persist as DB
-import Salsa.Party.Web.Server.Handler.Party.ICal
+import Salsa.Party.Web.Server.Handler.Event.Party.ICal
 import Salsa.Party.Web.Server.Handler.TestImport
 import Test.Syd.Wai (managerSpec)
 import qualified Text.ICalendar.Parser as ICal

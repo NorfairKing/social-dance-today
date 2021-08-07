@@ -1,9 +1,8 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
-module Salsa.Party.Web.Server.Handler.ExternalEvent.ICal
-  ( externalEventCalendar,
-    externalEventCalendarEvent,
+module Salsa.Party.Web.Server.Handler.Event.Party.ICal
+  ( partyCalendar,
   )
 where
 
@@ -16,8 +15,8 @@ import Network.URI
 import Salsa.Party.Web.Server.Handler.Import
 import qualified Text.ICalendar as ICal
 
-externalEventCalendar :: (Route App -> Text) -> ExternalEvent -> Place -> ICal.VCalendar
-externalEventCalendar renderUrl externalEvent@ExternalEvent {..} place =
+partyCalendar :: (Route App -> Text) -> Party -> Place -> ICal.VCalendar
+partyCalendar renderUrl party@Party {..} place =
   def
     { ICal.vcProdId =
         ICal.ProdId
@@ -26,28 +25,28 @@ externalEventCalendar renderUrl externalEvent@ExternalEvent {..} place =
           },
       ICal.vcEvents =
         M.singleton
-          (LT.fromStrict $ uuidText externalEventUuid, Just dateTime)
-          (externalEventCalendarEvent renderUrl externalEvent place)
+          (LT.fromStrict $ uuidText partyUuid, Just dateTime)
+          (partyCalendarEvent renderUrl party place)
     }
   where
-    dateTime = case externalEventStart of
-      Nothing -> Left $ ICal.Date externalEventDay
-      Just start -> Right $ ICal.FloatingDateTime (LocalTime externalEventDay start)
+    dateTime = case partyStart of
+      Nothing -> Left $ ICal.Date partyDay
+      Just start -> Right $ ICal.FloatingDateTime (LocalTime partyDay start)
 
-externalEventCalendarEvent :: (Route App -> Text) -> ExternalEvent -> Place -> ICal.VEvent
-externalEventCalendarEvent renderUrl ExternalEvent {..} Place {..} =
-  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+partyCalendarEvent :: (Route App -> Text) -> Party -> Place -> ICal.VEvent
+partyCalendarEvent renderUrl Party {..} Place {..} =
+  let Party _ _ _ _ _ _ _ _ _ _ _ _ = undefined
       noOther = def
    in ICal.VEvent
         { ICal.veDTStamp =
             ICal.DTStamp
               { ICal.dtStampValue =
-                  fromMaybe externalEventCreated externalEventModified,
+                  fromMaybe partyCreated partyModified,
                 ICal.dtStampOther = noOther
               },
           ICal.veUID =
             ICal.UID
-              { ICal.uidValue = LT.fromStrict $ uuidText externalEventUuid,
+              { ICal.uidValue = LT.fromStrict $ uuidText partyUuid,
                 ICal.uidOther = noOther
               },
           ICal.veClass =
@@ -55,21 +54,21 @@ externalEventCalendarEvent renderUrl ExternalEvent {..} Place {..} =
               { ICal.classValue = ICal.Public,
                 ICal.classOther = noOther
               },
-          ICal.veDTStart = Just $ case externalEventStart of
+          ICal.veDTStart = Just $ case partyStart of
             Nothing ->
               ICal.DTStartDate
-                { ICal.dtStartDateValue = ICal.Date externalEventDay,
+                { ICal.dtStartDateValue = ICal.Date partyDay,
                   dtStartOther = noOther
                 }
             Just start ->
               ICal.DTStartDateTime
-                { ICal.dtStartDateTimeValue = ICal.FloatingDateTime (LocalTime externalEventDay start),
+                { ICal.dtStartDateTimeValue = ICal.FloatingDateTime (LocalTime partyDay start),
                   ICal.dtStartOther = noOther
                 },
           ICal.veCreated =
             Just $
               ICal.Created
-                { ICal.createdValue = externalEventCreated,
+                { ICal.createdValue = partyCreated,
                   ICal.createdOther = noOther
                 },
           ICal.veDescription =
@@ -81,7 +80,7 @@ externalEventCalendarEvent renderUrl ExternalEvent {..} Place {..} =
                     ICal.descriptionOther = noOther
                   }
             )
-              <$> externalEventDescription,
+              <$> partyDescription,
           ICal.veGeo =
             Just $
               ICal.Geo
@@ -96,7 +95,7 @@ externalEventCalendarEvent renderUrl ExternalEvent {..} Place {..} =
                     ICal.lastModifiedOther = noOther
                   }
             )
-              <$> externalEventModified,
+              <$> partyModified,
           ICal.veLocation =
             Just $
               ICal.Location
@@ -110,20 +109,20 @@ externalEventCalendarEvent renderUrl ExternalEvent {..} Place {..} =
           ICal.veSeq = def,
           ICal.veStatus =
             Just $
-              if externalEventCancelled
+              if partyCancelled
                 then ICal.CancelledEvent {eventStatusOther = noOther}
                 else ICal.ConfirmedEvent {eventStatusOther = noOther},
           ICal.veSummary =
             Just $
               ICal.Summary
-                { ICal.summaryValue = LT.fromStrict externalEventTitle,
+                { ICal.summaryValue = LT.fromStrict partyTitle,
                   ICal.summaryAltRep = Nothing,
                   ICal.summaryLanguage = Nothing,
                   ICal.summaryOther = noOther
                 },
           ICal.veTransp = ICal.Transparent {timeTransparencyOther = noOther},
           ICal.veUrl = do
-            uri <- parseURI $ T.unpack $ renderUrl $ EventR externalEventUuid
+            uri <- parseURI $ T.unpack $ renderUrl $ EventR partyUuid
             pure $ ICal.URL {ICal.urlValue = uri, ICal.urlOther = noOther},
           ICal.veRecurId = Nothing,
           ICal.veRRule = S.empty,

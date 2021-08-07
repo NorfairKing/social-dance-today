@@ -5,9 +5,9 @@ module Salsa.Party.Web.Server.Handler.Event.ICal
   )
 where
 
-import Salsa.Party.Web.Server.Handler.ExternalEvent.ICal
+import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
+import Salsa.Party.Web.Server.Handler.Event.Party.ICal
 import Salsa.Party.Web.Server.Handler.Import
-import Salsa.Party.Web.Server.Handler.Party.ICal
 import qualified Text.ICalendar as ICal
 
 getEventIcsR :: EventUUID -> Handler ICal.VCalendar

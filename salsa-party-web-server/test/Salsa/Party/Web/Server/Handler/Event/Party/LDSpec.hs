@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Salsa.Party.Web.Server.Handler.Party.LDSpec (spec) where
+module Salsa.Party.Web.Server.Handler.Event.Party.LDSpec (spec) where
 
 import Data.Text (Text)
 import Data.Time
@@ -8,7 +8,7 @@ import qualified Data.UUID as UUID
 import qualified Data.UUID.Typed as Typed
 import Database.Persist.Sql
 import Salsa.Party.DB
-import Salsa.Party.Web.Server.Handler.Party.LD
+import Salsa.Party.Web.Server.Handler.Event.Party.LD
 import Salsa.Party.Web.Server.Handler.TestImport
 import Test.Syd.Aeson
 import Test.Syd.Wai (managerSpec)
