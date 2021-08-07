@@ -2,18 +2,16 @@
 
 module Salsa.Party.Web.Server.Handler.ExternalEvent.LDSpec (spec) where
 
-import qualified Data.ByteString.Builder as SBB
-import qualified Data.ByteString.Lazy as LB
-import qualified Data.Text.Encoding as TE
+import Data.Text (Text)
 import Data.Time
 import qualified Data.UUID as UUID
 import qualified Data.UUID.Typed as Typed
 import Database.Persist.Sql
-import Network.HTTP.Types
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Handler.ExternalEvent.LD
-import Test.Syd
+import Salsa.Party.Web.Server.Handler.TestImport
 import Test.Syd.Aeson
+import Test.Syd.Wai (managerSpec)
 import Yesod.Core
 
 spec :: Spec
@@ -44,16 +42,15 @@ spec = do
             placeLon = 8.138471299
           }
 
-  it "outputs the same JSON LD as before for this external event" $
-    pureGoldenJSONValueFile
-      "test_resources/ld/external-event.json"
-      ( externalEventToLDEvent
-          ( \route ->
-              let (routePieces, queryPieces) = renderRoute route
-                  query = map (\(kt, vt) -> (TE.encodeUtf8 kt, Just $ TE.encodeUtf8 vt)) queryPieces
-               in TE.decodeUtf8 $ LB.toStrict $ SBB.toLazyByteString $ "http://localhost:8000" <> encodePath routePieces query
-          )
-          exampleExternalEvent
-          examplePlace
-          Nothing
-      )
+  managerSpec . setupAroundWith' (\man () -> serverSetupFunc man) $
+    it "outputs the same JSON LD as before for this external event" $ \app ->
+      let urlRender :: Route App -> Text
+          urlRender route = yesodRender app "http://localhost:8000" route []
+       in pureGoldenJSONValueFile
+            "test_resources/ld/external-event.json"
+            ( externalEventToLDEvent
+                urlRender
+                exampleExternalEvent
+                examplePlace
+                Nothing
+            )

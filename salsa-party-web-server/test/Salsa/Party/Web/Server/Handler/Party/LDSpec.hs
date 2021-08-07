@@ -2,18 +2,16 @@
 
 module Salsa.Party.Web.Server.Handler.Party.LDSpec (spec) where
 
-import qualified Data.ByteString.Builder as SBB
-import qualified Data.ByteString.Lazy as LB
-import qualified Data.Text.Encoding as TE
+import Data.Text (Text)
 import Data.Time
 import qualified Data.UUID as UUID
 import qualified Data.UUID.Typed as Typed
 import Database.Persist.Sql
-import Network.HTTP.Types
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Handler.Party.LD
-import Test.Syd
+import Salsa.Party.Web.Server.Handler.TestImport
 import Test.Syd.Aeson
+import Test.Syd.Wai (managerSpec)
 import Yesod.Core
 
 spec :: Spec
@@ -50,17 +48,16 @@ spec = do
             placeLon = 7.443078400
           }
 
-  it "outputs the same JSON LD as before for this party" $
-    pureGoldenJSONValueFile
-      "test_resources/ld/party.json"
-      ( partyToLDEvent
-          ( \route ->
-              let (routePieces, queryPieces) = renderRoute route
-                  query = map (\(kt, vt) -> (TE.encodeUtf8 kt, Just $ TE.encodeUtf8 vt)) queryPieces
-               in TE.decodeUtf8 $ LB.toStrict $ SBB.toLazyByteString $ "http://localhost:8000" <> encodePath routePieces query
-          )
-          exampleParty
-          exampleOrganiser
-          examplePlace
-          (either (const Nothing) Just $ parseCASKey "UTpq9WwrRgBrNo9GusMO2QYGN+IZCK4E+IsnbgCVmvY=")
-      )
+  managerSpec . setupAroundWith' (\man () -> serverSetupFunc man) $
+    it "outputs the same JSON LD as before for this party" $ \app ->
+      let urlRender :: Route App -> Text
+          urlRender route = yesodRender app "http://localhost:8000" route []
+       in pureGoldenJSONValueFile
+            "test_resources/ld/party.json"
+            ( partyToLDEvent
+                urlRender
+                exampleParty
+                exampleOrganiser
+                examplePlace
+                (either (const Nothing) Just $ parseCASKey "UTpq9WwrRgBrNo9GusMO2QYGN+IZCK4E+IsnbgCVmvY=")
+            )
