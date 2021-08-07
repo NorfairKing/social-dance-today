@@ -124,6 +124,7 @@ tests:
     dependencies:
     - QuickCheck
     - aeson
+    - aeson-pretty
     - bytestring
     - conduit
     - containers

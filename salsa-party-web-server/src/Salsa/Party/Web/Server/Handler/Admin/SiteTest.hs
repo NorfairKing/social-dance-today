@@ -11,12 +11,18 @@ module Salsa.Party.Web.Server.Handler.Admin.SiteTest
     postAdminSiteTestR,
     SiteTest (..),
     SiteTestResult (..),
-    RobotsTxtResult (..),
-    SitemapXmlResult (..),
-    JSONLDResult (..),
-    AcceptJSONResult (..),
-    AcceptXMLResult (..),
     runSiteTest,
+    RobotsTxtResult (..),
+    testRobotsTxt,
+    SitemapXmlResult (..),
+    testSitemapXml,
+    JSONLDResult (..),
+    testJSONLD,
+    AcceptJSONResult (..),
+    testAcceptJSONResult,
+    testAcceptJSONLDResult,
+    AcceptXMLResult (..),
+    testAcceptXMLResult,
   )
 where
 

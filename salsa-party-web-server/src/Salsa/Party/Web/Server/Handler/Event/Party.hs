@@ -52,7 +52,10 @@ partyPageHtml (Entity partyId party@Party {..}) = do
         then MsgPartyTitleCancelled partyTitle
         else MsgPartyTitleScheduled partyTitle
     setDescriptionI $ maybe MsgPartyWithoutDescription MsgPartyDescription partyDescription
-    toWidgetHead $ toJSONLDData $ partyToLDEvent renderUrl party organiser place mPosterKey
+    let ldEvent = partyToLDEvent renderUrl party organiser place mPosterKey
+    -- liftIO $ pPrint ("Place from db" :: Text, place)
+    -- liftIO $ pPrint ("LD Event on server side" :: Text, ldEvent)
+    toWidgetHead $ toJSONLDData ldEvent
     addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified
     let mAddToGoogleLink = addPartyToGoogleCalendarLink renderUrl party place
     $(widgetFile "party")

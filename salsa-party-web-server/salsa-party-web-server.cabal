@@ -248,6 +248,7 @@ test-suite salsa-party-web-server-test
   build-depends:
       QuickCheck
     , aeson
+    , aeson-pretty
     , base >=4.7 && <5
     , bytestring
     , conduit
