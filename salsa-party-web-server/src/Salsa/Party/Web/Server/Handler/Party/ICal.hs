@@ -18,7 +18,12 @@ import qualified Text.ICalendar as ICal
 partyCalendar :: (Route App -> Text) -> Party -> Place -> ICal.VCalendar
 partyCalendar renderUrl party@Party {..} place =
   def
-    { ICal.vcEvents =
+    { ICal.vcProdId =
+        ICal.ProdId
+          { ICal.prodIdValue = LT.fromStrict $ renderUrl HomeR,
+            ICal.prodIdOther = def
+          },
+      ICal.vcEvents =
         M.singleton
           (LT.fromStrict $ uuidText partyUuid, Just dateTime)
           (partyCalendarEvent renderUrl party place)

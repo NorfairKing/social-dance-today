@@ -19,7 +19,12 @@ import qualified Text.ICalendar as ICal
 externalEventCalendar :: (Route App -> Text) -> ExternalEvent -> Place -> ICal.VCalendar
 externalEventCalendar renderUrl externalEvent@ExternalEvent {..} place =
   def
-    { ICal.vcEvents =
+    { ICal.vcProdId =
+        ICal.ProdId
+          { ICal.prodIdValue = LT.fromStrict $ renderUrl HomeR,
+            ICal.prodIdOther = def
+          },
+      ICal.vcEvents =
         M.singleton
           (LT.fromStrict $ uuidText externalEventUuid, Just dateTime)
           (externalEventCalendarEvent renderUrl externalEvent place)
