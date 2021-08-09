@@ -22,7 +22,8 @@
     <h4 .title .is-6>
       <a
         href=@{OrganiserR organiserUuid}
-        title=_{MsgPartyOrganiserTitle organiserName}>
+        title=_{MsgPartyOrganiserTitle organiserName}
+        rel="author">
         _{MsgPartyOrganiser organiserName}
 
     $maybe description <- partyDescription
@@ -41,7 +42,7 @@
           <a .button .is-light
             href=#{homepage}
             title=_{MsgPartyHomepageTitle partyTitle}
-            rel="external nofollow">
+            rel="external">
             _{MsgPartyHomepage}
         
 
