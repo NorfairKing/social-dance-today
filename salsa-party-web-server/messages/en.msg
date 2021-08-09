@@ -64,7 +64,7 @@ PartyWithoutDescription: Party without description
 
 PartyAddress address@Text: Address: #{address}
 PartyOrganiser name@Text: Organiser: #{name}
-PartyOrganiserTitle organiserName@Text: Organiser profile for #{organiserName}
+PartyOrganiserTitle organiserName@Text: Organiser profile of #{organiserName}
 PartyPrice price@Text: Price: #{price}
 PartyHomepage: Website
 PartyHomepageTitle partyTitle@Text: Homepage of #{partyTitle}

@@ -70,10 +70,14 @@ PartyWithoutDescription:  Party ohne Beschreibung
 
 PartyAddress address@Text: Adresse: #{address}
 PartyOrganiser name@Text: Veranstalter: #{name}
+PartyOrganiserTitle organiserName@Text: Veranstalterprofil von #{organiserName}
 PartyPrice price@Text: Preis: #{price}
 PartyHomepage: Webseite
+PartyHomepageTitle partyTitle@Text: Webseite von #{partyTitle}
 PartyDownloadCalendarEvent: Kalendar-Event herunterladen
-PartyAddToGoogleCalendar: Zu Google Kalender hinzufügen
+PartyDownloadCalendarEventTitle partyTitle@Text: Kalendar-Event herunterladen für #{partyTitle}
+PartyAddToGoogleCalendar: Zu Google Calendar hinzufügen
+PartyAddToGoogleCalendarTitle partyTitle@Text: #{partyTitle} zu Google Calendar hinzufügen
 
 ExternalEventCaution: Event via Websuche gefunden. Behandeln Sie diese Informationen mit Vorsicht. (Or: Angaben ohne Gewähr.)
 

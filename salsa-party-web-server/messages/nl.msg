@@ -68,10 +68,14 @@ PartyWithoutDescription: Feest zonder beschrijving
 
 PartyAddress address@Text: Adres: #{address}
 PartyOrganiser name@Text: Organisator: #{name}
+PartyOrganiserTitle organiserName@Text: Organisatorprofiel van #{organiserName}
 PartyPrice price@Text: Prijs: #{price}
 PartyHomepage: Website
+PartyHomepageTitle partyTitle@Text: Website van #{partyTitle}
 PartyDownloadCalendarEvent: Download evenement
+PartyDownloadCalendarEventTitle partyTitle@Text: Kalender evenement voor #{partyTitle} downloaden
 PartyAddToGoogleCalendar: Toevoegen aan Google Calendar
+PartyAddToGoogleCalendarTitle partyTitle@Text: #{partyTitle} aan Google Calendar toevoegen
 
 ExternalEventCaution: Evenement gevonden op het web. Gelieve voorzichtig om te gaan met deze informatie.
 
