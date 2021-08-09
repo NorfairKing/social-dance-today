@@ -64,10 +64,14 @@ PartyWithoutDescription: Party without description
 
 PartyAddress address@Text: Address: #{address}
 PartyOrganiser name@Text: Organiser: #{name}
+PartyOrganiserTitle organiserName@Text: Organiser profile for #{organiserName}
 PartyPrice price@Text: Price: #{price}
 PartyHomepage: Website
+PartyHomepageTitle partyTitle@Text: Homepage of #{partyTitle}
 PartyDownloadCalendarEvent: Download Calendar Event
+PartyDownloadCalendarEventTitle partyTitle@Text: Download Calendar Event for #{partyTitle}
 PartyAddToGoogleCalendar: Add to Google Calendar
+PartyAddToGoogleCalendarTitle partyTitle@Text: Add #{partyTitle} to Google Calendar
 
 ExternalEventCaution: Event found via web search, treat this information with caution.
 

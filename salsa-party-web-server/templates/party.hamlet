@@ -20,7 +20,9 @@
       ^{posterImageWidget party organiser posterKey}
 
     <h4 .title .is-6>
-      <a href=@{OrganiserR organiserUuid}>
+      <a
+        href=@{OrganiserR organiserUuid}
+        title=_{MsgPartyOrganiserTitle organiserName}>
         _{MsgPartyOrganiser organiserName}
 
     $maybe description <- partyDescription
@@ -36,7 +38,10 @@
     $maybe homepage <- partyHomepage
       <div .content>
         <p>
-          <a .button .is-light href=#{homepage} rel="external nofollow">
+          <a .button .is-light
+            href=#{homepage}
+            title=_{MsgPartyHomepageTitle partyTitle}
+            rel="external nofollow">
             _{MsgPartyHomepage}
         
 
@@ -52,10 +57,15 @@
             src=#{googleMapsEmbedUrl}>
  
     <div .buttons>
-      <a .button href=@{EventIcsR partyUuid} type="text/calendar">
+      <a .button
+        href=@{EventIcsR partyUuid}
+        title=_{MsgPartyDownloadCalendarEventTitle partyTitle}
+        type="text/calendar">
         _{MsgPartyDownloadCalendarEvent}
       $maybe addToGoogleLink <- mAddToGoogleLink
-        <a .button href=#{show addToGoogleLink}>
+        <a .button
+          href=#{show addToGoogleLink}
+          title=_{MsgPartyAddToGoogleCalendarTitle partyTitle}>
           _{MsgPartyAddToGoogleCalendar}
 
 

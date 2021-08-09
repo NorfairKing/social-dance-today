@@ -52,10 +52,15 @@
             src=#{googleMapsEmbedUrl}>
 
     <div .buttons>
-      <a .button href=@{EventIcsR externalEventUuid} type="text/calendar">
+      <a .button
+        href=@{EventIcsR externalEventUuid}
+        title=_{MsgPartyDownloadCalendarEventTitle externalEventTitle}
+        type="text/calendar">
         _{MsgPartyDownloadCalendarEvent}
       $maybe addToGoogleLink <- mAddToGoogleLink
-        <a .button href=#{show addToGoogleLink}>
+        <a .button
+          href=#{show addToGoogleLink}
+          title=_{MsgPartyAddToGoogleCalendarTitle externalEventTitle}>
           _{MsgPartyAddToGoogleCalendar}
 
     <p .help>
