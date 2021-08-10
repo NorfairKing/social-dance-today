@@ -16,6 +16,7 @@ getAdminPanelR :: Handler Html
 getAdminPanelR = do
   now <- liftIO getCurrentTime
   let today = utctDay now
+
   nbUsers <- runDB $ count ([] :: [Filter User])
   nbOrganisers <- runDB $ count ([] :: [Filter Organiser])
   nbOrganiserReminders <- runDB $ count ([] :: [Filter OrganiserReminder])
@@ -25,6 +26,12 @@ getAdminPanelR = do
   nbUpcomingExternalEvents <- runDB $ count ([ExternalEventDay >=. today] :: [Filter ExternalEvent])
   nbUpcomingExternalEvents30Days <- runDB $ count ([ExternalEventDay >=. today, ExternalEventDay <=. addDays 30 today] :: [Filter ExternalEvent])
   nbExternalEvents <- runDB $ count ([] :: [Filter ExternalEvent])
+
+  mLatestUser <- runDB $ selectFirst [] [Desc UserCreated]
+  mLatestOrganiser <- runDB $ selectFirst [] [Desc OrganiserCreated]
+  mLatestParty <- runDB $ selectFirst [] [Desc PartyCreated]
+  mLatestPartySchedule <- runDB $ selectFirst [] [Desc ScheduleCreated]
+
   importers <- do
     importers <- runDB $ selectList [] [Asc ImporterMetadataId]
     forM importers $ \importer -> do

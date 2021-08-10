@@ -115,6 +115,45 @@
 <section .section>
   <div .container>
     <h2 .title .is-4>
+      Latest
+
+    <nav .level>
+      $maybe Entity latestUserId latestUser <- mLatestUser
+        <div .level-item .has-text-centered>
+          <div>
+            <p .heading>
+              User
+            <a .is-link href=@{AdminR $ AdminUserR latestUserId}>
+              #{userEmailAddress latestUser}
+
+      $maybe Entity _ latestOrganiser <- mLatestOrganiser
+        <div .level-item .has-text-centered>
+          <div>
+            <p .heading>
+              Organiser
+            <a .is-link href=@{AdminR $ AdminUserR $ organiserUser latestOrganiser}>
+              #{organiserName latestOrganiser}
+
+      $maybe Entity _ latestParty <- mLatestParty
+        <div .level-item .has-text-centered>
+          <div>
+            <p .heading>
+              Party
+            <a .is-link href=@{EventR $ partyUuid latestParty}>
+              #{partyTitle latestParty}
+
+      $maybe Entity _ latestPartySchedule <- mLatestPartySchedule
+        <div .level-item .has-text-centered>
+          <div>
+            <p .heading>
+              Party Schedule
+            <p .content>
+              #{scheduleTitle latestPartySchedule}
+              ^{recurrenceDescriptionWidget $ scheduleRecurrence latestPartySchedule}
+
+<section .section>
+  <div .container>
+    <h2 .title .is-4>
       Importers
 
     <table .table .is-fullwidth .is-striped>
