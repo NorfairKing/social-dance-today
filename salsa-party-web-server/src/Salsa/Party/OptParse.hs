@@ -57,7 +57,9 @@ data Settings = Settings
     -- https://mapdance.com
     settingMapdanceComImportLooperSettings :: !LooperSettings,
     -- https://salsachicago.com
-    settingSalsachicagoComImportLooperSettings :: !LooperSettings
+    settingSalsachicagoComImportLooperSettings :: !LooperSettings,
+    -- https://dancefloorfinder.com
+    settingDancefloorfinderComImportLooperSettings :: !LooperSettings
   }
   deriving (Show, Eq, Generic)
 
@@ -96,6 +98,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingDanceplaceComImportLooperSettings = deriveLooperSettings (minutes 4 + seconds 3) (hours 1) flagDanceplaceComImportLooperFlags envDanceplaceComImportLooperEnvironment (mc confDanceplaceComImportLooperConfiguration)
   let settingMapdanceComImportLooperSettings = deriveLooperSettings (minutes 5 + seconds 4) (hours 1) flagMapdanceComImportLooperFlags envMapdanceComImportLooperEnvironment (mc confMapdanceComImportLooperConfiguration)
   let settingSalsachicagoComImportLooperSettings = deriveLooperSettings (minutes 6 + seconds 5) (hours 1) flagSalsachicagoComImportLooperFlags envSalsachicagoComImportLooperEnvironment (mc confSalsachicagoComImportLooperConfiguration)
+  let settingDancefloorfinderComImportLooperSettings = deriveLooperSettings (minutes 6 + seconds 5) (hours 1) flagDancefloorfinderComImportLooperFlags envDancefloorfinderComImportLooperEnvironment (mc confDancefloorfinderComImportLooperConfiguration)
   pure Settings {..}
   where
     mc :: (Configuration -> Maybe a) -> Maybe a
@@ -130,7 +133,8 @@ data Configuration = Configuration
     confGolatindanceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
     confDanceplaceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
     confMapdanceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confSalsachicagoComImportLooperConfiguration :: !(Maybe LooperConfiguration)
+    confSalsachicagoComImportLooperConfiguration :: !(Maybe LooperConfiguration),
+    confDancefloorfinderComImportLooperConfiguration :: !(Maybe LooperConfiguration)
   }
   deriving (Show, Eq, Generic)
 
@@ -164,6 +168,7 @@ instance YamlSchema Configuration where
         <*> optionalField "danceplace-com-importer" "The danceplace.com import looper"
         <*> optionalField "mapdance-com-importer" "The mapdance.com import looper"
         <*> optionalField "salsachicago-com-importer" "The salsachicago.com import looper"
+        <*> optionalField "dancefloorfinder-com-importer" "The dancefloorfinder.com import looper"
 
 data SentryConfiguration = SentryConfiguration
   { sentryConfDSN :: !(Maybe Text),
@@ -218,7 +223,8 @@ data Environment = Environment
     envGolatindanceComImportLooperEnvironment :: !LooperEnvironment,
     envDanceplaceComImportLooperEnvironment :: !LooperEnvironment,
     envMapdanceComImportLooperEnvironment :: !LooperEnvironment,
-    envSalsachicagoComImportLooperEnvironment :: !LooperEnvironment
+    envSalsachicagoComImportLooperEnvironment :: !LooperEnvironment,
+    envDancefloorfinderComImportLooperEnvironment :: !LooperEnvironment
   }
   deriving (Show, Eq, Generic)
 
@@ -260,6 +266,7 @@ environmentParser =
       <*> looperEnvironmentParser "DANCEPLACE_COM_IMPORTER"
       <*> looperEnvironmentParser "MAPDANCE_COM_IMPORTER"
       <*> looperEnvironmentParser "SALSACHICAGO_COM_IMPORTER"
+      <*> looperEnvironmentParser "DANCEFLOORFINDER_COM_IMPORTER"
   where
     mE = Env.def Nothing
 
@@ -320,7 +327,8 @@ data Flags = Flags
     flagGolatindanceComImportLooperFlags :: !LooperFlags,
     flagDanceplaceComImportLooperFlags :: !LooperFlags,
     flagMapdanceComImportLooperFlags :: !LooperFlags,
-    flagSalsachicagoComImportLooperFlags :: !LooperFlags
+    flagSalsachicagoComImportLooperFlags :: !LooperFlags,
+    flagDancefloorfinderComImportLooperFlags :: !LooperFlags
   }
   deriving (Show, Eq, Generic)
 
@@ -494,6 +502,7 @@ parseFlags =
     <*> getLooperFlags "danceplace-com-importer"
     <*> getLooperFlags "mapdance-com-importer"
     <*> getLooperFlags "salsachicago-com-importer"
+    <*> getLooperFlags "dancefloorfinder-com-importer"
 
 data SentryFlags = SentryFlags
   { sentryFlagDSN :: !(Maybe Text),

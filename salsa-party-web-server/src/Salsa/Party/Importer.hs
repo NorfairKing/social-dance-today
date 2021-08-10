@@ -5,6 +5,7 @@ module Salsa.Party.Importer where
 
 import Control.Monad.Logger
 import Looper
+import Salsa.Party.Importer.DancefloorfinderCom
 import Salsa.Party.Importer.DanceplaceCom
 import Salsa.Party.Importer.Env
 import Salsa.Party.Importer.EventsInfo
@@ -27,5 +28,6 @@ importerLoopers Settings {..} app =
         importerLooper golatindanceComImporter settingGolatindanceComImportLooperSettings,
         importerLooper danceplaceComImporter settingDanceplaceComImportLooperSettings,
         importerLooper mapdanceComImporter settingMapdanceComImportLooperSettings,
-        importerLooper salsachicagoComImporter settingSalsachicagoComImportLooperSettings
+        importerLooper salsachicagoComImporter settingSalsachicagoComImportLooperSettings,
+        importerLooper dancefloorfinderComImporter settingDancefloorfinderComImportLooperSettings
       ]
