@@ -3,6 +3,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
@@ -18,6 +19,7 @@ import qualified Data.Map.Strict as M
 import Data.Word
 import Salsa.Party.Web.Server.Handler.Import
 import Text.Julius
+import Text.Printf
 
 getAdminChartsR :: Handler Html
 getAdminChartsR = do
@@ -51,14 +53,31 @@ getAdminChartsR = do
   -- Per day
   partiesPerDayMap <- makePerDayCountMap acqPartiesSource $ partyDay . entityVal
   externalEventsPerDayMap <- makePerDayCountMap acqExternalEventsSource $ externalEventDay . entityVal
+  let eventsPerDayMap = M.unionWith (+) partiesPerDayMap externalEventsPerDayMap
 
   let minDay = minimum $ map fst $ mapMaybe M.lookupMin [dayCountMapOfExternalEvents, dayCountMapOfParties]
-      curDay = addDays (-1) today
+      curDay = today
       maxDay = addDays 30 today
 
   withNavBar $ do
     addScriptRemote "https://cdn.jsdelivr.net/npm/chart.js@3.4.1/dist/chart.min.js"
     $(widgetFile "admin/charts")
+
+currentAndLastMonthCountWidget :: Map Day Word64 -> Widget
+currentAndLastMonthCountWidget m = do
+  today <- liftIO $ utctDay <$> getCurrentTime
+  let nowCount :: Word64
+      nowCount = fromMaybe 0 $ M.lookup today m
+  let lastMonthCount :: Word64
+      lastMonthCount = fromMaybe 0 $ M.lookup (addDays (-30) today) m
+  let upRatio :: Double
+      upRatio = fromIntegral nowCount / fromIntegral lastMonthCount
+  let upPercentageString :: String
+      upPercentageString = printf "+%.0f" (upRatio * 100)
+  addScriptRemote "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+  [whamlet|
+     #{nowCount}, #{upPercentageString} %
+  |]
 
 makePerDayCountMap :: MonadUnliftIO m => Acquire (ConduitT () a m ()) -> (a -> Day) -> m (Map Day Word64)
 makePerDayCountMap acqSource func = withAcquire acqSource $ \source ->

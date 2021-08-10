@@ -6,30 +6,30 @@
     <div .columns .is-multiline .is-centered>
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
-          ⭐ Upcoming events (30 days)
+          ⭐ Upcoming events (30 days): ^{currentAndLastMonthCountWidget dayCountMapOfTotal30Days}
         ^{lineChart minDay curDay [("Parties", dayCountMapOfParties30Days), ("External events", dayCountMapOfExternalEvents30Days), ("Total", dayCountMapOfTotal30Days)]}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
-          Upcoming parties (30 days)
+          Upcoming parties (30 days): ^{currentAndLastMonthCountWidget dayCountMapOfParties30Days}
         ^{lineChart minDay curDay [("parties", dayCountMapOfParties30Days)]}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
-          Upcoming events
+          Upcoming events: ^{currentAndLastMonthCountWidget dayCountMapOfTotal}
         ^{lineChart minDay curDay [("Parties", dayCountMapOfParties), ("External events", dayCountMapOfExternalEvents), ("Total", dayCountMapOfTotal)]}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
-          Upcoming parties
+          Upcoming parties: ^{currentAndLastMonthCountWidget dayCountMapOfParties}
         ^{lineChart minDay curDay [("Parties", dayCountMapOfParties)]}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
-          Users and Organisers
+          Users and Organisers: ^{currentAndLastMonthCountWidget dayCountOfOrganisers}
         ^{lineChart minDay curDay [("Users", dayCountOfUsers), ("Organisers", dayCountOfOrganisers)]}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
-          Parties per day
+          Parties per day: ^{currentAndLastMonthCountWidget eventsPerDayMap}
         ^{barChart minDay maxDay [("Parties", partiesPerDayMap),("External Events", externalEventsPerDayMap)]}
