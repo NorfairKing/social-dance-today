@@ -43,6 +43,8 @@ pkgs.nixosTest (
             golatindance-com-importer.enable = false;
             danceplace-com-importer.enable = false;
             mapdance-com-importer.enable = false;
+            salsachicago-com-importer.enable = false;
+            dancefloorfinder-com-importer.enable = false;
           };
         };
       };

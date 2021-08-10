@@ -249,6 +249,9 @@ importExternalEventAnd externalEvent@ExternalEvent {..} func = do
 jsonRequestConduit :: FromJSON a => ConduitT HTTP.Request a Import ()
 jsonRequestConduit = C.map ((,) ()) .| jsonRequestConduitWith .| C.map snd
 
+jsonRequestConduit' :: FromJSON a => ConduitT HTTP.Request (HTTP.Request, a) Import ()
+jsonRequestConduit' = C.map (\r -> (r, r)) .| jsonRequestConduitWith
+
 jsonRequestConduitWith :: FromJSON a => ConduitT (c, HTTP.Request) (c, a) Import ()
 jsonRequestConduitWith = awaitForever $ \(c, request) -> do
   errOrResponse <- lift $ doHttpRequest request

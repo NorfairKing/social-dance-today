@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 -- | https://dancefloorfinder.com
@@ -37,11 +38,13 @@
 module Salsa.Party.Importer.DancefloorfinderCom (dancefloorfinderComImporter) where
 
 import Conduit
+import Data.Aeson
 import qualified Data.Conduit.Combinators as C
+import Data.Maybe
+import qualified Data.Text as T
 import Network.HTTP.Client as HTTP
-import Network.URI
 import Salsa.Party.Importer.Import
-import Salsa.Party.Importer.TribeCalendar
+import Salsa.Party.Web.Server.Geocoding
 
 dancefloorfinderComImporter :: Importer
 dancefloorfinderComImporter =
@@ -54,4 +57,82 @@ func :: Import ()
 func = do
   runConduit $
     yield "http://dancefloorfinder.com/api/home"
-      .| C.mapM_ (liftIO . pPrint)
+      .| C.concatMap (parseRequest :: String -> Maybe Request)
+      .| jsonRequestConduit
+      .| (C.concat :: ConduitT [String] String Import ())
+      .| C.concatMap (\s -> parseRequest ("http://dancefloorfinder.com/api/" <> (s :: String)) :: Maybe Request)
+      .| jsonRequestConduit'
+      .| C.concatMap (\(request, events) -> (,) request <$> (events :: [Event]))
+      .| importEventSync
+
+data Event = Event
+  { eventDay :: !Day,
+    eventTitle :: !Text,
+    eventAddress :: !Text,
+    eventCity :: !(Maybe Text),
+    eventCountry :: !(Maybe Text),
+    eventDances :: ![Text],
+    eventStart :: !(Maybe TimeOfDay),
+    eventEnd :: !(Maybe TimeOfDay),
+    eventLink :: !(Maybe Text),
+    eventPrice :: !(Maybe Text),
+    eventOrganisation :: !(Maybe Text)
+  }
+  deriving (Show, Eq)
+
+instance FromJSON Event where
+  parseJSON = withObject "Event" $ \o ->
+    Event
+      <$> o .: "date"
+      <*> o .: "title"
+      <*> o .: "address"
+      <*> o .:? "city"
+      <*> o .:? "country"
+      <*> o .:? "dances" .!= []
+      <*> o .:? "start_at"
+      <*> o .:? "end_at"
+      <*> o .:? "link"
+      <*> o .:? "price"
+      <*> o .:? "organization"
+
+importEventSync :: ConduitT (HTTP.Request, Event) void Import ()
+importEventSync = awaitForever $ \(request, event@Event {..}) -> do
+  liftIO $ print event
+
+  now <- liftIO getCurrentTime
+  let today = utctDay now
+
+  if today < addDays (-1) today
+    then pure ()
+    else do
+      let title = T.strip eventTitle
+      let externalEventKey = T.pack $ show (getUri request) <> formatTime defaultTimeLocale "%F" eventDay <> T.unpack title
+      externalEventUuid <- nextRandomUUID
+      let externalEventTitle = title
+      let externalEventDescription = case eventDances of
+            [] -> Nothing
+            dances -> Just $ T.intercalate ", " dances
+      let externalEventOrganiser = T.strip <$> eventOrganisation
+      let externalEventDay = eventDay
+      let externalEventStart = eventStart
+      let externalEventHomepage = T.strip <$> eventLink
+      let externalEventPrice = eventPrice
+      -- There is no indication of whether something is cancelled.
+      -- I guess it either dissappears or is just not updated.
+      -- Either way, nothing we can do about that.
+      let externalEventCancelled = False
+      let externalEventCreated = now
+      let externalEventModified = Nothing
+
+      let address = T.intercalate ", " $ map T.strip $ catMaybes [Just eventAddress, eventCity, eventCountry]
+
+      app <- asks importEnvApp
+      mPlaceEntity <- lift $ runReaderT (lookupPlaceRaw address) app
+      case mPlaceEntity of
+        Nothing -> logDebugN $ "Could not geolocate: " <> address
+        Just (Entity placeId _) -> do
+          let externalEventPlace = placeId
+          externalEventImporter <- asks importEnvId
+          let externalEventOrigin = T.pack $ show $ getUri request
+
+          lift $ importExternalEvent ExternalEvent {..}
