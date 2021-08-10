@@ -15,7 +15,6 @@ import Salsa.Party.Web.Server.Handler.Admin.SiteTest
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
 import Salsa.Party.Web.Server.Handler.Event.Party.LD
 import Salsa.Party.Web.Server.Handler.TestImport
-import qualified Web.JSONLD as LD
 import Yesod.Core
 
 spec :: Spec
@@ -61,76 +60,70 @@ spec =
 
     it "succeeds on a party page" $ \yc -> do
       forAllValid $ \organiser ->
-        forAllValid $ \place ->
+        forAllValid $ \place' ->
           forAllValid $ \party ->
             runYesodClientM yc $ do
-              testDB $ do
+              mPlace <- testDB $ do
                 organiserId <- DB.insert organiser
-                placeId <- DB.insert place
+                placeId <- DB.insert place'
                 DB.insert_ $ party {partyOrganiser = organiserId, partyPlace = placeId}
+                -- We have to get the place out again because of this bug:
+                -- https://github.com/yesodweb/persistent/issues/1304
+                DB.get placeId
+              case mPlace of
+                Nothing -> liftIO $ expectationFailure "expected a place"
+                Just place -> do
+                  let urlRender :: Route App -> Text
+                      urlRender route = yesodRender (yesodClientSite yc) (T.pack (show (yesodClientSiteURI yc))) route []
 
-              let urlRender :: Route App -> Text
-                  urlRender route = yesodRender (yesodClientSite yc) (T.pack (show (yesodClientSiteURI yc))) route []
+                  jsonLDResults <-
+                    liftIO $
+                      runNoLoggingT $
+                        testJSONLD
+                          (yesodClientManager yc)
+                          (urlRender (EventR (partyUuid party)))
 
-              jsonLDResults <-
-                liftIO $
-                  runNoLoggingT $
-                    testJSONLD
-                      (yesodClientManager yc)
-                      (urlRender (EventR (partyUuid party)))
-
-              liftIO $ case jsonLDResults of
-                [JSONLD [ldEvent]] ->
-                  let expectedLDEvent = partyToLDEvent urlRender party organiser place Nothing
-                      ctx =
-                        unlines
-                          [ "Encoded JSON:",
-                            T.unpack $ TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty expectedLDEvent
-                          ]
-                   in context ctx $ do
-                        -- This won't work until this bug is fixed:
-                        -- https://github.com/yesodweb/persistent/issues/1304
-                        -- ldEvent `shouldBe` expectedLDEvent
-                        context "Name" $ LD.eventName ldEvent `shouldBe` LD.eventName expectedLDEvent
-                        context "Description" $ LD.eventDescription ldEvent `shouldBe` LD.eventDescription expectedLDEvent
-                        context "StartDate" $ LD.eventStartDate ldEvent `shouldBe` LD.eventStartDate expectedLDEvent
-                        context "Url" $ LD.eventUrl ldEvent `shouldBe` LD.eventUrl expectedLDEvent
-                        context "Organizer" $ LD.eventOrganizer ldEvent `shouldBe` LD.eventOrganizer expectedLDEvent
-                _ -> expectationFailure $ ppShow jsonLDResults
+                  liftIO $ case jsonLDResults of
+                    [JSONLD [ldEvent]] ->
+                      let expectedLDEvent = partyToLDEvent urlRender party organiser place Nothing
+                          ctx =
+                            unlines
+                              [ "Encoded JSON:",
+                                T.unpack $ TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty expectedLDEvent
+                              ]
+                       in context ctx $ ldEvent `shouldBe` expectedLDEvent
+                    _ -> expectationFailure $ ppShow jsonLDResults
 
     it "succeeds on an external event page" $ \yc -> do
-      forAllValid $ \place ->
+      forAllValid $ \place' ->
         forAllValid $ \externalEvent ->
           runYesodClientM yc $ do
-            testDB $ do
-              placeId <- DB.insert place
+            mPlace <- testDB $ do
+              placeId <- DB.insert place'
               DB.insert_ $ externalEvent {externalEventPlace = placeId}
+              -- We have to get the place out again because of this bug:
+              -- https://github.com/yesodweb/persistent/issues/1304
+              DB.get placeId
+            case mPlace of
+              Nothing -> liftIO $ expectationFailure "expected a place"
+              Just place -> do
+                let urlRender :: Route App -> Text
+                    urlRender route = yesodRender (yesodClientSite yc) (T.pack (show (yesodClientSiteURI yc))) route []
 
-            let urlRender :: Route App -> Text
-                urlRender route = yesodRender (yesodClientSite yc) (T.pack (show (yesodClientSiteURI yc))) route []
+                jsonLDResults <-
+                  liftIO $
+                    runNoLoggingT $
+                      testJSONLD
+                        (yesodClientManager yc)
+                        (urlRender (EventR (externalEventUuid externalEvent)))
 
-            jsonLDResults <-
-              liftIO $
-                runNoLoggingT $
-                  testJSONLD
-                    (yesodClientManager yc)
-                    (urlRender (EventR (externalEventUuid externalEvent)))
-
-            liftIO $ case jsonLDResults of
-              [JSONLD [ldEvent]] ->
-                let expectedLDEvent = externalEventToLDEvent urlRender externalEvent place Nothing
-                    ctx =
-                      unlines
-                        [ "Encoded JSON:",
-                          T.unpack $ TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty expectedLDEvent
-                        ]
-                 in context ctx $ do
-                      -- This won't work until this bug is fixed:
-                      -- https://github.com/yesodweb/persistent/issues/1304
-                      -- ldEvent `shouldBe` expectedLDEvent
-                      context "Name" $ LD.eventName ldEvent `shouldBe` LD.eventName expectedLDEvent
-                      context "Description" $ LD.eventDescription ldEvent `shouldBe` LD.eventDescription expectedLDEvent
-                      context "StartDate" $ LD.eventStartDate ldEvent `shouldBe` LD.eventStartDate expectedLDEvent
-                      context "Url" $ LD.eventUrl ldEvent `shouldBe` LD.eventUrl expectedLDEvent
-                      context "Organizer" $ LD.eventOrganizer ldEvent `shouldBe` LD.eventOrganizer expectedLDEvent
-              _ -> expectationFailure $ ppShow jsonLDResults
+                liftIO $ case jsonLDResults of
+                  [JSONLD [ldEvent]] ->
+                    let expectedLDEvent = externalEventToLDEvent urlRender externalEvent place Nothing
+                        ctx =
+                          unlines
+                            [ "Encoded JSON:",
+                              T.unpack $ TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty expectedLDEvent
+                            ]
+                     in context ctx $ ldEvent `shouldBe` expectedLDEvent
+                  _ -> expectationFailure $ ppShow jsonLDResults
