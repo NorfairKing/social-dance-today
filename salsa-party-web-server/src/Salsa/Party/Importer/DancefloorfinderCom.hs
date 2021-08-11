@@ -96,7 +96,7 @@ instance FromJSON Event where
       <*> o .:? "organization"
 
 importEventSync :: ConduitT (HTTP.Request, Event) void Import ()
-importEventSync = awaitForever $ \(request, event@Event {..}) -> do
+importEventSync = awaitForever $ \(request, Event {..}) -> do
   now <- liftIO getCurrentTime
   let today = utctDay now
 
