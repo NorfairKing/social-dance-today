@@ -94,6 +94,57 @@ spec =
                        in context ctx $ ldEvent `shouldBe` expectedLDEvent
                     _ -> expectationFailure $ ppShow jsonLDResults
 
+    it "succeeds the page for this very annoying party" $ \yc -> do
+      forAllValid $ \organiserPrototype ->
+        forAllValid $ \placePrototype ->
+          forAllValid $ \partyPrototype ->
+            runYesodClientM yc $ do
+              let annoyingText =
+                    T.concat
+                      [ "\n", -- literal newline
+                        "\\n", -- Escaped newline
+                        "\r", -- literal carriage return
+                        "\\r", -- Escaped carriage return
+                        "'", -- Literal single quote
+                        "\\'", -- Escaped single quote
+                        "\"", -- Literal double quote
+                        "\\\"" -- Escaped double quote
+                      ]
+              let organiser = organiserPrototype {organiserName = annoyingText}
+                  place' = placePrototype {placeQuery = annoyingText}
+                  party = partyPrototype {partyTitle = annoyingText}
+
+              mPlace <- testDB $ do
+                organiserId <- DB.insert organiser
+                placeId <- DB.insert place'
+                DB.insert_ $ party {partyOrganiser = organiserId, partyPlace = placeId}
+                -- We have to get the place out again because of this bug:
+                -- https://github.com/yesodweb/persistent/issues/1304
+                DB.get placeId
+              case mPlace of
+                Nothing -> liftIO $ expectationFailure "expected a place"
+                Just place -> do
+                  let urlRender :: Route App -> Text
+                      urlRender route = yesodRender (yesodClientSite yc) (T.pack (show (yesodClientSiteURI yc))) route []
+
+                  jsonLDResults <-
+                    liftIO $
+                      runNoLoggingT $
+                        testJSONLD
+                          (yesodClientManager yc)
+                          (urlRender (EventR (partyUuid party)))
+
+                  liftIO $ case jsonLDResults of
+                    [JSONLD [ldEvent]] ->
+                      let expectedLDEvent = partyToLDEvent urlRender party organiser place Nothing
+                          ctx =
+                            unlines
+                              [ "Encoded JSON:",
+                                T.unpack $ TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty expectedLDEvent
+                              ]
+                       in context ctx $ ldEvent `shouldBe` expectedLDEvent
+                    _ -> expectationFailure $ ppShow jsonLDResults
+
     it "succeeds on an external event page" $ \yc -> do
       forAllValid $ \place' ->
         forAllValid $ \externalEvent ->
