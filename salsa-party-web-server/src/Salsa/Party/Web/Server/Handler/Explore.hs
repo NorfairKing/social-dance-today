@@ -22,13 +22,16 @@ getExploreR = do
       forM locations $ \Location {..} -> do
         nbUpcomingParties <- explorePartiesAroundLocationQuery today (placeCoordinates locationPlace)
         pure $ do
-          guard $ nbUpcomingParties > 0
+          guard $ nbUpcomingParties > minimumUpcomingParties
           pure (locationPlace, nbUpcomingParties)
 
   withNavBar $ do
     setTitleI MsgExploreTitle
     setDescriptionI MsgExploreDescription
     $(widgetFile "explore")
+
+minimumUpcomingParties :: Int
+minimumUpcomingParties = 10
 
 -- TODO we can probably optimise this with a count query, or at least we don't have to fetch any posters.
 explorePartiesAroundLocationQuery :: MonadIO m => Day -> Coordinates -> SqlPersistT m Int
