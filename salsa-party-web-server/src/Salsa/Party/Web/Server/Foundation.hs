@@ -21,10 +21,12 @@ import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
 import Data.Aeson as JSON
+import qualified Data.ByteString.Lazy as LB
 import Data.Default
 import Data.Fixed
 import Data.Maybe
 import Data.Text (Text)
+import qualified Data.Text.Encoding as TE
 import Data.Validity
 import Data.Validity.Text ()
 import Data.Validity.Time ()
@@ -42,7 +44,6 @@ import Text.Blaze.Html5 ((!))
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 import qualified Text.ICalendar as ICal
-import Text.Julius
 import Yesod
 import Yesod.AutoReload
 
@@ -158,9 +159,13 @@ instance ToTypedContent JSONLDData where
 
 instance ToWidgetHead App JSONLDData where
   toWidgetHead (JSONLDData v) =
-    toWidgetHead $
-      H.script ! HA.type_ "application/ld+json" $
-        H.lazyText $ renderJavascript $ toJavascript v
+    case TE.decodeUtf8' $ LB.toStrict $ JSON.encode v of
+      Right t ->
+        toWidgetHead $
+          H.script ! HA.type_ "application/ld+json" $
+            H.text t
+      -- Should not happen because JSON.encode spits out utf8 text
+      Left _ -> toWidgetHead (mempty :: Html)
 
 typeLD :: ContentType
 typeLD = "application/ld+json"
