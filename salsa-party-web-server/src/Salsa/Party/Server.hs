@@ -39,7 +39,7 @@ runSalsaPartyServer settings@Settings {..} = do
   runStderrLoggingT $
     filterLogger (\_ ll -> ll >= settingLogLevel) $ do
       -- Set this to true momentarily when adding a new poster
-      when False $ convertPosters settingStaticDir
+      when development $ convertPosters settingStaticDir
       withSqlitePoolInfo info 1 $ \pool -> do
         runSqlPool (completeServerMigration False) pool
         sessionKeyFile <- resolveFile' "client_session_key.aes"

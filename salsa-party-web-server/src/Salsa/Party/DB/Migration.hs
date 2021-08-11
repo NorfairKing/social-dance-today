@@ -70,6 +70,17 @@ locations =
     Location {locationPlace = Place {placeQuery = "Cádiz", placeLat = 35.4524784, placeLon = -7.260937}},
     --  ** The Netherlands
     Location {locationPlace = Place {placeQuery = "Amsterdam", placeLat = 52.374540300, placeLon = 4.897975505}},
+    --  ** Sweden
+    Location {locationPlace = Place {placeQuery = "Örebro", placeLat = 59.266667000, placeLon = 15.416667000}},
+    Location {locationPlace = Place {placeQuery = "Linköping", placeLat = 58.399732900, placeLon = 15.600121500}},
+    Location {locationPlace = Place {placeQuery = "Gothenburg", placeLat = 57.707232600, placeLon = 11.967017100}},
+    Location {locationPlace = Place {placeQuery = "Malmö", placeLat = 55.583601100, placeLon = 13.002765800}},
+    Location {locationPlace = Place {placeQuery = "Stockholm", placeLat = 59.337118600, placeLon = 17.986045300}},
+    Location {locationPlace = Place {placeQuery = "Karlskrona", placeLat = 56.250000000, placeLon = 15.666667000}},
+    --  ** Denmark
+    Location {locationPlace = Place {placeQuery = "Copenhagen", placeLat = 55.686724300, placeLon = 12.570072400}},
+    --  ** Norway
+    Location {locationPlace = Place {placeQuery = "Oslo", placeLat = 59.913330100, placeLon = 10.738970100}},
     --  * North America
     --  ** Canada
     Location {locationPlace = Place {placeQuery = "Toronto", placeLat = 43.653481700, placeLon = -79.383934700}},
