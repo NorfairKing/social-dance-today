@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module Salsa.Party.Looper.PartySchedulerSpec (spec) where
 
@@ -22,7 +21,7 @@ spec = do
             runPersistentTest pool $ do
               decision <- makeScheduleDecision scheduleEntity
               case decision of
-                ScheduleAParty scheduleId_ _ mImageId -> liftIO $ do
+                ScheduleAParty (Entity scheduleId_ _) _ mImageId -> liftIO $ do
                   scheduleId_ `shouldBe` entityKey scheduleEntity
                   mImageId `shouldBe` Nothing
                 _ -> liftIO $ expectationFailure $ "Should have decided to schedule a party, but decided this instead: " <> ppShow decision
@@ -46,16 +45,10 @@ spec = do
                   insert_ scheduleParty
                   decision <- makeScheduleDecision (Entity scheduleId schedule)
                   liftIO $ case decision of
-                    ScheduleAParty scheduleId' Party {..} mImageId -> do
+                    ScheduleAParty (Entity scheduleId' schedule') nextDays mImageId -> do
                       scheduleId' `shouldBe` scheduleId
-                      partyDay `shouldBe` fromGregorian 2021 08 06
-                      partyTitle `shouldBe` scheduleTitle schedule
-                      partyDescription `shouldBe` scheduleDescription schedule
-                      partyOrganiser `shouldBe` scheduleOrganiser schedule
-                      partyStart `shouldBe` scheduleStart schedule
-                      partyHomepage `shouldBe` scheduleHomepage schedule
-                      partyPrice `shouldBe` schedulePrice schedule
-                      partyCancelled `shouldBe` False
+                      schedule' `shouldBe` schedule
+                      nextDays `shouldSatisfy` all (>= day)
                       mImageId `shouldBe` Nothing
                     _ -> liftIO $ expectationFailure $ "Should have decided to schedule a party, but decided this instead: " <> ppShow decision
 
@@ -73,5 +66,5 @@ spec = do
                   insert_ scheduleParty
                   decision <- makeScheduleDecision (Entity scheduleId schedule)
                   liftIO $ case decision of
-                    NextDayTooFarAhead d -> d `shouldSatisfy` (> day)
+                    NextDayTooFarAhead -> pure ()
                     _ -> expectationFailure $ "Should have decided not to schedule a party, but decided this instead: " <> ppShow decision

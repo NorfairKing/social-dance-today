@@ -35,12 +35,12 @@ runPartyScheduler = do
         .| C.mapM_ handleScheduleDecision
 
 data ScheduleDecision
-  = NextDayTooFarAhead Day
-  | ScheduleAParty ScheduleId Party (Maybe ImageId)
+  = NextDayTooFarAhead
+  | ScheduleAParty (Entity Schedule) [Day] (Maybe ImageId)
   deriving (Show, Eq)
 
 makeScheduleDecision :: MonadUnliftIO m => Entity Schedule -> SqlPersistT m ScheduleDecision
-makeScheduleDecision (Entity scheduleId_ schedule@Schedule {..}) = do
+makeScheduleDecision scheduleEntity@(Entity scheduleId_ Schedule {..}) = do
   -- The last-scheduled party of the same scheduler, or nothing if none has been scheduled yet.
   -- We assume that parties are scheduled in chronological order.
   -- TODO we could get rid of this assumption with a nice join.
@@ -50,15 +50,40 @@ makeScheduleDecision (Entity scheduleId_ schedule@Schedule {..}) = do
   let mLastPartyDay = partyDay <$> mLastParty
   now <- liftIO getCurrentTime
   let today = utctDay now
-  let nextDay = case mLastPartyDay of
-        Nothing -> nextOccurrence scheduleRecurrence today
-        Just day -> nextOccurrence scheduleRecurrence day
-  if addDays daysToScheduleAhead today < nextDay
-    then pure $ NextDayTooFarAhead nextDay
-    else do
-      uuid <- nextRandomUUID
+  let nextDays = nextOccurrences (addDays daysToScheduleAhead today) scheduleRecurrence $ case mLastPartyDay of
+        Nothing -> today
+        Just day -> day
+
+  case nextDays of
+    [] -> pure NextDayTooFarAhead
+    _ -> do
       mImageId <- fmap (schedulePosterImage . entityVal) <$> getBy (UniqueSchedulePoster scheduleId_)
-      pure $ ScheduleAParty scheduleId_ (scheduleToPartyOn uuid now nextDay schedule) mImageId
+      pure $ ScheduleAParty scheduleEntity nextDays mImageId
+
+daysToScheduleAhead :: Integer
+daysToScheduleAhead = 45
+
+handleScheduleDecision :: (MonadUnliftIO m, MonadLogger m, MonadReader App m) => ScheduleDecision -> m ()
+handleScheduleDecision = \case
+  NextDayTooFarAhead -> logDebugN "Not scheduling any parties because the next day would be too far ahead."
+  ScheduleAParty (Entity scheduleId_ schedule) nextDays mImageId -> do
+    pool <- asks appConnectionPool
+    let runDBHere func = runSqlPool func pool
+    now <- liftIO getCurrentTime
+    runDBHere $
+      forM_ nextDays $ \nextDay -> do
+        uuid <- nextRandomUUID
+        let party = scheduleToPartyOn uuid now nextDay schedule
+        partyId_ <- insert party
+        insert_ ScheduleParty {schedulePartySchedule = scheduleId_, schedulePartyParty = partyId_, schedulePartyScheduled = now}
+        forM_ mImageId $ \imageId_ ->
+          insert_
+            PartyPoster
+              { partyPosterParty = partyId_,
+                partyPosterImage = imageId_,
+                partyPosterCreated = now,
+                partyPosterModified = Nothing
+              }
 
 scheduleToPartyOn :: EventUUID -> UTCTime -> Day -> Schedule -> Party
 scheduleToPartyOn uuid now day Schedule {..} =
@@ -76,25 +101,3 @@ scheduleToPartyOn uuid now day Schedule {..} =
       partyModified = Nothing,
       partyPlace = schedulePlace
     }
-
-daysToScheduleAhead :: Integer
-daysToScheduleAhead = 45
-
-handleScheduleDecision :: (MonadUnliftIO m, MonadLogger m, MonadReader App m) => ScheduleDecision -> m ()
-handleScheduleDecision = \case
-  NextDayTooFarAhead day -> logDebugN $ T.pack $ "Not scheduling a party because the next day would be too far ahead:" <> show day
-  ScheduleAParty scheduleId_ party mImageId -> do
-    pool <- asks appConnectionPool
-    let runDBHere func = runSqlPool func pool
-    now <- liftIO getCurrentTime
-    runDBHere $ do
-      partyId_ <- insert party
-      insert_ ScheduleParty {schedulePartySchedule = scheduleId_, schedulePartyParty = partyId_, schedulePartyScheduled = now}
-      forM_ mImageId $ \imageId_ ->
-        insert_
-          PartyPoster
-            { partyPosterParty = partyId_,
-              partyPosterImage = imageId_,
-              partyPosterCreated = now,
-              partyPosterModified = Nothing
-            }

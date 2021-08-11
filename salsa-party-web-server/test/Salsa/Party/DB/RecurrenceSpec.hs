@@ -24,11 +24,11 @@ spec = do
       forAll (sized (pure . fromIntegral)) $ \limit -> -- Small limits
         forAllValid $ \recurrence ->
           forAllValid $ \day ->
-            nextOccurrences limit recurrence day `shouldSatisfy` all (> day)
+            nextOccurrences (addDays limit day) recurrence day `shouldSatisfy` all (> day)
     it "works for this specific example" $
       let recurrence = WeeklyRecurrence Friday
           start = fromGregorian 2021 08 02
-       in nextOccurrences 45 recurrence start
+       in nextOccurrences (addDays 45 start) recurrence start
             `shouldBe` [ fromGregorian 2021 08 06,
                          fromGregorian 2021 08 13,
                          fromGregorian 2021 08 20,

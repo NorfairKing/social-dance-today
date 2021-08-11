@@ -42,13 +42,13 @@ instance PersistField Recurrence where
 instance PersistFieldSql Recurrence where
   sqlType Proxy = sqlType (Proxy :: Proxy ByteString)
 
-nextOccurrences :: Word -> Recurrence -> Day -> [Day]
-nextOccurrences daysToScheduleAhead recurrence start = go start
+nextOccurrences :: Day -> Recurrence -> Day -> [Day]
+nextOccurrences limitDay recurrence = go
   where
     go :: Day -> [Day]
     go current =
       let next = nextOccurrence recurrence current
-       in if next >= addDays (fromIntegral daysToScheduleAhead) start
+       in if next >= limitDay
             then []
             else next : go next
 
