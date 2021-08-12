@@ -124,6 +124,7 @@ in
                   mapdance-com-importer = mkLooperOption "mapdance-com-importer";
                   salsachicago-com-importer = mkLooperOption "salsachicago-com-importer";
                   dancefloorfinder-com-importer = mkLooperOption "dancefloorfinder-com-importer";
+                  sensual-dance-importer = mkLooperOption "sensual-dance-importer";
                 };
             });
           default = null;
@@ -183,6 +184,7 @@ in
           (nullOrOption "mapdance-com-importer" mapdance-com-importer)
           (nullOrOption "salsachicago-com-importer" salsachicago-com-importer)
           (nullOrOption "dancefloorfinder-com-importer" dancefloorfinder-com-importer)
+          (nullOrOption "sensual-dance-importer" sensual-dance-importer)
           (nullOrOption "sentry" sentry)
           { static-dir = gitignoreSource ../salsa-party-web-server/static; }
           cfg.web-server.config

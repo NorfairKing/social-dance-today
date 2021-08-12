@@ -59,7 +59,9 @@ data Settings = Settings
     -- https://salsachicago.com
     settingSalsachicagoComImportLooperSettings :: !LooperSettings,
     -- https://dancefloorfinder.com
-    settingDancefloorfinderComImportLooperSettings :: !LooperSettings
+    settingDancefloorfinderComImportLooperSettings :: !LooperSettings,
+    -- https://sensual.dance
+    settingSensualDanceImportLooperSettings :: !LooperSettings
   }
   deriving (Show, Eq, Generic)
 
@@ -99,6 +101,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingMapdanceComImportLooperSettings = deriveLooperSettings (minutes 5 + seconds 4) (hours 1) flagMapdanceComImportLooperFlags envMapdanceComImportLooperEnvironment (mc confMapdanceComImportLooperConfiguration)
   let settingSalsachicagoComImportLooperSettings = deriveLooperSettings (minutes 6 + seconds 5) (hours 1) flagSalsachicagoComImportLooperFlags envSalsachicagoComImportLooperEnvironment (mc confSalsachicagoComImportLooperConfiguration)
   let settingDancefloorfinderComImportLooperSettings = deriveLooperSettings (minutes 7 + seconds 6) (hours 1) flagDancefloorfinderComImportLooperFlags envDancefloorfinderComImportLooperEnvironment (mc confDancefloorfinderComImportLooperConfiguration)
+  let settingSensualDanceImportLooperSettings = deriveLooperSettings (minutes 8 + seconds 7) (hours 1) flagSensualDanceImportLooperFlags envSensualDanceImportLooperEnvironment (mc confSensualDanceImportLooperConfiguration)
   pure Settings {..}
   where
     mc :: (Configuration -> Maybe a) -> Maybe a
@@ -134,7 +137,8 @@ data Configuration = Configuration
     confDanceplaceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
     confMapdanceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
     confSalsachicagoComImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confDancefloorfinderComImportLooperConfiguration :: !(Maybe LooperConfiguration)
+    confDancefloorfinderComImportLooperConfiguration :: !(Maybe LooperConfiguration),
+    confSensualDanceImportLooperConfiguration :: !(Maybe LooperConfiguration)
   }
   deriving (Show, Eq, Generic)
 
@@ -169,6 +173,7 @@ instance YamlSchema Configuration where
         <*> optionalField "mapdance-com-importer" "The mapdance.com import looper"
         <*> optionalField "salsachicago-com-importer" "The salsachicago.com import looper"
         <*> optionalField "dancefloorfinder-com-importer" "The dancefloorfinder.com import looper"
+        <*> optionalField "sensual-dance-importer" "The sensual.dance import looper"
 
 data SentryConfiguration = SentryConfiguration
   { sentryConfDSN :: !(Maybe Text),
@@ -224,7 +229,8 @@ data Environment = Environment
     envDanceplaceComImportLooperEnvironment :: !LooperEnvironment,
     envMapdanceComImportLooperEnvironment :: !LooperEnvironment,
     envSalsachicagoComImportLooperEnvironment :: !LooperEnvironment,
-    envDancefloorfinderComImportLooperEnvironment :: !LooperEnvironment
+    envDancefloorfinderComImportLooperEnvironment :: !LooperEnvironment,
+    envSensualDanceImportLooperEnvironment :: !LooperEnvironment
   }
   deriving (Show, Eq, Generic)
 
@@ -267,6 +273,7 @@ environmentParser =
       <*> looperEnvironmentParser "MAPDANCE_COM_IMPORTER"
       <*> looperEnvironmentParser "SALSACHICAGO_COM_IMPORTER"
       <*> looperEnvironmentParser "DANCEFLOORFINDER_COM_IMPORTER"
+      <*> looperEnvironmentParser "SENSUAL_DANCE_IMPORTER"
   where
     mE = Env.def Nothing
 
@@ -328,7 +335,8 @@ data Flags = Flags
     flagDanceplaceComImportLooperFlags :: !LooperFlags,
     flagMapdanceComImportLooperFlags :: !LooperFlags,
     flagSalsachicagoComImportLooperFlags :: !LooperFlags,
-    flagDancefloorfinderComImportLooperFlags :: !LooperFlags
+    flagDancefloorfinderComImportLooperFlags :: !LooperFlags,
+    flagSensualDanceImportLooperFlags :: !LooperFlags
   }
   deriving (Show, Eq, Generic)
 
@@ -503,6 +511,7 @@ parseFlags =
     <*> getLooperFlags "mapdance-com-importer"
     <*> getLooperFlags "salsachicago-com-importer"
     <*> getLooperFlags "dancefloorfinder-com-importer"
+    <*> getLooperFlags "sensual-dance-importer"
 
 data SentryFlags = SentryFlags
   { sentryFlagDSN :: !(Maybe Text),
