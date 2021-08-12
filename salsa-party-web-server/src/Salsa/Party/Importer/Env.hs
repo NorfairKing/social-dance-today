@@ -280,7 +280,9 @@ jsonRequestConduitWith = awaitForever $ \(c, request) -> do
               logErrorN $
                 T.unlines
                   [ "Unable to parse JSON:" <> T.pack err,
-                    T.pack $ ppShow jsonValue
+                    case TE.decodeUtf8' (LB.toStrict (JSON.encodePretty jsonValue)) of
+                      Left _ -> "non-utf8, somehow"
+                      Right t -> t
                   ]
             Right a -> yield (c, a)
 

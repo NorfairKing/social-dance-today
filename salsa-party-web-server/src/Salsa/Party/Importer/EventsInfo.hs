@@ -154,7 +154,7 @@ instance FromJSON EventVenue where
 
 data VenueLocation = VenueLocation
   { venueLocationCity :: !Text,
-    venueLocationStreet :: !Text,
+    venueLocationStreet :: !(Maybe Text),
     venueLocationLat :: !Nano,
     venueLocationLon :: !Nano
   }
@@ -163,7 +163,7 @@ data VenueLocation = VenueLocation
 instance FromJSON VenueLocation where
   parseJSON = withObject "VenueLocation" $ \o -> do
     venueLocationCity <- o .: "city"
-    venueLocationStreet <- o .: "street"
+    venueLocationStreet <- o .:? "street"
     latLonList <- o .: "latlng"
     case latLonList of
       [venueLocationLat, venueLocationLon] -> pure VenueLocation {..}
@@ -204,7 +204,7 @@ eventDetailsSink = awaitForever $ \(identifier, EventDetails {..}) -> do
   let externalEventCreated = now
   let externalEventModified = Nothing
   let VenueLocation {..} = eventVenueLocation eventDetailsVenue
-  let address = T.unwords [venueLocationStreet, venueLocationCity]
+  let address = T.unwords $ catMaybes [venueLocationStreet, Just venueLocationCity]
   Entity externalEventPlace _ <-
     lift $
       importDB $
