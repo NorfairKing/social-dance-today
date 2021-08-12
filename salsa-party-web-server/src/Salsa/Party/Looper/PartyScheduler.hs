@@ -7,6 +7,7 @@ module Salsa.Party.Looper.PartyScheduler
   ( runPartyScheduler,
     ScheduleDecision (..),
     makeScheduleDecision,
+    handleScheduleDecision,
     daysToScheduleAhead,
   )
 where

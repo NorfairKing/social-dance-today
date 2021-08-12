@@ -20,8 +20,10 @@ module Salsa.Party.Web.Server.Handler.Account.Schedule
 where
 
 import Control.Monad
+import Control.Monad.Reader
 import qualified Data.Text as T
 import qualified Database.Esqueleto as E
+import Salsa.Party.Looper.PartyScheduler
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Poster
@@ -160,23 +162,21 @@ addSchedule organiserId AddScheduleForm {..} mFileInfo = do
   uuid <- nextRandomUUID
   Entity placeId _ <- lookupPlace addScheduleFormAddress
   let AddScheduleForm _ _ _ _ _ _ _ = undefined
-  scheduleId <-
-    runDB $
-      insert
-        ( Schedule
-            { scheduleUuid = uuid,
-              scheduleOrganiser = organiserId,
-              scheduleRecurrence = addScheduleFormRecurrence,
-              scheduleTitle = addScheduleFormTitle,
-              scheduleDescription = unTextarea <$> addScheduleFormDescription,
-              scheduleStart = addScheduleFormStart,
-              scheduleHomepage = addScheduleFormHomepage,
-              schedulePrice = addScheduleFormPrice,
-              scheduleCreated = now,
-              scheduleModified = Nothing,
-              schedulePlace = placeId
-            }
-        )
+  let schedule =
+        Schedule
+          { scheduleUuid = uuid,
+            scheduleOrganiser = organiserId,
+            scheduleRecurrence = addScheduleFormRecurrence,
+            scheduleTitle = addScheduleFormTitle,
+            scheduleDescription = unTextarea <$> addScheduleFormDescription,
+            scheduleStart = addScheduleFormStart,
+            scheduleHomepage = addScheduleFormHomepage,
+            schedulePrice = addScheduleFormPrice,
+            scheduleCreated = now,
+            scheduleModified = Nothing,
+            schedulePlace = placeId
+          }
+  scheduleId <- runDB $ insert schedule
 
   case mFileInfo of
     Nothing -> pure () -- No need to do anything
@@ -208,6 +208,13 @@ addSchedule organiserId AddScheduleForm {..} mFileInfo = do
                     schedulePosterModified = Nothing
                   }
               )
+
+  let scheduleEntity = Entity scheduleId schedule
+  -- Schedule the parties immediately, instead of waiting for the
+  -- PartyScheduler looper to run.
+  decision <- runDB (makeScheduleDecision scheduleEntity)
+  app <- getYesod
+  runReaderT (handleScheduleDecision decision) app
 
   addMessageI "is-success" MsgSubmitScheduleSuccess
   redirect $ AccountR $ AccountScheduleR uuid
