@@ -70,13 +70,13 @@ currentAndLastMonthCountWidget m = do
       nowCount = fromMaybe 0 $ M.lookup today m
   let lastMonthCount :: Word64
       lastMonthCount = fromMaybe 0 $ M.lookup (addDays (-30) today) m
-  let upRatio :: Double
-      upRatio = fromIntegral nowCount / fromIntegral lastMonthCount
-  let upPercentageString :: String
-      upPercentageString = printf "+%.0f" (upRatio * 100)
+  let increaseRatio :: Double
+      increaseRatio = (fromIntegral nowCount - fromIntegral lastMonthCount) / fromIntegral lastMonthCount
+  let increasePercentageString :: String
+      increasePercentageString = printf "+%.0f" (increaseRatio * 100)
   addScriptRemote "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
   [whamlet|
-     #{nowCount}, #{upPercentageString} %
+     #{nowCount}, #{increasePercentageString}%
   |]
 
 makePerDayCountMap :: MonadUnliftIO m => Acquire (ConduitT () a m ()) -> (a -> Day) -> m (Map Day Word64)
