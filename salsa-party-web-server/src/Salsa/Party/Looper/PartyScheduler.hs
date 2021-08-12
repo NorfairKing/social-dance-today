@@ -16,7 +16,6 @@ import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
 import qualified Data.Conduit.Combinators as C
-import qualified Data.Text as T
 import Data.Time
 import Database.Persist
 import Database.Persist.Sql

@@ -1,8 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Salsa.Party.Web.Server.Handler.Account.ScheduleSpec (spec) where
 
 import qualified Database.Persist as DB
+import Salsa.Party.Looper.PartyScheduler
+import Salsa.Party.Web.Server.Handler.Account.Schedule
 import Salsa.Party.Web.Server.Handler.TestImport
 
 spec :: Spec
@@ -67,6 +70,26 @@ spec = serverSpec $ do
                   location
                   poster_
               verifyScheduleAddedWithPoster scheduleUuid_ scheduleForm_ poster_
+
+    it "can create this example schedule and have the parties created immediately" $ \yc ->
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \scheduleFormPrototype_ ->
+          forAllValid $ \location -> do
+            withAnyLoggedInUser_ yc $ do
+              testSubmitOrganiser organiserForm_
+              let scheduleForm_ = scheduleFormPrototype_ {addScheduleFormRecurrence = WeeklyRecurrence Monday}
+              scheduleUuid_ <- testAddSchedule scheduleForm_ location
+              verifyScheduleAdded scheduleUuid_ scheduleForm_
+              mScheduleId_ <- testDB $ DB.selectFirst [] []
+              case mScheduleId_ of
+                Nothing -> liftIO $ expectationFailure "Should have found a schedule"
+                Just (Entity scheduleId_ _) -> do
+                  parties <- testDB $ do
+                    schedulePartyRows <- DB.selectList [SchedulePartySchedule DB.==. scheduleId_] []
+                    forM schedulePartyRows $ \(Entity _ ScheduleParty {..}) -> DB.get schedulePartyParty
+                  liftIO $ do
+                    parties `shouldSatisfy` all isJust
+                    genericLength parties `shouldSatisfy` (>= (daysToScheduleAhead `div` 7))
 
   describe "AccountScheduleR" $ do
     it "can GET an existent schedule" $ \yc -> do
