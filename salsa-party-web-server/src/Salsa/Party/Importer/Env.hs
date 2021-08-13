@@ -293,12 +293,20 @@ doHttpRequest :: HTTP.Request -> Import (Either HttpException (HTTP.Response LB.
 doHttpRequest requestPrototype = do
   man <- asks $ appHTTPManager . importEnvApp
   userAgent <- asks importEnvUserAgent
-  let request = requestPrototype {requestHeaders = ("User-Agent", userAgent) : requestHeaders requestPrototype}
-  logDebugN $ T.pack $ "Waiting to fetch: " <> show (getUri request)
-  tokenLimiter <- asks importEnvRateLimiter
-  liftIO $ waitDebit tokenLimiter 10 -- Need 10 tokens
+  let oldHeaders = requestHeaders requestPrototype
+      newHeaders = case lookup "User-Agent" oldHeaders of
+        Nothing -> ("User-Agent", userAgent) : oldHeaders
+        Just _ -> oldHeaders
+  let request = requestPrototype {requestHeaders = newHeaders}
+  waitToFetch (show (getUri request))
   logInfoN $ T.pack $ "Fetching: " <> show (getUri request)
   httpLbsWithRetry request man
+
+waitToFetch :: String -> Import ()
+waitToFetch uri = do
+  logDebugN $ T.pack $ "Waiting to fetch: " <> uri
+  tokenLimiter <- asks importEnvRateLimiter
+  liftIO $ waitDebit tokenLimiter 10 -- Need 10 tokens
 
 chooseUserAgent :: IO ByteString
 chooseUserAgent = do

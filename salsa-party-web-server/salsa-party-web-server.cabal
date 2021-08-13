@@ -122,6 +122,7 @@ library
     , http-client-tls
     , http-date
     , http-types
+    , http2-client
     , iCalendar
     , looper
     , microlens
@@ -144,6 +145,7 @@ library
     , scalpel
     , scientific
     , shakespeare
+    , string-qq
     , tagsoup
     , template-haskell
     , text
@@ -151,6 +153,7 @@ library
     , token-limiter-concurrent
     , typed-uuid
     , unliftio
+    , unordered-containers
     , uuid
     , validity
     , validity-bytestring
@@ -160,6 +163,7 @@ library
     , wai
     , wai-extra
     , warp
+    , webdriver
     , xml-conduit
     , yaml
     , yamlparse-applicative

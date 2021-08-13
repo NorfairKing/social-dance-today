@@ -28,6 +28,7 @@ library:
   - file-embed
   - filepath
   - http-api-data
+  - http2-client
   - http-client
   - http-client-tls
   - http-date
@@ -54,6 +55,7 @@ library:
   - scalpel
   - scientific
   - shakespeare
+  - string-qq
   - tagsoup
   - template-haskell
   - text
@@ -61,6 +63,7 @@ library:
   - token-limiter-concurrent
   - typed-uuid
   - unliftio
+  - unordered-containers
   - uuid
   - validity
   - validity-bytestring
@@ -70,6 +73,7 @@ library:
   - wai
   - wai-extra
   - warp
+  - webdriver
   - xml-conduit
   - yaml
   - yamlparse-applicative

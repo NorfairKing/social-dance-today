@@ -6,11 +6,13 @@ in
 pkgs.haskell.lib.buildStackProject {
   name = "salsa-party-nix-shell";
   buildInputs = with pkgs; [
-    haskellPackages.autoexporter
     (import sources.niv { }).niv
-    killall
-    zlib
+    geckodriver
     git
+    haskellPackages.autoexporter
+    killall
+    selenium-server-standalone
+    zlib
   ] ++ pre-commit.tools;
   shellHook = pre-commit.run.shellHook;
 }
