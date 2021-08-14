@@ -186,9 +186,7 @@ getResponseBodyValues = awaitForever $ \GetResponseBodyResponse {..} -> do
               ]
         case JSON.parseEither parseJSON value of
           Left err -> logDebugN $ T.pack $ "Failed to decode graphql response: " <> err
-          Right resp -> do
-            liftIO $ print $ graphQLResponseItems resp
-            yieldMany $ graphQLResponseItems resp
+          Right resp -> yieldMany $ graphQLResponseItems resp
 
 data GraphQLResponse = GraphQLResponse
   { graphQLResponseItems :: [Item]
@@ -201,30 +199,43 @@ instance FromJSON GraphQLResponse where
     eventsByType <- dat .: "eventsByType"
     GraphQLResponse <$> eventsByType .: "items"
 
+-- For unknown reasons, 'location' is an empty text? Maybe we need to revisit this as the website develops.
+-- The 'region' category is the closest we get to something useful, so we try to use that for now.
 data Item = Item
   { itemId :: !Text,
     itemTitle :: !Text,
-    itemRegion :: !Text, -- For unknown reasons, 'location' is an empty text? Maybe we need to revisit this as the website develops.
-    -- itemDescription :: !(Maybe Text)
+    itemRegion :: !Text,
+    itemDescription :: !(Maybe Text),
     itemWebsite :: !(Maybe Text),
     itemDateFrom :: !ZonedTime
   }
   deriving (Show)
 
 instance FromJSON Item where
-  parseJSON = withObject "Item" $ \o ->
-    Item
-      <$> o .: "id"
-      <*> o .: "title"
-      <*> o .: "region"
-      -- <*> o .:? "description" -- TODO description is in these weird blocks.
-      <*> o .:? "website"
-      <*> o .: "dateFrom"
+  parseJSON = withObject "Item" $ \o -> do
+    itemId <- o .: "id"
+    itemTitle <- o .: "title"
+    itemRegion <- o .: "region"
+    -- Description is encoded at the key 'description',
+    -- as a text with is a json object, so double-encoded.
+    -- In there, there is a list of blocks which each contain a 'text'.
+    -- What a mess.
+    mDescriptionText <- o .:? "description"
+    let mDescriptionVal =
+          mDescriptionText >>= \descriptionText -> case JSON.eitherDecode (LB.fromStrict (TE.encodeUtf8 descriptionText)) of
+            Left _ -> Nothing
+            Right v -> Just v
+    itemDescription <- forM (mDescriptionVal :: Maybe JSON.Value) $
+      withObject "DescriptionVal" $ \d -> do
+        blocks <- d .: "blocks"
+        fmap T.unlines $ forM blocks $ withObject "Block" $ \b -> b .: "text"
+    itemWebsite <- o .:? "website"
+    itemDateFrom <- o .: "dateFrom"
+    pure Item {..}
 
 importItem :: ConduitT Item void Import ()
 importItem = awaitForever $ \item@Item {..} -> do
   liftIO $ print item
-
   now <- liftIO getCurrentTime
   let today = utctDay now
 
@@ -232,7 +243,7 @@ importItem = awaitForever $ \item@Item {..} -> do
   let externalEventKey = itemId
 
   let externalEventTitle = itemTitle
-  let externalEventDescription = Nothing
+  let externalEventDescription = itemDescription
   let externalEventOrganiser = Nothing
   let localTime = zonedTimeToLocalTime itemDateFrom
   let externalEventDay = localDay localTime
