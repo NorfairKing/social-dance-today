@@ -104,6 +104,7 @@ fetchHome = awaitForever $ \homeUrl -> do
                       ]
                 ]
         val <- doSessCommand methodPost "/goog/cdp/execute" arg
+        liftIO $ logDebugN $ TE.decodeUtf8 $ JSON.encodePretty val
         liftIO $ print (val :: JSON.Value)
   lift $ logDebugN "Done loading page, getting logs"
   -- yieldMany logEntries
