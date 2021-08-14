@@ -7,7 +7,6 @@ pkgs.haskell.lib.buildStackProject {
   name = "salsa-party-nix-shell";
   buildInputs = with pkgs; [
     (import sources.niv { }).niv
-    geckodriver
     git
     haskellPackages.autoexporter
     killall

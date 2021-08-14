@@ -19,6 +19,7 @@ import Data.Aeson.Encode.Pretty as JSON
 import Data.Aeson.Types as JSON
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
+import Data.Either
 import qualified Data.HashMap.Strict as HM
 import Data.Maybe
 import Data.String.QQ
@@ -30,6 +31,8 @@ import Salsa.Party.Importer.Import
 import Salsa.Party.Web.Server.Geocoding
 import Test.WebDriver as WD
 import Test.WebDriver.Capabilities as WD
+import Test.WebDriver.Class as WD
+import Test.WebDriver.Commands.Internal as WD
 import Test.WebDriver.Commands.Wait as WD
 import Text.HTML.Scalpel
 import Text.HTML.Scalpel.Extended
@@ -47,17 +50,17 @@ func = do
   runConduit $
     yield "http://sensual.dance/"
       .| fetchHome
-      .| decodeLogEntries
-      .| decodeInterestingLogEntries
-      .| filterInterestingLogEntries
-      .| doHttpRequestWith
+      -- .| decodeLogEntries
+      -- .| decodeInterestingLogEntries
+      -- .| filterInterestingLogEntries
+      -- .| doHttpRequestWith
       .| C.mapM_ (liftIO . pPrint)
 
-fetchHome :: ConduitT String WD.LogEntry Import ()
+fetchHome :: ConduitT String String Import ()
 fetchHome = awaitForever $ \homeUrl -> do
   -- lift $ waitToFetch homeUrl
   lift $ logDebugN $ T.pack $ "Fetching: " <> homeUrl
-  logEntries <- liftIO $ do
+  liftIO $ do
     let browser = WD.chrome {chromeOptions = ["--headless"]}
         caps =
           WD.defaultCaps
@@ -86,19 +89,31 @@ fetchHome = awaitForever $ \homeUrl -> do
       -- TODO make this delay longer in prod
       liftIO $ threadDelay 2_000_000 -- Wait for the entire page to be loaded.
       logEntries <- getLogs "performance"
-      cs <- WD.cookies
-      liftIO $ print cs -- There don't seem to be cookies ..?
-      pure logEntries
+      let logValues = rights $ map decodeLogEntry logEntries
+      liftIO $ pPrint logValues
+      let interestingLogEntries = rights $ map parseInterestingLogEntry logValues
+      liftIO $ pPrint interestingLogEntries
+      forM_ interestingLogEntries $ \InterestingLog {..} -> do
+        let arg :: JSON.Value
+            arg =
+              object
+                [ "cmd" .= ("Network.getResponseBody" :: Text),
+                  "params"
+                    .= object
+                      [ "requestId" .= interestingLogRequestId
+                      ]
+                ]
+        val <- doSessCommand methodPost "/goog/cdp/execute" arg
+        liftIO $ print (val :: JSON.Value)
   lift $ logDebugN "Done loading page, getting logs"
-  yieldMany logEntries
+  -- yieldMany logEntries
   liftIO $ threadDelay 10_000_000 -- TODO Temporary
 
 decodeLogEntries :: ConduitT WD.LogEntry JSON.Value Import ()
 decodeLogEntries = awaitForever $ \logEntry -> do
   -- There is a json value in the log entry's message
   -- we just try to decode it here.
-  let contentsLB = LB.fromStrict (TE.encodeUtf8 (logMsg logEntry))
-  case JSON.eitherDecode contentsLB of
+  case decodeLogEntry logEntry of
     Left err -> pure ()
     -- logDebugN $
     --   T.pack $
@@ -115,14 +130,23 @@ decodeLogEntries = awaitForever $ \logEntry -> do
             ]
       yield value
 
+decodeLogEntry :: WD.LogEntry -> Either String JSON.Value
+decodeLogEntry logEntry =
+  let contentsLB = LB.fromStrict (TE.encodeUtf8 (logMsg logEntry))
+   in JSON.eitherDecode contentsLB
+
 decodeInterestingLogEntries :: ConduitT JSON.Value (JSON.Value, InterestingLog) Import ()
 decodeInterestingLogEntries = awaitForever $ \value -> do
-  case JSON.parseEither parseJSON value of
+  case parseInterestingLogEntry value of
     Left err -> pure () -- logDebugN $ T.pack $ "Failed to parse interesting log: " <> err
     Right interestingLog -> yield (value, interestingLog)
 
+parseInterestingLogEntry :: JSON.Value -> Either String InterestingLog
+parseInterestingLogEntry = JSON.parseEither parseJSON
+
 data InterestingLog = InterestingLog
   { interestingLogType :: !Text,
+    interestingLogRequestId :: !Text,
     interestingLogScheme :: !String,
     interestingLogPath :: !String,
     interestingLogMethod :: !String,
@@ -146,7 +170,8 @@ instance FromJSON InterestingLog where
     message <- o .: "message"
     interestingLogType <- message .: "method"
     params <- message .: "params"
-    headers <- params .:? "headers" .!= (HM.fromList [])
+    interestingLogRequestId <- params .: "requestId"
+    headers <- params .:? "headers"
     interestingLogScheme <- headers .: ":scheme"
     interestingLogPath <- headers .: ":path"
     interestingLogMethod <- headers .: ":method"
