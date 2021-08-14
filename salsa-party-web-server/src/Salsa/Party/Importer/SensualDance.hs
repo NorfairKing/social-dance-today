@@ -29,6 +29,7 @@ import qualified Data.Text.Encoding as TE
 import Network.HTTP.Client as HTTP
 import Network.URI
 import Salsa.Party.Importer.Import
+import Salsa.Party.Importer.Selenium
 import Salsa.Party.Web.Server.Geocoding
 import Test.WebDriver as WD
 import Test.WebDriver.Capabilities as WD
@@ -235,7 +236,6 @@ instance FromJSON Item where
 
 importItem :: ConduitT Item void Import ()
 importItem = awaitForever $ \item@Item {..} -> do
-  liftIO $ print item
   now <- liftIO getCurrentTime
   let today = utctDay now
 

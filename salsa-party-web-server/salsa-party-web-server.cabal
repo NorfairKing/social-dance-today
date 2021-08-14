@@ -32,6 +32,7 @@ library
       Salsa.Party.Importer.Import
       Salsa.Party.Importer.MapdanceCom
       Salsa.Party.Importer.SalsachicagoCom
+      Salsa.Party.Importer.Selenium
       Salsa.Party.Importer.SensualDance
       Salsa.Party.Importer.TribeCalendar
       Salsa.Party.Looper
@@ -151,6 +152,7 @@ library
     , text
     , time
     , token-limiter-concurrent
+    , typed-process
     , typed-uuid
     , unliftio
     , unordered-containers

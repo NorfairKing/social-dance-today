@@ -28,11 +28,11 @@ library:
   - file-embed
   - filepath
   - http-api-data
-  - http2-client
   - http-client
   - http-client-tls
   - http-date
   - http-types
+  - http2-client
   - iCalendar
   - looper
   - microlens
@@ -61,6 +61,7 @@ library:
   - text
   - time
   - token-limiter-concurrent
+  - typed-process
   - typed-uuid
   - unliftio
   - unordered-containers
