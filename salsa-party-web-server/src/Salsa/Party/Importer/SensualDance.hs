@@ -1,6 +1,5 @@
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
 -- | https://sensual.dance
@@ -21,6 +20,8 @@ import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
 import Data.Either
 import qualified Data.HashMap.Strict as HM
+import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Maybe
 import Data.String.QQ
 import qualified Data.Text as T
@@ -50,17 +51,14 @@ func = do
   runConduit $
     yield "http://sensual.dance/"
       .| fetchHome
-      -- .| decodeLogEntries
-      -- .| decodeInterestingLogEntries
-      -- .| filterInterestingLogEntries
-      -- .| doHttpRequestWith
-      .| C.mapM_ (liftIO . pPrint)
+      .| getResponseBodyValues
+      .| importItem
 
-fetchHome :: ConduitT String String Import ()
+fetchHome :: ConduitT String GetResponseBodyResponse Import ()
 fetchHome = awaitForever $ \homeUrl -> do
   -- lift $ waitToFetch homeUrl
   lift $ logDebugN $ T.pack $ "Fetching: " <> homeUrl
-  liftIO $ do
+  vals <- liftIO $ do
     let browser = WD.chrome {chromeOptions = ["--headless"]}
         caps =
           WD.defaultCaps
@@ -93,7 +91,7 @@ fetchHome = awaitForever $ \homeUrl -> do
       liftIO $ pPrint logValues
       let interestingLogEntries = rights $ map parseInterestingLogEntry logValues
       liftIO $ pPrint interestingLogEntries
-      forM_ interestingLogEntries $ \InterestingLog {..} -> do
+      forM interestingLogEntries $ \InterestingLog {..} -> do
         let arg :: JSON.Value
             arg =
               object
@@ -103,44 +101,15 @@ fetchHome = awaitForever $ \homeUrl -> do
                       [ "requestId" .= interestingLogRequestId
                       ]
                 ]
-        val <- doSessCommand methodPost "/goog/cdp/execute" arg
-        liftIO $ logDebugN $ TE.decodeUtf8 $ JSON.encodePretty val
-        liftIO $ print (val :: JSON.Value)
+        doSessCommand methodPost "/goog/cdp/execute" arg
   lift $ logDebugN "Done loading page, getting logs"
-  -- yieldMany logEntries
+  yieldMany vals
   liftIO $ threadDelay 10_000_000 -- TODO Temporary
-
-decodeLogEntries :: ConduitT WD.LogEntry JSON.Value Import ()
-decodeLogEntries = awaitForever $ \logEntry -> do
-  -- There is a json value in the log entry's message
-  -- we just try to decode it here.
-  case decodeLogEntry logEntry of
-    Left err -> pure ()
-    -- logDebugN $
-    --   T.pack $
-    --     unlines
-    --       [ unwords ["Failed to decode on the first round:", err],
-    --         show contentsLB
-    --       ]
-    Right value -> do
-      logDebugN $
-        T.pack $
-          unlines
-            [ "Succesfully decoded this log message",
-              T.unpack $ TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty value
-            ]
-      yield value
 
 decodeLogEntry :: WD.LogEntry -> Either String JSON.Value
 decodeLogEntry logEntry =
   let contentsLB = LB.fromStrict (TE.encodeUtf8 (logMsg logEntry))
    in JSON.eitherDecode contentsLB
-
-decodeInterestingLogEntries :: ConduitT JSON.Value (JSON.Value, InterestingLog) Import ()
-decodeInterestingLogEntries = awaitForever $ \value -> do
-  case parseInterestingLogEntry value of
-    Left err -> pure () -- logDebugN $ T.pack $ "Failed to parse interesting log: " <> err
-    Right interestingLog -> yield (value, interestingLog)
 
 parseInterestingLogEntry :: JSON.Value -> Either String InterestingLog
 parseInterestingLogEntry = JSON.parseEither parseJSON
@@ -172,7 +141,7 @@ instance FromJSON InterestingLog where
     interestingLogType <- message .: "method"
     params <- message .: "params"
     interestingLogRequestId <- params .: "requestId"
-    headers <- params .:? "headers"
+    headers <- params .: "headers"
     interestingLogScheme <- headers .: ":scheme"
     interestingLogPath <- headers .: ":path"
     interestingLogMethod <- headers .: ":method"
@@ -190,81 +159,108 @@ instance FromJSON InterestingLog where
     interestingLogUserAgent <- headers .: "user-agent"
     pure InterestingLog {..}
 
-filterInterestingLogEntries :: ConduitT (JSON.Value, InterestingLog) Request Import ()
-filterInterestingLogEntries = awaitForever $ \(value, il@InterestingLog {..}) -> do
-  when ("requestWillBeSentExtraInfo" `T.isInfixOf` interestingLogType) $
-    when ("graphql" `isInfixOf` interestingLogPath) $ do
-      logDebugN $
-        T.pack $
-          unlines
-            [ "JSON value value of the log message:",
-              T.unpack $ TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty value
-            ]
-      case parseURI (interestingLogScheme <> "://" <> interestingLogAuthority <> interestingLogPath) of
-        Nothing -> pure ()
-        Just uri -> case requestFromURI uri of
-          Nothing -> pure ()
-          Just requestPrototype -> do
-            logDebugN $ T.pack $ unlines ["Requesting with body", show queryRequestBody]
-            let request =
-                  requestPrototype
-                    { requestHeaders =
-                        [ ("X-Amz-Security-Token", TE.encodeUtf8 interestingLogAmzSecurityToken),
-                          ("x-amz-date", TE.encodeUtf8 interestingLogAmzDate),
-                          ("x-amz-user-agent", TE.encodeUtf8 interestingLogAmzUserAgent),
-                          ("Referer", TE.encodeUtf8 interestingLogReferer),
-                          ("Origin", TE.encodeUtf8 interestingLogOrigin),
-                          ("Authorization", TE.encodeUtf8 interestingLogAuthorization),
-                          ("Accept", TE.encodeUtf8 interestingLogAccept),
-                          ("Accept-Encoding", TE.encodeUtf8 interestingLogAcceptEncoding),
-                          ("Accept-Language", TE.encodeUtf8 interestingLogAcceptLanguage),
-                          ("User-Agent", TE.encodeUtf8 interestingLogUserAgent),
-                          ("Host", TE.encodeUtf8 (T.pack interestingLogAuthority)),
-                          ("Content-Type", TE.encodeUtf8 interestingLogContentType),
-                          ("Content-Length", "685"),
-                          ("DNT", "1"),
-                          ("Connection", "keep-alive")
-                        ],
-                      requestBody = RequestBodyLBS queryRequestBody
-                    }
-            liftIO $ pPrint $ requestHeaders request
-            yield request
-
-queryRequestBody :: LB.ByteString
-queryRequestBody =
-  JSON.encode $
-    object
-      [ "query" .= graphQlQuery,
-        "variables"
-          .= object
-            [ "dateFrom" .= fromGregorian 2021 08 13,
-              "limit" .= (42 :: Int),
-              "eventType" .= ("party" :: Text)
-            ]
-      ]
-
-graphQlQuery :: Text
-graphQlQuery =
-  [s|
-  query EventsByType($eventType: String, $dateFrom: ModelStringKeyConditionInput, $sortDirection: ModelSortDirection, $filter: ModelEventFilterInput, $limit: Int, $nextToken: String) {
-    eventsByType(eventType: $eventType, dateFrom: $dateFrom, sortDirection: $sortDirection, filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        region
-        dateFrom
-        shortDescription
-        description
-        image
-        title
-        eventType
-        danceStyle
-        location
-        website
-        owner
-        createdAt
-        updatedAt
-      }
-      nextToken
-    }
+data GetResponseBodyResponse = GetResponseBodyResponse
+  { getResponseBodyResponseBody :: !Text,
+    getResponseBodyResponseBase64Encoded :: !Bool
   }
-|]
+  deriving (Show, Eq)
+
+instance FromJSON GetResponseBodyResponse where
+  parseJSON = withObject "GetResponseBodyResponse" $ \o ->
+    GetResponseBodyResponse
+      <$> o .: "body"
+      <*> o .: "base64Encoded"
+
+getResponseBodyValues :: ConduitT GetResponseBodyResponse Item Import ()
+getResponseBodyValues = awaitForever $ \GetResponseBodyResponse {..} -> do
+  if getResponseBodyResponseBase64Encoded
+    then logDebugN "Found a base64 encoded response body, ignoring it."
+    else case JSON.eitherDecode (LB.fromStrict (TE.encodeUtf8 getResponseBodyResponseBody)) of
+      Left err -> logDebugN $ T.pack $ "Failed to decode: " <> err
+      Right value -> do
+        logDebugN $
+          T.pack $
+            unlines
+              [ "Found this json value in the response body:",
+                T.unpack $ TE.decodeUtf8 (LB.toStrict (JSON.encodePretty value))
+              ]
+        case JSON.parseEither parseJSON value of
+          Left err -> logDebugN $ T.pack $ "Failed to decode graphql response: " <> err
+          Right resp -> do
+            liftIO $ print $ graphQLResponseItems resp
+            yieldMany $ graphQLResponseItems resp
+
+data GraphQLResponse = GraphQLResponse
+  { graphQLResponseItems :: [Item]
+  }
+  deriving (Show)
+
+instance FromJSON GraphQLResponse where
+  parseJSON = withObject "GraphQLResponse" $ \o -> do
+    dat <- o .: "data"
+    eventsByType <- dat .: "eventsByType"
+    GraphQLResponse <$> eventsByType .: "items"
+
+data Item = Item
+  { itemId :: !Text,
+    itemTitle :: !Text,
+    itemRegion :: !Text, -- For unknown reasons, 'location' is an empty text? Maybe we need to revisit this as the website develops.
+    -- itemDescription :: !(Maybe Text)
+    itemWebsite :: !(Maybe Text),
+    itemDateFrom :: !ZonedTime
+  }
+  deriving (Show)
+
+instance FromJSON Item where
+  parseJSON = withObject "Item" $ \o ->
+    Item
+      <$> o .: "id"
+      <*> o .: "title"
+      <*> o .: "region"
+      -- <*> o .:? "description" -- TODO description is in these weird blocks.
+      <*> o .:? "website"
+      <*> o .: "dateFrom"
+
+importItem :: ConduitT Item void Import ()
+importItem = awaitForever $ \item@Item {..} -> do
+  liftIO $ print item
+
+  now <- liftIO getCurrentTime
+  let today = utctDay now
+
+  externalEventUuid <- nextRandomUUID
+  let externalEventKey = itemId
+
+  let externalEventTitle = itemTitle
+  let externalEventDescription = Nothing
+  let externalEventOrganiser = Nothing
+  let localTime = zonedTimeToLocalTime itemDateFrom
+  let externalEventDay = localDay localTime
+  let externalEventStart =
+        let tod = localTimeOfDay localTime
+         in if tod /= midnight then Just tod else Nothing
+  let externalEventHomepage = itemWebsite
+  let externalEventPrice = Nothing
+  let externalEventCancelled = False
+  case M.lookup itemRegion regionMap of
+    Nothing -> logDebugN $ "Could not categorise region: " <> itemRegion
+    Just address -> do
+      app <- asks importEnvApp
+      mPlaceEntity <- lift $ runReaderT (lookupPlaceRaw address) app
+      case mPlaceEntity of
+        Nothing -> pure ()
+        Just (Entity externalEventPlace _) -> do
+          let externalEventCreated = now
+          let externalEventModified = Nothing
+          externalEventImporter <- asks importEnvId
+          let externalEventOrigin = "https://sensual.dance/event/id=" <> itemId
+
+          lift $ importExternalEvent ExternalEvent {..}
+
+regionMap :: Map Text Text
+regionMap =
+  M.fromList
+    [ ("ch-ost", "Zurich"),
+      ("ch-bsnw", "Basel"),
+      ("ch-bern", "Bern")
+    ]
