@@ -1,6 +1,8 @@
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+-- We need this for the WD.chrome piece
+{-# OPTIONS_GHC -fno-warn-incomplete-record-updates #-}
 
 -- | https://sensual.dance
 --
@@ -12,33 +14,22 @@
 module Salsa.Party.Importer.SensualDance (sensualDanceImporter) where
 
 import Conduit
-import Control.Concurrent.TokenLimiter.Concurrent
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
 import Data.Aeson.Types as JSON
 import qualified Data.ByteString.Lazy as LB
-import qualified Data.Conduit.Combinators as C
 import Data.Either
-import qualified Data.HashMap.Strict as HM
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe
-import Data.String.QQ
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import Network.HTTP.Client as HTTP
-import Network.URI
 import Salsa.Party.Importer.Import
 import Salsa.Party.Importer.Selenium
 import Salsa.Party.Web.Server.Geocoding
 import Test.WebDriver as WD
-import Test.WebDriver.Capabilities as WD
 import Test.WebDriver.Class as WD
 import Test.WebDriver.Commands.Internal as WD
 import Test.WebDriver.Commands.Wait as WD
-import Text.HTML.Scalpel
-import Text.HTML.Scalpel.Extended
-import Text.Read (readMaybe)
 
 sensualDanceImporter :: Importer
 sensualDanceImporter =
@@ -48,19 +39,21 @@ sensualDanceImporter =
     }
 
 func :: Import ()
-func = do
-  runConduit $
-    yield "http://sensual.dance/"
-      .| fetchHome
-      .| getResponseBodyValues
-      .| importItem
+func =
+  withSeleniumServer $
+    runConduit $
+      yield "http://sensual.dance/"
+        .| fetchHome
+        .| getResponseBodyValues
+        .| importItem
 
 fetchHome :: ConduitT String GetResponseBodyResponse Import ()
 fetchHome = awaitForever $ \homeUrl -> do
-  -- lift $ waitToFetch homeUrl
+  lift $ waitToFetch homeUrl
   lift $ logDebugN $ T.pack $ "Fetching: " <> homeUrl
+  chromeExecutable <- getChromeExecutable
   vals <- liftIO $ do
-    let browser = WD.chrome {chromeOptions = ["--headless"]}
+    let browser = WD.chrome {chromeOptions = ["--headless"], chromeBinary = Just $ fromAbsFile chromeExecutable}
         caps =
           WD.defaultCaps
             { browser = browser,
@@ -77,12 +70,11 @@ fetchHome = awaitForever $ \homeUrl -> do
             }
         config = WD.defaultConfig {wdCapabilities = caps}
     WD.runSession config . WD.finallyClose $ do
-      logTypes <- getLogTypes
       WD.setImplicitWait 10_000 -- Ten seconds
       WD.setScriptTimeout 10_000 -- Ten seconds
       WD.setPageLoadTimeout 10_000 -- Ten seconds
       WD.openPage homeUrl
-      ready <- WD.waitUntil 10 $ do
+      _ <- WD.waitUntil 10 $ do
         t <- executeJS [] "return document.readyState"
         WD.expect $ (t :: Text) == "complete"
       -- TODO make this delay longer in prod
@@ -105,7 +97,6 @@ fetchHome = awaitForever $ \homeUrl -> do
         doSessCommand methodPost "/goog/cdp/execute" arg
   lift $ logDebugN "Done loading page, getting logs"
   yieldMany vals
-  liftIO $ threadDelay 10_000_000 -- TODO Temporary
 
 decodeLogEntry :: WD.LogEntry -> Either String JSON.Value
 decodeLogEntry logEntry =
@@ -235,7 +226,7 @@ instance FromJSON Item where
     pure Item {..}
 
 importItem :: ConduitT Item void Import ()
-importItem = awaitForever $ \item@Item {..} -> do
+importItem = awaitForever $ \Item {..} -> do
   now <- liftIO getCurrentTime
   let today = utctDay now
 
@@ -247,26 +238,29 @@ importItem = awaitForever $ \item@Item {..} -> do
   let externalEventOrganiser = Nothing
   let localTime = zonedTimeToLocalTime itemDateFrom
   let externalEventDay = localDay localTime
-  let externalEventStart =
-        let tod = localTimeOfDay localTime
-         in if tod /= midnight then Just tod else Nothing
-  let externalEventHomepage = itemWebsite
-  let externalEventPrice = Nothing
-  let externalEventCancelled = False
-  case M.lookup itemRegion regionMap of
-    Nothing -> logDebugN $ "Could not categorise region: " <> itemRegion
-    Just address -> do
-      app <- asks importEnvApp
-      mPlaceEntity <- lift $ runReaderT (lookupPlaceRaw address) app
-      case mPlaceEntity of
-        Nothing -> pure ()
-        Just (Entity externalEventPlace _) -> do
-          let externalEventCreated = now
-          let externalEventModified = Nothing
-          externalEventImporter <- asks importEnvId
-          let externalEventOrigin = "https://sensual.dance/event/id=" <> itemId
+  if externalEventDay < addDays (-1) today
+    then pure ()
+    else do
+      let externalEventStart =
+            let tod = localTimeOfDay localTime
+             in if tod /= midnight then Just tod else Nothing
+      let externalEventHomepage = itemWebsite
+      let externalEventPrice = Nothing
+      let externalEventCancelled = False
+      case M.lookup itemRegion regionMap of
+        Nothing -> logDebugN $ "Could not categorise region: " <> itemRegion
+        Just address -> do
+          app <- asks importEnvApp
+          mPlaceEntity <- lift $ runReaderT (lookupPlaceRaw address) app
+          case mPlaceEntity of
+            Nothing -> pure ()
+            Just (Entity externalEventPlace _) -> do
+              let externalEventCreated = now
+              let externalEventModified = Nothing
+              externalEventImporter <- asks importEnvId
+              let externalEventOrigin = "https://sensual.dance/event/id=" <> itemId
 
-          lift $ importExternalEvent ExternalEvent {..}
+              lift $ importExternalEvent ExternalEvent {..}
 
 regionMap :: Map Text Text
 regionMap =

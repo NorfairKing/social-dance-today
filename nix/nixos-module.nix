@@ -205,6 +205,11 @@ in
                 "SALSA_PARTY_WEB_SERVER_CONFIG_FILE" =
                   "${web-server-config-file}";
               };
+            path = with pkgs; [
+              selenium-server-standalone
+              chromedriver
+              chromium
+            ];
             script =
               ''
                 mkdir -p "${web-server-working-dir}"

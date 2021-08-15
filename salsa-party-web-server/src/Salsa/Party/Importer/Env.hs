@@ -195,7 +195,8 @@ newtype Import a = Import {unImport :: ReaderT ImportEnv (LoggingT IO) a}
       MonadLogger,
       MonadIO,
       MonadUnliftIO,
-      MonadThrow
+      MonadThrow,
+      MonadFail
     )
 
 data ImportEnv = ImportEnv

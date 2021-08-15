@@ -69,7 +69,6 @@ extra-deps:
 # https://github.com/commercialhaskell/stackage/blob/766f6f990d85b0b996659a40f54fb73e5545a569/build-constraints.yaml#L1823
 - unliftio-core-0.1.2.0
 - amazonka-1.6.1
-- http2-client-0.10.0.0@sha256:85b8771e9e8d4fd0b4327373ebb4a7bc7f9a293e5d7a7dc581ca4153a841da67,2604
 
 nix:
   shell-file: shell.nix
