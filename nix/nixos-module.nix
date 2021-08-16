@@ -207,7 +207,7 @@ in
               };
             path = with salsaPkgs; [
               chromedriver
-              google-chrome
+              chromium
               selenium-server-standalone
             ];
             script =

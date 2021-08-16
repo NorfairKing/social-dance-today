@@ -24,7 +24,7 @@ withSeleniumServer func = do
 
 getChromeExecutable :: (MonadIO m, MonadFail m, MonadLogger m) => m (Path Abs File)
 getChromeExecutable = do
-  chromeFile <- liftIO $ parseRelFile "google-chrome-stable"
+  chromeFile <- liftIO $ parseRelFile "chromium"
   mChromeExecutable <- findExecutable chromeFile
   case mChromeExecutable of
     Nothing -> fail $ "Could not find executable: " <> fromRelFile chromeFile

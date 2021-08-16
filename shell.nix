@@ -11,7 +11,7 @@ pkgs.haskell.lib.buildStackProject {
     haskellPackages.autoexporter
     killall
     selenium-server-standalone
-    google-chrome
+    chromium
     zlib
   ] ++ pre-commit.tools;
   shellHook = pre-commit.run.shellHook;
