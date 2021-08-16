@@ -11,6 +11,9 @@
 --
 -- This page is a real nightmare.
 -- It only queries the parties at runtime, via javascript, using a graphql client that uses authentication.
+--
+-- This importer uses selenium to download the page and get the graphql json response from the request logs.
+-- Note that the selenium server will remove old data if the disk is getting full.
 module Salsa.Party.Importer.SensualDance (sensualDanceImporter) where
 
 import Conduit
