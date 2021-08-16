@@ -81,8 +81,7 @@ fetchHome = awaitForever $ \homeUrl -> do
       _ <- WD.waitUntil 10 $ do
         t <- executeJS [] "return document.readyState"
         WD.expect $ (t :: Text) == "complete"
-      -- TODO make this delay longer in prod
-      liftIO $ threadDelay 2_000_000 -- Wait for the entire page to be loaded.
+      liftIO $ threadDelay 10_000_000 -- Wait for the entire page to be loaded.
       logEntries <- getLogs "performance"
       let logValues = rights $ map decodeLogEntry logEntries
       let interestingLogEntries = rights $ map parseInterestingLogEntry logValues
