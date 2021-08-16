@@ -22,6 +22,7 @@ library:
   - cryptohash-sha256
   - data-default
   - directory
+  - edit-distance
   - envparse
   - esqueleto
   - exceptions

@@ -6,12 +6,14 @@
 module Salsa.Party.Web.Server.Handler.Search.Query where
 
 import Control.Monad
+import Data.Char as Char
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import qualified Database.Esqueleto as E
 import Salsa.Party.Web.Server.Distance
 import Salsa.Party.Web.Server.Handler.Import
+import Text.EditDistance
 
 nullSearchResults :: Map Day [Result] -> Bool
 nullSearchResults = (== 0) . countSearchResults -- Not the same as M.null!
@@ -192,8 +194,19 @@ deduplicateExternalEvents internals externals = M.differenceWith go externals in
         [ -- At exactly the same location is probably the same event.
           place1Id == place2Id,
           -- If they're happening at the same address (modulo whitespace), it's also probably the same event.
-          T.strip (placeQuery place1) == T.strip (placeQuery place2),
+          placeQuery place1 `closeEnoughTo` placeQuery place2,
           -- If the title of two events are the same (modulo whitespace), it's also probably the same event.
           -- We rely on the assumption that different events will want to differentiate themselves from eachother
-          T.strip externalEventTitle == T.strip partyTitle
+          externalEventTitle `closeEnoughTo` partyTitle
         ]
+
+closeEnoughTo :: Text -> Text -> Bool
+closeEnoughTo t1 t2 =
+  let normalise = filter (not . Char.isSymbol) . filter Char.isPrint . T.unpack . T.toCaseFold . T.strip
+      t1' = normalise t1
+      t2' = normalise t2
+      d = levenshteinDistance defaultEditCosts t1' t2'
+      totalLength = length t1' + length t2'
+      -- For every _this many_ characters in the total length, the 'duplicate' can be one off.
+      ratio = 11
+   in ratio * d <= totalLength
