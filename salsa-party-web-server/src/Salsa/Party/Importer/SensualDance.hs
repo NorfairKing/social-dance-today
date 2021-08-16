@@ -53,13 +53,17 @@ fetchHome = awaitForever $ \homeUrl -> do
   lift $ logDebugN $ T.pack $ "Fetching: " <> homeUrl
   chromeExecutable <- getChromeExecutable
   vals <- liftIO $ do
-    let browser = WD.chrome {chromeOptions = ["--headless"], chromeBinary = Just $ fromAbsFile chromeExecutable}
+    let browser =
+          WD.chrome
+            { chromeOptions = ["--headless", "--no-sandbox"],
+              chromeBinary = Just $ fromAbsFile chromeExecutable
+            }
         caps =
           WD.defaultCaps
             { browser = browser,
               javascriptEnabled = Just True,
               additionalCaps =
-                [ ( "loggingPrefs",
+                [ ( "goog:loggingPrefs",
                     JSON.object
                       [ "performance"
                           .= ( "ALL" :: Text
@@ -81,9 +85,7 @@ fetchHome = awaitForever $ \homeUrl -> do
       liftIO $ threadDelay 2_000_000 -- Wait for the entire page to be loaded.
       logEntries <- getLogs "performance"
       let logValues = rights $ map decodeLogEntry logEntries
-      liftIO $ pPrint logValues
       let interestingLogEntries = rights $ map parseInterestingLogEntry logValues
-      liftIO $ pPrint interestingLogEntries
       forM interestingLogEntries $ \InterestingLog {..} -> do
         let arg :: JSON.Value
             arg =
@@ -95,6 +97,7 @@ fetchHome = awaitForever $ \homeUrl -> do
                       ]
                 ]
         doSessCommand methodPost "/goog/cdp/execute" arg
+
   lift $ logDebugN "Done loading page, getting logs"
   yieldMany vals
 

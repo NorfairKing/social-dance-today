@@ -5,6 +5,7 @@ module Salsa.Party.Importer.Selenium where
 
 import Control.Concurrent
 import Control.Monad.Logger
+import qualified Data.Text as T
 import Path
 import Path.IO
 import System.Process.Typed
@@ -21,10 +22,12 @@ withSeleniumServer func = do
     stopProcess process
     pure r
 
-getChromeExecutable :: (MonadIO m, MonadFail m) => m (Path Abs File)
+getChromeExecutable :: (MonadIO m, MonadFail m, MonadLogger m) => m (Path Abs File)
 getChromeExecutable = do
-  chromeFile <- liftIO $ parseRelFile "chromium"
+  chromeFile <- liftIO $ parseRelFile "google-chrome-stable"
   mChromeExecutable <- findExecutable chromeFile
   case mChromeExecutable of
     Nothing -> fail $ "Could not find executable: " <> fromRelFile chromeFile
-    Just chromeExecutable -> pure chromeExecutable
+    Just chromeExecutable -> do
+      logInfoN $ T.pack $ "Found chrome executable at: " <> fromAbsFile chromeExecutable
+      pure chromeExecutable

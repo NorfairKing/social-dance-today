@@ -102,8 +102,9 @@ runImporterWithDoubleCheck importerInterval app LooperSettings {..} importer = a
         else logDebugN $ "Not running " <> ctx
       pure shouldRun
   when shouldRun $ do
-    logInfoN "Starting"
+    logInfoN "Starting importer"
     runImporter app importer
+    logInfoN "Importer done"
 
 runImporter :: App -> Importer -> LoggingT IO ()
 runImporter a Importer {..} = do

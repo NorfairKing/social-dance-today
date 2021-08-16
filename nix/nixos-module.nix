@@ -1,6 +1,7 @@
 { envname
 , sources ? import ./sources.nix
-, salsaPartyPackages ? (import ./pkgs.nix { }).salsaPartyPackages
+, salsaPkgs ? import ./pkgs.nix { inherit sources; }
+, salsaPartyPackages ? salsaPkgs.salsaPartyPackages
 }:
 { lib, pkgs, config, ... }:
 with lib;
@@ -158,8 +159,6 @@ in
     };
   config =
     let
-      username = "salsa";
-
       nullOrOption =
         name: opt: optionalAttrs (!builtins.isNull opt) { "${name}" = opt; };
       nullOrOptionHead =
@@ -194,9 +193,8 @@ in
       web-server-config-file = toYamlFile "salsa-web-server-config" web-server-config;
 
       working-dir = "/www/salsa-party/${envname}/";
-      # The docs server
       web-server-working-dir = working-dir + "web-server/";
-      # The api server
+      # The web server
       web-server-service =
         optionalAttrs (cfg.web-server.enable or false) {
           "salsa-party-web-server-${envname}" = {
@@ -207,10 +205,10 @@ in
                 "SALSA_PARTY_WEB_SERVER_CONFIG_FILE" =
                   "${web-server-config-file}";
               };
-            path = with pkgs; [
-              selenium-server-standalone
+            path = with salsaPkgs; [
               chromedriver
-              chromium
+              google-chrome
+              selenium-server-standalone
             ];
             script =
               ''
@@ -223,7 +221,6 @@ in
                 Restart = "always";
                 RestartSec = 1;
                 Nice = 15;
-                User = username;
               };
             unitConfig =
               {
@@ -270,7 +267,6 @@ in
             serviceConfig =
               {
                 Type = "oneshot";
-                User = username;
               };
           };
         };
@@ -286,25 +282,15 @@ in
         };
     in
     mkIf cfg.enable {
-      users.users."${username}" = {
-        name = username;
-        password = username;
-        description = "A user for the salsa service(s). This is nice for encapsulation, but it's also necessary to be able to run chrome.";
-        isNormalUser = true;
-        home = "/www/salsa-party";
-        createHome = true;
-      };
-      systemd = {
-        services =
-          mergeListRecursively [
-            web-server-service
-            end-to-end-test-service
-          ];
-        timers =
-          mergeListRecursively [
-            end-to-end-test-timer
-          ];
-      };
+      systemd.services =
+        mergeListRecursively [
+          web-server-service
+          end-to-end-test-service
+        ];
+      systemd.timers =
+        mergeListRecursively [
+          end-to-end-test-timer
+        ];
       networking.firewall.allowedTCPPorts = builtins.concatLists [
         (optional (cfg.web-server.enable or false) cfg.web-server.port)
       ];
