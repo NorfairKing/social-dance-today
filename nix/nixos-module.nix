@@ -158,6 +158,8 @@ in
     };
   config =
     let
+      username = "salsa";
+
       nullOrOption =
         name: opt: optionalAttrs (!builtins.isNull opt) { "${name}" = opt; };
       nullOrOptionHead =
@@ -221,6 +223,7 @@ in
                 Restart = "always";
                 RestartSec = 1;
                 Nice = 15;
+                User = username;
               };
             unitConfig =
               {
@@ -267,6 +270,7 @@ in
             serviceConfig =
               {
                 Type = "oneshot";
+                User = username;
               };
           };
         };
@@ -282,15 +286,25 @@ in
         };
     in
     mkIf cfg.enable {
-      systemd.services =
-        mergeListRecursively [
-          web-server-service
-          end-to-end-test-service
-        ];
-      systemd.timers =
-        mergeListRecursively [
-          end-to-end-test-timer
-        ];
+      users.users."${username}" = {
+        name = username;
+        password = username;
+        description = "A user for the salsa service(s). This is nice for encapsulation, but it's also necessary to be able to run chrome.";
+        isNormalUser = true;
+        home = "/www/salsa-party";
+        createHome = true;
+      };
+      systemd = {
+        services =
+          mergeListRecursively [
+            web-server-service
+            end-to-end-test-service
+          ];
+        timers =
+          mergeListRecursively [
+            end-to-end-test-timer
+          ];
+      };
       networking.firewall.allowedTCPPorts = builtins.concatLists [
         (optional (cfg.web-server.enable or false) cfg.web-server.port)
       ];
