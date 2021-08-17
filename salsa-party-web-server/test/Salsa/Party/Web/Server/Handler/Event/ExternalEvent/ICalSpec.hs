@@ -10,7 +10,6 @@ import qualified Data.UUID.Typed as Typed
 import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
 import Salsa.Party.Web.Server.Handler.TestImport
-import Test.Syd.Wai (managerSpec)
 import qualified Text.ICalendar.Parser as ICal
 import qualified Text.ICalendar.Printer as ICal
 import Yesod.Core
@@ -44,7 +43,7 @@ spec = do
                             [_] -> pure ()
                             _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
                         _ -> liftIO $ expectationFailure $ unlines $ "Warnings while parsing ical: " : warnings
-  managerSpec . setupAroundWith' (\man () -> serverSetupFunc man) $ do
+  appSpec $
     describe "ICal" $
       it "outputs the same event calendar as before" $ \app ->
         let exampleExternalEvent =

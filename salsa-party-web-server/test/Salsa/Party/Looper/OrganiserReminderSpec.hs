@@ -13,7 +13,6 @@ import Test.QuickCheck
 import Test.Syd
 import Test.Syd.Persistent
 import Test.Syd.Validity
-import Test.Syd.Wai (managerSpec)
 import Yesod.Core
 
 spec :: Spec
@@ -147,7 +146,7 @@ spec = do
                         (userEmailAddress user)
                         (organiserReminderSecret organiserReminder)
 
-  managerSpec . setupAroundWith' (\man () -> serverSetupFunc man) $ do
+  appSpec $ do
     let secret = Typed.UUID $ UUID.fromWords 10 20 30 40
     describe "organiserReminderTextContent" $
       it "looks the same as last time" $ \app ->

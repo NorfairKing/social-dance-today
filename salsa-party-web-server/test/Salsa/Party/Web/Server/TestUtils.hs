@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -46,6 +47,9 @@ type ServerSpec = YesodSpec App
 
 serverSpec :: ServerSpec -> Spec
 serverSpec = modifyMaxSuccess (`div` 20) . managerSpec . yesodSpecWithSiteSetupFunc serverSetupFunc
+
+appSpec :: TestDef '[HTTP.Manager] App -> Spec
+appSpec = managerSpec . setupAroundWith' (\man () -> serverSetupFunc man)
 
 serverSetupFunc :: HTTP.Manager -> SetupFunc App
 serverSetupFunc man = do

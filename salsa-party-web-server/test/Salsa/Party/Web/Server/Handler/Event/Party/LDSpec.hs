@@ -11,7 +11,6 @@ import Salsa.Party.DB
 import Salsa.Party.Web.Server.Handler.Event.Party.LD
 import Salsa.Party.Web.Server.Handler.TestImport
 import Test.Syd.Aeson
-import Test.Syd.Wai (managerSpec)
 import Yesod.Core
 
 spec :: Spec
@@ -48,7 +47,7 @@ spec = do
             placeLon = 7.443078400
           }
 
-  managerSpec . setupAroundWith' (\man () -> serverSetupFunc man) $
+  appSpec $
     it "outputs the same JSON LD as before for this party" $ \app ->
       let urlRender :: Route App -> Text
           urlRender route = yesodRender app "http://localhost:8000" route []
