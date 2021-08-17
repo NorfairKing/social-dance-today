@@ -5,6 +5,7 @@ let
   salsa-party-production = import (./nixos-module.nix) {
     envname = "production";
     inherit sources;
+    salsaPkgs = pkgs;
     salsaPartyPackages = pkgs.salsaPartyPackages;
   };
   port = 8001;
