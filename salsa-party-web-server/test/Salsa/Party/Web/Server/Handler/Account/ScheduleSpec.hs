@@ -204,6 +204,8 @@ spec = serverSpec $ do
                       testEditSchedule scheduleUuid_ editScheduleForm_ location
                       statusIs 403
 
+    pending "can update this example schedule and have its future parties parties updated automatically"
+
   describe "AccountScheduleDeleteR" $ do
     it "can delete a schedule" $ \yc -> do
       forAllValid $ \organiserForm_ ->
