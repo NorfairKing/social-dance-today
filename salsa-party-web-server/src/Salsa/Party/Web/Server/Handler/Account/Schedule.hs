@@ -305,25 +305,48 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
       whenChanged val formFunc field = do
         guard $ val /= formFunc form
         pure $ field =. formFunc form
+
+      mUpdates :: EntityField f (Maybe UTCTime) -> [Update f] -> Maybe [Update f]
+      mUpdates modifiedField updates =
+        if null updates
+          then Nothing
+          else Just $ (modifiedField =. Just now) : updates
+
       scheduleFieldUpdates :: [Update Schedule]
       scheduleFieldUpdates =
-        catMaybes
-          [ whenChanged scheduleTitle editScheduleFormTitle ScheduleTitle,
-            whenChanged scheduleRecurrence editScheduleFormRecurrence ScheduleRecurrence,
-            whenChanged scheduleDescription (fmap unTextarea . editScheduleFormDescription) ScheduleDescription,
-            -- Purposely don't update the day so that schedulegoers can't have the rug pulled under them
-            whenChanged scheduleStart editScheduleFormStart ScheduleStart,
-            whenChanged scheduleHomepage editScheduleFormHomepage ScheduleHomepage,
-            whenChanged schedulePrice editScheduleFormPrice SchedulePrice,
-            if schedulePlace /= placeId
-              then Just (SchedulePlace =. placeId)
-              else Nothing
-          ]
-      mUpdates =
-        if null scheduleFieldUpdates
-          then Nothing
-          else Just $ (ScheduleModified =. Just now) : scheduleFieldUpdates
-  forM_ mUpdates $ \updates -> runDB $ update scheduleId updates
+        let EditScheduleForm _ _ _ _ _ _ _ = undefined
+         in catMaybes
+              [ whenChanged scheduleTitle editScheduleFormTitle ScheduleTitle,
+                whenChanged scheduleRecurrence editScheduleFormRecurrence ScheduleRecurrence,
+                whenChanged scheduleDescription (fmap unTextarea . editScheduleFormDescription) ScheduleDescription,
+                -- Purposely don't update the day so that schedulegoers can't have the rug pulled under them
+                whenChanged scheduleStart editScheduleFormStart ScheduleStart,
+                whenChanged scheduleHomepage editScheduleFormHomepage ScheduleHomepage,
+                whenChanged schedulePrice editScheduleFormPrice SchedulePrice,
+                if schedulePlace /= placeId
+                  then Just (SchedulePlace =. placeId)
+                  else Nothing
+              ]
+      mScheduleUpdates :: Maybe [Update Schedule]
+      mScheduleUpdates = mUpdates ScheduleModified scheduleFieldUpdates
+
+      partyFieldUpdates :: [Update Party]
+      partyFieldUpdates =
+        let EditScheduleForm _ _ _ _ _ _ _ = undefined
+         in catMaybes
+              [ whenChanged scheduleTitle editScheduleFormTitle PartyTitle,
+                whenChanged scheduleDescription (fmap unTextarea . editScheduleFormDescription) PartyDescription,
+                -- Purposely don't update the day so that schedulegoers can't have the rug pulled under them
+                whenChanged scheduleStart editScheduleFormStart PartyStart,
+                whenChanged scheduleHomepage editScheduleFormHomepage PartyHomepage,
+                whenChanged schedulePrice editScheduleFormPrice PartyPrice,
+                if schedulePlace /= placeId
+                  then Just (PartyPlace =. placeId)
+                  else Nothing
+              ]
+      mPartyUpdates :: Maybe [Update Party]
+      mPartyUpdates = mUpdates PartyModified partyFieldUpdates
+  forM_ mScheduleUpdates $ \updates -> runDB $ update scheduleId updates
 
   -- Update the poster if a new one has been submitted
   case mFileInfo of
