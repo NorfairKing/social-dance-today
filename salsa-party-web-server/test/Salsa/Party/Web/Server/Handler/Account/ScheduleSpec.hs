@@ -80,8 +80,8 @@ spec = serverSpec $ do
               let scheduleForm_ = scheduleFormPrototype_ {addScheduleFormRecurrence = WeeklyRecurrence Monday}
               scheduleUuid_ <- testAddSchedule scheduleForm_ location
               verifyScheduleAdded scheduleUuid_ scheduleForm_
-              mScheduleId_ <- testDB $ DB.selectFirst [] []
-              case mScheduleId_ of
+              mSchedule <- testDB $ DB.selectFirst [] []
+              case mSchedule of
                 Nothing -> liftIO $ expectationFailure "Should have found a schedule"
                 Just (Entity scheduleId_ _) -> do
                   parties <- testDB $ do
@@ -158,8 +158,8 @@ spec = serverSpec $ do
                   testAddSchedule
                     addScheduleForm_
                     location
-                mScheduleId_ <- testDB $ DB.selectFirst [] []
-                partyIds <- case mScheduleId_ of
+                mSchedule <- testDB $ DB.selectFirst [] []
+                partyIds <- case mSchedule of
                   Nothing -> liftIO $ expectationFailure "Should have found a schedule"
                   Just (Entity scheduleId_ _) -> testDB $ map (schedulePartyParty . entityVal) <$> DB.selectList [SchedulePartySchedule DB.==. scheduleId_] []
                 partiesBefore <- testDB $ fmap catMaybes $ mapM DB.get partyIds
@@ -217,8 +217,8 @@ spec = serverSpec $ do
                     addScheduleForm_
                     location
                     poster1
-                mScheduleId_ <- testDB $ DB.selectFirst [] []
-                partyIds <- case mScheduleId_ of
+                mSchedule <- testDB $ DB.selectFirst [] []
+                partyIds <- case mSchedule of
                   Nothing -> liftIO $ expectationFailure "Should have found a schedule"
                   Just (Entity scheduleId_ _) -> testDB $ map (schedulePartyParty . entityVal) <$> DB.selectList [SchedulePartySchedule DB.==. scheduleId_] []
                 partiesBefore <- testDB $ fmap catMaybes $ mapM DB.get partyIds
