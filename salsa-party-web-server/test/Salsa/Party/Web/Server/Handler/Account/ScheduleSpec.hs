@@ -147,6 +147,39 @@ spec = serverSpec $ do
                 statusIs 200
                 verifyScheduleEdited scheduleUuid_ editScheduleForm_
 
+    it "can update this example schedule and have its future parties parties updated automatically" $ \yc ->
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \addScheduleForm_ ->
+          forAllValid $ \editScheduleForm_ ->
+            forAllValid $ \location ->
+              withAnyLoggedInUser_ yc $ do
+                testSubmitOrganiser organiserForm_
+                scheduleUuid_ <-
+                  testAddSchedule
+                    addScheduleForm_
+                    location
+                mScheduleId_ <- testDB $ DB.selectFirst [] []
+                partyIds <- case mScheduleId_ of
+                  Nothing -> liftIO $ expectationFailure "Should have found a schedule"
+                  Just (Entity scheduleId_ _) -> testDB $ map (schedulePartyParty . entityVal) <$> DB.selectList [SchedulePartySchedule DB.==. scheduleId_] []
+                partiesBefore <- testDB $ fmap catMaybes $ mapM DB.get partyIds
+                liftIO $
+                  context "before" $
+                    forM_ partiesBefore $ \partyBefore ->
+                      partyTitle partyBefore `shouldBe` addScheduleFormTitle addScheduleForm_
+                get $ AccountR $ AccountScheduleR scheduleUuid_
+                statusIs 200
+                testEditSchedule scheduleUuid_ editScheduleForm_ location
+                statusIs 303
+                _ <- followRedirect
+                statusIs 200
+                verifyScheduleEdited scheduleUuid_ editScheduleForm_
+                partiesAfter <- testDB $ fmap catMaybes $ mapM DB.get partyIds
+                liftIO $
+                  context "after" $
+                    forM_ partiesAfter $ \partyAfter ->
+                      partyTitle partyAfter `shouldBe` editScheduleFormTitle editScheduleForm_
+
     it "can edit an existing schedule's poster" $ \yc ->
       forAllValid $ \organiserForm_ ->
         forAllValid $ \addScheduleForm_ ->
@@ -203,8 +236,6 @@ spec = serverSpec $ do
                       testSubmitOrganiser organiser2Form_
                       testEditSchedule scheduleUuid_ editScheduleForm_ location
                       statusIs 403
-
-    pending "can update this example schedule and have its future parties parties updated automatically"
 
   describe "AccountScheduleDeleteR" $ do
     it "can delete a schedule" $ \yc -> do
