@@ -5,6 +5,11 @@
     <p .content>
       _{MsgAccountEmailAddress userEmailAddress}
 
+    $if not requireVerification
+      <div .buttons>
+        <a .button href=@{AccountR AccountOrganiserR}>
+          _{MsgNavOrganiser}
+
 $if requireVerification
   $maybe _ <- userVerificationKey
     <section .section>
@@ -32,6 +37,9 @@ $if requireVerification
                 .button .is-light
                 type=submit>
                 _{MsgAccountVerificationResendButton}
+
+        
+  
 
 
 <section .section>

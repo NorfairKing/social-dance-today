@@ -19,8 +19,6 @@
       $maybe _ <- mAuth
         <a .navbar-item href=@{AccountR AccountOverviewR}>
           _{MsgNavAccount}
-        <a .navbar-item href=@{AccountR AccountOrganiserR}>
-          _{MsgNavOrganiser}
         <a .navbar-item href=@{AccountR AccountPartiesR}>
           _{MsgNavParties}
         <a .navbar-item href=@{AccountR AccountSchedulesR}>
