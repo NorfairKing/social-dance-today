@@ -37,6 +37,7 @@ library
       Salsa.Party.Importer.TribeCalendar
       Salsa.Party.Looper
       Salsa.Party.Looper.ImageGarbageCollector
+      Salsa.Party.Looper.Import
       Salsa.Party.Looper.OrganiserReminder
       Salsa.Party.Looper.PartyScheduler
       Salsa.Party.OptParse

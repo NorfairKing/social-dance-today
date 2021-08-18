@@ -2,14 +2,8 @@
 
 module Salsa.Party.Looper.ImageGarbageCollector where
 
-import Conduit
-import Control.Monad
-import Control.Monad.Logger
 import qualified Data.Conduit.Combinators as C
-import Database.Persist
-import Database.Persist.Sql
-import Salsa.Party.DB
-import Salsa.Party.Web.Server.Foundation
+import Salsa.Party.Looper.Import
 
 runImageGarbageCollector :: App -> LoggingT IO ()
 runImageGarbageCollector App {..} = do
