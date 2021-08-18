@@ -2,12 +2,20 @@
 {-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
-  ( externalEventToLDEvent,
+  ( externalEventPageLD,
+    externalEventToLDEvent,
   )
 where
 
 import Salsa.Party.Web.Server.Handler.Import
 import qualified Web.JSONLD as LD
+
+externalEventPageLD :: Entity ExternalEvent -> Handler JSONLDData
+externalEventPageLD (Entity externalEventId externalEvent@ExternalEvent {..}) = do
+  place@Place {..} <- runDB $ get404 externalEventPlace
+  mPosterKey <- runDB $ getPosterForExternalEvent externalEventId
+  renderUrl <- getUrlRender
+  pure $ toJSONLDData $ externalEventToLDEvent renderUrl externalEvent place mPosterKey
 
 externalEventToLDEvent :: (Route App -> Text) -> ExternalEvent -> Place -> Maybe CASKey -> LD.Event
 externalEventToLDEvent renderUrl ExternalEvent {..} Place {..} mPosterKey =

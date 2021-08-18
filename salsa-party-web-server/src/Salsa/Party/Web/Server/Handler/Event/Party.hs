@@ -81,11 +81,3 @@ addPartyToGoogleCalendarLink :: (Route App -> Text) -> Party -> Place -> Maybe U
 addPartyToGoogleCalendarLink renderUrl Party {..} Place {..} =
   let Party _ _ _ _ _ _ _ _ _ _ _ _ = undefined
    in addEventToGoogleCalendarLink (renderUrl (EventR partyUuid)) partyDay partyStart placeQuery partyTitle partyDescription
-
-partyPageLD :: Entity Party -> Handler JSONLDData
-partyPageLD (Entity partyId party@Party {..}) = do
-  place@Place {..} <- runDB $ get404 partyPlace
-  organiser@Organiser {..} <- runDB $ get404 partyOrganiser
-  mPosterKey <- runDB $ getPosterForParty partyId
-  renderUrl <- getUrlRender
-  pure $ toJSONLDData $ partyToLDEvent renderUrl party organiser place mPosterKey

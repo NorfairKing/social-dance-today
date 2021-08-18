@@ -62,10 +62,3 @@ addExternalEventToGoogleCalendarLink :: (Route App -> Text) -> ExternalEvent -> 
 addExternalEventToGoogleCalendarLink renderUrl ExternalEvent {..} Place {..} =
   let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
    in addEventToGoogleCalendarLink (renderUrl (EventR externalEventUuid)) externalEventDay externalEventStart placeQuery externalEventTitle externalEventDescription
-
-externalEventPageLD :: Entity ExternalEvent -> Handler JSONLDData
-externalEventPageLD (Entity externalEventId externalEvent@ExternalEvent {..}) = do
-  place@Place {..} <- runDB $ get404 externalEventPlace
-  mPosterKey <- runDB $ getPosterForExternalEvent externalEventId
-  renderUrl <- getUrlRender
-  pure $ toJSONLDData $ externalEventToLDEvent renderUrl externalEvent place mPosterKey

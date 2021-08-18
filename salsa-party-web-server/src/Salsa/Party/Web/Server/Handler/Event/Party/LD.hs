@@ -2,12 +2,21 @@
 {-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Salsa.Party.Web.Server.Handler.Event.Party.LD
-  ( partyToLDEvent,
+  ( partyPageLD,
+    partyToLDEvent,
   )
 where
 
 import Salsa.Party.Web.Server.Handler.Import
 import qualified Web.JSONLD as LD
+
+partyPageLD :: Entity Party -> Handler JSONLDData
+partyPageLD (Entity partyId party@Party {..}) = do
+  place@Place {..} <- runDB $ get404 partyPlace
+  organiser@Organiser {..} <- runDB $ get404 partyOrganiser
+  mPosterKey <- runDB $ getPosterForParty partyId
+  renderUrl <- getUrlRender
+  pure $ toJSONLDData $ partyToLDEvent renderUrl party organiser place mPosterKey
 
 partyToLDEvent :: (Route App -> Text) -> Party -> Organiser -> Place -> Maybe CASKey -> LD.Event
 partyToLDEvent renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
