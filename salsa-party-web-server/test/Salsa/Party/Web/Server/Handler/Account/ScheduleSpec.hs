@@ -163,10 +163,8 @@ spec = serverSpec $ do
                   Nothing -> liftIO $ expectationFailure "Should have found a schedule"
                   Just (Entity scheduleId_ _) -> testDB $ map (schedulePartyParty . entityVal) <$> DB.selectList [SchedulePartySchedule DB.==. scheduleId_] []
                 partiesBefore <- testDB $ fmap catMaybes $ mapM DB.get partyIds
-                liftIO $
-                  context "before" $
-                    forM_ partiesBefore $ \partyBefore ->
-                      partyTitle partyBefore `shouldBe` addScheduleFormTitle addScheduleForm_
+                forM_ partiesBefore $ \partyBefore ->
+                  verifyScheduleAddedParty (partyUuid partyBefore) addScheduleForm_
                 get $ AccountR $ AccountScheduleR scheduleUuid_
                 statusIs 200
                 testEditSchedule scheduleUuid_ editScheduleForm_ location
@@ -174,10 +172,8 @@ spec = serverSpec $ do
                 _ <- followRedirect
                 statusIs 200
                 partiesAfter <- testDB $ fmap catMaybes $ mapM DB.get partyIds
-                liftIO $
-                  context "after" $
-                    forM_ partiesAfter $ \partyAfter ->
-                      partyTitle partyAfter `shouldBe` editScheduleFormTitle editScheduleForm_
+                forM_ partiesAfter $ \partyAfter ->
+                  verifyScheduleEditedParty (partyUuid partyAfter) editScheduleForm_
 
     it "can edit an existing schedule's poster" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -225,18 +221,18 @@ spec = serverSpec $ do
                 partyIds <- case mScheduleId_ of
                   Nothing -> liftIO $ expectationFailure "Should have found a schedule"
                   Just (Entity scheduleId_ _) -> testDB $ map (schedulePartyParty . entityVal) <$> DB.selectList [SchedulePartySchedule DB.==. scheduleId_] []
-                forM_ partyIds $ \partyId_ -> do
-                  mCasKeyBefore <- testDB $ getPosterForParty partyId_
-                  liftIO $ mCasKeyBefore `shouldBe` testFileCASKey poster1
+                partiesBefore <- testDB $ fmap catMaybes $ mapM DB.get partyIds
+                forM_ partiesBefore $ \partyBefore -> do
+                  verifyScheduleAddedPartyWithPoster (partyUuid partyBefore) addScheduleForm_ poster1
                 get $ AccountR $ AccountScheduleR scheduleUuid_
                 statusIs 200
                 testEditScheduleWithPoster scheduleUuid_ editScheduleForm_ location poster2
                 statusIs 303
                 _ <- followRedirect
                 statusIs 200
-                forM_ partyIds $ \partyId_ -> do
-                  mCasKeyAfter <- testDB $ getPosterForParty partyId_
-                  liftIO $ mCasKeyAfter `shouldBe` testFileCASKey poster2
+                partiesAfter <- testDB $ fmap catMaybes $ mapM DB.get partyIds
+                forM_ partiesAfter $ \partyAfter -> do
+                  verifyScheduleEditedPartyWithPoster (partyUuid partyAfter) editScheduleForm_ poster2
 
     it "cannot edit a nonexisting schedule" $ \yc ->
       forAllValid $ \organiserForm_ ->

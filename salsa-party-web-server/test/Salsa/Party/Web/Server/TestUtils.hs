@@ -499,6 +499,78 @@ editScheduleFormShouldMatch EditScheduleForm {..} Schedule {..} = do
   -- We can't check the poster because it's in a separate table.
   pure ()
 
+verifyScheduleAddedParty :: EventUUID -> AddScheduleForm -> YesodClientM App ()
+verifyScheduleAddedParty eventUuid_ addScheduleForm_ = verifyScheduleAddedPartyHelper eventUuid_ addScheduleForm_ Nothing
+
+verifyScheduleAddedPartyWithPoster :: EventUUID -> AddScheduleForm -> TestFile -> YesodClientM App ()
+verifyScheduleAddedPartyWithPoster eventUuid_ addScheduleForm_ poster = verifyScheduleAddedPartyHelper eventUuid_ addScheduleForm_ (Just poster)
+
+verifyScheduleAddedPartyHelper :: EventUUID -> AddScheduleForm -> Maybe TestFile -> YesodClientM App ()
+verifyScheduleAddedPartyHelper eventUuid_ addScheduleForm_ mPoster = do
+  mSchedule <- testDB $ DB.getBy $ UniquePartyUUID eventUuid_
+  case mSchedule of
+    Nothing -> liftIO $ expectationFailure "expected the added party to still exist."
+    Just (Entity partyId party) -> do
+      liftIO $ addScheduleForm_ `addScheduleFormShouldMatchParty` party
+      mPlace <- testDB $ DB.get $ partyPlace party
+      liftIO $ case mPlace of
+        Nothing -> expectationFailure "expected the added party to still have a place"
+        Just place -> placeQuery place `shouldBe` addScheduleFormAddress addScheduleForm_
+      mCASKey <- testDB $ getPosterForParty partyId
+      liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
+
+addScheduleFormShouldMatchParty :: AddScheduleForm -> Party -> IO ()
+addScheduleFormShouldMatchParty AddScheduleForm {..} Party {..} = do
+  let AddScheduleForm _ _ _ _ _ _ _ = undefined -- We want to check every part of the schedule form
+  context "title" $ partyTitle `shouldBe` addScheduleFormTitle
+  -- We can't check the address because that's in the Place.
+  -- partyAddress `shouldBe` addScheduleFormAddress
+  context "description" $ partyDescription `shouldBe` unTextarea <$> addScheduleFormDescription
+  context "start" $ do
+    -- We only care about what the time looks like, nothing about precision.
+    let showMTime = maybe "" $ formatTime defaultTimeLocale "%H:%M"
+    showMTime partyStart `shouldBe` showMTime addScheduleFormStart
+  context "homepage" $ partyHomepage `shouldBe` addScheduleFormHomepage
+  context "price" $ partyPrice `shouldBe` addScheduleFormPrice
+  -- We can't check the poster because it's in a separate table.
+  pure ()
+
+verifyScheduleEditedParty :: EventUUID -> EditScheduleForm -> YesodClientM App ()
+verifyScheduleEditedParty eventUuid_ editScheduleForm_ = verifyScheduleEditedPartyHelper eventUuid_ editScheduleForm_ Nothing
+
+verifyScheduleEditedPartyWithPoster :: EventUUID -> EditScheduleForm -> TestFile -> YesodClientM App ()
+verifyScheduleEditedPartyWithPoster eventUuid_ editScheduleForm_ poster = verifyScheduleEditedPartyHelper eventUuid_ editScheduleForm_ (Just poster)
+
+verifyScheduleEditedPartyHelper :: EventUUID -> EditScheduleForm -> Maybe TestFile -> YesodClientM App ()
+verifyScheduleEditedPartyHelper eventUuid_ editScheduleForm_ mPoster = do
+  mSchedule <- testDB $ DB.getBy $ UniquePartyUUID eventUuid_
+  case mSchedule of
+    Nothing -> liftIO $ expectationFailure "expected the edited party to still exist."
+    Just (Entity partyId party) -> do
+      liftIO $ editScheduleForm_ `editScheduleFormShouldMatchParty` party
+      mPlace <- testDB $ DB.get $ partyPlace party
+      liftIO $ case mPlace of
+        Nothing -> expectationFailure "expected the edited party to still have a place"
+        Just place -> placeQuery place `shouldBe` editScheduleFormAddress editScheduleForm_
+      mCASKey <- testDB $ getPosterForParty partyId
+      liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
+
+editScheduleFormShouldMatchParty :: EditScheduleForm -> Party -> IO ()
+editScheduleFormShouldMatchParty EditScheduleForm {..} Party {..} = do
+  let EditScheduleForm _ _ _ _ _ _ _ = undefined -- We want to check every part of the schedule form
+  context "title" $ partyTitle `shouldBe` editScheduleFormTitle
+  -- We can't check the address because that's in the Place.
+  -- partyAddress `shouldBe` editScheduleFormAddress
+  context "description" $ partyDescription `shouldBe` unTextarea <$> editScheduleFormDescription
+  context "start" $ do
+    -- We only care about what the time looks like, nothing about precision.
+    let showMTime = maybe "" $ formatTime defaultTimeLocale "%H:%M"
+    showMTime partyStart `shouldBe` showMTime editScheduleFormStart
+  context "homepage" $ partyHomepage `shouldBe` editScheduleFormHomepage
+  context "price" $ partyPrice `shouldBe` editScheduleFormPrice
+  -- We can't check the poster because it's in a separate table.
+  pure ()
+
 addRecurrenceParams :: Recurrence -> RequestBuilder App ()
 addRecurrenceParams = \case
   WeeklyRecurrence dow -> do
