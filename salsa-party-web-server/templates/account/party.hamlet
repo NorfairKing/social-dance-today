@@ -1,7 +1,62 @@
 <section .section>
   <div .container>
     <h1 .title .is-3>
-      $if partyCancelled party
-        _{MsgPartyTitleCancelled (partyTitle party)}
+      $if partyCancelled
+        _{MsgPartyTitleCancelled partyTitle}
       $else
-        _{MsgPartyTitleScheduled (partyTitle party)}
+        _{MsgPartyTitleScheduled partyTitle}
+
+    <h2 .title .is-4>
+      _{MsgPartyAddress placeQuery}
+
+    <h3 .subtitle .is-5>
+      $maybe start <- partyStart
+        #{formatTime timeLocale prettyDateTimeFormat (LocalTime partyDay start)} 
+      $nothing
+        #{formatTime timeLocale prettyDayFormat partyDay} 
+      (_{autoDayMsg today partyDay})
+
+
+    $maybe posterKey <- mPosterKey
+      ^{posterImageWidget party organiser posterKey}
+
+    $maybe Entity _ schedule <- mSchedule
+      <h4 .subtitle .is-6>
+        ^{recurrenceDescriptionWidget (scheduleRecurrence schedule)}
+
+    $maybe description <- partyDescription
+      <div .content>
+        <p>
+          #{Textarea description}
+  
+    <p .content>
+      <div .buttons>
+        <a .button href=@{AccountR $ AccountPartyR partyUuid}>
+          _{MsgYourPartiesPartyDetailsButton}
+        <a .button href=@{AccountR $ AccountPartyEditR partyUuid}>
+          _{MsgYourPartiesEditPartyButton}
+        <a .button href=@{EventR partyUuid}>
+          _{MsgYourPartiesPublicPartyButton}
+        <a .button href=@{AccountR $ AccountPartyDuplicateR partyUuid}>
+          _{MsgYourPartiesDuplicatePartyButton}
+        $if partyCancelled
+          ^{token}
+          <form
+            method=post
+            action=@{AccountR $ AccountPartyUnCancelR partyUuid}>
+            <button .button .is-danger type=submit .mx-1>
+              _{MsgYourPartiesUnCancelPartyButton}
+          <form
+            method=post
+            action=@{AccountR $ AccountPartyDeleteR partyUuid}>
+            <button .button .is-danger type=submit
+              onclick="return confirm('_{MsgYourPartiesDeletePartyWarning}');">
+              _{MsgYourPartiesDeletePartyButton}
+        $else
+          ^{token}
+          <form
+            method=post
+            action=@{AccountR $ AccountPartyCancelR partyUuid}>
+            <button .button .is-danger type=submit .mx-1>
+              _{MsgYourPartiesCancelPartyButton}
+

@@ -34,12 +34,7 @@ partyPageHtml :: Entity Party -> Handler Html
 partyPageHtml (Entity partyId party@Party {..}) = do
   place@Place {..} <- runDB $ get404 partyPlace
   organiser@Organiser {..} <- runDB $ get404 partyOrganiser
-  mSchedule <- runDB $
-    selectOne $
-      E.from $ \(partySchedule `E.InnerJoin` schedule) -> do
-        E.on (partySchedule E.^. SchedulePartySchedule E.==. schedule E.^. ScheduleId)
-        E.where_ (partySchedule E.^. SchedulePartyParty E.==. E.val partyId)
-        pure schedule
+  mSchedule <- runDB $ getScheduleForParty partyId
   mPosterKey <- runDB $ getPosterForParty partyId
   mGoogleAPIKey <- getsYesod appGoogleAPIKey
   let mGoogleMapsEmbedUrl = do
@@ -72,10 +67,6 @@ partyPageHtml (Entity partyId party@Party {..}) = do
     addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified
     let mAddToGoogleLink = addPartyToGoogleCalendarLink renderUrl party place
     $(widgetFile "party")
-
--- In esqueleto 3.5.1.0, so we can remove it when we get there.
-selectOne :: (E.SqlSelect a r, MonadIO m) => E.SqlQuery a -> SqlReadT m (Maybe r)
-selectOne q = fmap listToMaybe $ E.select $ E.limit 1 >> q
 
 addPartyToGoogleCalendarLink :: (Route App -> Text) -> Party -> Place -> Maybe URI
 addPartyToGoogleCalendarLink renderUrl Party {..} Place {..} =

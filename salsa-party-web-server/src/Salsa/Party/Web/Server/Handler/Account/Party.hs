@@ -215,13 +215,22 @@ getAccountPartyR partyUuid_ = do
     Nothing -> do
       addMessageI "is-danger" MsgAccountPartyErrorNoOrganiser
       redirect $ AccountR AccountOrganiserR
-    Just (Entity organiserId _) -> do
+    Just (Entity organiserId organiser) -> do
       mParty <- runDB $ getBy $ UniquePartyUUID partyUuid_
-      Entity _ party <- case mParty of
+      Entity partyId party@Party {..} <- case mParty of
         Nothing -> notFound
         Just partyEntity -> pure partyEntity
-      when (partyOrganiser party /= organiserId) $ permissionDeniedI MsgAccountPartyErrorNotYourParty
-      withNavBar $(widgetFile "account/party")
+      when (partyOrganiser /= organiserId) $ permissionDeniedI MsgAccountPartyErrorNotYourParty
+      Place {..} <- runDB $ get404 partyPlace
+      mSchedule <- runDB $ getScheduleForParty partyId
+      mPosterKey <- runDB $ getPosterForParty partyId
+      today <- liftIO $ utctDay <$> getCurrentTime
+      token <- genToken
+      withNavBar $ do
+        timeLocale <- getTimeLocale
+        prettyDayFormat <- getPrettyDayFormat
+        prettyDateTimeFormat <- getPrettyDateTimeFormat
+        $(widgetFile "account/party")
 
 data EditPartyForm = EditPartyForm
   { editPartyFormTitle :: Text,
