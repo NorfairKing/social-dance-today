@@ -313,7 +313,8 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
           then Nothing
           else Just $ (modifiedField =. Just now) : updates
 
-      scheduleFieldUpdates :: [Update Schedule]
+  -- Update the schedule itself.
+  let scheduleFieldUpdates :: [Update Schedule]
       scheduleFieldUpdates =
         let EditScheduleForm _ _ _ _ _ _ _ = undefined
          in catMaybes
@@ -331,7 +332,10 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
       mScheduleUpdates :: Maybe [Update Schedule]
       mScheduleUpdates = mUpdates ScheduleModified scheduleFieldUpdates
 
-      partyFieldUpdates :: [Update Party]
+  forM_ mScheduleUpdates $ \updates -> runDB $ update scheduleId updates
+
+  -- Also update the already-scheduled parties for this schedule
+  let partyFieldUpdates :: [Update Party]
       partyFieldUpdates =
         let EditScheduleForm _ _ _ _ _ _ _ = undefined
          in catMaybes
@@ -347,11 +351,21 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
               ]
       mPartyUpdates :: Maybe [Update Party]
       mPartyUpdates = mUpdates PartyModified partyFieldUpdates
-  forM_ mScheduleUpdates $ \updates -> runDB $ update scheduleId updates
+
+  -- TODO we can probably do this with a single update function instead of N+1 with esqueleto
+  forM_ mPartyUpdates $ \updates ->
+    runDB $ do
+      futureScheduledPartiesIdValues <- E.select $
+        E.from $ \(partySchedule `E.InnerJoin` party) -> do
+          E.on (partySchedule E.^. SchedulePartyParty E.==. party E.^. PartyId)
+          E.where_ (partySchedule E.^. SchedulePartySchedule E.==. E.val scheduleId)
+          E.where_ (party E.^. PartyDay E.>=. E.val today)
+          pure (party E.^. PartyId)
+      forM_ futureScheduledPartiesIdValues $ \(E.Value partyId) -> update partyId updates
 
   -- Update the poster if a new one has been submitted
   case mFileInfo of
-    Nothing -> pure ()
+    Nothing -> pure () -- No new party submitted
     Just posterFileInfo -> do
       imageBlob <- fileSourceByteString posterFileInfo
       let contentType = fileContentType posterFileInfo
@@ -384,17 +398,6 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
                 [ SchedulePosterImage =. imageId,
                   SchedulePosterModified =. Just now
                 ]
-
-  -- TODO we can probably do this with a single update function instead of N+1 with esqueleto
-  forM_ mPartyUpdates $ \updates ->
-    runDB $ do
-      futureScheduledPartiesIdValues <- E.select $
-        E.from $ \(partySchedule `E.InnerJoin` party) -> do
-          E.on (partySchedule E.^. SchedulePartyParty E.==. party E.^. PartyId)
-          E.where_ (partySchedule E.^. SchedulePartySchedule E.==. E.val scheduleId)
-          E.where_ (party E.^. PartyDay E.>=. E.val today)
-          pure (party E.^. PartyId)
-      forM_ futureScheduledPartiesIdValues $ \(E.Value partyId) -> update partyId updates
 
   addMessageI "is-success" MsgEditScheduleSuccess
   redirect $ AccountR $ AccountScheduleR scheduleUuid
