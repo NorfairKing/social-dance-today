@@ -99,7 +99,7 @@ spec = serverSpec $ do
                 verifyPartyAddedWithPoster partyUuid1 partyForm1_ poster
                 verifyPartyAddedWithPoster partyUuid2 partyForm2_ poster
 
-  describe "AccountPartyR" $ do
+  describe "AccountPartyEditR" $ do
     it "can GET a party" $ \yc -> do
       forAllValid $ \organiserForm_ ->
         forAllValid $ \partyForm_ ->
@@ -110,7 +110,7 @@ spec = serverSpec $ do
                 testAddParty
                   partyForm_
                   location
-              get $ AccountR $ AccountPartyR partyId
+              get $ AccountR $ AccountPartyEditR partyId
               statusIs 200
 
     it "cannot GET a party that does't exist" $ \yc -> do
@@ -118,7 +118,7 @@ spec = serverSpec $ do
         withAnyLoggedInUser_ yc $ do
           testSubmitOrganiser organiserForm_
           uuid <- nextRandomUUID
-          get $ AccountR $ AccountPartyR uuid
+          get $ AccountR $ AccountPartyEditR uuid
           statusIs 404
 
     it "cannot GET another organiser's party" $ \yc ->
@@ -133,7 +133,7 @@ spec = serverSpec $ do
                     testAddParty partyForm_ location
                   asNewUser testUser2 $ do
                     testSubmitOrganiser organiser2Form_
-                    get $ AccountR $ AccountPartyR partyId
+                    get $ AccountR $ AccountPartyEditR partyId
                     statusIs 403
 
     it "Can edit an existing party" $ \yc ->
@@ -147,7 +147,7 @@ spec = serverSpec $ do
                   testAddParty
                     addPartyForm_
                     location
-                get $ AccountR $ AccountPartyR partyUuid_
+                get $ AccountR $ AccountPartyEditR partyUuid_
                 statusIs 200
                 testEditParty partyUuid_ editPartyForm_ location
                 statusIs 303
@@ -175,7 +175,7 @@ spec = serverSpec $ do
                   Just (Entity partyId _) -> testDB $ getPosterForParty partyId
                 -- There is now a poster.
                 liftIO $ mCasKey1 `shouldBe` testFileCASKey poster1
-                get $ AccountR $ AccountPartyR partyUuid_
+                get $ AccountR $ AccountPartyEditR partyUuid_
                 statusIs 200
                 testEditPartyWithPoster partyUuid_ editPartyForm_ location poster2
                 statusIs 303
@@ -257,7 +257,7 @@ spec = serverSpec $ do
                 testAddParty
                   partyForm_
                   location
-              get $ AccountR $ AccountPartyR partyId
+              get $ AccountR $ AccountPartyEditR partyId
               statusIs 200
               request $ do
                 setMethod methodPost
@@ -308,7 +308,7 @@ spec = serverSpec $ do
                 testAddParty
                   partyForm_
                   location
-              get $ AccountR $ AccountPartyR partyId
+              get $ AccountR $ AccountPartyEditR partyId
               statusIs 200
               request $ do
                 setMethod methodPost
@@ -361,7 +361,7 @@ spec = serverSpec $ do
                 testAddParty
                   partyForm_
                   location
-              get $ AccountR $ AccountPartyR partyId
+              get $ AccountR $ AccountPartyEditR partyId
               statusIs 200
               request $ do
                 setMethod methodPost
@@ -405,7 +405,7 @@ spec = serverSpec $ do
                     testAddParty
                       partyForm_
                       location
-                  get $ AccountR $ AccountPartyR partyId
+                  get $ AccountR $ AccountPartyEditR partyId
                   statusIs 200
                   request $ do
                     setMethod methodPost

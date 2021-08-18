@@ -12,9 +12,9 @@ module Salsa.Party.Web.Server.Handler.Account.Party
     getAccountSubmitPartyR,
     AddPartyForm (..),
     postAccountSubmitPartyR,
-    getAccountPartyR,
+    getAccountPartyEditR,
     EditPartyForm (..),
-    postAccountPartyR,
+    postAccountPartyEditR,
     getAccountPartyDuplicateR,
     postAccountPartyCancelR,
     postAccountPartyDeleteR,
@@ -204,7 +204,7 @@ addParty organiserId AddPartyForm {..} mFileInfo = do
             ]
 
   addMessageI "is-success" MsgSubmitPartySuccess
-  redirect $ AccountR $ AccountPartyR uuid
+  redirect $ AccountR $ AccountPartyEditR uuid
 
 data EditPartyForm = EditPartyForm
   { editPartyFormTitle :: Text,
@@ -240,11 +240,11 @@ editPartyForm =
     <*> iopt textField "price"
     <*> ((>>= (either (const Nothing) Just . parseCASKey)) <$> iopt textField "poster-key")
 
-getAccountPartyR :: EventUUID -> Handler Html
-getAccountPartyR partyUuid = editPartyPage partyUuid Nothing
+getAccountPartyEditR :: EventUUID -> Handler Html
+getAccountPartyEditR partyUuid = editPartyPage partyUuid Nothing
 
-postAccountPartyR :: EventUUID -> Handler Html
-postAccountPartyR partyUuid = do
+postAccountPartyEditR :: EventUUID -> Handler Html
+postAccountPartyEditR partyUuid = do
   res <- runInputPostResult $ (,) <$> editPartyForm <*> iopt fileField "poster"
   editPartyPage partyUuid (Just res)
 
@@ -348,7 +348,7 @@ editParty (Entity partyId party) form mFileInfo = do
                 ]
 
   addMessageI "is-success" MsgEditPartySuccess
-  redirect $ AccountR $ AccountPartyR $ partyUuid party
+  redirect $ AccountR $ AccountPartyEditR $ partyUuid party
 
 getAccountPartyDuplicateR :: EventUUID -> Handler Html
 getAccountPartyDuplicateR partyUuid_ = do

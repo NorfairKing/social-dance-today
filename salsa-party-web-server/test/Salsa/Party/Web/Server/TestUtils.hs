@@ -243,8 +243,8 @@ testAddPartyHelper partyForm_ loc mPosterFile = do
   case errOrLoc of
     Left err -> liftIO $ expectationFailure $ T.unpack err
     Right redirectLocation -> case redirectLocation of
-      AccountR (AccountPartyR partyUuid) -> pure partyUuid
-      _ -> liftIO $ expectationFailure $ "Coordinates should have been some AccountR AccountPartyR after submitting a party, was this instead: " <> show redirectLocation
+      AccountR (AccountPartyEditR partyUuid) -> pure partyUuid
+      _ -> liftIO $ expectationFailure $ "Coordinates should have been some AccountR AccountPartyEditR after submitting a party, was this instead: " <> show redirectLocation
 
 addPartyFormRequestBuilder :: AddPartyForm -> Maybe TestFile -> RequestBuilder App ()
 addPartyFormRequestBuilder AddPartyForm {..} mPosterFile = do
@@ -314,7 +314,7 @@ testEditPartyHelper partyUuid_ partyForm_ loc mPosterFile = do
 editPartyFormRequestBuilder :: EventUUID -> EditPartyForm -> Maybe TestFile -> RequestBuilder App ()
 editPartyFormRequestBuilder partyUuid_ EditPartyForm {..} mPosterFile = do
   setMethod methodPost
-  setUrl $ AccountR $ AccountPartyR partyUuid_
+  setUrl $ AccountR $ AccountPartyEditR partyUuid_
   addToken
   addPostParam "title" editPartyFormTitle
   addPostParam "address" editPartyFormAddress

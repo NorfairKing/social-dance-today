@@ -6,7 +6,7 @@
     <form .form
       enctype="multipart/form-data"
       method=post
-      action=@{AccountR $ AccountPartyR $ partyUuid party}>
+      action=@{AccountR $ AccountPartyEditR $ partyUuid party}>
 
       <div .field>
         <label .label>

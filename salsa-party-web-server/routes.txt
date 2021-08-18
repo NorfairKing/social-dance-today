@@ -27,7 +27,7 @@
   /parties AccountPartiesR GET
   /submit-party AccountSubmitPartyR GET POST
 
-  /party/#EventUUID AccountPartyR GET POST
+  /party/#EventUUID/edit AccountPartyEditR GET POST
   /party/#EventUUID/duplicate AccountPartyDuplicateR GET
   /party/#EventUUID/delete AccountPartyDeleteR POST
   /party/#EventUUID/cancel AccountPartyCancelR POST
