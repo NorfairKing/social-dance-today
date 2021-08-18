@@ -298,6 +298,7 @@ editSchedule ::
   Handler Html
 editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
   now <- liftIO getCurrentTime
+  let today = utctDay now
   -- This place lookup relies on the caching for geocoding to be fast if nothing has changed.
   Entity placeId _ <- lookupPlace (editScheduleFormAddress form)
   let EditScheduleForm _ _ _ _ _ _ _ = undefined
@@ -383,6 +384,17 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
                 [ SchedulePosterImage =. imageId,
                   SchedulePosterModified =. Just now
                 ]
+
+  -- TODO we can probably do this with a single update function instead of N+1 with esqueleto
+  forM_ mPartyUpdates $ \updates ->
+    runDB $ do
+      futureScheduledPartiesIdValues <- E.select $
+        E.from $ \(partySchedule `E.InnerJoin` party) -> do
+          E.on (partySchedule E.^. SchedulePartyParty E.==. party E.^. PartyId)
+          E.where_ (partySchedule E.^. SchedulePartySchedule E.==. E.val scheduleId)
+          E.where_ (party E.^. PartyDay E.>=. E.val today)
+          pure (party E.^. PartyId)
+      forM_ futureScheduledPartiesIdValues $ \(E.Value partyId) -> update partyId updates
 
   addMessageI "is-success" MsgEditScheduleSuccess
   redirect $ AccountR $ AccountScheduleR scheduleUuid
