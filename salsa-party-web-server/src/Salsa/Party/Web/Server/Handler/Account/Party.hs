@@ -12,6 +12,7 @@ module Salsa.Party.Web.Server.Handler.Account.Party
     getAccountSubmitPartyR,
     AddPartyForm (..),
     postAccountSubmitPartyR,
+    getAccountPartyR,
     getAccountPartyEditR,
     EditPartyForm (..),
     postAccountPartyEditR,
@@ -205,6 +206,22 @@ addParty organiserId AddPartyForm {..} mFileInfo = do
 
   addMessageI "is-success" MsgSubmitPartySuccess
   redirect $ AccountR $ AccountPartyEditR uuid
+
+getAccountPartyR :: EventUUID -> Handler Html
+getAccountPartyR partyUuid_ = do
+  userId <- requireAuthId
+  mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
+  case mOrganiser of
+    Nothing -> do
+      addMessageI "is-danger" MsgAccountPartyErrorNoOrganiser
+      redirect $ AccountR AccountOrganiserR
+    Just (Entity organiserId _) -> do
+      mParty <- runDB $ getBy $ UniquePartyUUID partyUuid_
+      Entity _ party <- case mParty of
+        Nothing -> notFound
+        Just partyEntity -> pure partyEntity
+      when (partyOrganiser party /= organiserId) $ permissionDeniedI MsgAccountPartyErrorNotYourParty
+      withNavBar $(widgetFile "account/party")
 
 data EditPartyForm = EditPartyForm
   { editPartyFormTitle :: Text,

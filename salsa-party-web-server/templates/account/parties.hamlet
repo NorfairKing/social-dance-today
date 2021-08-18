@@ -27,6 +27,8 @@
           ^{posterImageWidget party organiser posterKey}
         <p>
           <div .buttons>
+            <a .button href=@{AccountR $ AccountPartyR $ partyUuid party}>
+              _{MsgYourPartiesPartyDetailsButton}
             <a .button href=@{AccountR $ AccountPartyEditR $ partyUuid party}>
               _{MsgYourPartiesEditPartyButton}
             <a .button href=@{EventR $ partyUuid party}>

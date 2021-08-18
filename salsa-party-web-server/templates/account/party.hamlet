@@ -1,0 +1,7 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      $if partyCancelled party
+        _{MsgPartyTitleCancelled (partyTitle party)}
+      $else
+        _{MsgPartyTitleScheduled (partyTitle party)}

@@ -99,6 +99,43 @@ spec = serverSpec $ do
                 verifyPartyAddedWithPoster partyUuid1 partyForm1_ poster
                 verifyPartyAddedWithPoster partyUuid2 partyForm2_ poster
 
+  describe "AccountPartyR" $ do
+    it "can GET a party" $ \yc -> do
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \partyForm_ ->
+          forAllValid $ \location ->
+            withAnyLoggedInUser_ yc $ do
+              testSubmitOrganiser organiserForm_
+              partyId <-
+                testAddParty
+                  partyForm_
+                  location
+              get $ AccountR $ AccountPartyR partyId
+              statusIs 200
+
+    it "cannot GET a party that does't exist" $ \yc -> do
+      forAllValid $ \organiserForm_ ->
+        withAnyLoggedInUser_ yc $ do
+          testSubmitOrganiser organiserForm_
+          uuid <- nextRandomUUID
+          get $ AccountR $ AccountPartyR uuid
+          statusIs 404
+
+    it "cannot GET another organiser's party" $ \yc ->
+      forAllValid $ \testUser1 ->
+        forAllValid $ \testUser2 ->
+          forAllValid $ \organiser1Form_ ->
+            forAllValid $ \organiser2Form_ ->
+              forAllValid $ \partyForm_ ->
+                forAllValid $ \location -> runYesodClientM yc $ do
+                  partyId <- asNewUser testUser1 $ do
+                    testSubmitOrganiser organiser1Form_
+                    testAddParty partyForm_ location
+                  asNewUser testUser2 $ do
+                    testSubmitOrganiser organiser2Form_
+                    get $ AccountR $ AccountPartyR partyId
+                    statusIs 403
+
   describe "AccountPartyEditR" $ do
     it "can GET a party" $ \yc -> do
       forAllValid $ \organiserForm_ ->

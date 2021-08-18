@@ -154,6 +154,7 @@ SubmitRecurringPartyExplanation4: If you delete a schedule, all future parties i
 YourPartiesTitle: Your parties
 YourPartiesSubmitButton: Submit party
 YourPartiesNoParties: You have not submitted any parties yet.
+YourPartiesPartyDetailsButton: Details
 YourPartiesEditPartyButton: Edit
 YourPartiesPublicPartyButton: Public Party Profile
 YourPartiesDuplicatePartyButton: Duplicate
@@ -182,6 +183,10 @@ SubmitPartyButton: Submit
 SubmitPartySuccess: Succesfully submitted party
 SubmitPartyErrorUnverified: Your account needs to verified before you can submit parties.
 SubmitPartyErrorNoOrganiser: You must set up an organiser profile in the account overview before you can submit a party.
+
+# View Party
+AccountPartyErrorNoOrganiser: You must set up an organiser profile in the account overview before you can view a party.
+AccountPartyErrorNotYourParty: This is not your party to view.
 
 # Edit Party
 EditPartyTitle: Submit Party
