@@ -147,7 +147,7 @@ spec = serverSpec $ do
                 statusIs 200
                 verifyScheduleEdited scheduleUuid_ editScheduleForm_
 
-    it "can update this example schedule and have its future parties parties updated automatically" $ \yc ->
+    it "can update this example schedule and have its future parties updated automatically" $ \yc ->
       forAllValid $ \organiserForm_ ->
         forAllValid $ \addScheduleForm_ ->
           forAllValid $ \editScheduleForm_ ->
@@ -173,7 +173,6 @@ spec = serverSpec $ do
                 statusIs 303
                 _ <- followRedirect
                 statusIs 200
-                verifyScheduleEdited scheduleUuid_ editScheduleForm_
                 partiesAfter <- testDB $ fmap catMaybes $ mapM DB.get partyIds
                 liftIO $
                   context "after" $
@@ -207,6 +206,37 @@ spec = serverSpec $ do
                 _ <- followRedirect
                 statusIs 200
                 verifyScheduleEditedWithPoster scheduleUuid_ editScheduleForm_ poster2
+
+    it "can update this example schedule and have its future parties' poster updated automatically" $ \yc ->
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \addScheduleForm_ ->
+          forAllValid $ \editScheduleForm_ ->
+            forAllValid $ \location -> do
+              withAnyLoggedInUser_ yc $ do
+                testSubmitOrganiser organiserForm_
+                poster1 <- readTestFile "test_resources/posters/1.png"
+                poster2 <- readTestFile "test_resources/posters/2.png"
+                scheduleUuid_ <-
+                  testAddScheduleWithPoster
+                    addScheduleForm_
+                    location
+                    poster1
+                mScheduleId_ <- testDB $ DB.selectFirst [] []
+                partyIds <- case mScheduleId_ of
+                  Nothing -> liftIO $ expectationFailure "Should have found a schedule"
+                  Just (Entity scheduleId_ _) -> testDB $ map (schedulePartyParty . entityVal) <$> DB.selectList [SchedulePartySchedule DB.==. scheduleId_] []
+                forM_ partyIds $ \partyId_ -> do
+                  mCasKeyBefore <- testDB $ getPosterForParty partyId_
+                  liftIO $ mCasKeyBefore `shouldBe` testFileCASKey poster1
+                get $ AccountR $ AccountScheduleR scheduleUuid_
+                statusIs 200
+                testEditScheduleWithPoster scheduleUuid_ editScheduleForm_ location poster2
+                statusIs 303
+                _ <- followRedirect
+                statusIs 200
+                forM_ partyIds $ \partyId_ -> do
+                  mCasKeyAfter <- testDB $ getPosterForParty partyId_
+                  liftIO $ mCasKeyAfter `shouldBe` testFileCASKey poster2
 
     it "cannot edit a nonexisting schedule" $ \yc ->
       forAllValid $ \organiserForm_ ->
