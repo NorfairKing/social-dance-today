@@ -296,17 +296,17 @@ editSchedule ::
   EditScheduleForm ->
   Maybe FileInfo ->
   Handler Html
-editSchedule (Entity scheduleId schedule) form mFileInfo = do
+editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
   now <- liftIO getCurrentTime
   -- This place lookup relies on the caching for geocoding to be fast if nothing has changed.
   Entity placeId _ <- lookupPlace (editScheduleFormAddress form)
   let EditScheduleForm _ _ _ _ _ _ _ = undefined
-  let whenChanged :: (Eq a, PersistField a) => (Schedule -> a) -> (EditScheduleForm -> a) -> EntityField Schedule a -> Maybe (Update Schedule)
-      whenChanged scheduleFunc formFunc field = do
-        guard $ scheduleFunc schedule /= formFunc form
+  let whenChanged :: (Eq a, PersistField a) => a -> (EditScheduleForm -> a) -> EntityField f a -> Maybe (Update f)
+      whenChanged val formFunc field = do
+        guard $ val /= formFunc form
         pure $ field =. formFunc form
-      fieldUpdates :: [Update Schedule]
-      fieldUpdates =
+      scheduleFieldUpdates :: [Update Schedule]
+      scheduleFieldUpdates =
         catMaybes
           [ whenChanged scheduleTitle editScheduleFormTitle ScheduleTitle,
             whenChanged scheduleRecurrence editScheduleFormRecurrence ScheduleRecurrence,
@@ -315,14 +315,14 @@ editSchedule (Entity scheduleId schedule) form mFileInfo = do
             whenChanged scheduleStart editScheduleFormStart ScheduleStart,
             whenChanged scheduleHomepage editScheduleFormHomepage ScheduleHomepage,
             whenChanged schedulePrice editScheduleFormPrice SchedulePrice,
-            if schedulePlace schedule /= placeId
+            if schedulePlace /= placeId
               then Just (SchedulePlace =. placeId)
               else Nothing
           ]
       mUpdates =
-        if null fieldUpdates
+        if null scheduleFieldUpdates
           then Nothing
-          else Just $ (ScheduleModified =. Just now) : fieldUpdates
+          else Just $ (ScheduleModified =. Just now) : scheduleFieldUpdates
   forM_ mUpdates $ \updates -> runDB $ update scheduleId updates
 
   -- Update the poster if a new one has been submitted
@@ -362,7 +362,7 @@ editSchedule (Entity scheduleId schedule) form mFileInfo = do
                 ]
 
   addMessageI "is-success" MsgEditScheduleSuccess
-  redirect $ AccountR $ AccountScheduleR $ scheduleUuid schedule
+  redirect $ AccountR $ AccountScheduleR scheduleUuid
 
 postAccountScheduleDeleteR :: ScheduleUUID -> Handler Html
 postAccountScheduleDeleteR scheduleUuid = do
