@@ -13,8 +13,8 @@ module Salsa.Party.Web.Server.Handler.Account.Schedule
     getAccountSubmitScheduleR,
     postAccountSubmitScheduleR,
     EditScheduleForm (..),
-    getAccountScheduleR,
-    postAccountScheduleR,
+    getAccountScheduleEditR,
+    postAccountScheduleEditR,
     postAccountScheduleDeleteR,
   )
 where
@@ -217,7 +217,7 @@ addSchedule organiserId AddScheduleForm {..} mFileInfo = do
   runReaderT (handleScheduleDecision decision) app
 
   addMessageI "is-success" MsgSubmitScheduleSuccess
-  redirect $ AccountR $ AccountScheduleR uuid
+  redirect $ AccountR $ AccountScheduleEditR uuid
 
 data EditScheduleForm = EditScheduleForm
   { editScheduleFormTitle :: !Text,
@@ -253,11 +253,11 @@ editScheduleForm =
     <*> iopt textField "homepage"
     <*> iopt textField "price"
 
-getAccountScheduleR :: ScheduleUUID -> Handler Html
-getAccountScheduleR scheduleUuid = editSchedulePage scheduleUuid Nothing
+getAccountScheduleEditR :: ScheduleUUID -> Handler Html
+getAccountScheduleEditR scheduleUuid = editSchedulePage scheduleUuid Nothing
 
-postAccountScheduleR :: ScheduleUUID -> Handler Html
-postAccountScheduleR scheduleUuid = do
+postAccountScheduleEditR :: ScheduleUUID -> Handler Html
+postAccountScheduleEditR scheduleUuid = do
   res <- runInputPostResult $ (,) <$> editScheduleForm <*> iopt fileField "poster"
   editSchedulePage scheduleUuid (Just res)
 
@@ -416,7 +416,7 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
                 ]
 
   addMessageI "is-success" MsgEditScheduleSuccess
-  redirect $ AccountR $ AccountScheduleR scheduleUuid
+  redirect $ AccountR $ AccountScheduleEditR scheduleUuid
 
 postAccountScheduleDeleteR :: ScheduleUUID -> Handler Html
 postAccountScheduleDeleteR scheduleUuid = do

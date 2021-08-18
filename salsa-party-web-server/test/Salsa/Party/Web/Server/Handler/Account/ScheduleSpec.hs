@@ -91,7 +91,7 @@ spec = serverSpec $ do
                     parties `shouldSatisfy` all isJust
                     genericLength parties `shouldSatisfy` (>= (daysToScheduleAhead `div` 7))
 
-  describe "AccountScheduleR" $ do
+  describe "AccountScheduleEditR" $ do
     it "can GET an existent schedule" $ \yc -> do
       forAllValid $ \organiserForm_ ->
         forAllValid $ \scheduleForm_ ->
@@ -102,7 +102,7 @@ spec = serverSpec $ do
                 testAddSchedule
                   scheduleForm_
                   location
-              get $ AccountR $ AccountScheduleR scheduleId
+              get $ AccountR $ AccountScheduleEditR scheduleId
               statusIs 200
 
     it "cannot GET a nonexistent schedule" $ \yc -> do
@@ -110,7 +110,7 @@ spec = serverSpec $ do
         withAnyLoggedInUser_ yc $ do
           testSubmitOrganiser organiserForm_
           uuid <- nextRandomUUID
-          get $ AccountR $ AccountScheduleR uuid
+          get $ AccountR $ AccountScheduleEditR uuid
           statusIs 404
 
     it "cannot GET another organiser's schedule" $ \yc ->
@@ -125,7 +125,7 @@ spec = serverSpec $ do
                     testAddSchedule scheduleForm_ location
                   asNewUser testUser2 $ do
                     testSubmitOrganiser organiser2Form_
-                    get $ AccountR $ AccountScheduleR scheduleId
+                    get $ AccountR $ AccountScheduleEditR scheduleId
                     statusIs 403
 
     it "can edit an existing schedule" $ \yc ->
@@ -139,7 +139,7 @@ spec = serverSpec $ do
                   testAddSchedule
                     addScheduleForm_
                     location
-                get $ AccountR $ AccountScheduleR scheduleUuid_
+                get $ AccountR $ AccountScheduleEditR scheduleUuid_
                 statusIs 200
                 testEditSchedule scheduleUuid_ editScheduleForm_ location
                 statusIs 303
@@ -165,7 +165,7 @@ spec = serverSpec $ do
                 partiesBefore <- testDB $ fmap catMaybes $ mapM DB.get partyIds
                 forM_ partiesBefore $ \partyBefore ->
                   verifyScheduleAddedParty (partyUuid partyBefore) addScheduleForm_
-                get $ AccountR $ AccountScheduleR scheduleUuid_
+                get $ AccountR $ AccountScheduleEditR scheduleUuid_
                 statusIs 200
                 testEditSchedule scheduleUuid_ editScheduleForm_ location
                 statusIs 303
@@ -195,7 +195,7 @@ spec = serverSpec $ do
                   Just (Entity scheduleId _) -> testDB $ getPosterForSchedule scheduleId
                 -- There is now a poster.
                 liftIO $ mCasKey1 `shouldBe` testFileCASKey poster1
-                get $ AccountR $ AccountScheduleR scheduleUuid_
+                get $ AccountR $ AccountScheduleEditR scheduleUuid_
                 statusIs 200
                 testEditScheduleWithPoster scheduleUuid_ editScheduleForm_ location poster2
                 statusIs 303
@@ -224,7 +224,7 @@ spec = serverSpec $ do
                 partiesBefore <- testDB $ fmap catMaybes $ mapM DB.get partyIds
                 forM_ partiesBefore $ \partyBefore -> do
                   verifyScheduleAddedPartyWithPoster (partyUuid partyBefore) addScheduleForm_ poster1
-                get $ AccountR $ AccountScheduleR scheduleUuid_
+                get $ AccountR $ AccountScheduleEditR scheduleUuid_
                 statusIs 200
                 testEditScheduleWithPoster scheduleUuid_ editScheduleForm_ location poster2
                 statusIs 303
@@ -274,7 +274,7 @@ spec = serverSpec $ do
                 testAddSchedule
                   scheduleForm_
                   location
-              get $ AccountR $ AccountScheduleR scheduleId
+              get $ AccountR $ AccountScheduleEditR scheduleId
               statusIs 200
               request $ do
                 setMethod methodPost

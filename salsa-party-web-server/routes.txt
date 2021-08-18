@@ -36,8 +36,8 @@
 
   /schedules AccountSchedulesR GET
   /submit-schedule AccountSubmitScheduleR GET POST
-  /schedule/#ScheduleUUID AccountScheduleR GET POST
-  /schedule/#ScheduleUUID/edelete AccountScheduleDeleteR POST
+  /schedule/#ScheduleUUID/edit AccountScheduleEditR GET POST
+  /schedule/#ScheduleUUID/delete AccountScheduleDeleteR POST
 
   /delete AccountDeleteR POST
 

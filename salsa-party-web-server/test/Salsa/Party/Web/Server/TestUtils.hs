@@ -380,8 +380,8 @@ testAddScheduleHelper scheduleForm_ loc mPosterFile = do
   case errOrLoc of
     Left err -> liftIO $ expectationFailure $ T.unpack err
     Right redirectLocation -> case redirectLocation of
-      AccountR (AccountScheduleR scheduleUuid) -> pure scheduleUuid
-      _ -> liftIO $ expectationFailure $ "Coordinates should have been some AccountR AccountScheduleR after submitting a schedule, was this instead: " <> show redirectLocation
+      AccountR (AccountScheduleEditR scheduleUuid) -> pure scheduleUuid
+      _ -> liftIO $ expectationFailure $ "Coordinates should have been some AccountR AccountScheduleEditR after submitting a schedule, was this instead: " <> show redirectLocation
 
 addScheduleFormRequestBuilder :: AddScheduleForm -> Maybe TestFile -> RequestBuilder App ()
 addScheduleFormRequestBuilder AddScheduleForm {..} mPosterFile = do
@@ -451,7 +451,7 @@ testEditScheduleHelper scheduleUuid_ scheduleForm_ loc mPosterFile = do
 editScheduleFormRequestBuilder :: ScheduleUUID -> EditScheduleForm -> Maybe TestFile -> RequestBuilder App ()
 editScheduleFormRequestBuilder scheduleUuid_ EditScheduleForm {..} mPosterFile = do
   setMethod methodPost
-  setUrl $ AccountR $ AccountScheduleR scheduleUuid_
+  setUrl $ AccountR $ AccountScheduleEditR scheduleUuid_
   addToken
   addPostParam "title" editScheduleFormTitle
   addRecurrenceParams editScheduleFormRecurrence

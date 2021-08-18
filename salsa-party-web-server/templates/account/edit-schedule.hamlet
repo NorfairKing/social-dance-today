@@ -103,5 +103,5 @@
           <div .buttons>
             <button .button .is-dark type="submit">
               _{MsgSubmitScheduleButton}
-            <a .button href=@{AccountR $ AccountScheduleR $ scheduleUuid schedule}>
+            <a .button href=@{AccountR $ AccountScheduleEditR $ scheduleUuid schedule}>
               _{MsgScheduleFormBackButton}
