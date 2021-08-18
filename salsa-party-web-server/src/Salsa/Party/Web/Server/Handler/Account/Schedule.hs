@@ -353,15 +353,18 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
       mPartyUpdates = mUpdates PartyModified partyFieldUpdates
 
   -- TODO we can probably do this with a single update function instead of N+1 with esqueleto
-  forM_ mPartyUpdates $ \updates ->
-    runDB $ do
-      futureScheduledPartiesIdValues <- E.select $
-        E.from $ \(partySchedule `E.InnerJoin` party) -> do
-          E.on (partySchedule E.^. SchedulePartyParty E.==. party E.^. PartyId)
-          E.where_ (partySchedule E.^. SchedulePartySchedule E.==. E.val scheduleId)
-          E.where_ (party E.^. PartyDay E.>=. E.val today)
-          pure (party E.^. PartyId)
-      forM_ futureScheduledPartiesIdValues $ \(E.Value partyId) -> update partyId updates
+  futureScheduledPartiesIds <- fmap (fromMaybe []) $
+    forM mPartyUpdates $ \updates ->
+      runDB $ do
+        futureScheduledPartiesIds <- fmap (map E.unValue) $
+          E.select $
+            E.from $ \(partySchedule `E.InnerJoin` party) -> do
+              E.on (partySchedule E.^. SchedulePartyParty E.==. party E.^. PartyId)
+              E.where_ (partySchedule E.^. SchedulePartySchedule E.==. E.val scheduleId)
+              E.where_ (party E.^. PartyDay E.>=. E.val today)
+              pure (party E.^. PartyId)
+        forM_ futureScheduledPartiesIds $ \partyId -> update partyId updates
+        pure futureScheduledPartiesIds
 
   -- Update the poster if a new one has been submitted
   case mFileInfo of
@@ -385,7 +388,7 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
                     }
                 )
                 [] -- No need to update anything, the casKey makes the image unique.
-            void $
+            _ <-
               upsertBy
                 (UniqueSchedulePoster scheduleId)
                 ( SchedulePoster
@@ -397,6 +400,19 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
                 )
                 [ SchedulePosterImage =. imageId,
                   SchedulePosterModified =. Just now
+                ]
+            forM_ futureScheduledPartiesIds $ \partyId ->
+              upsertBy
+                (UniquePartyPoster partyId)
+                ( PartyPoster
+                    { partyPosterParty = partyId,
+                      partyPosterImage = imageId,
+                      partyPosterCreated = now,
+                      partyPosterModified = Nothing
+                    }
+                )
+                [ PartyPosterImage =. imageId,
+                  PartyPosterModified =. Just now
                 ]
 
   addMessageI "is-success" MsgEditScheduleSuccess
