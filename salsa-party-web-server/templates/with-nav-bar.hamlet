@@ -14,8 +14,10 @@
       <a .navbar-item href=@{HomeR}>
         <strong>
           _{MsgNavFind}
-      <a .navbar-item href=@{AccountR AccountSubmitPartyR}>
+
+      <a .navbar-item href=@{AccountR AccountSubmitR}>
         _{MsgNavSubmitParty}
+
       $maybe _ <- mAuth
         <a .navbar-item href=@{AccountR AccountOverviewR}>
           _{MsgNavAccount}

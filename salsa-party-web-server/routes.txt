@@ -22,8 +22,11 @@
   / AccountOverviewR GET
   /organiser AccountOrganiserR GET POST
 
+  /submit AccountSubmitR GET
+
   /parties AccountPartiesR GET
   /submit-party AccountSubmitPartyR GET POST
+
   /party/#EventUUID AccountPartyR GET POST
   /party/#EventUUID/duplicate AccountPartyDuplicateR GET
   /party/#EventUUID/delete AccountPartyDeleteR POST

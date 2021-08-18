@@ -1,0 +1,28 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3 .has-text-centered>
+      _{MsgSubmitTitle}
+
+    <div .columns .is-center>
+      <div .column .is-half>
+        <div .has-text-centered .content>
+          <p>
+            <a .button .is-dark href=@{AccountR AccountSubmitPartyR}>
+              _{MsgSubmitSingleParty}
+          <p>
+            _{MsgSubmitSinglePartyExplanation1}
+          <p>
+            _{MsgSubmitSinglePartyExplanation2}
+      <div .column .is-half>
+        <div .has-text-centered .content>
+          <p>
+            <a .button .is-dark href=@{AccountR AccountSubmitScheduleR}>
+              _{MsgSubmitRecurringParty}
+          <p>
+            _{MsgSubmitRecurringPartyExplanation1}
+          <p>
+            _{MsgSubmitRecurringPartyExplanation2}
+          <p>
+            _{MsgSubmitRecurringPartyExplanation3}
+          <p>
+            _{MsgSubmitRecurringPartyExplanation4}

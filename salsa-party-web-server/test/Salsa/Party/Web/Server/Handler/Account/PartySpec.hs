@@ -36,6 +36,14 @@ spec = serverSpec $ do
               get $ AccountR AccountPartiesR
               statusIs 200
 
+  describe "AccountSubmitR" $ do
+    it "GETs a 200 for AccountSubmitR" $ \yc ->
+      forAllValid $ \organiserForm_ ->
+        withAnyLoggedInUser_ yc $ do
+          testSubmitOrganiser organiserForm_
+          get $ AccountR AccountSubmitR
+          statusIs 200
+
   describe "SubmitPartyR" $ do
     it "GETs a 200 for SubmitPartyR" $ \yc ->
       forAllValid $ \organiserForm_ ->

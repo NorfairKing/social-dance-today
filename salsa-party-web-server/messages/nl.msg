@@ -28,8 +28,8 @@ FooterGeocodingAttribution: Geocodering door OpenStreetMaps Nominatim
 FooterOpenstreetmapCopyright: © OpenStreetMap medewerkers
 
 # Navbar
-NavFind: Vind een feest
-NavSubmitParty: Adverteer uw feest hier
+NavFind: Vind feesten
+NavSubmitParty: Feest toevoegen
 NavAccount: Account
 NavOrganiser: Organisatorprofiel
 NavParties: Mijn feesten

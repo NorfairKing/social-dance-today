@@ -8,6 +8,7 @@
 
 module Salsa.Party.Web.Server.Handler.Account.Party
   ( getAccountPartiesR,
+    getAccountSubmitR,
     getAccountSubmitPartyR,
     AddPartyForm (..),
     postAccountSubmitPartyR,
@@ -56,6 +57,9 @@ getPartiesOfOrganiser organiserId = do
     -- TODO this is potentially expensive, can we do it in one query?
     mKey <- getPosterForParty partyId
     pure (partyEntity, placeEntity, mKey)
+
+getAccountSubmitR :: Handler Html
+getAccountSubmitR = withNavBar $(widgetFile "account/submit")
 
 data AddPartyForm = AddPartyForm
   { addPartyFormTitle :: Text,
