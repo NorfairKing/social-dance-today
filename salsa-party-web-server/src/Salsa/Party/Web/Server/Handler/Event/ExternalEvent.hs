@@ -15,6 +15,7 @@ import qualified Data.Text.Encoding as TE
 import Google.Calendar
 import Network.HTTP.Types
 import Network.URI
+import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
 import Salsa.Party.Web.Server.Handler.Import
 
@@ -22,6 +23,7 @@ externalEventPage :: Entity ExternalEvent -> Handler TypedContent
 externalEventPage externalEventEntity = selectRep $ do
   provideRep $ externalEventPageHtml externalEventEntity
   provideRep $ externalEventPageLD externalEventEntity
+  provideRep $ externalEventPageICal externalEventEntity
 
 externalEventPageHtml :: Entity ExternalEvent -> Handler Html
 externalEventPageHtml (Entity externalEventId externalEvent@ExternalEvent {..}) = do

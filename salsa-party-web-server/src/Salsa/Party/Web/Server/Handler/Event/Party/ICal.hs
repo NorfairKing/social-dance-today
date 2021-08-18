@@ -2,7 +2,8 @@
 {-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Salsa.Party.Web.Server.Handler.Event.Party.ICal
-  ( partyCalendar,
+  ( partyPageICal,
+    partyCalendar,
   )
 where
 
@@ -14,6 +15,12 @@ import qualified Data.Text.Lazy as LT
 import Network.URI
 import Salsa.Party.Web.Server.Handler.Import
 import qualified Text.ICalendar as ICal
+
+partyPageICal :: Entity Party -> Handler ICal.VCalendar
+partyPageICal (Entity _ party@Party {..}) = do
+  place@Place {..} <- runDB $ get404 partyPlace
+  renderUrl <- getUrlRender
+  pure $ partyCalendar renderUrl party place
 
 partyCalendar :: (Route App -> Text) -> Party -> Place -> ICal.VCalendar
 partyCalendar renderUrl party@Party {..} place =

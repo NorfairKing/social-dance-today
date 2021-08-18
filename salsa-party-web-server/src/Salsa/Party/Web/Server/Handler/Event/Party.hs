@@ -10,6 +10,7 @@
 
 module Salsa.Party.Web.Server.Handler.Event.Party
   ( partyPage,
+    partyPageICal,
   )
 where
 
@@ -19,6 +20,7 @@ import qualified Database.Esqueleto.Internal.Sql as E
 import Google.Calendar
 import Network.HTTP.Types
 import Network.URI
+import Salsa.Party.Web.Server.Handler.Event.Party.ICal
 import Salsa.Party.Web.Server.Handler.Event.Party.LD
 import Salsa.Party.Web.Server.Handler.Import
 
@@ -26,6 +28,7 @@ partyPage :: Entity Party -> Handler TypedContent
 partyPage partyEntity = selectRep $ do
   provideRep $ partyPageHtml partyEntity
   provideRep $ partyPageLD partyEntity
+  provideRep $ partyPageICal partyEntity
 
 partyPageHtml :: Entity Party -> Handler Html
 partyPageHtml (Entity partyId party@Party {..}) = do

@@ -1,5 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
-
 module Salsa.Party.Web.Server.Handler.Event.ICal
   ( getEventIcsR,
   )
@@ -14,15 +12,9 @@ getEventIcsR :: EventUUID -> Handler ICal.VCalendar
 getEventIcsR eventUuid = do
   mParty <- runDB $ getBy $ UniquePartyUUID eventUuid
   case mParty of
-    Just (Entity _ party) -> do
-      place@Place {..} <- runDB $ get404 $ partyPlace party
-      renderUrl <- getUrlRender
-      pure $ partyCalendar renderUrl party place
+    Just partyEntity -> partyPageICal partyEntity
     Nothing -> do
       mExternalEvent <- runDB $ getBy $ UniqueExternalEventUUID eventUuid
       case mExternalEvent of
-        Just (Entity _ externalEvent) -> do
-          place@Place {..} <- runDB $ get404 $ externalEventPlace externalEvent
-          renderUrl <- getUrlRender
-          pure $ externalEventCalendar renderUrl externalEvent place
+        Just externalEventEntity -> externalEventPageICal externalEventEntity
         Nothing -> notFound

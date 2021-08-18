@@ -2,8 +2,8 @@
 {-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
-  ( externalEventCalendar,
-    externalEventCalendarEvent,
+  ( externalEventPageICal,
+    externalEventCalendar,
   )
 where
 
@@ -15,6 +15,12 @@ import qualified Data.Text.Lazy as LT
 import Network.URI
 import Salsa.Party.Web.Server.Handler.Import
 import qualified Text.ICalendar as ICal
+
+externalEventPageICal :: Entity ExternalEvent -> Handler ICal.VCalendar
+externalEventPageICal (Entity _ externalEvent) = do
+  place@Place {..} <- runDB $ get404 $ externalEventPlace externalEvent
+  renderUrl <- getUrlRender
+  pure $ externalEventCalendar renderUrl externalEvent place
 
 externalEventCalendar :: (Route App -> Text) -> ExternalEvent -> Place -> ICal.VCalendar
 externalEventCalendar renderUrl externalEvent@ExternalEvent {..} place =
