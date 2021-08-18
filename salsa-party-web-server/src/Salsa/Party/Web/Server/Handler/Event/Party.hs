@@ -15,8 +15,6 @@ module Salsa.Party.Web.Server.Handler.Event.Party
 where
 
 import qualified Data.Text.Encoding as TE
-import qualified Database.Esqueleto as E
-import qualified Database.Esqueleto.Internal.Sql as E
 import Google.Calendar
 import Network.HTTP.Types
 import Network.URI
@@ -61,8 +59,6 @@ partyPageHtml (Entity partyId party@Party {..}) = do
         else MsgPartyTitleScheduled partyTitle
     setDescriptionI $ maybe MsgPartyWithoutDescription MsgPartyDescription partyDescription
     let ldEvent = partyToLDEvent renderUrl party organiser place mPosterKey
-    -- liftIO $ pPrint ("Place from db" :: Text, place)
-    -- liftIO $ pPrint ("LD Event on server side" :: Text, ldEvent)
     toWidgetHead $ toJSONLDData ldEvent
     addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified
     let mAddToGoogleLink = addPartyToGoogleCalendarLink renderUrl party place
