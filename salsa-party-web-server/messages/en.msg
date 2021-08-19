@@ -155,7 +155,9 @@ YourPartiesTitle: Your parties
 YourPartiesSubmitButton: Submit party
 YourPartiesNoParties: You have not submitted any parties yet.
 YourPartiesPartyDetailsButton: Details
+YourPartiesScheduleDetailsButton: Details
 YourPartiesEditPartyButton: Edit
+YourPartiesEditScheduleButton: Edit
 YourPartiesPublicPartyButton: Public Party Profile
 YourPartiesDuplicatePartyButton: Duplicate
 YourPartiesCancelPartyButton: Cancel

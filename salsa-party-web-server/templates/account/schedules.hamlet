@@ -24,6 +24,8 @@
           ^{schedulePosterImageWidget schedule organiser posterKey}
         <p>
           <div .buttons>
+            <a .button href=@{AccountR $ AccountScheduleR $ scheduleUuid schedule}>
+              _{MsgYourPartiesScheduleDetailsButton}
             <a .button href=@{AccountR $ AccountScheduleEditR $ scheduleUuid schedule}>
               _{MsgYourSchedulesEditScheduleButton}
             <form

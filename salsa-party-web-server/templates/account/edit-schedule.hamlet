@@ -6,7 +6,7 @@
     <form .form
       enctype="multipart/form-data"
       method=post
-      action=@{AccountR AccountSubmitScheduleR}>
+      action=@{AccountR $ AccountScheduleEditR $ scheduleUuid schedule}>
 
       <div .field>
         <label .label>

@@ -1,0 +1,30 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      _{MsgScheduleTitle scheduleTitle}
+
+    <h2 .title .is-4>
+      _{MsgPartyAddress placeQuery}
+
+    <h3 .subtitle .is-5>
+      ^{recurrenceDescriptionWidget scheduleRecurrence}
+
+
+    $maybe posterKey <- mPosterKey
+      ^{schedulePosterImageWidget schedule organiser posterKey}
+
+    $maybe description <- scheduleDescription
+      <div .content>
+        <p>
+          #{Textarea description}
+  
+    <p .content>
+      <div .buttons>
+        <a .button href=@{AccountR $ AccountScheduleEditR scheduleUuid}>
+          _{MsgYourPartiesEditScheduleButton}
+        <form
+          method=post
+          action=@{AccountR $ AccountScheduleDeleteR scheduleUuid}>
+          <button .button .is-danger type=submit
+            onclick="return confirm('_{MsgYourSchedulesDeleteScheduleWarning}');">
+            _{MsgYourSchedulesDeleteScheduleButton}

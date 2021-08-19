@@ -9,6 +9,7 @@
 
 module Salsa.Party.Web.Server.Handler.Account.Schedule
   ( getAccountSchedulesR,
+    getAccountScheduleR,
     AddScheduleForm (..),
     getAccountSubmitScheduleR,
     postAccountSubmitScheduleR,
@@ -52,6 +53,25 @@ getSchedulesOfOrganiser organiserId = do
     -- TODO this is potentially expensive, can we do it in one query?
     mKey <- getPosterForSchedule scheduleId
     pure (scheduleEntity, placeEntity, mKey)
+
+getAccountScheduleR :: ScheduleUUID -> Handler Html
+getAccountScheduleR scheduleUuid_ = do
+  Entity userId User {..} <- requireAuth
+  mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
+
+  case mOrganiser of
+    Nothing -> do
+      addMessageI "is-danger" MsgSubmitScheduleErrorNoOrganiser
+      redirect $ AccountR AccountOrganiserR
+    Just (Entity _ organiser) -> do
+      mSchedule <- runDB $ getBy $ UniqueScheduleUUID scheduleUuid_
+      Entity scheduleId schedule@Schedule {..} <- case mSchedule of
+        Nothing -> notFound
+        Just scheduleEntity -> pure scheduleEntity
+      Place {..} <- runDB $ get404 schedulePlace
+      mPosterKey <- runDB $ getPosterForSchedule scheduleId
+
+      withNavBar $ $(widgetFile "account/schedule")
 
 data AddScheduleForm = AddScheduleForm
   { addScheduleFormTitle :: !Text,
