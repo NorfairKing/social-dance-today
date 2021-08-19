@@ -17,8 +17,8 @@ HomeFormHelp: Press the search button to find parties around your current locati
 ExploreTitle: Explore the world of social dance!
 ExploreDescription: Social dance exists all over the world, find out where to go!
 ExploreButton: Explore
-ExploreSkylineAlt location@Text: Night-time skyline of #{location}
 ExploreUpcomingParties number@String: #{number} upcoming parties
+ExploreSkylineAlt location@Text: Night-time skyline of #{location}
 
 ## Footer
 FooterGeocodingAttribution: Geocoding by OpenStreetMaps Nominatim
@@ -230,7 +230,7 @@ RecurrenceWeeklyDescription weekday@String: Every week on #{weekday}
 # Submit Schedule
 SubmitScheduleTitle: Submit Schedule
 SubmitScheduleButton: Submit
-SubmitScheduleSuccess: Succesfully submitted party
+SubmitScheduleSuccess: Succesfully submitted recurring party
 SubmitScheduleErrorUnverified: Your account needs to verified before you can submit parties.
 SubmitScheduleErrorNoOrganiser: You must set up an organiser profile in the account overview before you can submit a party.
 

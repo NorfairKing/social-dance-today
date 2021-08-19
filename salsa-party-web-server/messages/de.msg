@@ -190,7 +190,7 @@ AccountPartyErrorNotYourParty: Dies ist nicht ihre Party.
 SubmitPartyTitle:  Party erstellen
 SubmitPartyButton:  Speichern
 SubmitPartySuccess:  Party erfolgreich erstellt
-SubmitPartyErrorUnverified:  Ihr Konto muss zuerst bestätigt werden, bevor Sie Parties erstellen können. 
+SubmitPartyErrorUnverified:  Ihr Konto muss zuerst bestätigt werden, bevor Sie Parties erstellen können.
 SubmitPartyErrorNoOrganiser:  Bevor Sie eine Party erstellen können, müssen Sie in der Kontoübersicht ein Veranstalterprofil anlegen.
 
 # Party bearbeiten
@@ -236,9 +236,9 @@ RecurrenceWeeklyDescription weekday@String: jede Woche am #{weekday}
 # Submit Schedule
 SubmitScheduleTitle: Partyplan erstellen
 SubmitScheduleButton: Erstellen
-SubmitScheduleSuccess:  Partyplan erfolgreich erstellt
-SubmitScheduleErrorUnverified:  Ihr Konto muss zuerst bestätigt werden, bevor Sie Partypläne erstellen können. 
-SubmitScheduleErrorNoOrganiser:  Bevor Sie ein Partyplan erstellen können, müssen Sie in der Kontoübersicht ein Veranstalterprofil anlegen.
+SubmitScheduleSuccess: Partyplan erfolgreich erstellt
+SubmitScheduleErrorUnverified: Ihr Konto muss zuerst bestätigt werden, bevor Sie Partypläne erstellen können. 
+SubmitScheduleErrorNoOrganiser: Bevor Sie ein Partyplan erstellen können, müssen Sie in der Kontoübersicht ein Veranstalterprofil anlegen.
 
 # Edit Schedule
 EditScheduleTitle: Partyplan bearbeiten

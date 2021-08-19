@@ -234,7 +234,7 @@ RecurrenceWeeklyDescription weekday@String: Elke week op #{weekday}
 # Submit Schedule
 SubmitScheduleTitle: Terugkerend Feest
 SubmitScheduleButton: Indienen
-SubmitScheduleSuccess: Terugkerend Feest succesvol ingediend
+SubmitScheduleSuccess: Terugkerend Feest succesvol toegevoegd
 SubmitScheduleErrorUnverified: Uw account moet geverifieerd worden vooraleer u terugkerende feesten kan indienen.
 SubmitScheduleErrorNoOrganiser: U moet eerst een organisatorprofiel aanmaken vooraleer u een terugkerend feest kan indienen.
 
