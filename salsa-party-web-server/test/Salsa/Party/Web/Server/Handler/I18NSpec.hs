@@ -53,7 +53,7 @@ spec =
             Left _ -> pure () -- Probably a .swp file, let's just ignore it.
             Right otherContents -> do
               it (fp <> " has no more TODOs") $ do
-                otherContents `shouldNotSatisfy` ("TODO" `T.isInfixOf`)
+                when ("TODO" `T.isInfixOf` otherContents) $ expectationFailure $ unwords [fp, "still contains TODOs"]
               describe (fp <> " has translations for every string") $ do
                 let otherMessages = messagesIn (T.unpack otherContents)
                 forM_ mainMessages $ \mainMessage ->

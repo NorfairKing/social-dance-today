@@ -20,8 +20,8 @@ HomeFormHelp: Druk op 'Zoeken' om feesten te vinden nabij uw huidige locatie.
 ExploreTitle: Ontdek de wereld van de sociale dans!
 ExploreDescription: Sociale dans bestaat over de hele wereld, ontdek waar je heen kunt!
 ExploreButton: Verken
-ExploreSkylineAlt location@Text: Night-time skyline van #{location}
 ExploreUpcomingParties number@String: #{number} komende feesten
+ExploreSkylineAlt location@Text: Night-time skyline van #{location}
 
 ## Footer
 FooterGeocodingAttribution: Geocodering door OpenStreetMaps Nominatim
@@ -141,11 +141,25 @@ OrganiserSubmitButton: Indienen
 OrganiserViewPublicProfileButton: Bekijk openbaar profiel
 OrganiserSaveSuccess: Organisatorprofiel opgeslagen
 
+# Submit
+SubmitTitle: Voeg uw feest toe
+SubmitSingleParty: Enkel feest
+SubmitRecurringParty: Terugkerend feest
+SubmitSinglePartyExplanation1: Een enkel feest gebeurt maar één keer, op een bepaalde dag.
+SubmitSinglePartyExplanation2: U kan het later nog steeds aanpassen, annuleren of verwijderen.
+SubmitRecurringPartyExplanation1: Een terugkerend feest gebeurt meerdere keren. Bijvoorbeeld elke vrijdag.
+SubmitRecurringPartyExplanation2: Wanneer u een terugkerend feest instelt, genereert de site automatisch feesten naar de toekomst toe.
+SubmitRecurringPartyExplanation3: Als u een terugkerend feest aanpast, worden alle toekomstige versies ervan ook automatisch aangepast.
+SubmitRecurringPartyExplanation4: Als u een terugkerend feest verwijdert, worden alle toekomstige versies ervan geannuleerd, en zullen er verder geen gegenereerd worden.
+
 # Your parties
 YourPartiesTitle: Uw feesten
+YourPartiesPartiesSubtitle: Feesten
+YourPartiesSchedulesSubtitle: Terugkerende feesten
 YourPartiesSubmitButton: Feest indienen
 YourPartiesNoParties: U heeft nog geen feesten indienen.
 YourPartiesEditPartyButton: Bewerken
+YourPartiesEditScheduleButton: Bewerken
 YourPartiesPublicPartyButton: Openbaar profiel
 YourPartiesDuplicatePartyButton: Dupliceren
 YourPartiesCancelPartyButton: Annuleer
@@ -166,6 +180,9 @@ PartyFormPosterLabel: Poster
 PartyFormPosterChooseInstruction: Kies een afbeelding
 PartyFormPosterNoPoster: Geen poster geselecteerd
 PartyFormBackButton: Terug
+
+# Account Party
+AccountPartyErrorNotYourParty: Dit is niet uw feest.
 
 # Submit Party
 SubmitPartyTitle: Feest indienen

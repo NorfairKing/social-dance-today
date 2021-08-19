@@ -20,8 +20,8 @@ HomeFormHelp: Drücken Sie die Suchtaste, um parties in ihrer Umgebung zu finden
 ExploreTitle: Erkunde die Welt des Sozial Dance!
 ExploreDescription: Social Dance gibt es auf der ganzen Welt, finde heraus, wohin du gehen kannst!
 ExploreButton: Erkunden
-ExploreSkylineAlt location@Text:  Nächtliche Skyline von #{location}
 ExploreUpcomingParties number@String: #{number} bevorstehenden Parties
+ExploreSkylineAlt location@Text:  Nächtliche Skyline von #{location}
 
 ## Footer
 FooterGeocodingAttribution: Geokodierung durch OpenStreetMaps Nominatim
@@ -143,17 +143,31 @@ OrganiserSubmitButton:  Erstellen
 OrganiserViewPublicProfileButton:  Öffentliches Veranstalterprofil anzeigen
 OrganiserSaveSuccess: Veranstalterprofil erfolgreich gespeichert
 
-# Deine Parties
-YourPartiesTitle:  Ihre Parties
-YourPartiesSubmitButton:  Party erstellen
-YourPartiesNoParties:  Sie haben noch keine Parties erstellt.
-YourPartiesEditPartyButton:  Bearbeiten
-YourPartiesPublicPartyButton:  Öffentliches Party-Profil
-YourPartiesDuplicatePartyButton:  Dublizieren
-YourPartiesCancelPartyButton:  Absagen
-YourPartiesUnCancelPartyButton:  Rückgängig machen
-YourPartiesDeletePartyWarning:  Sind Sie sicher, dass Sie diese Party löschen wollen? Das kann nicht rückgängig gemacht werden. 
-YourPartiesDeletePartyButton:  Löschen
+# Submit
+SubmitTitle: Ihre party hinzufügen
+SubmitSingleParty: Einzelne Party
+SubmitRecurringParty: Wiederkehrende Party
+SubmitSinglePartyExplanation1: Eine einzelne Party findet nur einmal an einem bestimmten Datum statt. 
+SubmitSinglePartyExplanation2: Sie können die Party später noch bearbeiten, absagen oder löschen.
+SubmitRecurringPartyExplanation1: Eine wiederkehrende Party findet mehrmals statt, zum Beispiel jeden Freitag. 
+SubmitRecurringPartyExplanation2: Wenn Sie eine wiederkehrende Party planen, generiert die Site Partys in der Zukunft. 
+SubmitRecurringPartyExplanation3: Wenn Sie eine wiederkehrende Party bearbeiten, werden alle von ihr generierten zukünftigen Partys automatisch bearbeitet. 
+SubmitRecurringPartyExplanation4: Wenn Sie eine wiederkehrende Party löschen, werden alle zukünftigen Partys im Zeitplan abgesagt und es werden keine zukünftigen generiert. 
+
+# Your parties
+YourPartiesTitle: Ihre Parties
+YourPartiesPartiesSubtitle: Parties
+YourPartiesSchedulesSubtitle: Wiederkehrende Parties
+YourPartiesSubmitButton: Party erstellen
+YourPartiesNoParties: Sie haben noch keine Parties erstellt.
+YourPartiesEditPartyButton: Bearbeiten
+YourPartiesEditScheduleButton: Bearbeiten
+YourPartiesPublicPartyButton: Öffentliches Party-Profil
+YourPartiesDuplicatePartyButton: Dublizieren
+YourPartiesCancelPartyButton: Absagen
+YourPartiesUnCancelPartyButton: Rückgängig machen
+YourPartiesDeletePartyWarning: Sind Sie sicher, dass Sie diese Party löschen wollen? Das kann nicht rückgängig gemacht werden. 
+YourPartiesDeletePartyButton: Löschen
 
 # Party form
 PartyFormTitleLabel:  Titel
@@ -168,6 +182,9 @@ PartyFormPosterLabel:  Bild
 PartyFormPosterChooseInstruction:  Bild auswählen
 PartyFormPosterNoPoster:  Kein Bild ausgewählt
 PartyFormBackButton:  Zurück
+
+# Account Party
+AccountPartyErrorNotYourParty: Dies ist nicht ihre Party.
 
 # Submit Party
 SubmitPartyTitle:  Party erstellen
