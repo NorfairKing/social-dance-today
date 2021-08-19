@@ -1,0 +1,32 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      Schedules
+
+
+    ^{paginationWidget pageRoute paginated pageNumber}
+
+<section .section>
+  <div .container>
+    <h2 .title .is-4>
+      Schedules
+
+    <table .table .is-fullwidth .is-striped>
+      <thead>
+        <tr>
+          <th>
+            Title
+          <th>
+            Recurrence
+          <th>
+            Created
+      <tbody>
+        $forall Entity _ schedule <- paginatedElements paginated
+          <tr>
+            <td>
+              #{scheduleTitle schedule}
+            <td>
+              ^{recurrenceDescriptionWidget $ scheduleRecurrence schedule}
+            <td>
+              ^{formatAdminTime $ scheduleCreated schedule}
+

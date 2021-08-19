@@ -23,6 +23,8 @@
         #{nbUpcomingExternalEvents} upcoming external Events
       <a .button href=@{AdminR AdminExternalEventsR}>
         #{nbExternalEvents} external Events
+      <a .button href=@{AdminR AdminSchedulesR}>
+        #{nbSchedules} recurring parties
 
 
     <h2 .title .is-4>
@@ -111,6 +113,12 @@
             Organisers
           <p .title>
             #{nbOrganisers}
+      <div .level-item .has-text-centered>
+        <div>
+          <p .heading>
+            Recurring Parties
+          <p .title>
+            #{nbSchedules}
 
 <section .section>
   <div .container>

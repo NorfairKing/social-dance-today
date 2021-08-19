@@ -26,6 +26,7 @@ getAdminPanelR = do
   nbUpcomingExternalEvents <- runDB $ count ([ExternalEventDay >=. today] :: [Filter ExternalEvent])
   nbUpcomingExternalEvents30Days <- runDB $ count ([ExternalEventDay >=. today, ExternalEventDay <=. addDays 30 today] :: [Filter ExternalEvent])
   nbExternalEvents <- runDB $ count ([] :: [Filter ExternalEvent])
+  nbSchedules <- runDB $ count ([] :: [Filter Schedule])
 
   mLatestUser <- runDB $ selectFirst [] [Desc UserCreated]
   mLatestOrganiser <- runDB $ selectFirst [] [Desc OrganiserCreated]
@@ -190,6 +191,20 @@ externalEventsListPage filters sorters pageRoute pageNumber = do
     setTitle "Salsa Parties Admin External Events"
     setDescription "Admin overview of the external events"
     $(widgetFile "admin/external-events")
+
+getAdminSchedulesR :: Handler Html
+getAdminSchedulesR = redirect $ AdminR $ AdminSchedulesPageR paginatedFirstPage
+
+getAdminSchedulesPageR :: PageNumber -> Handler Html
+getAdminSchedulesPageR = adminSchedulesPage [] [Asc ScheduleId] (AdminR . AdminSchedulesPageR)
+
+adminSchedulesPage :: [Filter Schedule] -> [SelectOpt Schedule] -> (PageNumber -> Route App) -> PageNumber -> Handler Html
+adminSchedulesPage filters sorters pageRoute pageNumber = do
+  paginated <- runDB $ selectPaginated defaultPageSize filters sorters pageNumber
+  withNavBar $ do
+    setTitle "Salsa Schedules Admin Schedules"
+    setDescription "Admin overview of the schedules"
+    $(widgetFile "admin/schedules")
 
 postAdminImporterResetR :: ImporterMetadataId -> Handler Html
 postAdminImporterResetR importerId = do

@@ -73,6 +73,9 @@
   /upcoming-external-events AdminUpcomingExternalEventsR GET
   /upcoming-external-events/#PageNumber AdminUpcomingExternalEventsPageR GET
 
+  /schedules AdminSchedulesR GET
+  /schedules/#PageNumber AdminSchedulesPageR GET
+
   /importer/#ImporterMetadataId/events AdminImporterEventsR GET
   /importer/#ImporterMetadataId/events/#PageNumber AdminImporterEventsPageR GET
   /importer/#ImporterMetadataId/upcoming-events AdminImporterUpcomingEventsR GET
