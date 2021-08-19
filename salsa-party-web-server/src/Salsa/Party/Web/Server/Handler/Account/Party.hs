@@ -181,9 +181,7 @@ getAccountPartyR partyUuid_ = do
   userId <- requireAuthId
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
   case mOrganiser of
-    Nothing -> do
-      addMessageI "is-danger" MsgAccountPartyErrorNoOrganiser
-      redirect $ AccountR AccountOrganiserR
+    Nothing -> notFound
     Just (Entity organiserId organiser) -> do
       mParty <- runDB $ getBy $ UniquePartyUUID partyUuid_
       Entity partyId party@Party {..} <- case mParty of
@@ -248,9 +246,7 @@ editPartyPage partyUuid_ mResult = do
   userId <- requireAuthId
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
   case mOrganiser of
-    Nothing -> do
-      addMessageI "is-danger" MsgEditPartyErrorNoOrganiser
-      redirect $ AccountR AccountOrganiserR
+    Nothing -> notFound
     Just (Entity organiserId _) -> do
       mParty <- runDB $ getBy $ UniquePartyUUID partyUuid_
       partyEntity <- case mParty of
@@ -348,9 +344,7 @@ getAccountPartyDuplicateR partyUuid_ = do
   userId <- requireAuthId
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
   case mOrganiser of
-    Nothing -> do
-      addMessageI "is-danger" MsgDuplicatePartyErrorNoOrganiser
-      redirect $ AccountR AccountOrganiserR
+    Nothing -> notFound
     Just (Entity organiserId organiser) -> do
       Entity partyId party <- getPartyEntityOfOrganiser partyUuid_ organiserId
       place <- runDB $ get404 $ partyPlace party

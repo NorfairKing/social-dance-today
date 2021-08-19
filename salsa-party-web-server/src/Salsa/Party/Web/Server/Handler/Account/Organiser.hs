@@ -77,6 +77,7 @@ organiserFormPage mResult = do
                 }
             )
             [OrganiserReminderConsent =. organiserFormConsentReminder]
+      setMessageI MsgOrganiserSaveSuccess
       redirect $ AccountR AccountOrganiserR
     _ -> do
       let mv :: a -> (Organiser -> a) -> a

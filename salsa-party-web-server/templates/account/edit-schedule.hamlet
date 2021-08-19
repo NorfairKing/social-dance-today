@@ -1,7 +1,7 @@
 <section .section>
   <div .container>
     <h1 .title .is-3>
-      _{MsgSubmitScheduleTitle}
+      _{MsgEditScheduleTitle}
 
     <form .form
       enctype="multipart/form-data"
@@ -102,6 +102,6 @@
         <div .control>
           <div .buttons>
             <button .button .is-dark type="submit">
-              _{MsgSubmitScheduleButton}
+              _{MsgEditScheduleButton}
             <a .button href=@{AccountR $ AccountScheduleEditR $ scheduleUuid schedule}>
               _{MsgScheduleFormBackButton}

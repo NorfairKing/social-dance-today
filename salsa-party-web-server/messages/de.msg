@@ -34,7 +34,6 @@ NavSubmitParty: Party hinzufügen
 NavAccount: Konto
 NavOrganiser: Veranstalterprofil
 NavParties: Meine Partys
-NavSchedules: Meine Partypläne
 NavLanguage: Sprache
 NavAdmin: Admin-Panel
 NavSignUp: Registrieren
@@ -183,14 +182,11 @@ EditPartyButton:  Speichern
 EditPartySuccess:  Erfolgreich bearbeitete Party
 EditPartyPublicPartyProfile:  Öffentliches Party-Profil
 EditPartyDayHelp:  Sie können den Tag für die Party nicht mehr bearbeiten. Wenn Sie dies wünschen, können Sie diese Party entweder absagen und eine andere organisieren oder diese Party duplizieren, um sie neu zu organisieren.
-EditPartyErrorNoOrganiser: Bevor Sie eine Party bearbeiten können, müssen Sie in der Kontoübersicht ein Veranstalterprofil einrichten.
 EditPartyErrorNotYourParty: Diese Party können Sie nicht bearbeiten, da es nicht Ihre Party ist.
 
 # Party dublizieren
 DuplicatePartyTitle: Party dublizieren
 DuplicatePartyButton: Speichern
-DuplicatePartyErrorNoOrganiser: Bevor Sie eine Party duplizieren können, müssen Sie in der Kontoübersicht ein Veranstalterprofil einrichten.
-DuplicatePartyErrorNotYourParty: Sie können diese Party nicht dublizieren, da es nicht Ihre Party ist.
 
 # Cancel party
 CancelPartyErrorNotYourParty: Diese Party können sie nicht absagen, da es nicht Ihre Party ist.
@@ -231,7 +227,6 @@ SubmitScheduleErrorNoOrganiser:  Bevor Sie ein Partyplan erstellen können, müs
 EditScheduleTitle: Partyplan bearbeiten
 EditScheduleButton: Speichern
 EditScheduleSuccess: Partyplan erfolgreich gespeichert
-EditScheduleErrorNoOrganiser: Bevor Sie eine Party bearbeiten können, müssen Sie in der Kontoübersicht ein Veranstalterprofil einrichten.
 EditScheduleErrorNotYourSchedule: Diese Party können Sie nicht bearbeiten, da es nicht Ihre Party ist.
 
 # Your schedules

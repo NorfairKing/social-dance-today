@@ -34,9 +34,7 @@ getAccountScheduleR scheduleUuid_ = do
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
 
   case mOrganiser of
-    Nothing -> do
-      addMessageI "is-danger" MsgSubmitScheduleErrorNoOrganiser
-      redirect $ AccountR AccountOrganiserR
+    Nothing -> notFound
     Just (Entity organiserId organiser) -> do
       mSchedule <- runDB $ getBy $ UniqueScheduleUUID scheduleUuid_
       Entity scheduleId schedule@Schedule {..} <- case mSchedule of
@@ -261,9 +259,7 @@ editSchedulePage scheduleUuid_ mResult = do
   userId <- requireAuthId
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
   case mOrganiser of
-    Nothing -> do
-      addMessageI "is-danger" MsgEditScheduleErrorNoOrganiser
-      redirect $ AccountR AccountOrganiserR
+    Nothing -> notFound
     Just (Entity organiserId _) -> do
       mSchedule <- runDB $ getBy $ UniqueScheduleUUID scheduleUuid_
       scheduleEntity <- case mSchedule of

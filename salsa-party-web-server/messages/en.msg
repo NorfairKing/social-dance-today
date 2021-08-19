@@ -30,7 +30,6 @@ NavSubmitParty: Add party
 NavAccount: Account
 NavOrganiser: Organiser profile
 NavParties: My parties
-NavSchedules: My party schedules
 NavLanguage: Language
 NavAdmin: Admin panel
 NavSignUp: Sign up
@@ -156,8 +155,6 @@ YourPartiesPartiesSubtitle: Parties
 YourPartiesSchedulesSubtitle: Recurring parties
 YourPartiesSubmitButton: Submit party
 YourPartiesNoParties: You have not submitted any parties yet.
-YourPartiesPartyDetailsButton: Details
-YourPartiesScheduleDetailsButton: Details
 YourPartiesEditPartyButton: Edit
 YourPartiesEditScheduleButton: Edit
 YourPartiesPublicPartyButton: Public Party Profile
@@ -189,7 +186,6 @@ SubmitPartyErrorUnverified: Your account needs to verified before you can submit
 SubmitPartyErrorNoOrganiser: You must set up an organiser profile in the account overview before you can submit a party.
 
 # View Party
-AccountPartyErrorNoOrganiser: You must set up an organiser profile in the account overview before you can view a party.
 AccountPartyErrorNotYourParty: This is not your party to view.
 
 # Edit Party
@@ -198,14 +194,11 @@ EditPartyButton: Submit
 EditPartySuccess: Succesfully edited party
 EditPartyPublicPartyProfile: Public Party Profile
 EditPartyDayHelp: You can no longer edit the day for the party. If you were looking to do that, you can either cancel this party and organise another, or duplicate this party to re-organise it.
-EditPartyErrorNoOrganiser: You must set up an organiser profile in the account overview before you can edit a party.
 EditPartyErrorNotYourParty: This is not your party to edit.
 
 # Duplicate Party
 DuplicatePartyTitle: Submit Party
 DuplicatePartyButton: Submit
-DuplicatePartyErrorNoOrganiser: You must set up an organiser profile in the account overview before you can duplicate a party.
-DuplicatePartyErrorNotYourParty: This is not your party to duplicate.
 
 # Cancel party
 CancelPartyErrorNotYourParty: This is not your party to cancel.
@@ -245,7 +238,6 @@ SubmitScheduleErrorNoOrganiser: You must set up an organiser profile in the acco
 EditScheduleTitle: Edit Schedule
 EditScheduleButton: Save
 EditScheduleSuccess: Succesfully edited party
-EditScheduleErrorNoOrganiser: You must set up an organiser profile in the account overview before you can edit a party.
 EditScheduleErrorNotYourSchedule: This is not your party to edit.
 
 # Your schedules

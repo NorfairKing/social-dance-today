@@ -33,7 +33,6 @@ NavSubmitParty: Feest toevoegen
 NavAccount: Account
 NavOrganiser: Organisatorprofiel
 NavParties: Mijn feesten
-NavSchedules: Mijn herhalende feesten
 NavLanguage: Taal
 NavAdmin: Beheerdersoverzicht
 NavSignUp: Registreren
@@ -181,14 +180,11 @@ EditPartyButton: Opslaan
 EditPartySuccess: Feest succesfully bewerkt
 EditPartyPublicPartyProfile: Openbaar feestprofiel
 EditPartyDayHelp: U kan de dag niet meer bewerken. Als u dat wilt doen, kan u dit feest annuleren en en nieuw feest aanmaken, of dit feest dupliceren en het feest herorganiseren.
-EditPartyErrorNoOrganiser: U moet eerst een organisatorprofiel aanmaken vooraleer u een feest kan bewerken.
 EditPartyErrorNotYourParty: Dit is niet uw feest. U kan dit feest niet bewerken.
 
 # Duplicate Party
 DuplicatePartyTitle: Feest dupliceren
 DuplicatePartyButton: Dupliceren
-DuplicatePartyErrorNoOrganiser: U moet eerst een organisatorprofiel aanmaken vooraleer u een feest kan dupliceren.
-DuplicatePartyErrorNotYourParty: Dit is niet uw feest. U kan dit feest niet dupliceren.
 
 # Cancel party
 CancelPartyErrorNotYourParty: Dit is niet uw feest. U kan dit feest niet annuleren.
@@ -229,7 +225,6 @@ SubmitScheduleErrorNoOrganiser: U moet eerst een organisatorprofiel aanmaken voo
 EditScheduleTitle: Terugkerend feest aanpassen
 EditScheduleButton: Opslaan
 EditScheduleSuccess: Terugkerend feest succesvol opgeslagen
-EditScheduleErrorNoOrganiser: U moet eerst een organisatorprofiel aanmaken vooraleer u een terugkerend feest kan aanpassen.
 EditScheduleErrorNotYourSchedule: Dit is niet uw terugkerend feest. U kan dit terugkerend feest niet bewerken.
 
 # Your schedules
