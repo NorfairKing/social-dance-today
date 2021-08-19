@@ -174,7 +174,7 @@ addParty organiserId AddPartyForm {..} mFileInfo = do
             ]
 
   addMessageI "is-success" MsgSubmitPartySuccess
-  redirect $ AccountR AccountPartiesR
+  redirect $ AccountR $ AccountPartyEditR uuid
 
 getAccountPartyR :: EventUUID -> Handler Html
 getAccountPartyR partyUuid_ = do
@@ -307,40 +307,38 @@ editParty (Entity partyId party) form mFileInfo = do
   forM_ mUpdates $ \updates -> runDB $ update partyId updates
 
   -- Update the poster if a new one has been submitted
-  case mFileInfo of
-    Nothing -> pure ()
-    Just posterFileInfo -> do
-      imageBlob <- fileSourceByteString posterFileInfo
-      let contentType = fileContentType posterFileInfo
-      case posterCropImage contentType imageBlob of
-        Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
-        Right (convertedImageType, convertedImageBlob) -> do
-          let casKey = mkCASKey convertedImageType convertedImageBlob
-          runDB $ do
-            Entity imageId _ <-
-              upsertBy
-                (UniqueImageKey casKey)
-                ( Image
-                    { imageKey = casKey,
-                      imageTyp = convertedImageType,
-                      imageBlob = convertedImageBlob,
-                      imageCreated = now
-                    }
-                )
-                [] -- No need to update anything, the casKey makes the image unique.
-            void $
-              upsertBy
-                (UniquePartyPoster partyId)
-                ( PartyPoster
-                    { partyPosterParty = partyId,
-                      partyPosterImage = imageId,
-                      partyPosterCreated = now,
-                      partyPosterModified = Nothing
-                    }
-                )
-                [ PartyPosterImage =. imageId,
-                  PartyPosterModified =. Just now
-                ]
+  forM_ mFileInfo $ \posterFileInfo -> do
+    imageBlob <- fileSourceByteString posterFileInfo
+    let contentType = fileContentType posterFileInfo
+    case posterCropImage contentType imageBlob of
+      Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
+      Right (convertedImageType, convertedImageBlob) -> do
+        let casKey = mkCASKey convertedImageType convertedImageBlob
+        runDB $ do
+          Entity imageId _ <-
+            upsertBy
+              (UniqueImageKey casKey)
+              ( Image
+                  { imageKey = casKey,
+                    imageTyp = convertedImageType,
+                    imageBlob = convertedImageBlob,
+                    imageCreated = now
+                  }
+              )
+              [] -- No need to update anything, the casKey makes the image unique.
+          void $
+            upsertBy
+              (UniquePartyPoster partyId)
+              ( PartyPoster
+                  { partyPosterParty = partyId,
+                    partyPosterImage = imageId,
+                    partyPosterCreated = now,
+                    partyPosterModified = Nothing
+                  }
+              )
+              [ PartyPosterImage =. imageId,
+                PartyPosterModified =. Just now
+              ]
 
   addMessageI "is-success" MsgEditPartySuccess
   redirect $ AccountR $ AccountPartyEditR $ partyUuid party

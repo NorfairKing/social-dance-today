@@ -212,7 +212,7 @@ addSchedule organiserId AddScheduleForm {..} mFileInfo = do
   runReaderT (handleScheduleDecision decision) app
 
   addMessageI "is-success" MsgSubmitScheduleSuccess
-  redirect $ AccountR AccountPartiesR
+  redirect $ AccountR $ AccountScheduleEditR uuid
 
 data EditScheduleForm = EditScheduleForm
   { editScheduleFormTitle :: !Text,
@@ -362,53 +362,51 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
         pure futureScheduledPartiesIds
 
   -- Update the poster if a new one has been submitted
-  case mFileInfo of
-    Nothing -> pure () -- No new party submitted
-    Just posterFileInfo -> do
-      imageBlob <- fileSourceByteString posterFileInfo
-      let contentType = fileContentType posterFileInfo
-      case posterCropImage contentType imageBlob of
-        Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
-        Right (convertedImageType, convertedImageBlob) -> do
-          let casKey = mkCASKey convertedImageType convertedImageBlob
-          runDB $ do
-            Entity imageId _ <-
-              upsertBy
-                (UniqueImageKey casKey)
-                ( Image
-                    { imageKey = casKey,
-                      imageTyp = convertedImageType,
-                      imageBlob = convertedImageBlob,
-                      imageCreated = now
-                    }
-                )
-                [] -- No need to update anything, the casKey makes the image unique.
-            _ <-
-              upsertBy
-                (UniqueSchedulePoster scheduleId)
-                ( SchedulePoster
-                    { schedulePosterSchedule = scheduleId,
-                      schedulePosterImage = imageId,
-                      schedulePosterCreated = now,
-                      schedulePosterModified = Nothing
-                    }
-                )
-                [ SchedulePosterImage =. imageId,
-                  SchedulePosterModified =. Just now
-                ]
-            forM_ futureScheduledPartiesIds $ \partyId ->
-              upsertBy
-                (UniquePartyPoster partyId)
-                ( PartyPoster
-                    { partyPosterParty = partyId,
-                      partyPosterImage = imageId,
-                      partyPosterCreated = now,
-                      partyPosterModified = Nothing
-                    }
-                )
-                [ PartyPosterImage =. imageId,
-                  PartyPosterModified =. Just now
-                ]
+  forM_ mFileInfo $ \posterFileInfo -> do
+    imageBlob <- fileSourceByteString posterFileInfo
+    let contentType = fileContentType posterFileInfo
+    case posterCropImage contentType imageBlob of
+      Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
+      Right (convertedImageType, convertedImageBlob) -> do
+        let casKey = mkCASKey convertedImageType convertedImageBlob
+        runDB $ do
+          Entity imageId _ <-
+            upsertBy
+              (UniqueImageKey casKey)
+              ( Image
+                  { imageKey = casKey,
+                    imageTyp = convertedImageType,
+                    imageBlob = convertedImageBlob,
+                    imageCreated = now
+                  }
+              )
+              [] -- No need to update anything, the casKey makes the image unique.
+          _ <-
+            upsertBy
+              (UniqueSchedulePoster scheduleId)
+              ( SchedulePoster
+                  { schedulePosterSchedule = scheduleId,
+                    schedulePosterImage = imageId,
+                    schedulePosterCreated = now,
+                    schedulePosterModified = Nothing
+                  }
+              )
+              [ SchedulePosterImage =. imageId,
+                SchedulePosterModified =. Just now
+              ]
+          forM_ futureScheduledPartiesIds $ \partyId ->
+            upsertBy
+              (UniquePartyPoster partyId)
+              ( PartyPoster
+                  { partyPosterParty = partyId,
+                    partyPosterImage = imageId,
+                    partyPosterCreated = now,
+                    partyPosterModified = Nothing
+                  }
+              )
+              [ PartyPosterImage =. imageId,
+                PartyPosterModified =. Just now
+              ]
 
   addMessageI "is-success" MsgEditScheduleSuccess
   redirect $ AccountR $ AccountScheduleEditR scheduleUuid
