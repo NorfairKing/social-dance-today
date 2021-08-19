@@ -22,7 +22,8 @@
 
     $maybe Entity _ schedule <- mSchedule
       <h4 .subtitle .is-6>
-        ^{recurrenceDescriptionWidget (scheduleRecurrence schedule)}
+        <a href=@{AccountR $ AccountScheduleR $ scheduleUuid schedule}>
+          ^{recurrenceDescriptionWidget (scheduleRecurrence schedule)}
 
     $maybe description <- partyDescription
       <div .content>
@@ -31,8 +32,6 @@
   
     <p .content>
       <div .buttons>
-        <a .button href=@{AccountR $ AccountPartyR partyUuid}>
-          _{MsgYourPartiesPartyDetailsButton}
         <a .button href=@{AccountR $ AccountPartyEditR partyUuid}>
           _{MsgYourPartiesEditPartyButton}
         <a .button href=@{EventR partyUuid}>

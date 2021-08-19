@@ -174,7 +174,7 @@ addParty organiserId AddPartyForm {..} mFileInfo = do
             ]
 
   addMessageI "is-success" MsgSubmitPartySuccess
-  redirect $ AccountR $ AccountPartyEditR uuid
+  redirect $ AccountR AccountPartiesR
 
 getAccountPartyR :: EventUUID -> Handler Html
 getAccountPartyR partyUuid_ = do

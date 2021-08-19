@@ -212,7 +212,7 @@ addSchedule organiserId AddScheduleForm {..} mFileInfo = do
   runReaderT (handleScheduleDecision decision) app
 
   addMessageI "is-success" MsgSubmitScheduleSuccess
-  redirect $ AccountR $ AccountScheduleEditR uuid
+  redirect $ AccountR AccountPartiesR
 
 data EditScheduleForm = EditScheduleForm
   { editScheduleFormTitle :: !Text,

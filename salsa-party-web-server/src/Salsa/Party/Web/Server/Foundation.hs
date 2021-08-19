@@ -149,7 +149,8 @@ deletePartyCompletely partyId = do
 
 deleteScheduleCompletely :: MonadIO m => ScheduleId -> SqlPersistT m ()
 deleteScheduleCompletely scheduleId = do
-  -- deleteWhere [SchedulePosterSchedule ==. scheduleId] TODO delete poster
+  deleteWhere [SchedulePosterSchedule ==. scheduleId]
+  deleteWhere [SchedulePartySchedule ==. scheduleId]
   delete scheduleId
 
 appDB :: (MonadReader App m, MonadLoggerIO m) => SqlPersistT (LoggingT IO) a -> m a
