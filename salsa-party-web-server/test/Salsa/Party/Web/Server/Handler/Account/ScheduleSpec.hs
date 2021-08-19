@@ -64,6 +64,43 @@ spec = serverSpec $ do
                     parties `shouldSatisfy` all isJust
                     genericLength parties `shouldSatisfy` (>= (daysToScheduleAhead `div` 7))
 
+  describe "AccountScheduleR" $ do
+    it "can GET an existent schedule" $ \yc -> do
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \scheduleForm_ ->
+          forAllValid $ \location ->
+            withAnyLoggedInUser_ yc $ do
+              testSubmitOrganiser organiserForm_
+              scheduleId <-
+                testAddSchedule
+                  scheduleForm_
+                  location
+              get $ AccountR $ AccountScheduleR scheduleId
+              statusIs 200
+
+    it "cannot GET a nonexistent schedule" $ \yc -> do
+      forAllValid $ \organiserForm_ ->
+        withAnyLoggedInUser_ yc $ do
+          testSubmitOrganiser organiserForm_
+          uuid <- nextRandomUUID
+          get $ AccountR $ AccountScheduleR uuid
+          statusIs 404
+
+    it "cannot GET another organiser's schedule" $ \yc ->
+      forAllValid $ \testUser1 ->
+        forAllValid $ \testUser2 ->
+          forAllValid $ \organiser1Form_ ->
+            forAllValid $ \organiser2Form_ ->
+              forAllValid $ \scheduleForm_ ->
+                forAllValid $ \location -> runYesodClientM yc $ do
+                  scheduleId <- asNewUser testUser1 $ do
+                    testSubmitOrganiser organiser1Form_
+                    testAddSchedule scheduleForm_ location
+                  asNewUser testUser2 $ do
+                    testSubmitOrganiser organiser2Form_
+                    get $ AccountR $ AccountScheduleR scheduleId
+                    statusIs 403
+
   describe "AccountScheduleEditR" $ do
     it "can GET an existent schedule" $ \yc -> do
       forAllValid $ \organiserForm_ ->

@@ -37,11 +37,12 @@ getAccountScheduleR scheduleUuid_ = do
     Nothing -> do
       addMessageI "is-danger" MsgSubmitScheduleErrorNoOrganiser
       redirect $ AccountR AccountOrganiserR
-    Just (Entity _ organiser) -> do
+    Just (Entity organiserId organiser) -> do
       mSchedule <- runDB $ getBy $ UniqueScheduleUUID scheduleUuid_
       Entity scheduleId schedule@Schedule {..} <- case mSchedule of
         Nothing -> notFound
         Just scheduleEntity -> pure scheduleEntity
+      when (scheduleOrganiser /= organiserId) $ permissionDeniedI MsgEditScheduleErrorNotYourSchedule
       Place {..} <- runDB $ get404 schedulePlace
       mPosterKey <- runDB $ getPosterForSchedule scheduleId
 
