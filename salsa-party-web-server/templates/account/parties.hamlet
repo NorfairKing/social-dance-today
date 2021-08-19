@@ -4,7 +4,7 @@
       _{MsgYourPartiesTitle}
 
     <p>
-      <a .button .is-dark href=@{AccountR AccountSubmitPartyR}>
+      <a .button .is-dark href=@{AccountR AccountSubmitR}>
         _{MsgYourPartiesSubmitButton}
 
 <section .section>
@@ -12,47 +12,41 @@
     $if null parties
       _{MsgYourPartiesNoParties}
     $else
-      $forall (Entity _ party, Entity _ p, mPosterKey) <- parties
-        <h2 .title .is-4>
-          $if partyCancelled party
-            _{MsgPartyTitleCancelled (partyTitle party)}
-          $else
-            _{MsgPartyTitleScheduled (partyTitle party)}
-        <h3 .subtitle .is-5>
-          #{formatTime timeLocale prettyDayFormat $ partyDay party} 
-          (_{autoDayMsg today (partyDay party)})
-        <p .content>
-          #{placeQuery p}
-        $maybe posterKey <- mPosterKey
-          ^{posterImageWidget party organiser posterKey}
-        <p>
-          <div .buttons>
-            <a .button href=@{AccountR $ AccountPartyR $ partyUuid party}>
-              _{MsgYourPartiesPartyDetailsButton}
-            <a .button href=@{AccountR $ AccountPartyEditR $ partyUuid party}>
-              _{MsgYourPartiesEditPartyButton}
-            <a .button href=@{EventR $ partyUuid party}>
-              _{MsgYourPartiesPublicPartyButton}
-            <a .button href=@{AccountR $ AccountPartyDuplicateR $ partyUuid party}>
-              _{MsgYourPartiesDuplicatePartyButton}
-            $if partyCancelled party
-              ^{token}
-              <form
-                method=post
-                action=@{AccountR $ AccountPartyUnCancelR $ partyUuid party}>
-                <button .button .is-danger type=submit .mx-1>
-                  _{MsgYourPartiesUnCancelPartyButton}
-              <form
-                method=post
-                action=@{AccountR $ AccountPartyDeleteR $ partyUuid party}>
-                <button .button .is-danger type=submit
-                  onclick="return confirm('_{MsgYourPartiesDeletePartyWarning}');">
-                  _{MsgYourPartiesDeletePartyButton}
-            $else
-              ^{token}
-              <form
-                method=post
-                action=@{AccountR $ AccountPartyCancelR $ partyUuid party}>
-                <button .button .is-danger type=submit .mx-1>
-                  _{MsgYourPartiesCancelPartyButton}
+      <table .table .is-narrow .is-striped .is-hoverable .is-fullwidth>
+        <thead>
+          <tr>
+            <th .is-narrow>
+              Day
+            <th>
+              Title
+        <tbody>
+          $forall Entity _ party <- parties
+            <tr onclick="window.location='@{AccountR $ AccountPartyR $ partyUuid party}';">
+              <td .is-narrow>
+                #{formatTime timeLocale prettyDayFormat $ partyDay party} 
+                (_{autoDayMsg today (partyDay party)})
+              <td>
+                <a href=@{AccountR $ AccountPartyR $ partyUuid party}>
+                  $if partyCancelled party
+                    _{MsgPartyTitleCancelled (partyTitle party)}
+                  $else
+                    _{MsgPartyTitleScheduled (partyTitle party)}
 
+$if not (null schedules)
+  <section .section>
+    <div .container>
+      <table .table .is-narrow .is-striped .is-hoverable .is-fullwidth>
+        <thead>
+          <tr>
+            <th .is-narrow>
+              Recurrence
+            <th>
+              Title
+        <tbody>
+          $forall Entity _ schedule <- schedules
+            <tr onclick="window.location='@{AccountR $ AccountScheduleR $ scheduleUuid schedule}';">
+              <td .is-narrow>
+                ^{recurrenceDescriptionWidget (scheduleRecurrence schedule)}
+              <td>
+                <a href=@{AccountR $ AccountScheduleR $ scheduleUuid schedule}>
+                  _{MsgScheduleTitle (scheduleTitle schedule)}
