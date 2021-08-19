@@ -10,33 +10,6 @@ import Salsa.Party.Web.Server.Handler.TestImport
 
 spec :: Spec
 spec = serverSpec $ do
-  describe "AccountSchedulesR" $ do
-    it "GETS a 303 for any account without any organiser" $ \yc -> do
-      withAnyLoggedInUser_ yc $ do
-        get $ AccountR AccountSchedulesR
-        statusIs 303
-        locationShouldBe $ AccountR AccountOrganiserR
-        _ <- followRedirect
-        statusIs 200
-    it "GETS a 200 for any account without any schedules" $ \yc -> do
-      forAllValid $ \organiserForm_ ->
-        withAnyLoggedInUser_ yc $ do
-          testSubmitOrganiser organiserForm_
-          get $ AccountR AccountSchedulesR
-          statusIs 200
-    it "GETS a 200 for any account with a schedule" $ \yc -> do
-      forAllValid $ \organiserForm_ ->
-        forAllValid $ \partyForm_ ->
-          forAllValid $ \location ->
-            withAnyLoggedInUser_ yc $ do
-              testSubmitOrganiser organiserForm_
-              _ <-
-                testAddParty
-                  partyForm_
-                  location
-              get $ AccountR AccountSchedulesR
-              statusIs 200
-
   describe "AccountSubmitScheduleR" $ do
     it "GETS a 200 by GETing SubmitScheduleR" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -281,7 +254,7 @@ spec = serverSpec $ do
                 setUrl $ AccountR $ AccountScheduleDeleteR scheduleId
                 addToken
               statusIs 303
-              locationShouldBe $ AccountR AccountSchedulesR
+              locationShouldBe $ AccountR AccountPartiesR
               _ <- followRedirect
               statusIs 200
               mSchedule <- testDB (DB.getBy (UniqueScheduleUUID scheduleId))

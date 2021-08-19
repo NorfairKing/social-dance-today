@@ -62,6 +62,7 @@ library
       Salsa.Party.Web.Server.Handler.Account
       Salsa.Party.Web.Server.Handler.Account.Organiser
       Salsa.Party.Web.Server.Handler.Account.Overview
+      Salsa.Party.Web.Server.Handler.Account.Parties
       Salsa.Party.Web.Server.Handler.Account.Party
       Salsa.Party.Web.Server.Handler.Account.Schedule
       Salsa.Party.Web.Server.Handler.Admin
@@ -223,6 +224,7 @@ test-suite salsa-party-web-server-test
       Salsa.Party.Web.Server.Gen
       Salsa.Party.Web.Server.Handler.Account.OrganiserSpec
       Salsa.Party.Web.Server.Handler.Account.OverviewSpec
+      Salsa.Party.Web.Server.Handler.Account.PartiesSpec
       Salsa.Party.Web.Server.Handler.Account.PartySpec
       Salsa.Party.Web.Server.Handler.Account.ScheduleSpec
       Salsa.Party.Web.Server.Handler.Admin.PanelSpec

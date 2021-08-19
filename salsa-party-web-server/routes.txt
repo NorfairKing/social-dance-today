@@ -25,6 +25,8 @@
   /submit AccountSubmitR GET
 
   /parties AccountPartiesR GET
+
+
   /submit-party AccountSubmitPartyR GET POST
 
   /party/#EventUUID AccountPartyR GET
@@ -34,7 +36,6 @@
   /party/#EventUUID/cancel AccountPartyCancelR POST
   /party/#EventUUID/un-cancel AccountPartyUnCancelR POST
 
-  /schedules AccountSchedulesR GET
   /submit-schedule AccountSubmitScheduleR GET POST
 
   /schedule/#ScheduleUUID AccountScheduleR GET

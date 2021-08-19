@@ -23,8 +23,6 @@
           _{MsgNavAccount}
         <a .navbar-item href=@{AccountR AccountPartiesR}>
           _{MsgNavParties}
-        <a .navbar-item href=@{AccountR AccountSchedulesR}>
-          _{MsgNavSchedules}
       
     <div .navbar-end>
       <div .navbar-item .has-dropdown .is-hoverable>

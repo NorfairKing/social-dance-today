@@ -8,8 +8,7 @@
 {-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Salsa.Party.Web.Server.Handler.Account.Schedule
-  ( getAccountSchedulesR,
-    getAccountScheduleR,
+  ( getAccountScheduleR,
     AddScheduleForm (..),
     getAccountSubmitScheduleR,
     postAccountSubmitScheduleR,
@@ -28,31 +27,6 @@ import Salsa.Party.Looper.PartyScheduler
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Poster
-
-getAccountSchedulesR :: Handler Html
-getAccountSchedulesR = do
-  userId <- requireAuthId
-  mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
-  case mOrganiser of
-    Nothing -> do
-      addMessageI "is-danger" MsgSubmitPartyErrorNoOrganiser
-      redirect $ AccountR AccountOrganiserR
-    Just (Entity organiserId organiser) -> do
-      schedules <- runDB $ getSchedulesOfOrganiser organiserId
-      token <- genToken
-      withNavBar $(widgetFile "account/schedules")
-
-getSchedulesOfOrganiser :: MonadIO m => OrganiserId -> SqlPersistT m [(Entity Schedule, Entity Place, Maybe CASKey)]
-getSchedulesOfOrganiser organiserId = do
-  scheduleTups <- E.select $
-    E.from $ \(schedule `E.InnerJoin` p) -> do
-      E.on (schedule E.^. SchedulePlace E.==. p E.^. PlaceId)
-      E.where_ (schedule E.^. ScheduleOrganiser E.==. E.val organiserId)
-      pure (schedule, p)
-  forM scheduleTups $ \(scheduleEntity@(Entity scheduleId _), placeEntity) -> do
-    -- TODO this is potentially expensive, can we do it in one query?
-    mKey <- getPosterForSchedule scheduleId
-    pure (scheduleEntity, placeEntity, mKey)
 
 getAccountScheduleR :: ScheduleUUID -> Handler Html
 getAccountScheduleR scheduleUuid_ = do
@@ -449,5 +423,5 @@ postAccountScheduleDeleteR scheduleUuid = do
       if Just (scheduleOrganiser schedule) == (entityKey <$> mOrganiser)
         then do
           runDB $ deleteScheduleCompletely scheduleId
-          redirect $ AccountR AccountSchedulesR
+          redirect $ AccountR AccountPartiesR
         else permissionDeniedI MsgDeleteScheduleErrorNotYourSchedule
