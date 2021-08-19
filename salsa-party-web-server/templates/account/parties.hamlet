@@ -7,11 +7,34 @@
       <a .button .is-dark href=@{AccountR AccountSubmitR}>
         _{MsgYourPartiesSubmitButton}
 
+$if not (null schedules)
+  <section .section>
+    <div .container>
+      <h2 .title .is-4>
+        _{MsgYourPartiesSchedulesSubtitle}
+      <table .table .is-narrow .is-striped .is-hoverable .is-fullwidth>
+        <thead>
+          <tr>
+            <th .is-narrow>
+              Recurrence
+            <th>
+              Title
+        <tbody>
+          $forall Entity _ schedule <- schedules
+            <tr onclick="window.location='@{AccountR $ AccountScheduleR $ scheduleUuid schedule}';">
+              <td .is-narrow>
+                ^{recurrenceDescriptionWidget (scheduleRecurrence schedule)}
+              <td>
+                <a href=@{AccountR $ AccountScheduleR $ scheduleUuid schedule}>
+                  _{MsgScheduleTitle (scheduleTitle schedule)}
+
 <section .section>
   <div .container>
     $if null parties
       _{MsgYourPartiesNoParties}
     $else
+      <h2 .title .is-4>
+        _{MsgYourPartiesPartiesSubtitle}
       <table .table .is-narrow .is-striped .is-hoverable .is-fullwidth>
         <thead>
           <tr>
@@ -31,22 +54,3 @@
                     _{MsgPartyTitleCancelled (partyTitle party)}
                   $else
                     _{MsgPartyTitleScheduled (partyTitle party)}
-
-$if not (null schedules)
-  <section .section>
-    <div .container>
-      <table .table .is-narrow .is-striped .is-hoverable .is-fullwidth>
-        <thead>
-          <tr>
-            <th .is-narrow>
-              Recurrence
-            <th>
-              Title
-        <tbody>
-          $forall Entity _ schedule <- schedules
-            <tr onclick="window.location='@{AccountR $ AccountScheduleR $ scheduleUuid schedule}';">
-              <td .is-narrow>
-                ^{recurrenceDescriptionWidget (scheduleRecurrence schedule)}
-              <td>
-                <a href=@{AccountR $ AccountScheduleR $ scheduleUuid schedule}>
-                  _{MsgScheduleTitle (scheduleTitle schedule)}

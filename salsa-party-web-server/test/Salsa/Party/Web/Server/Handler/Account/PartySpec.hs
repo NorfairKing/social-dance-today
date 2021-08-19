@@ -323,7 +323,7 @@ spec = serverSpec $ do
                 setUrl $ AccountR $ AccountPartyCancelR partyId
                 addToken
               statusIs 303
-              locationShouldBe $ AccountR AccountPartiesR
+              locationShouldBe $ AccountR $ AccountPartyR partyId
               _ <- followRedirect
               statusIs 200
               mParty <- testDB (DB.getBy (UniquePartyUUID partyId))
@@ -376,7 +376,7 @@ spec = serverSpec $ do
                 setUrl $ AccountR $ AccountPartyCancelR partyId
                 addToken
               statusIs 303
-              locationShouldBe $ AccountR AccountPartiesR
+              locationShouldBe $ AccountR $ AccountPartyR partyId
               _ <- followRedirect
               statusIs 200
               request $ do
@@ -384,7 +384,7 @@ spec = serverSpec $ do
                 setUrl $ AccountR $ AccountPartyUnCancelR partyId
                 addToken
               statusIs 303
-              locationShouldBe $ AccountR AccountPartiesR
+              locationShouldBe $ AccountR $ AccountPartyR partyId
               _ <- followRedirect
               statusIs 200
               mParty <- testDB (DB.getBy (UniquePartyUUID partyId))
@@ -420,7 +420,7 @@ spec = serverSpec $ do
                     setUrl $ AccountR $ AccountPartyCancelR partyId
                     addToken
                   statusIs 303
-                  locationShouldBe $ AccountR AccountPartiesR
+                  locationShouldBe $ AccountR $ AccountPartyR partyId
                   _ <- followRedirect
                   statusIs 200
                   pure partyId

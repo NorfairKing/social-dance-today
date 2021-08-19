@@ -11,8 +11,6 @@ module Salsa.Party.Web.Server.Handler.Account.Parties
   )
 where
 
-import Control.Monad
-import qualified Database.Esqueleto as E
 import Salsa.Party.Web.Server.Handler.Import
 
 getAccountPartiesR :: Handler Html
@@ -23,10 +21,9 @@ getAccountPartiesR = do
     Nothing -> do
       addMessageI "is-danger" MsgSubmitPartyErrorNoOrganiser
       redirect $ AccountR AccountOrganiserR
-    Just (Entity organiserId organiser) -> do
+    Just (Entity organiserId _) -> do
       parties <- runDB $ selectList [PartyOrganiser ==. organiserId] [Desc PartyDay]
       schedules <- runDB $ selectList [ScheduleOrganiser ==. organiserId] [Desc ScheduleCreated]
-      token <- genToken
       timeLocale <- getTimeLocale
       prettyDayFormat <- getPrettyDayFormat
       today <- liftIO $ utctDay <$> getCurrentTime

@@ -395,7 +395,7 @@ postAccountPartyCancelR partyUuid = do
       if Just (partyOrganiser party) == (entityKey <$> mOrganiser)
         then do
           runDB $ update partyId [PartyCancelled =. True]
-          redirect $ AccountR AccountPartiesR
+          redirect $ AccountR $ AccountPartyR partyUuid
         else permissionDeniedI MsgCancelPartyErrorNotYourParty
 
 postAccountPartyUnCancelR :: EventUUID -> Handler Html
@@ -409,5 +409,5 @@ postAccountPartyUnCancelR partyUuid = do
       if Just (partyOrganiser party) == (entityKey <$> mOrganiser)
         then do
           runDB $ update partyId [PartyCancelled =. False]
-          redirect $ AccountR AccountPartiesR
+          redirect $ AccountR $ AccountPartyR partyUuid
         else permissionDeniedI MsgUnCancelPartyErrorNotYourParty

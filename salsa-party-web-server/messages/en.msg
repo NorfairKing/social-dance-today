@@ -152,6 +152,8 @@ SubmitRecurringPartyExplanation4: If you delete a schedule, all future parties i
 
 # Your parties
 YourPartiesTitle: Your parties
+YourPartiesPartiesSubtitle: Parties
+YourPartiesSchedulesSubtitle: Recurring parties
 YourPartiesSubmitButton: Submit party
 YourPartiesNoParties: You have not submitted any parties yet.
 YourPartiesPartyDetailsButton: Details
