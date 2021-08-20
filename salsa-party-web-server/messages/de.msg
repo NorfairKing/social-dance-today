@@ -163,7 +163,7 @@ YourPartiesNoParties: Sie haben noch keine Parties erstellt.
 YourPartiesEditPartyButton: Bearbeiten
 YourPartiesEditScheduleButton: Bearbeiten
 YourPartiesPublicPartyButton: Öffentliches Party-Profil
-YourPartiesDuplicatePartyButton: Dublizieren
+YourPartiesDuplicatePartyButton: Duplizieren
 YourPartiesCancelPartyButton: Absagen
 YourPartiesUnCancelPartyButton: Rückgängig machen
 YourPartiesDeletePartyWarning: Sind Sie sicher, dass Sie diese Party löschen wollen? Das kann nicht rückgängig gemacht werden. 
@@ -201,8 +201,8 @@ EditPartyPublicPartyProfile:  Öffentliches Party-Profil
 EditPartyDayHelp:  Sie können den Tag für die Party nicht mehr bearbeiten. Wenn Sie dies wünschen, können Sie diese Party entweder absagen und eine andere organisieren oder diese Party duplizieren, um sie neu zu organisieren.
 EditPartyErrorNotYourParty: Diese Party können Sie nicht bearbeiten, da es nicht Ihre Party ist.
 
-# Party dublizieren
-DuplicatePartyTitle: Party dublizieren
+# Duplicate party
+DuplicatePartyTitle: Party duplizieren
 DuplicatePartyButton: Speichern
 
 # Cancel party
