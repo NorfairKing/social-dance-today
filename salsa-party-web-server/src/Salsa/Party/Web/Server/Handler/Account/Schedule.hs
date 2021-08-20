@@ -332,6 +332,9 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
 
   forM_ mScheduleUpdates $ \updates -> runDB $ update scheduleId updates
 
+  let recurrenceHasChanged :: Bool
+      recurrenceHasChanged = editScheduleFormRecurrence form /= scheduleRecurrence
+
   -- Also update the already-scheduled parties for this schedule
   let partyFieldUpdates :: [Update Party]
       partyFieldUpdates =
@@ -358,8 +361,8 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
         forM_ futureScheduledPartiesIds $ \partyId -> update partyId updates
         pure futureScheduledPartiesIds
 
-  -- Update the poster if a new one has been submitted
-  forM_ mFileInfo $ \posterFileInfo -> do
+  -- Add the new image to the database if a new one has been submitted
+  mNewImageId <- forM mFileInfo $ \posterFileInfo -> do
     imageBlob <- fileSourceByteString posterFileInfo
     let contentType = fileContentType posterFileInfo
     case posterCropImage contentType imageBlob of
@@ -378,32 +381,39 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
                   }
               )
               [] -- No need to update anything, the casKey makes the image unique.
-          _ <-
-            upsertBy
-              (UniqueSchedulePoster scheduleId)
-              ( SchedulePoster
-                  { schedulePosterSchedule = scheduleId,
-                    schedulePosterImage = imageId,
-                    schedulePosterCreated = now,
-                    schedulePosterModified = Nothing
-                  }
-              )
-              [ SchedulePosterImage =. imageId,
-                SchedulePosterModified =. Just now
-              ]
-          forM_ futureScheduledPartiesIds $ \partyId ->
-            upsertBy
-              (UniquePartyPoster partyId)
-              ( PartyPoster
-                  { partyPosterParty = partyId,
-                    partyPosterImage = imageId,
-                    partyPosterCreated = now,
-                    partyPosterModified = Nothing
-                  }
-              )
-              [ PartyPosterImage =. imageId,
-                PartyPosterModified =. Just now
-              ]
+          pure imageId
+
+  -- Update the schedule poster if a new one has been submitted
+  forM_ mNewImageId $ \imageId -> runDB $ do
+    void $
+      upsertBy
+        (UniqueSchedulePoster scheduleId)
+        ( SchedulePoster
+            { schedulePosterSchedule = scheduleId,
+              schedulePosterImage = imageId,
+              schedulePosterCreated = now,
+              schedulePosterModified = Nothing
+            }
+        )
+        [ SchedulePosterImage =. imageId,
+          SchedulePosterModified =. Just now
+        ]
+
+  -- Update the scheduled parties' poster if a new one has been submitted
+  forM_ mNewImageId $ \imageId -> runDB $ do
+    forM_ futureScheduledPartiesIds $ \partyId ->
+      upsertBy
+        (UniquePartyPoster partyId)
+        ( PartyPoster
+            { partyPosterParty = partyId,
+              partyPosterImage = imageId,
+              partyPosterCreated = now,
+              partyPosterModified = Nothing
+            }
+        )
+        [ PartyPosterImage =. imageId,
+          PartyPosterModified =. Just now
+        ]
 
   addMessageI "is-success" MsgEditScheduleSuccess
   redirect $ AccountR $ AccountScheduleEditR scheduleUuid
