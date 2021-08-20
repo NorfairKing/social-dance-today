@@ -435,6 +435,11 @@ postAccountScheduleDeleteR scheduleUuid = do
       mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
       if Just (scheduleOrganiser schedule) == (entityKey <$> mOrganiser)
         then do
-          runDB $ deleteScheduleCompletely scheduleId
+          runDB $ do
+            today <- liftIO $ utctDay <$> getCurrentTime
+            parties <- getFuturePartiesOfSchedule today scheduleId
+            -- TODO this can probably happen with a single query
+            forM_ parties $ \partyId -> update partyId [PartyCancelled =. True]
+            deleteScheduleCompletely scheduleId
           redirect $ AccountR AccountPartiesR
         else permissionDeniedI MsgDeleteScheduleErrorNotYourSchedule
