@@ -157,7 +157,7 @@ spec = serverSpec $ do
                 statusIs 200
                 verifyScheduleEdited scheduleUuid_ editScheduleForm_
 
-    it "can update this example schedule and have its future parties updated automatically" $ \yc ->
+    it "can update a schedule and have its future parties updated automatically" $ \yc ->
       forAllValid $ \organiserForm_ ->
         forAllValid $ \addScheduleForm_ ->
           forAllValid $ \editScheduleForm_ ->
@@ -243,6 +243,34 @@ spec = serverSpec $ do
                 partiesAfter <- testDB $ fmap catMaybes $ mapM DB.get partyIds
                 forM_ partiesAfter $ \partyAfter -> do
                   verifyScheduleEditedPartyWithPoster (partyUuid partyAfter) editScheduleForm_ poster2
+
+    it "does not update the modified time if nothing has changed while editing" $ \yc ->
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \addScheduleForm_ ->
+          forAllValid $ \location ->
+            withAnyLoggedInUser_ yc $ do
+              let editScheduleForm_ = addScheduleFormToEditScheduleForm addScheduleForm_
+              testSubmitOrganiser organiserForm_
+              scheduleUuid_ <-
+                testAddSchedule
+                  addScheduleForm_
+                  location
+              get $ AccountR $ AccountScheduleEditR scheduleUuid_
+              statusIs 200
+              mScheduleBefore <- testDB $ DB.getBy $ UniqueScheduleUUID scheduleUuid_
+              scheduleBefore <- case mScheduleBefore of
+                Nothing -> liftIO $ expectationFailure "Should have gotten a schedule"
+                Just (Entity _ schedule) -> pure schedule
+              testEditSchedule scheduleUuid_ editScheduleForm_ location
+              statusIs 303
+              _ <- followRedirect
+              statusIs 200
+              verifyScheduleEdited scheduleUuid_ editScheduleForm_
+              mScheduleAfter <- testDB $ DB.getBy $ UniqueScheduleUUID scheduleUuid_
+              scheduleAfter <- case mScheduleAfter of
+                Nothing -> liftIO $ expectationFailure "Should have gotten a schedule"
+                Just (Entity _ schedule) -> pure schedule
+              liftIO $ scheduleModified scheduleAfter `shouldBe` scheduleModified scheduleBefore
 
     it "cannot edit a nonexisting schedule" $ \yc ->
       forAllValid $ \organiserForm_ ->

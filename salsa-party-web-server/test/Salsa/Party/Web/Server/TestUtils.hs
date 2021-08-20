@@ -280,6 +280,17 @@ verifyPartyAddedHelper partyUuid_ addPartyForm_ mPoster = do
       mCASKey <- testDB $ getPosterForParty partyId
       liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
 
+addPartyFormToEditPartyForm :: AddPartyForm -> EditPartyForm
+addPartyFormToEditPartyForm AddPartyForm {..} =
+  let editPartyFormTitle = addPartyFormTitle
+      editPartyFormAddress = addPartyFormAddress
+      editPartyFormDescription = addPartyFormDescription
+      editPartyFormStart = addPartyFormStart
+      editPartyFormHomepage = addPartyFormHomepage
+      editPartyFormPrice = addPartyFormPrice
+      editPartyFormPosterKey = Nothing
+   in EditPartyForm {..}
+
 addPartyFormShouldMatch :: AddPartyForm -> Party -> IO ()
 addPartyFormShouldMatch AddPartyForm {..} Party {..} = do
   let AddPartyForm _ _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
@@ -433,6 +444,17 @@ addScheduleFormShouldMatch AddScheduleForm {..} Schedule {..} = do
   context "price" $ schedulePrice `shouldBe` addScheduleFormPrice
   -- We can't check the poster because it's in a separate table.
   pure ()
+
+addScheduleFormToEditScheduleForm :: AddScheduleForm -> EditScheduleForm
+addScheduleFormToEditScheduleForm AddScheduleForm {..} =
+  let editScheduleFormTitle = addScheduleFormTitle
+      editScheduleFormRecurrence = addScheduleFormRecurrence
+      editScheduleFormAddress = addScheduleFormAddress
+      editScheduleFormDescription = addScheduleFormDescription
+      editScheduleFormStart = addScheduleFormStart
+      editScheduleFormHomepage = addScheduleFormHomepage
+      editScheduleFormPrice = addScheduleFormPrice
+   in EditScheduleForm {..}
 
 testEditSchedule :: ScheduleUUID -> EditScheduleForm -> Coordinates -> YesodClientM App ()
 testEditSchedule scheduleUuid_ scheduleForm_ coordinates_ = testEditScheduleHelper scheduleUuid_ scheduleForm_ coordinates_ Nothing

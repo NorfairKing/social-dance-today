@@ -191,6 +191,34 @@ spec = serverSpec $ do
                 statusIs 200
                 verifyPartyEditedWithPoster partyUuid_ editPartyForm_ poster2
 
+    it "does not update the modified time if nothing has changed while editing" $ \yc ->
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \addPartyForm_ ->
+          forAllValid $ \location ->
+            withAnyLoggedInUser_ yc $ do
+              let editPartyForm_ = addPartyFormToEditPartyForm addPartyForm_
+              testSubmitOrganiser organiserForm_
+              partyUuid_ <-
+                testAddParty
+                  addPartyForm_
+                  location
+              get $ AccountR $ AccountPartyEditR partyUuid_
+              statusIs 200
+              mPartyBefore <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
+              partyBefore <- case mPartyBefore of
+                Nothing -> liftIO $ expectationFailure "Should have gotten a party"
+                Just (Entity _ party) -> pure party
+              testEditParty partyUuid_ editPartyForm_ location
+              statusIs 303
+              _ <- followRedirect
+              statusIs 200
+              verifyPartyEdited partyUuid_ editPartyForm_
+              mPartyAfter <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
+              partyAfter <- case mPartyAfter of
+                Nothing -> liftIO $ expectationFailure "Should have gotten a party"
+                Just (Entity _ party) -> pure party
+              liftIO $ partyModified partyAfter `shouldBe` partyModified partyBefore
+
     it "Cannot edit a nonexistent party" $ \yc ->
       forAllValid $ \organiserForm_ ->
         forAllValid $ \partyForm_ ->
