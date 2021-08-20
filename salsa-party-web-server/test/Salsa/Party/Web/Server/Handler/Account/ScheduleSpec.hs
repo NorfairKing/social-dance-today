@@ -297,6 +297,36 @@ spec = serverSpec $ do
               mSchedule <- testDB (DB.getBy (UniqueScheduleUUID scheduleId))
               liftIO $ mSchedule `shouldBe` Nothing
 
+    it "can delete a schedule and have all its future parties cancelled" $ \yc -> do
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \scheduleFormPrototype_ ->
+          forAllValid $ \location -> do
+            withAnyLoggedInUser_ yc $ do
+              testSubmitOrganiser organiserForm_
+              let scheduleForm_ = scheduleFormPrototype_ {addScheduleFormRecurrence = WeeklyRecurrence Monday}
+              scheduleUuid_ <- testAddSchedule scheduleForm_ location
+              verifyScheduleAdded scheduleUuid_ scheduleForm_
+              mScheduleBefore <- testDB (DB.getBy (UniqueScheduleUUID scheduleUuid_))
+              partyIds <- case mScheduleBefore of
+                Nothing -> liftIO $ expectationFailure "Should have found a schedule"
+                Just (Entity scheduleId_ _) -> do
+                  testDB $
+                    map (schedulePartyParty . entityVal) <$> DB.selectList [SchedulePartySchedule DB.==. scheduleId_] []
+              partiesBefore <- testDB $ fmap catMaybes $ mapM DB.get partyIds
+              liftIO $ partiesBefore `shouldSatisfy` not . any partyCancelled
+              get $ AccountR $ AccountScheduleEditR scheduleUuid_
+              statusIs 200
+              request $ do
+                setMethod methodPost
+                setUrl $ AccountR $ AccountScheduleDeleteR scheduleUuid_
+                addToken
+              statusIs 303
+              locationShouldBe $ AccountR AccountPartiesR
+              _ <- followRedirect
+              statusIs 200
+              partiesAfter <- testDB $ fmap catMaybes $ mapM DB.get partyIds
+              liftIO $ partiesAfter `shouldSatisfy` all partyCancelled
+
     it "cannot delete another user's schedule" $ \yc ->
       forAllValid $ \testUser1 ->
         forAllValid $ \testUser2 ->
