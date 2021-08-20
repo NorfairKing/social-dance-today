@@ -240,7 +240,7 @@ AccountScheduleParties: Scheduled parties
 # Edit Schedule
 EditScheduleTitle: Edit Schedule
 EditScheduleButton: Save
-EditScheduleSuccess: Succesfully edited party
+EditScheduleSuccess: Succesfully edited recurring party
 EditScheduleErrorNotYourSchedule: This is not your party to edit.
 
 # Your schedules
