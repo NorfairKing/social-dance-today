@@ -3,6 +3,14 @@
     <h1 .title .is-3>
       _{MsgOrganiserName organiserName}
 
+    <div .buttons>
+      $maybe homepage <- organiserHomepage
+        <a .button .is-light
+          href=#{homepage}
+          title=_{MsgOrganiserHomepageTitle organiserName}
+          rel="external">
+          _{MsgOrganiserHomepage}
+
     <h2 .title .is-4>
       _{MsgOrganiserUpcomingParties}
     $if null parties

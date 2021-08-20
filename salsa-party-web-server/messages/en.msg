@@ -76,6 +76,8 @@ ExternalEventCaution: Event found via web search, treat this information with ca
 
 # Organiser Page
 OrganiserTitle name@Text: Organiser profile: #{name}
+OrganiserHomepage: Homepage
+OrganiserHomepageTitle name@Text: Homepage of #{name}
 OrganiserDescription name@Text: The organiser profile of #{name}, and a list of their upcoming social dance parties
 OrganiserName name@Text: Organiser: #{name}
 OrganiserUpcomingParties: Upcoming parties

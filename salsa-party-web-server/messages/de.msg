@@ -82,6 +82,8 @@ ExternalEventCaution: Event via Websuche gefunden. Behandeln Sie diese Informati
 
 # Organiser Page
 OrganiserTitle name@Text:  Veranstalterprofil: #{name}
+OrganiserHomepage: Webseite
+OrganiserHomepageTitle name@Text: Webseite von #{name}
 OrganiserDescription name@Text:  Veranstalterprofil von #{name}, und eine Liste seiner/ihrer bevorstehenden Social Dance Parties 
 OrganiserName name@Text: Veranstalter/in: #{name}
 OrganiserUpcomingParties: Bevorstehende Parties

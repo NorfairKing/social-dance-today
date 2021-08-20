@@ -80,6 +80,8 @@ ExternalEventCaution: Evenement gevonden op het web. Gelieve voorzichtig om te g
 
 # Organiser Page
 OrganiserTitle name@Text: Organisatorprofiel: #{name}
+OrganiserHomepage: Website
+OrganiserHomepageTitle name@Text: Website van #{name}
 OrganiserDescription name@Text: Het organisatorprofiel van #{name} en een lijst van hun komende socialedansfeesten
 OrganiserName name@Text: Organisator: #{name}
 OrganiserUpcomingParties: Komende feesten
