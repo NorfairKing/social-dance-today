@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -43,8 +44,14 @@ getAccountScheduleR scheduleUuid_ = do
       when (scheduleOrganiser /= organiserId) $ permissionDeniedI MsgEditScheduleErrorNotYourSchedule
       Place {..} <- runDB $ get404 schedulePlace
       mPosterKey <- runDB $ getPosterForSchedule scheduleId
+      parties <- runDB $ getPartiesOfSchedule scheduleId
+      now <- liftIO getCurrentTime
+      let today = utctDay now
 
-      withNavBar $ $(widgetFile "account/schedule")
+      withNavBar $ do
+        timeLocale <- getTimeLocale
+        prettyDayFormat <- getPrettyDayFormat
+        $(widgetFile "account/schedule")
 
 data AddScheduleForm = AddScheduleForm
   { addScheduleFormTitle :: !Text,
@@ -210,7 +217,7 @@ addSchedule organiserId AddScheduleForm {..} mFileInfo = do
   runReaderT (handleScheduleDecision decision) app
 
   addMessageI "is-success" MsgSubmitScheduleSuccess
-  redirect $ AccountR $ AccountScheduleEditR uuid
+  redirect $ AccountR $ AccountScheduleR uuid
 
 data EditScheduleForm = EditScheduleForm
   { editScheduleFormTitle :: !Text,
@@ -347,13 +354,7 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
   futureScheduledPartiesIds <- fmap (fromMaybe []) $
     forM mPartyUpdates $ \updates ->
       runDB $ do
-        futureScheduledPartiesIds <- fmap (map E.unValue) $
-          E.select $
-            E.from $ \(partySchedule `E.InnerJoin` party) -> do
-              E.on (partySchedule E.^. SchedulePartyParty E.==. party E.^. PartyId)
-              E.where_ (partySchedule E.^. SchedulePartySchedule E.==. E.val scheduleId)
-              E.where_ (party E.^. PartyDay E.>=. E.val today)
-              pure (party E.^. PartyId)
+        futureScheduledPartiesIds <- getFuturePartiesOfSchedule today scheduleId
         forM_ futureScheduledPartiesIds $ \partyId -> update partyId updates
         pure futureScheduledPartiesIds
 
@@ -406,6 +407,23 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
 
   addMessageI "is-success" MsgEditScheduleSuccess
   redirect $ AccountR $ AccountScheduleEditR scheduleUuid
+
+getFuturePartiesOfSchedule :: MonadIO m => Day -> ScheduleId -> SqlPersistT m [PartyId]
+getFuturePartiesOfSchedule today scheduleId = fmap (fmap E.unValue) $
+  E.select $
+    E.from $ \(partySchedule `E.InnerJoin` party) -> do
+      E.on (partySchedule E.^. SchedulePartyParty E.==. party E.^. PartyId)
+      E.where_ (partySchedule E.^. SchedulePartySchedule E.==. E.val scheduleId)
+      E.where_ (party E.^. PartyDay E.>=. E.val today)
+      pure (party E.^. PartyId)
+
+getPartiesOfSchedule :: MonadIO m => ScheduleId -> SqlPersistT m [Entity Party]
+getPartiesOfSchedule scheduleId =
+  E.select $
+    E.from $ \(partySchedule `E.InnerJoin` party) -> do
+      E.on (partySchedule E.^. SchedulePartyParty E.==. party E.^. PartyId)
+      E.where_ (partySchedule E.^. SchedulePartySchedule E.==. E.val scheduleId)
+      pure party
 
 postAccountScheduleDeleteR :: ScheduleUUID -> Handler Html
 postAccountScheduleDeleteR scheduleUuid = do

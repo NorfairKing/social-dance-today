@@ -243,7 +243,7 @@ testAddPartyHelper partyForm_ loc mPosterFile = do
   case errOrLoc of
     Left err -> liftIO $ expectationFailure $ T.unpack err
     Right redirectLocation -> case redirectLocation of
-      AccountR (AccountPartyEditR partyUuid) -> pure partyUuid
+      AccountR (AccountPartyR partyUuid) -> pure partyUuid
       _ -> liftIO $ expectationFailure $ "Coordinates should have been some AccountR AccountPartyEditR after submitting a party, was this instead: " <> show redirectLocation
 
 addPartyFormRequestBuilder :: AddPartyForm -> Maybe TestFile -> RequestBuilder App ()
@@ -380,7 +380,7 @@ testAddScheduleHelper scheduleForm_ loc mPosterFile = do
   case errOrLoc of
     Left err -> liftIO $ expectationFailure $ T.unpack err
     Right redirectLocation -> case redirectLocation of
-      AccountR (AccountScheduleEditR scheduleUuid) -> pure scheduleUuid
+      AccountR (AccountScheduleR scheduleUuid) -> pure scheduleUuid
       _ -> liftIO $ expectationFailure $ "Coordinates should have been some AccountR AccountScheduleEditR after submitting a schedule, was this instead: " <> show redirectLocation
 
 addScheduleFormRequestBuilder :: AddScheduleForm -> Maybe TestFile -> RequestBuilder App ()

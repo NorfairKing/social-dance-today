@@ -28,3 +28,28 @@
           <button .button .is-danger type=submit
             onclick="return confirm('_{MsgYourSchedulesDeleteScheduleWarning}');">
             _{MsgYourSchedulesDeleteScheduleButton}
+
+<section .section>
+  <div .container>
+    <h2 .title .is-4>
+      _{MsgAccountScheduleParties}
+    <table .table .is-narrow .is-striped .is-hoverable .is-fullwidth>
+      <thead>
+        <tr>
+          <th .is-narrow>
+            Day
+          <th>
+            Title
+      <tbody>
+        $forall Entity _ party <- parties
+          <tr onclick="window.location='@{AccountR $ AccountPartyR $ partyUuid party}';">
+            <td .is-narrow>
+              #{formatTime timeLocale prettyDayFormat $ partyDay party}
+              (_{autoDayMsg today (partyDay party)})
+            <td>
+              <a href=@{AccountR $ AccountPartyR $ partyUuid party}>
+                $if partyCancelled party
+                  _{MsgPartyTitleCancelled (partyTitle party)}
+                $else
+                  _{MsgPartyTitleScheduled (partyTitle party)}
+

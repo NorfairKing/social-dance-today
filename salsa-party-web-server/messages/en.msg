@@ -234,6 +234,9 @@ SubmitScheduleSuccess: Succesfully submitted recurring party
 SubmitScheduleErrorUnverified: Your account needs to verified before you can submit parties.
 SubmitScheduleErrorNoOrganiser: You must set up an organiser profile in the account overview before you can submit a party.
 
+# View Schedule
+AccountScheduleParties: Scheduled parties
+
 # Edit Schedule
 EditScheduleTitle: Edit Schedule
 EditScheduleButton: Save

@@ -229,6 +229,9 @@ ScheduleFormPosterChooseInstruction: Bild auswählen
 ScheduleFormPosterNoPoster: Kein Bild ausgewählt
 ScheduleFormBackButton: Zurück
 
+# Account Schedule
+AccountScheduleParties: Generierte Parties
+
 ## Recurrence
 RecurrenceWeeklyType: wöchentlich
 RecurrenceWeeklyDescription weekday@String: jede Woche am #{weekday}

@@ -238,6 +238,9 @@ SubmitScheduleSuccess: Terugkerend Feest succesvol toegevoegd
 SubmitScheduleErrorUnverified: Uw account moet geverifieerd worden vooraleer u terugkerende feesten kan indienen.
 SubmitScheduleErrorNoOrganiser: U moet eerst een organisatorprofiel aanmaken vooraleer u een terugkerend feest kan indienen.
 
+# Account Schedule
+AccountScheduleParties: Gegenereerde feesten
+
 # Edit Schedule
 EditScheduleTitle: Terugkerend feest aanpassen
 EditScheduleButton: Opslaan
