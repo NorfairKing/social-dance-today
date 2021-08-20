@@ -332,35 +332,6 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
 
   forM_ mScheduleUpdates $ \updates -> runDB $ update scheduleId updates
 
-  let recurrenceHasChanged :: Bool
-      recurrenceHasChanged = editScheduleFormRecurrence form /= scheduleRecurrence
-
-  -- Also update the already-scheduled parties for this schedule
-  let partyFieldUpdates :: [Update Party]
-      partyFieldUpdates =
-        let EditScheduleForm _ _ _ _ _ _ _ = undefined
-         in catMaybes
-              [ whenChanged scheduleTitle editScheduleFormTitle PartyTitle,
-                whenChanged scheduleDescription (fmap unTextarea . editScheduleFormDescription) PartyDescription,
-                -- Purposely don't update the day so that schedulegoers can't have the rug pulled under them
-                whenChanged scheduleStart editScheduleFormStart PartyStart,
-                whenChanged scheduleHomepage editScheduleFormHomepage PartyHomepage,
-                whenChanged schedulePrice editScheduleFormPrice PartyPrice,
-                if schedulePlace /= placeId
-                  then Just (PartyPlace =. placeId)
-                  else Nothing
-              ]
-      mPartyUpdates :: Maybe [Update Party]
-      mPartyUpdates = mUpdates PartyModified partyFieldUpdates
-
-  -- TODO we can probably do this with a single update function instead of N+1 with esqueleto
-  futureScheduledPartiesIds <- fmap (fromMaybe []) $
-    forM mPartyUpdates $ \updates ->
-      runDB $ do
-        futureScheduledPartiesIds <- getFuturePartiesOfSchedule today scheduleId
-        forM_ futureScheduledPartiesIds $ \partyId -> update partyId updates
-        pure futureScheduledPartiesIds
-
   -- Add the new image to the database if a new one has been submitted
   mNewImageId <- forM mFileInfo $ \posterFileInfo -> do
     imageBlob <- fileSourceByteString posterFileInfo
@@ -399,21 +370,69 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
           SchedulePosterModified =. Just now
         ]
 
-  -- Update the scheduled parties' poster if a new one has been submitted
-  forM_ mNewImageId $ \imageId -> runDB $ do
-    forM_ futureScheduledPartiesIds $ \partyId ->
-      upsertBy
-        (UniquePartyPoster partyId)
-        ( PartyPoster
-            { partyPosterParty = partyId,
-              partyPosterImage = imageId,
-              partyPosterCreated = now,
-              partyPosterModified = Nothing
-            }
-        )
-        [ PartyPosterImage =. imageId,
-          PartyPosterModified =. Just now
-        ]
+  -- If the recurrence has changed, then we delete all future parties and reschedule them from scratch.
+  -- If the recurrence has not changed, then we just update the future parties.
+  let recurrenceHasChanged :: Bool
+      recurrenceHasChanged = editScheduleFormRecurrence form /= scheduleRecurrence
+
+  futureScheduledPartiesIds <- runDB $ getFuturePartiesOfSchedule today scheduleId
+
+  if recurrenceHasChanged
+    then do
+      -- Delete the already-scheduled parties
+      -- TODO we can probably do this with a single delete function instead of N+1 with esqueleto
+      runDB $
+        forM_ futureScheduledPartiesIds $ \partyId -> do
+          deleteWhere [SchedulePartySchedule ==. scheduleId, SchedulePartyParty ==. partyId]
+          deletePartyCompletely partyId
+
+      -- Rerun the scheduler now
+      schedule <- runDB $ get404 scheduleId
+      let scheduleEntity = Entity scheduleId schedule
+      -- Schedule the parties immediately, instead of waiting for the
+      -- PartyScheduler looper to run.
+      decision <- runDB (makeScheduleDecision scheduleEntity)
+      app <- getYesod
+      runReaderT (handleScheduleDecision decision) app
+    else do
+      -- Also update the already-scheduled parties for this schedule
+      let partyFieldUpdates :: [Update Party]
+          partyFieldUpdates =
+            let EditScheduleForm _ _ _ _ _ _ _ = undefined
+             in catMaybes
+                  [ whenChanged scheduleTitle editScheduleFormTitle PartyTitle,
+                    whenChanged scheduleDescription (fmap unTextarea . editScheduleFormDescription) PartyDescription,
+                    -- Purposely don't update the day so that schedulegoers can't have the rug pulled under them
+                    whenChanged scheduleStart editScheduleFormStart PartyStart,
+                    whenChanged scheduleHomepage editScheduleFormHomepage PartyHomepage,
+                    whenChanged schedulePrice editScheduleFormPrice PartyPrice,
+                    if schedulePlace /= placeId
+                      then Just (PartyPlace =. placeId)
+                      else Nothing
+                  ]
+          mPartyUpdates :: Maybe [Update Party]
+          mPartyUpdates = mUpdates PartyModified partyFieldUpdates
+
+      -- TODO we can probably do this with a single update function instead of N+1 with esqueleto
+      forM_ mPartyUpdates $ \updates ->
+        runDB $
+          forM_ futureScheduledPartiesIds $ \partyId -> update partyId updates
+
+      -- Update the scheduled parties' poster if a new one has been submitted
+      forM_ mNewImageId $ \imageId -> runDB $ do
+        forM_ futureScheduledPartiesIds $ \partyId ->
+          upsertBy
+            (UniquePartyPoster partyId)
+            ( PartyPoster
+                { partyPosterParty = partyId,
+                  partyPosterImage = imageId,
+                  partyPosterCreated = now,
+                  partyPosterModified = Nothing
+                }
+            )
+            [ PartyPosterImage =. imageId,
+              PartyPosterModified =. Just now
+            ]
 
   addMessageI "is-success" MsgEditScheduleSuccess
   redirect $ AccountR $ AccountScheduleEditR scheduleUuid
