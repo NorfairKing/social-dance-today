@@ -53,7 +53,7 @@ spec = serverSpec $ do
               let scheduleForm_ = scheduleFormPrototype_ {addScheduleFormRecurrence = WeeklyRecurrence Monday}
               scheduleUuid_ <- testAddSchedule scheduleForm_ location
               verifyScheduleAdded scheduleUuid_ scheduleForm_
-              mSchedule <- testDB $ DB.selectFirst [] []
+              mSchedule <- testDB $ DB.getBy (UniqueScheduleUUID scheduleUuid_)
               case mSchedule of
                 Nothing -> liftIO $ expectationFailure "Should have found a schedule"
                 Just (Entity scheduleId_ _) -> do
@@ -185,6 +185,38 @@ spec = serverSpec $ do
                 forM_ partiesAfter $ \partyAfter ->
                   verifyScheduleEditedParty (partyUuid partyAfter) editScheduleForm_
 
+    it "can update a schedule's recurrence and have its future parties rescheduled automatically" $ \yc ->
+      forAllValid $ \organiserForm_ ->
+        forAllValid $ \addScheduleForm_ ->
+          forAllValid $ \dow ->
+            forAllValid $ \location ->
+              withAnyLoggedInUser_ yc $ do
+                let editScheduleForm_ = (addScheduleFormToEditScheduleForm addScheduleForm_) {editScheduleFormRecurrence = WeeklyRecurrence dow}
+                testSubmitOrganiser organiserForm_
+                scheduleUuid_ <-
+                  testAddSchedule
+                    addScheduleForm_
+                    location
+                get $ AccountR $ AccountScheduleEditR scheduleUuid_
+                statusIs 200
+                testEditSchedule scheduleUuid_ editScheduleForm_ location
+                statusIs 303
+                _ <- followRedirect
+                statusIs 200
+                mSchedule <- testDB $ DB.getBy (UniqueScheduleUUID scheduleUuid_)
+                case mSchedule of
+                  Nothing -> liftIO $ expectationFailure "Should have found a schedule"
+                  Just (Entity scheduleId_ _) -> do
+                    parties <- testDB $ do
+                      schedulePartyRows <- DB.selectList [SchedulePartySchedule DB.==. scheduleId_] []
+                      forM schedulePartyRows $ \(Entity _ ScheduleParty {..}) -> DB.get schedulePartyParty
+                    liftIO $ do
+                      parties `shouldSatisfy` all isJust
+                      catMaybes parties `shouldSatisfy` all ((== dow) . dayOfWeek . partyDay)
+                      genericLength parties `shouldSatisfy` (>= (daysToScheduleAhead `div` 7))
+                      -- This will catch double-scheduling:
+                      length parties `shouldSatisfy` (<= ceiling (fromIntegral (daysToScheduleAhead `div` 7) * 1.5 :: Double))
+
     it "can edit an existing schedule's poster" $ \yc ->
       forAllValid $ \organiserForm_ ->
         forAllValid $ \addScheduleForm_ ->
@@ -213,7 +245,7 @@ spec = serverSpec $ do
                 statusIs 200
                 verifyScheduleEditedWithPoster scheduleUuid_ editScheduleForm_ poster2
 
-    it "can update this example schedule and have its future parties' poster updated automatically" $ \yc ->
+    it "can update a schedule and have its future parties' poster updated automatically" $ \yc ->
       forAllValid $ \organiserForm_ ->
         forAllValid $ \addScheduleForm_ ->
           forAllValid $ \editScheduleForm_ ->
