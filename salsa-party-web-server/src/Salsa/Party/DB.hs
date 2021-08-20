@@ -85,6 +85,7 @@ Organiser sql=organiser
     user UserId
 
     name Text
+    homepage Text Maybe default=NULL
 
     created UTCTime
     modified UTCTime Maybe default=NULL

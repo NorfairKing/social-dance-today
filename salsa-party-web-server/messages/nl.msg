@@ -135,6 +135,7 @@ AccountDeleteWarning: Weet u zeker dat u uw account wilt verwijderen? Deze actie
 # Organiser Profile
 OrganiserProfileTitle: Organisatorprofiel
 OrganiserDisplayNameLabel: Weergavenaam
+OrganiserHomepageLabel: Website
 OrganiserConsentReminderLabel: Ik wil eraan herinnerd worden om mijn feesten te adverteren.
 OrganiserConsentReminderHelp: We zullen u nooit meer dan één herinnering sturen. U kan dit elk moment stopzetten.
 OrganiserSubmitButton: Indienen

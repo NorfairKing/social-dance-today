@@ -137,6 +137,7 @@ AccountDeleteWarning:  Sind Sie sicher, dass sie Ihr Konto löschen wollen? Das 
 # Organiser Profile
 OrganiserProfileTitle:  Veranstalterprofil
 OrganiserDisplayNameLabel:  Anzeigename
+OrganiserHomepageLabel: Website
 OrganiserConsentReminderLabel: Ich möchte daran erinnert werden, Parties zu erstellen.
 OrganiserConsentReminderHelp: Wir versenden nicht mehr als eine Erinnerungs-E-Mail pro Woche. Sie können dies jederzeit deaktivieren.
 OrganiserSubmitButton:  Erstellen

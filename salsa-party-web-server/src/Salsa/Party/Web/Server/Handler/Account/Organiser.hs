@@ -16,6 +16,7 @@ import Salsa.Party.Web.Server.Handler.Import
 
 data OrganiserForm = OrganiserForm
   { organiserFormName :: !Text,
+    organiserFormHomepage :: !(Maybe Text),
     organiserFormConsentReminder :: !Bool
   }
   deriving (Show, Eq, Generic)
@@ -24,13 +25,15 @@ instance Validity OrganiserForm where
   validate ogf@OrganiserForm {..} =
     mconcat
       [ genericValidate ogf,
-        declare "The display name is not empty" $ not $ T.null organiserFormName
+        declare "The display name is not empty" $ not $ T.null organiserFormName,
+        declare "The homepage is nonempty" $ maybe True (not . T.null) organiserFormHomepage
       ]
 
 organiserForm :: FormInput Handler OrganiserForm
 organiserForm =
   OrganiserForm
     <$> ireq textField "name"
+    <*> iopt textField "homepage"
     <*> ireq checkBoxField "consent-reminder"
 
 getAccountOrganiserR :: Handler Html
@@ -51,7 +54,7 @@ organiserFormPage mResult = do
       _ <- do
         uuid <- nextRandomUUID
         runDB $ do
-          let OrganiserForm _ _ = undefined
+          let OrganiserForm _ _ _ = undefined
           Entity organiserId _ <-
             upsertBy
               (UniqueOrganiserUser userId)
@@ -59,11 +62,13 @@ organiserFormPage mResult = do
                   { organiserUuid = uuid,
                     organiserUser = userId,
                     organiserName = organiserFormName,
+                    organiserHomepage = organiserFormHomepage,
                     organiserCreated = now,
                     organiserModified = Nothing
                   }
               )
               [ OrganiserName =. organiserFormName,
+                OrganiserHomepage =. organiserFormHomepage,
                 OrganiserModified =. Just now
               ]
           secret <- nextRandomUUID
@@ -84,6 +89,8 @@ organiserFormPage mResult = do
           mv defaultValue func = maybe defaultValue (func . entityVal) mOrganiser
           tv :: (Organiser -> Text) -> Text
           tv = mv ""
+          mtv :: (Organiser -> Maybe Text) -> Text
+          mtv = fromMaybe "" . mv Nothing
       token <- genToken
       mOrganiserReminder <- fmap join $ forM mOrganiser $ \(Entity organiserId _) -> runDB $ getBy $ UniqueOrganiserReminderOrganiser organiserId
       withMFormResultNavBar mResult $(widgetFile "account/organiser")

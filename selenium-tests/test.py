@@ -73,6 +73,7 @@ print("Setting up an organiser profile")
 driver.find_element_by_xpath('//a[contains(text(), "Account")]').click()
 driver.find_element_by_xpath('//a[contains(text(), "Organiser profile")]').click()
 driver.find_element_by_name("name").send_keys("Test Organiser")
+driver.find_element_by_name("homepage").send_keys("https://example.com")
 driver.find_element_by_xpath('//button[contains(text(), "Submit")]').click()
 driver.find_element_by_xpath('//a[contains(text(), "View Public Profile")]').click()
 

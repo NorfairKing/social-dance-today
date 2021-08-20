@@ -19,6 +19,15 @@
       
       <div .field>
         <label .label>
+          _{MsgOrganiserHomepageLabel}
+        <div .control>
+          <input .input
+            type=url
+            name="homepage"
+            value=#{mtv organiserHomepage}>
+      
+      <div .field>
+        <label .label>
           _{MsgOrganiserConsentReminderLabel}
         <div .control>
           <input .checkbox
