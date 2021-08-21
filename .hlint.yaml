@@ -23,10 +23,9 @@
 - functions:
   - name: setTitle
     within:
+      - Salsa.Party.Web.Server.Handler.Home
       - Salsa.Party.Web.Server.Handler.Admin.Panel
     message: Use setTitleI instead.
-    within:
-      - Salsa.Party.Web.Server.Handler.Home
   - name: setDescription
     within:
       - Salsa.Party.Web.Server.Handler.Admin.Panel
