@@ -64,6 +64,8 @@ externalEventToLDEvent renderUrl ExternalEvent {..} Place {..} mPosterKey =
                 LD.EventOrganizerOrganization
                   LD.Organization
                     { LD.organizationName = name,
-                      organizationUrl = Nothing
+                      organizationUrl = Nothing,
+                      organizationLogo = Nothing,
+                      organizationFounder = Nothing
                     }
         }

@@ -421,7 +421,9 @@ instance FromJSON EventOrganizer where
 -- https://schema.org/Organization
 data Organization = Organization
   { organizationName :: !Text,
-    organizationUrl :: !(Maybe Text)
+    organizationUrl :: !(Maybe Text),
+    organizationLogo :: !(Maybe Text),
+    organizationFounder :: !(Maybe Text)
   }
   deriving (Show, Eq, Generic)
 
@@ -432,15 +434,20 @@ instance FromJSON Organization where
     Organization
       <$> o .: "name"
       <*> o .:? "url"
+      <*> o .:? "logo"
+      <*> o .:? "founder"
 
 instance ToJSON Organization where
   toJSON Organization {..} =
     object $
       concat
-        [ [ "@type" .= ("Organization" :: Text),
+        [ [ "@context" .= ("https://schema.org" :: Text),
+            "@type" .= ("Organization" :: Text),
             "name" .= organizationName
           ],
-          mField "url" organizationUrl
+          mField "url" organizationUrl,
+          mField "logo" organizationLogo,
+          mField "founder" organizationFounder
         ]
 
 mField :: ToJSON a => Text -> Maybe a -> [JSON.Pair]

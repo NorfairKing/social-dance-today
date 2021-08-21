@@ -63,6 +63,8 @@ partyToLDEvent renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
               LD.EventOrganizerOrganization
                 LD.Organization
                   { LD.organizationName = organiserName,
-                    organizationUrl = Just $ renderUrl (OrganiserR organiserUuid)
+                    organizationUrl = Just $ renderUrl (OrganiserR organiserUuid),
+                    organizationLogo = Nothing,
+                    organizationFounder = Nothing
                   }
         }

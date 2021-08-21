@@ -46,7 +46,7 @@ spec =
         SitemapXml _ _ -> pure ()
         _ -> expectationFailure $ ppShow siteTestResultSitemapXml
       case siteTestResultJSONLD of
-        [] -> pure ()
+        [_] -> pure ()
         _ -> expectationFailure $ ppShow siteTestResultJSONLD
       case siteTestAcceptJSONLD of
         ErrAcceptJSON _ -> pure ()
