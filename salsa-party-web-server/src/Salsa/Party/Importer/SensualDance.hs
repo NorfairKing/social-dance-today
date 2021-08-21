@@ -13,15 +13,18 @@
 -- It only queries the parties at runtime, via javascript, using a graphql client that uses authentication.
 --
 -- This importer uses selenium to download the page and get the graphql json response from the request logs.
+--
 -- Note that the selenium server will remove old data if the disk is getting full.
+-- In that case we won't find anything using this importer.
 module Salsa.Party.Importer.SensualDance (sensualDanceImporter) where
 
 import Conduit
 import Data.Aeson as JSON
-import Data.Aeson.Encode.Pretty as JSON
 import Data.Aeson.Types as JSON
+import qualified Data.ByteString.Base64 as Base64
 import qualified Data.ByteString.Lazy as LB
 import Data.Either
+import Data.List
 import Data.Map (Map)
 import qualified Data.Map as M
 import qualified Data.Text as T
@@ -47,10 +50,9 @@ func =
     runConduit $
       yield "http://sensual.dance/"
         .| fetchHome
-        .| getResponseBodyValues
         .| importItem
 
-fetchHome :: ConduitT String GetResponseBodyResponse Import ()
+fetchHome :: ConduitT String (Item, Maybe ByteString) Import ()
 fetchHome = awaitForever $ \homeUrl -> do
   lift $ waitToFetch homeUrl
   lift $ logDebugN $ T.pack $ "Fetching: " <> homeUrl
@@ -87,74 +89,83 @@ fetchHome = awaitForever $ \homeUrl -> do
       liftIO $ threadDelay 10_000_000 -- Wait for the entire page to be loaded.
       logEntries <- getLogs "performance"
       let logValues = rights $ map decodeLogEntry logEntries
-      let interestingLogEntries = rights $ map parseInterestingLogEntry logValues
-      forM interestingLogEntries $ \InterestingLog {..} -> do
-        let arg :: JSON.Value
-            arg =
-              object
-                [ "cmd" .= ("Network.getResponseBody" :: Text),
-                  "params"
-                    .= object
-                      [ "requestId" .= interestingLogRequestId
-                      ]
-                ]
-        doSessCommand methodPost "/goog/cdp/execute" arg
+      let responseLogs = rights $ map parseResponseLog logValues
+      -- For some reason every url shows up twice.
+      -- once with a request id like F20757673B3A0F3F215394EC96C8879B, once with a request id like 2705.29.
+      -- We only want the later, so we use M.fromList to throw away the first of every duplicate.
+      let responseLogMap = M.fromList $ map (\ResponseLog {..} -> (responseLogUrl, responseLogRequestId)) responseLogs
+
+      -- First we get all graphql requests out of here to find the text-based information that we can; the items
+      let graphqlRequestMap = M.filterWithKey (\k _ -> "/graphql" `T.isSuffixOf` k) responseLogMap
+
+      items <- fmap concat $
+        forM graphqlRequestMap $ \requestId -> do
+          GetResponseBodyResponse {..} <- getResponseBodyFor requestId
+          pure $
+            if getResponseBodyResponseBase64Encoded
+              then []
+              else case JSON.eitherDecode (LB.fromStrict (TE.encodeUtf8 getResponseBodyResponseBody)) of
+                Left _ -> []
+                Right resp -> graphQLResponseItems resp
+
+      -- Next, we try to find the image for each event in the request logs as well
+      let imageRequestMap = M.filterWithKey (\k _ -> "sensualdance-images" `T.isInfixOf` k) responseLogMap
+
+      forM items $ \item -> do
+        mImage <- fmap join $
+          forM (itemImage item) $ \imageId ->
+            case find (\(k, _) -> imageId `T.isInfixOf` k) (M.toList imageRequestMap) of
+              Nothing -> pure Nothing
+              Just (_, requestId) -> do
+                GetResponseBodyResponse {..} <- getResponseBodyFor requestId
+                pure $
+                  if getResponseBodyResponseBase64Encoded
+                    then case Base64.decode (TE.encodeUtf8 getResponseBodyResponseBody) of
+                      Left _ -> Nothing
+                      Right bs -> Just bs
+                    else Nothing
+        pure (item, mImage)
 
   lift $ logDebugN "Done loading page, getting logs"
   yieldMany vals
+
+getResponseBodyFor :: Text -> WD GetResponseBodyResponse
+getResponseBodyFor requestId = do
+  let arg :: JSON.Value
+      arg =
+        object
+          [ "cmd" .= ("Network.getResponseBody" :: Text),
+            "params"
+              .= object
+                [ "requestId" .= requestId
+                ]
+          ]
+  doSessCommand methodPost "/goog/cdp/execute" arg
 
 decodeLogEntry :: WD.LogEntry -> Either String JSON.Value
 decodeLogEntry logEntry =
   let contentsLB = LB.fromStrict (TE.encodeUtf8 (logMsg logEntry))
    in JSON.eitherDecode contentsLB
 
-parseInterestingLogEntry :: JSON.Value -> Either String InterestingLog
-parseInterestingLogEntry = JSON.parseEither parseJSON
+parseResponseLog :: JSON.Value -> Either String ResponseLog
+parseResponseLog = JSON.parseEither parseJSON
 
-data InterestingLog = InterestingLog
-  { interestingLogType :: !Text,
-    interestingLogRequestId :: !Text,
-    interestingLogScheme :: !String,
-    interestingLogPath :: !String,
-    interestingLogMethod :: !String,
-    interestingLogAuthority :: !String,
-    interestingLogAuthorization :: !Text,
-    interestingLogContentType :: !Text,
-    interestingLogAccept :: !Text,
-    interestingLogAcceptEncoding :: !Text,
-    interestingLogAcceptLanguage :: !Text,
-    interestingLogAmzSecurityToken :: !Text,
-    interestingLogAmzDate :: !Text,
-    interestingLogAmzUserAgent :: !Text,
-    interestingLogOrigin :: !Text,
-    interestingLogReferer :: !Text,
-    interestingLogUserAgent :: !Text
+data ResponseLog = ResponseLog
+  { responseLogRequestId :: !Text,
+    responseLogUrl :: !Text
   }
   deriving (Show)
 
-instance FromJSON InterestingLog where
-  parseJSON = withObject "Outer" $ \o -> do
+instance FromJSON ResponseLog where
+  parseJSON = withObject "ResponseLog" $ \o -> do
     message <- o .: "message"
-    interestingLogType <- message .: "method"
+    method <- message .: "method"
+    guard $ method == ("Network.responseReceived" :: Text)
     params <- message .: "params"
-    interestingLogRequestId <- params .: "requestId"
-    headers <- params .: "headers"
-    interestingLogScheme <- headers .: ":scheme"
-    interestingLogPath <- headers .: ":path"
-    interestingLogMethod <- headers .: ":method"
-    interestingLogAuthority <- headers .: ":authority"
-    interestingLogAuthorization <- headers .: "authorization"
-    interestingLogContentType <- headers .: "content-type"
-    interestingLogAccept <- headers .: "accept"
-    interestingLogAcceptEncoding <- headers .: "accept-encoding"
-    interestingLogAcceptLanguage <- headers .: "accept-language"
-    interestingLogAmzSecurityToken <- headers .: "x-amz-security-token"
-    interestingLogAmzDate <- headers .: "x-amz-date"
-    interestingLogAmzUserAgent <- headers .: "x-amz-user-agent"
-    interestingLogOrigin <- headers .: "origin"
-    interestingLogReferer <- headers .: "referer"
-    interestingLogUserAgent <- headers .: "user-agent"
-    pure InterestingLog {..}
+    responseLogRequestId <- params .: "requestId"
+    response <- params .: "response"
+    responseLogUrl <- response .: "url"
+    pure ResponseLog {..}
 
 data GetResponseBodyResponse = GetResponseBodyResponse
   { getResponseBodyResponseBody :: !Text,
@@ -167,23 +178,6 @@ instance FromJSON GetResponseBodyResponse where
     GetResponseBodyResponse
       <$> o .: "body"
       <*> o .: "base64Encoded"
-
-getResponseBodyValues :: ConduitT GetResponseBodyResponse Item Import ()
-getResponseBodyValues = awaitForever $ \GetResponseBodyResponse {..} -> do
-  if getResponseBodyResponseBase64Encoded
-    then logDebugN "Found a base64 encoded response body, ignoring it."
-    else case JSON.eitherDecode (LB.fromStrict (TE.encodeUtf8 getResponseBodyResponseBody)) of
-      Left err -> logDebugN $ T.pack $ "Failed to decode: " <> err
-      Right value -> do
-        logDebugN $
-          T.pack $
-            unlines
-              [ "Found this json value in the response body:",
-                T.unpack $ TE.decodeUtf8 (LB.toStrict (JSON.encodePretty value))
-              ]
-        case JSON.parseEither parseJSON value of
-          Left err -> logDebugN $ T.pack $ "Failed to decode graphql response: " <> err
-          Right resp -> yieldMany $ graphQLResponseItems resp
 
 data GraphQLResponse = GraphQLResponse
   { graphQLResponseItems :: [Item]
@@ -204,7 +198,8 @@ data Item = Item
     itemRegion :: !Text,
     itemDescription :: !(Maybe Text),
     itemWebsite :: !(Maybe Text),
-    itemDateFrom :: !ZonedTime
+    itemDateFrom :: !ZonedTime,
+    itemImage :: !(Maybe Text)
   }
   deriving (Show)
 
@@ -228,10 +223,11 @@ instance FromJSON Item where
         fmap T.unlines $ forM blocks $ withObject "Block" $ \b -> b .: "text"
     itemWebsite <- o .:? "website"
     itemDateFrom <- o .: "dateFrom"
+    itemImage <- o .:? "image"
     pure Item {..}
 
-importItem :: ConduitT Item void Import ()
-importItem = awaitForever $ \Item {..} -> do
+importItem :: ConduitT (Item, Maybe ByteString) void Import ()
+importItem = awaitForever $ \(Item {..}, mImageBlob) -> do
   now <- liftIO getCurrentTime
   let today = utctDay now
 
@@ -265,7 +261,24 @@ importItem = awaitForever $ \Item {..} -> do
               externalEventImporter <- asks importEnvId
               let externalEventOrigin = "https://sensual.dance/event/id=" <> itemId
 
-              lift $ importExternalEvent ExternalEvent {..}
+              lift $
+                importExternalEventAnd ExternalEvent {..} $ \externalEventId -> do
+                  forM_ mImageBlob $ \imageBlob -> do
+                    mImageId <- tryToImportImageBlob "image/jpeg" imageBlob
+                    forM_ mImageId $ \imageId -> do
+                      importDB $
+                        upsertBy
+                          (UniqueExternalEventPoster externalEventId)
+                          ( ExternalEventPoster
+                              { externalEventPosterExternalEvent = externalEventId,
+                                externalEventPosterImage = imageId,
+                                externalEventPosterCreated = now,
+                                externalEventPosterModified = Nothing
+                              }
+                          )
+                          [ ExternalEventPosterImage =. imageId,
+                            ExternalEventPosterModified =. Just now
+                          ]
 
 regionMap :: Map Text Text
 regionMap =

@@ -353,24 +353,28 @@ tryToImportImage uri = do
             Left _ -> pure Nothing
             Right contentType -> do
               let imageBlob = LB.toStrict $ responseBody response
-              case posterCropImage contentType imageBlob of
-                Left _ -> pure Nothing -- TODO log error
-                Right (convertedImageType, convertedImageBlob) -> do
-                  let casKey = mkCASKey convertedImageType convertedImageBlob
-                  now <- liftIO getCurrentTime
-                  Entity imageId _ <-
-                    importDB $
-                      upsertBy
-                        (UniqueImageKey casKey)
-                        ( Image
-                            { imageKey = casKey,
-                              imageTyp = convertedImageType,
-                              imageBlob = convertedImageBlob,
-                              imageCreated = now
-                            }
-                        )
-                        [] -- No need to update anything, the casKey makes the image unique.
-                  pure $ Just imageId
+              tryToImportImageBlob contentType imageBlob
+
+tryToImportImageBlob :: Text -> ByteString -> Import (Maybe ImageId)
+tryToImportImageBlob contentType imageBlob =
+  case posterCropImage contentType imageBlob of
+    Left _ -> pure Nothing -- TODO log error
+    Right (convertedImageType, convertedImageBlob) -> do
+      let casKey = mkCASKey convertedImageType convertedImageBlob
+      now <- liftIO getCurrentTime
+      Entity imageId _ <-
+        importDB $
+          upsertBy
+            (UniqueImageKey casKey)
+            ( Image
+                { imageKey = casKey,
+                  imageTyp = convertedImageType,
+                  imageBlob = convertedImageBlob,
+                  imageCreated = now
+                }
+            )
+            [] -- No need to update anything, the casKey makes the image unique.
+      pure $ Just imageId
 
 logRequestErrors ::
   ConduitT
