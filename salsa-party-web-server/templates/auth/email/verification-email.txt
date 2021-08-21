@@ -1,4 +1,4 @@
-#{messageRender MsgVerificationEmailTitle}
+#{messageRender $ MsgVerificationEmailTitle siteTitle}
 
 #{messageRender MsgVerificationEmailTextCTA}
 
@@ -6,6 +6,6 @@
 
 #{messageRender MsgVerificationEmailInvitation}
 
-#{messageRender MsgVerificationEmailExplanation}
+#{messageRender $ MsgVerificationEmailExplanation siteTitle}
 
 @{HomeR}

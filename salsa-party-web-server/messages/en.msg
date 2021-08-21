@@ -1,9 +1,8 @@
 # Logo
-SalsaPartiesLogo: Salsa Parties Logo
+Logo title@Text: #{title} Logo
 
 # Home Page
-HomeTitle: Salsa Parties Today
-HomeDescription: Where can I dance?
+HomeDescription title@Text: #{title}: Where can I dance? Find social dance parties today, whether you are looking for Salsa, Bachata, Kizomba, Mambo, Cha-Cha-Cha, Tango, Zouk, Swing, Lindy Hop, or another dance, you can find it here.
 HomeSubtitleQuestion: Where can I dance?
 HomeFormLocation: My location
 HomeFormLocationUnable: Unable to retrieve your location.
@@ -89,8 +88,8 @@ PosterAltTitle title@Text day@String: Poster for #{title} on #{day}
 PosterAltSchedule title@Text recurrenceDescription@Text organiser@Text: Poster for #{title}, #{recurrenceDescription} by #{organiser}
 
 # Registration
-RegistrationTitle: Salsa Parties Today: Registration
-RegistrationDescription: Register an account at Salsa Parties Today
+RegistrationTitle: Registration
+RegistrationDescription: Register an account
 RegistrationEmailAddressLabel: Email Address
 RegistrationPassphraseLabel: Passphrase
 RegistrationConfirmPassphraseLabel: Confirm Passphrase
@@ -99,21 +98,21 @@ RegistrationLogInButton: Log in
 RegistrationErrorAccountAlreadyExists: An account with this email address already exists.
 
 # Login
-LoginTitle: Salsa Parties Today: Login
-LoginDescription: Log into your account at Salsa Parties Today
+LoginTitle: Login
+LoginDescription: Log into your account
 LoginEmailAddressLabel: Email Address
 LoginPassphraseLabel: Passphrase
 LoginLogInButton: Log in
 LoginSignUpButton: Sign up
 
 # Verification Email
-VerificationEmailSubject: Salsa Party Today Email Verification
-VerificationEmailTitle: Salsa Party Today Registration
+VerificationEmailSubject title@Text: #{title} Email Verification
+VerificationEmailTitle title@Text: #{title} Registration
 VerificationEmailTextCTA: Please verify your email address by following this link:
 VerificationEmailHtmlCTA: Please verify your email address by clicking the link below.
 VerificationEmailButton: Verify Email
 VerificationEmailInvitation: We hope to see you soon.
-VerificationEmailExplanation: You got this email because you tried to register at Salsa Parties Today
+VerificationEmailExplanation title@Text: You got this email because you tried to register at #{title}
 
 VerificationEmailFailure: Failed to send verification email.
 VerificationErrorAlreadyVerified: This account is already verified.

@@ -228,7 +228,7 @@ sendVerificationEmail userEmailAddress verificationKey = do
         urlRender <- getUrlRenderParams
         messageRender <- getMessageRender
 
-        let subject = SES.content $ messageRender MsgVerificationEmailSubject
+        let subject = SES.content $ messageRender $ MsgVerificationEmailSubject siteTitle
 
         let textBody = SES.content $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/auth/email/verification-email.txt") urlRender
 

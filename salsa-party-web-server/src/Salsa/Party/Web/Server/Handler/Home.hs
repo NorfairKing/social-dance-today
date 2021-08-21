@@ -16,8 +16,8 @@ getHomeR :: Handler Html
 getHomeR = do
   messageRender <- getMessageRender
   withNavBar $ do
-    setTitleI MsgHomeTitle
-    setDescriptionI MsgHomeDescription
+    setTitle $ toHtml siteTitle
+    setDescriptionI $ MsgHomeDescription siteTitle
     renderUrl <- getUrlRender
     toWidgetHead $ toJSONLDData $ socialDanceWebSite renderUrl
     toWidgetHead $ toJSONLDData $ socialDanceOrganisation renderUrl

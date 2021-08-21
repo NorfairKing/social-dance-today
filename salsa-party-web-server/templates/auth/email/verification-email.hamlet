@@ -3,7 +3,7 @@
   <body>
     <div
       class="container-fluid">
-      <h1> _{MsgVerificationEmailTitle}
+      <h1> _{MsgVerificationEmailTitle siteTitle}
       <p> _{MsgVerificationEmailHtmlCTA}
       <p>
         <a
@@ -13,5 +13,5 @@
       <p> _{MsgVerificationEmailInvitation}
       <p>
         <a href=@{HomeR}>
-          _{MsgVerificationEmailExplanation}
+          _{MsgVerificationEmailExplanation siteTitle}
 

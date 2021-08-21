@@ -11,3 +11,6 @@ import Salsa.Party.Web.Server.Foundation.App
 import Yesod
 
 mkMessage "App" "messages" "en"
+
+siteTitle :: Text
+siteTitle = "Social Dance Today"

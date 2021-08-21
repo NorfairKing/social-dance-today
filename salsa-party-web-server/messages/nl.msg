@@ -2,11 +2,10 @@
 # assistant.cssyd@gmail.com
 
 # Logo
-SalsaPartiesLogo: Salsa Parties Logo
+Logo title@Text: #{title} Logo
 
 # Home Page
-HomeTitle: Salsa Parties vandaag
-HomeDescription: Waar kan ik gaan dansen?
+HomeDescription title@Text: #{title}: Waar kan ik gaan dansen? Vind vandaag sociale dans feesten. Ongeacht of u zoekt naar Salsa, Bachata, Kizomba, Mambo, Cha-Cha-Cha, Tango, Zouk, Swing, Lindy Hop, of nog een andere dans, u vindt het hier.
 HomeSubtitleQuestion: Waar kan ik gaan dansen?
 HomeFormLocation: Mijn locatie
 HomeFormLocationUnable: Localiseren mislukt..
@@ -93,8 +92,8 @@ PosterAltTitle title@Text day@String: Poster voor #{title} op #{day}
 PosterAltSchedule title@Text recurrenceDescription@Text organiser@Text: Poster voor #{title}, #{recurrenceDescription} door #{organiser}
 
 # Registration
-RegistrationTitle: Salsa Parties Today: Registreren
-RegistrationDescription: Registreer een account bij Salsa Parties Today
+RegistrationTitle: Registreren
+RegistrationDescription: Registreer een account
 RegistrationEmailAddressLabel: E-mailadres
 RegistrationPassphraseLabel: Wachtwoord
 RegistrationConfirmPassphraseLabel: Bevestig wachtwoord
@@ -103,21 +102,21 @@ RegistrationLogInButton: Aanmelden
 RegistrationErrorAccountAlreadyExists: Een account met dit e-mailadres is reeds in gebruik.
 
 # Login
-LoginTitle: Salsa Parties Today: Aanmelden
-LoginDescription: Meld u aan bij Salsa Parties Today
+LoginTitle: Aanmelden
+LoginDescription: Meld u aan
 LoginEmailAddressLabel: E-mailadres
 LoginPassphraseLabel: Wachtwoord
 LoginLogInButton: Aanmelden
 LoginSignUpButton: Registreer
 
 # Verification Email
-VerificationEmailSubject: Salsa Party Today e-mailverificatie
-VerificationEmailTitle: Salsa Party Today registratie
+VerificationEmailSubject title@Text: #{title} e-mailverificatie
+VerificationEmailTitle title@Text: #{title} registratie
 VerificationEmailTextCTA: Om uw e-mailadres te verifiëren gelieve op de volgende link te klikken:
 VerificationEmailHtmlCTA: Gelieve uw e-mailadres te verifiëren door op de volgende link te klikken.
 VerificationEmailButton: E-mail verifiëren
 VerificationEmailInvitation: Hopelijk tot ziens.
-VerificationEmailExplanation: U krijgt deze e-mail omdat u probeerde te registreren bij Salsa Parties Today
+VerificationEmailExplanation title@Text: U krijgt deze e-mail omdat u probeerde te registreren bij #{title}
 
 VerificationEmailFailure: Kan verificatie-e-mail niet verzenden.
 VerificationErrorAlreadyVerified: Dit account is reeds geverifieerd.

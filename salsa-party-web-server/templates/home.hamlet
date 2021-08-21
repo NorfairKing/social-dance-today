@@ -1,7 +1,7 @@
 <section .section .is-large>
   <div .container>
     <figure .image .container .is-centered .is-128x128 .mb-6>
-      <img src=@{StaticR logo_svg} alt="_{MsgSalsaPartiesLogo}">
+      <img src=@{StaticR logo_svg} alt="_{MsgLogo siteTitle}">
     <h1 .title .is-3 .has-text-centered .mt-6>
       _{MsgHomeSubtitleQuestion}
     <div .columns .is-centered>

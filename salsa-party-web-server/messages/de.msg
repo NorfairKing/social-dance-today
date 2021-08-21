@@ -2,11 +2,10 @@
 # s.ostermeier88@gmail.com
 
 # Logo
-SalsaPartiesLogo: Salsa Parties Logo
+Logo title@Text: #{title} Logo
 
 # Home Page
-HomeTitle: Salsa Parties Heute
-HomeDescription: Wo kann ich tanzen gehen?
+HomeDescription title@Text: #{title}: Wo kann ich tanzen gehen? Finde heute Sozial Dance Partys. Egal ob du suchst nach Salsa, Bachata, Kizomba, Mambo, Cha-Cha-Cha, Tango, Zouk, Swing, Lindy Hop oder noch ein andere Tanz, Sie finden sie hier. 
 HomeSubtitleQuestion: Wo kann ich tanzen gehen?
 HomeFormLocation: Mein Standort
 HomeFormLocationUnable: Lokalisierung fehlgeschlagen.
@@ -95,8 +94,8 @@ PosterAltTitle title@Text day@String: Bild für #{title} am #{day}
 PosterAltSchedule title@Text recurrenceDescription@Text organiser@Text: Bild für #{title}, #{recurrenceDescription} durch #{organiser}
 
 # Registration
-RegistrationTitle: Salsa Parties Heute: Registrierung
-RegistrationDescription: Erstellen Sie einen Account auf Salsa Parties Heute 
+RegistrationTitle: Registrierung
+RegistrationDescription: Erstellen Sie einen Account
 RegistrationEmailAddressLabel: Email-Adresse
 RegistrationPassphraseLabel: Passwort-Satz
 RegistrationConfirmPassphraseLabel: Passwort-Satz bestätigen
@@ -105,21 +104,21 @@ RegistrationLogInButton:  Anmelden
 RegistrationErrorAccountAlreadyExists: Es besteht bereits ein Account mit diesem Benutzernamen
 
 # Anmelden
-LoginTitle:  Salsa Parties Today: Anmelden
-LoginDescription: Melde dich an bei Salsa Parties Heute
+LoginTitle: Anmelden
+LoginDescription: Melde dich an
 LoginEmailAddressLabel: Email-Adresse
 LoginPassphraseLabel: Passwort-Satz
 LoginLogInButton: Anmelden
 LoginSignUpButton: Registrieren
 
 # Bestätigungs-Email
-VerificationEmailSubject: Salsa Party Heute Email bestätigen
-VerificationEmailTitle: Salsa Party Heute Registrierung
+VerificationEmailSubject title@Text: #{title} Email bestätigung
+VerificationEmailTitle title@Text: #{title} Registrierung
 VerificationEmailTextCTA: Bitte bestätigen Sie Ihre Email-Adresse, indem sie folgendem Link folgen:
 VerificationEmailHtmlCTA: Bitte bestätigen Sie Ihre Email-Adresse, indem Sie den unterstehenden Link anklicken.
 VerificationEmailButton: Bestätigen Sie Ihre Email-Adresse.
 VerificationEmailInvitation: Wir hoffen, Sie bald zu treffen.
-VerificationEmailExplanation: Sie haben dieses Mail erhalten, weil Sie versucht haben, sich bei Salsa Parties Heute zu registrieren. 
+VerificationEmailExplanation title@Text: Sie haben dieses Mail erhalten, weil Sie versucht haben, sich bei #{title} zu registrieren. 
 
 VerificationEmailFailure:  Senden des Bestätigungs-Emails fehlgeschlagen 
 VerificationErrorAlreadyVerified:  Dieses Konto ist bereits bestätigt.
