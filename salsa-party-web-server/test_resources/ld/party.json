@@ -1,7 +1,7 @@
 {
     "@context": "https://schema.org",
     "image": [
-        "http://localhost:8000/image/UTpq9WwrRgBrNo9GusMO2QYGN+IZCK4E+IsnbgCVmvY="
+        "https://social-dance.today/image/UTpq9WwrRgBrNo9GusMO2QYGN+IZCK4E+IsnbgCVmvY="
     ],
     "location": {
         "address": "Spitalgasse 4, 3011 Bern Bern",
@@ -19,7 +19,8 @@
     "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
     "description": "aeou\r\naoseuntha\r\noeu",
     "organizer": {
-        "url": "http://localhost:8000/organiser/0000007b-0000-01c8-0000-031500018af8",
+        "@context": "https://schema.org",
+        "url": "https://social-dance.today/organiser/0000007b-0000-01c8-0000-031500018af8",
         "name": "CS SYD",
         "@type": "Organization"
     }

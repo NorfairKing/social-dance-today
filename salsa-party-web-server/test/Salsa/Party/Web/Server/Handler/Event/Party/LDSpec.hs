@@ -51,7 +51,7 @@ spec = do
   appSpec $
     it "outputs the same JSON LD as before for this party" $ \app ->
       let urlRender :: Route App -> Text
-          urlRender route = yesodRender app "http://localhost:8000" route []
+          urlRender route = yesodRender app "https://social-dance.today" route []
        in pureGoldenJSONValueFile
             "test_resources/ld/party.json"
             ( partyToLDEvent

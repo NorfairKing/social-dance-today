@@ -150,9 +150,9 @@ spec = do
     let secret = Typed.UUID $ UUID.fromWords 10 20 30 40
     describe "organiserReminderTextContent" $
       it "looks the same as last time" $ \app ->
-        let urlRender = yesodRender app "http://localhost:8000"
+        let urlRender = yesodRender app "https://social-dance.today"
          in pureGoldenTextFile "test_resources/email/reminder.txt" $ organiserReminderTextContent urlRender secret
     describe "organiserReminderHtmlContent" $
       it "looks the same as last time" $ \app ->
-        let urlRender = yesodRender app "http://localhost:8000"
+        let urlRender = yesodRender app "https://social-dance.today"
          in pureGoldenTextFile "test_resources/email/reminder.html" $ organiserReminderHtmlContent urlRender secret

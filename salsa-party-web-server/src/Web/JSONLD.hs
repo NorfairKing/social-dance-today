@@ -450,6 +450,69 @@ instance ToJSON Organization where
           mField "founder" organizationFounder
         ]
 
+data WebSite = WebSite
+  { webSiteUrl :: !(Maybe Text),
+    webSiteName :: !(Maybe Text),
+    webSitePotentialActions :: ![SearchAction]
+  }
+  deriving (Show, Eq, Generic)
+
+instance ToJSON WebSite where
+  toJSON WebSite {..} =
+    object $
+      concat
+        [ [ "@context" .= ("https://schema.org" :: Text),
+            "@type" .= ("WebSite" :: Text)
+          ],
+          mField "url" webSiteUrl,
+          mField "name" webSiteName,
+          lField "potentialAction" webSitePotentialActions
+        ]
+
+instance FromJSON WebSite where
+  parseJSON = withObject "WebSite" $ \o ->
+    WebSite
+      <$> o .:? "url"
+      <*> o .:? "name"
+      <*> o .:? "potentialAction" .!= []
+
+data SearchAction = SearchAction
+  { searchActionTarget :: EntryPoint,
+    searchActionQueryInput :: Text
+  }
+  deriving (Show, Eq, Generic)
+
+instance ToJSON SearchAction where
+  toJSON SearchAction {..} =
+    object
+      [ "@type" .= ("SearchAction" :: Text),
+        "query-input" .= searchActionQueryInput,
+        "target" .= searchActionTarget
+      ]
+
+instance FromJSON SearchAction where
+  parseJSON = withObject "SearchAction" $ \o ->
+    SearchAction
+      <$> o .: "target"
+      <*> o .: "query-input"
+
+data EntryPoint = EntryPoint
+  { entryPointUrlTemplate :: Text
+  }
+  deriving (Show, Eq, Generic)
+
+instance ToJSON EntryPoint where
+  toJSON EntryPoint {..} =
+    object
+      [ "@type" .= ("EntryPoint" :: Text),
+        "urlTemplate" .= entryPointUrlTemplate
+      ]
+
+instance FromJSON EntryPoint where
+  parseJSON = withObject "EntryPoint" $ \o ->
+    EntryPoint
+      <$> o .: "urlTemplate"
+
 mField :: ToJSON a => Text -> Maybe a -> [JSON.Pair]
 mField k mv = [k .= v | v <- maybeToList mv]
 

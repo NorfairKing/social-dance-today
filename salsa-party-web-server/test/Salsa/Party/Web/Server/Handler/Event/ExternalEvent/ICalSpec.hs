@@ -73,7 +73,7 @@ spec = do
                 }
 
             urlRender :: Route App -> Text
-            urlRender route = yesodRender app "http://localhost:8000" route []
+            urlRender route = yesodRender app "https://social-dance.today" route []
 
             cal = externalEventCalendar urlRender exampleExternalEvent examplePlace
          in pureGoldenByteStringFile "test_resources/ical/external-event.ics" $ LB.toStrict $ ICal.printICalendar def cal

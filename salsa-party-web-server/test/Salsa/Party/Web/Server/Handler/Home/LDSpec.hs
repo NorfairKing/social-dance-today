@@ -10,10 +10,16 @@ import Yesod.Core
 
 spec :: Spec
 spec = do
-  appSpec $
-    it "outputs the same JSON LD as before for this external event" $ \app ->
+  appSpec $ do
+    it "outputs the same website JSON LD as before" $ \app ->
       let urlRender :: Route App -> Text
-          urlRender route = yesodRender app "http://localhost:8000" route []
+          urlRender route = yesodRender app "https://social-dance.today" route []
+       in pureGoldenJSONValueFile
+            "test_resources/ld/website.json"
+            $ socialDanceWebSite urlRender
+    it "outputs the same organisation JSON LD as before" $ \app ->
+      let urlRender :: Route App -> Text
+          urlRender route = yesodRender app "https://social-dance.today" route []
        in pureGoldenJSONValueFile
             "test_resources/ld/organisation.json"
             $ socialDanceOrganisation urlRender

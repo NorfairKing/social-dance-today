@@ -1,8 +1,8 @@
 {
     "@context": "https://schema.org",
-    "url": "http://localhost:8000/",
+    "url": "https://social-dance.today/",
     "founder": "Tom Sydney Kerckhove",
     "name": "Social Dance Today",
     "@type": "Organization",
-    "logo": "http://localhost:8000/static/res/logo.svg?etag=eMMlA8WZ"
+    "logo": "https://social-dance.today/static/res/logo.svg?etag=eMMlA8WZ"
 }

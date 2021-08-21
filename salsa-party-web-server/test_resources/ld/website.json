@@ -1,0 +1,16 @@
+{
+    "@context": "https://schema.org",
+    "url": "https://social-dance.today/",
+    "name": "Social Dance Today",
+    "@type": "WebSite",
+    "potentialAction": [
+        {
+            "@type": "SearchAction",
+            "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://social-dance.today/{search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+        }
+    ]
+}

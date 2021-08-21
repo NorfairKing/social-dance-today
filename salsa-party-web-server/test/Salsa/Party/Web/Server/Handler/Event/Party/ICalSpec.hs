@@ -71,7 +71,7 @@ spec = do
                 }
 
             urlRender :: Route App -> Text
-            urlRender route = yesodRender app "http://localhost:8000" route []
+            urlRender route = yesodRender app "https://social-dance.today" route []
 
             cal = partyCalendar urlRender exampleParty examplePlace
          in pureGoldenByteStringFile "test_resources/ical/party.ics" $ LB.toStrict $ ICal.printICalendar def cal
