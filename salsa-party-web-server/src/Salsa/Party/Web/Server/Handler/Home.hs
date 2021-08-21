@@ -57,5 +57,17 @@ socialDanceOrganisation renderUrl =
     { LD.organizationName = "Social Dance Today",
       LD.organizationUrl = Just $ renderUrl HomeR,
       LD.organizationLogo = Just $ renderUrl (StaticR logo_svg),
-      LD.organizationFounder = Just "Tom Sydney Kerckhove"
+      LD.organizationFounder =
+        Just
+          Person
+            { personName = Just "Tom Sydney Kerckhove",
+              personUrl = Just "https://cs-syd.eu",
+              personJobTitle = Just "Professional Weirdo",
+              personAffiliation = Just "CS SYD",
+              personBirthDate = Just "1994-07-25",
+              personAlumniOf = Just "ETH Zuerich",
+              personBrand = Just "CS SYD",
+              personGender = Just "male",
+              personNationality = Just "Belgian"
+            }
     }

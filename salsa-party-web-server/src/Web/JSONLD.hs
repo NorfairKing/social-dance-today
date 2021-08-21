@@ -423,7 +423,7 @@ data Organization = Organization
   { organizationName :: !Text,
     organizationUrl :: !(Maybe Text),
     organizationLogo :: !(Maybe Text),
-    organizationFounder :: !(Maybe Text)
+    organizationFounder :: !(Maybe Person)
   }
   deriving (Show, Eq, Generic)
 
@@ -449,6 +449,52 @@ instance ToJSON Organization where
           mField "logo" organizationLogo,
           mField "founder" organizationFounder
         ]
+
+data Person = Person
+  { personName :: !(Maybe Text),
+    personUrl :: !(Maybe Text),
+    personJobTitle :: !(Maybe Text),
+    personAffiliation :: !(Maybe Text),
+    personBirthDate :: !(Maybe Text),
+    personAlumniOf :: !(Maybe Text),
+    personBrand :: !(Maybe Text),
+    personGender :: !(Maybe Text),
+    personNationality :: !(Maybe Text)
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity Person
+
+instance ToJSON Person where
+  toJSON Person {..} =
+    object $
+      concat
+        [ [ "@context" .= ("https://schema.org" :: Text),
+            "@type" .= ("Person" :: Text)
+          ],
+          mField "name" personName,
+          mField "url" personUrl,
+          mField "jobTitle" personJobTitle,
+          mField "affiliation" personAffiliation,
+          mField "birthDate" personBirthDate,
+          mField "alumniOf" personAlumniOf,
+          mField "brand" personBrand,
+          mField "gender" personGender,
+          mField "nationality" personNationality
+        ]
+
+instance FromJSON Person where
+  parseJSON = withObject "Person" $ \o ->
+    Person
+      <$> o .:? "name"
+      <*> o .:? "url"
+      <*> o .:? "jobTitle"
+      <*> o .:? "affiliation"
+      <*> o .:? "birthDate"
+      <*> o .:? "alumniOf"
+      <*> o .:? "brand"
+      <*> o .:? "gender"
+      <*> o .:? "nationality"
 
 data WebSite = WebSite
   { webSiteUrl :: !(Maybe Text),
