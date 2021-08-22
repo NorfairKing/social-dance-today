@@ -11,6 +11,9 @@ $doctype 5
     <link rel="icon" href=@{FaviconR} type="image/x-icon">
 
     $maybe route <- mCurrentRoute
+      <link rel="canonical" href=@{route}>
+    
+    $maybe route <- mCurrentRoute
       $forall lang <- supportedLanguages
         <link rel="alternate" hreflang=#{supportedLanguageAbbreviation lang} href="@{route}?#{languageQueryParameter}=#{supportedLanguageAbbreviation lang}">
       <link rel="alternate" hreflang=x-default href=@{route}>
