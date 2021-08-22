@@ -38,7 +38,7 @@
 module Salsa.Party.Importer.DancefloorfinderCom (dancefloorfinderComImporter) where
 
 import Conduit
-import Data.Aeson
+import Data.Aeson as JSON
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
 import qualified Data.Text as T
@@ -90,7 +90,13 @@ instance FromJSON Event where
       <*> o .:? "country"
       <*> o .:? "dances" .!= []
       <*> o .:? "start_at"
-      <*> o .:? "end_at"
+      <*> ( do
+              ms <- o .:? "end_at"
+              fmap join $
+                forM ms $ \s -> case s of
+                  "" -> pure Nothing
+                  _ -> parseJSON (JSON.String s)
+          )
       <*> o .:? "link"
       <*> o .:? "price"
       <*> o .:? "organization"
