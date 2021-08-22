@@ -76,11 +76,6 @@ data Coordinates = Coordinates
 
 instance Validity Coordinates
 
--- This could potentially be dangerous if a type is read than written
-instance PathPiece (Fixed a) where
-  fromPathPiece = fmap MkFixed . fromPathPiece
-  toPathPiece (MkFixed i) = toPathPiece i
-
 -- See #https://en.wikipedia.org/wiki/Haversine_formula#Formulation
 distanceTo ::
   Coordinates ->
