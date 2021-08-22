@@ -7,12 +7,12 @@ module Google.Geocoding where
 import Control.Exception
 import Control.Monad.Logger
 import Data.Aeson as JSON
-import Data.Fixed
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
 import GHC.Generics (Generic)
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.Retry as HTTP
+import Salsa.Party.DB.Coordinates
 
 -- From https://nominatim.org/release-docs/develop/api/Search/#search-queries
 --
@@ -32,8 +32,8 @@ instance FromJSON GeocodingResponse where
   parseJSON = withObject "GeocodingResponse" $ \o -> GeocodingResponse <$> o .:? "results" .!= []
 
 data Address = Address
-  { addressLat :: !Nano,
-    addressLon :: !Nano
+  { addressLat :: !Latitude,
+    addressLon :: !Longitude
   }
   deriving (Show, Eq, Generic)
 

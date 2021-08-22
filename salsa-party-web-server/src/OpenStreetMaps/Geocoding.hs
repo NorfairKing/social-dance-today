@@ -9,7 +9,6 @@ import Control.Exception
 import Control.Monad.Logger
 import Data.Aeson as JSON
 import Data.Aeson.Types as JSON
-import Data.Fixed
 import Data.List
 import Data.Ord
 import Data.Text (Text)
@@ -17,6 +16,7 @@ import qualified Data.Text.Encoding as TE
 import GHC.Generics (Generic)
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.Retry as HTTP
+import Salsa.Party.DB.Coordinates
 import Text.Read
 
 -- From https://nominatim.org/release-docs/develop/api/Search/#search-queries
@@ -36,8 +36,8 @@ instance FromJSON GeocodingResponse where
   parseJSON = fmap GeocodingResponse . parseJSON
 
 data Place = Place
-  { placeLat :: !Nano,
-    placeLon :: !Nano,
+  { placeLat :: !Latitude,
+    placeLon :: !Longitude,
     placeImportance :: !Double,
     placeRank :: !Double,
     placeDisplayName :: !Text

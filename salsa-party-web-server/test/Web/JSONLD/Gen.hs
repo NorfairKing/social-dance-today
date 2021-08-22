@@ -6,6 +6,7 @@ import Data.GenValidity
 import Data.GenValidity.Text ()
 import Data.GenValidity.Time ()
 import Data.Time
+import Salsa.Party.Web.Server.Gen ()
 import Test.QuickCheck
 import Web.JSONLD
 

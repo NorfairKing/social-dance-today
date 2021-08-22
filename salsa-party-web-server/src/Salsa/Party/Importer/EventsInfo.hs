@@ -29,7 +29,6 @@ module Salsa.Party.Importer.EventsInfo (eventsInfoImporter) where
 import Conduit
 import Data.Aeson as JSON
 import qualified Data.Conduit.Combinators as C
-import Data.Fixed
 import Data.Maybe
 import Data.Scientific
 import qualified Data.Text as T
@@ -155,8 +154,8 @@ instance FromJSON EventVenue where
 data VenueLocation = VenueLocation
   { venueLocationCity :: !Text,
     venueLocationStreet :: !(Maybe Text),
-    venueLocationLat :: !Nano,
-    venueLocationLon :: !Nano
+    venueLocationLat :: !Latitude,
+    venueLocationLon :: !Longitude
   }
   deriving (Show, Eq)
 
@@ -164,10 +163,8 @@ instance FromJSON VenueLocation where
   parseJSON = withObject "VenueLocation" $ \o -> do
     venueLocationCity <- o .: "city"
     venueLocationStreet <- o .:? "street"
-    latLonList <- o .: "latlng"
-    case latLonList of
-      [venueLocationLat, venueLocationLon] -> pure VenueLocation {..}
-      _ -> fail $ "Not exactly two coordinates: " <> show latLonList
+    (venueLocationLat, venueLocationLon) <- o .: "latlng"
+    pure VenueLocation {..}
 
 data EventImage = EventImage
   { eventImageId :: !Text,

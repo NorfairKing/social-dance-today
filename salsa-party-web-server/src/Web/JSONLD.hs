@@ -9,7 +9,6 @@ module Web.JSONLD where
 import Control.Applicative
 import Data.Aeson as JSON
 import Data.Aeson.Types as JSON
-import Data.Fixed
 import Data.Function
 import Data.Maybe
 import Data.Monoid
@@ -21,6 +20,7 @@ import Data.Validity
 import Data.Validity.Text ()
 import Data.Validity.Time ()
 import GHC.Generics (Generic)
+import Salsa.Party.DB.Coordinates
 import Text.Read
 
 -- Google: https://developers.google.com/search/docs/data-types/event#structured-data-type-definitions
@@ -194,8 +194,8 @@ instance ToJSON PlaceGeo where
     PlaceGeoCoordinates geoCoordinates -> toJSON geoCoordinates
 
 data GeoCoordinates = GeoCoordinates
-  { geoCoordinatesLatitude :: !Nano,
-    geoCoordinatesLongitude :: !Nano
+  { geoCoordinatesLatitude :: !Latitude,
+    geoCoordinatesLongitude :: !Longitude
   }
   deriving (Show, Eq, Generic)
 

@@ -24,7 +24,6 @@ module Salsa.Party.DB
 where
 
 import Data.ByteString (ByteString)
-import Data.Fixed
 import Data.Password.Bcrypt
 import Data.Text (Text)
 import Data.Time
@@ -125,8 +124,8 @@ OrganiserReminder sql=organiser_reminder
 
 Place sql=place
     query Text
-    lat Nano
-    lon Nano
+    lat Latitude
+    lon Longitude
 
     UniquePlaceQuery query
 

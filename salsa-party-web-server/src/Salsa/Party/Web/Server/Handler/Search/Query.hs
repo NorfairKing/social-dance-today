@@ -97,15 +97,15 @@ distanceEstimationQuery Coordinates {..} p = do
   -- What follows here is a rough estimate
   E.where_ $
     E.between
-      lat
-      (E.val (coordinatesLat - roughMaxLatDistance), E.val (coordinatesLat + roughMaxLatDistance))
+      (E.castNum lat)
+      (E.val (unLatitude coordinatesLat - roughMaxLatDistance), E.val (unLatitude coordinatesLat + roughMaxLatDistance))
   E.where_ $
     E.between
-      lon
-      (E.val (coordinatesLon - roughMaxLonDistance), E.val (coordinatesLon + roughMaxLonDistance))
+      (E.castNum lon)
+      (E.val (unLongitude coordinatesLon - roughMaxLonDistance), E.val (unLongitude coordinatesLon + roughMaxLonDistance))
 
-  let latDiff = lat E.-. E.val coordinatesLat
-  let lonDiff = lon E.-. E.val coordinatesLon
+  let latDiff = E.castNum lat E.-. E.val (unLatitude coordinatesLat)
+  let lonDiff = E.castNum lon E.-. E.val (unLongitude coordinatesLon)
   let latDiffSquared = latDiff E.*. latDiff
   let lonDiffSquared = lonDiff E.*. lonDiff
   -- Luckily the square function is monotone so we don't need to sqrt here

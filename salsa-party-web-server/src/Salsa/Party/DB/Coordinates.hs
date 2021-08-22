@@ -1,19 +1,78 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE NumericUnderscores #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Salsa.Party.DB.Coordinates where
 
 import Data.Fixed
+import Data.Proxy
 import Data.Validity
+import Database.Persist
+import Database.Persist.Sql
 import GHC.Generics (Generic)
+import Text.Read
 import Yesod
 
+newtype Latitude = Latitude {unLatitude :: Nano}
+  deriving
+    ( Eq,
+      Ord,
+      Generic,
+      Num,
+      Fractional,
+      Real,
+      FromJSON,
+      ToJSON
+    )
+
+instance Validity Latitude
+
+instance Show Latitude where
+  show = show . unLatitude
+
+instance Read Latitude where
+  readPrec = Latitude <$> readPrec
+
+instance PersistField Latitude where
+  toPersistValue = toPersistValue . unLatitude
+  fromPersistValue = fmap Latitude . fromPersistValue
+
+instance PersistFieldSql Latitude where
+  sqlType Proxy = sqlType (Proxy :: Proxy Nano)
+
+newtype Longitude = Longitude {unLongitude :: Nano}
+  deriving
+    ( Eq,
+      Ord,
+      Generic,
+      Num,
+      Fractional,
+      Real,
+      FromJSON,
+      ToJSON
+    )
+
+instance Validity Longitude
+
+instance Show Longitude where
+  show = show . unLongitude
+
+instance Read Longitude where
+  readPrec = Longitude <$> readPrec
+
+instance PersistField Longitude where
+  toPersistValue = toPersistValue . unLongitude
+  fromPersistValue = fmap Longitude . fromPersistValue
+
+instance PersistFieldSql Longitude where
+  sqlType Proxy = sqlType (Proxy :: Proxy Nano)
+
 data Coordinates = Coordinates
-  { coordinatesLat :: !Nano,
-    coordinatesLon :: !Nano
+  { coordinatesLat :: !Latitude,
+    coordinatesLon :: !Longitude
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity Coordinates
 
@@ -30,10 +89,10 @@ distanceTo ::
   Double
 distanceTo co1 co2 =
   let toRadians = (* (pi / 180))
-      lat1 = toRadians $ realToFrac (coordinatesLat co1) :: Double
-      lat2 = toRadians $ realToFrac (coordinatesLat co2) :: Double
-      lon1 = toRadians $ realToFrac (coordinatesLon co1) :: Double
-      lon2 = toRadians $ realToFrac (coordinatesLon co2) :: Double
+      lat1 = toRadians $ realToFrac (unLatitude $ coordinatesLat co1) :: Double
+      lat2 = toRadians $ realToFrac (unLatitude $ coordinatesLat co2) :: Double
+      lon1 = toRadians $ realToFrac (unLongitude $ coordinatesLon co1) :: Double
+      lon2 = toRadians $ realToFrac (unLongitude $ coordinatesLon co2) :: Double
       latDiff = lat2 - lat1
       lonDiff = lon2 - lon1
       sinSqLat = sin (latDiff / 2) ^ (2 :: Int)

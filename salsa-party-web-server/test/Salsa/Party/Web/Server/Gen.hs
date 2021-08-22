@@ -28,19 +28,27 @@ instance GenValid (PasswordHash Bcrypt) where
   genValid = PasswordHash <$> genValid
   shrinkValid _ = [] -- No point.
 
-instance GenValid User where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
-
 instance GenValid Textarea where
   genValid = Textarea <$> genValid
   shrinkValid = fmap Textarea . shrinkValid . unTextarea
+
+instance GenValid User where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
 
 instance GenValid CASKey where
   shrinkValid _ = [] -- No point, it's a hash.
   genValid = mkCASKey <$> genValid <*> genValid
 
 instance GenValid OrganiserForm where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid Latitude where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid Longitude where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
