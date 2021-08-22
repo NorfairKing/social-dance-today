@@ -18,6 +18,11 @@ spec :: Spec
 spec = do
   serverSpec $ do
     describe "EventIcsR" $ do
+      it "GETs a 404 for a nonexistent party's event.ics" $ do
+        uuid <- nextRandomUUID
+        get $ EventIcsR uuid
+        statusIs 404
+
       it "Can get the ical calendar for an existing party via event.ics" $ \yc ->
         forAllValid $ \organiser ->
           forAllValid $ \place ->
