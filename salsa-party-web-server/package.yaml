@@ -152,6 +152,7 @@ tests:
     - microlens
     - monad-logger
     - mtl
+    - network
     - network-uri
     - password
     - path
@@ -159,6 +160,7 @@ tests:
     - path-pieces
     - persistent
     - persistent-sqlite
+    - port-utils
     - pretty-show
     - salsa-party-web-server
     - shakespeare
@@ -166,13 +168,17 @@ tests:
     - sydtest-aeson
     - sydtest-persistent
     - sydtest-persistent-sqlite
+    - sydtest-typed-process
     - sydtest-wai
     - sydtest-yesod
     - text
     - time
+    - typed-process
     - typed-uuid
     - unliftio
     - uuid
+    - webdriver
     - yesod
     - yesod-auth
     - yesod-core
+    - typed-process

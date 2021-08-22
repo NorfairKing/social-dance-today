@@ -57,6 +57,8 @@ extra-deps:
     - sydtest-discover
     - sydtest-persistent
     - sydtest-persistent-sqlite
+    - sydtest-process
+    - sydtest-typed-process
     - sydtest-wai
     - sydtest-yesod
 - github: NorfairKing/yesod-static-remote

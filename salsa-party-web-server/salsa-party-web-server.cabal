@@ -258,6 +258,7 @@ test-suite salsa-party-web-server-test
       Salsa.Party.Web.Server.Handler.SitemapSpec
       Salsa.Party.Web.Server.Handler.TestImport
       Salsa.Party.Web.Server.TestUtils
+      Salsa.Party.Web.Server.TestUtils.Selenium
       Web.JSONLD.Gen
       Web.JSONLDSpec
       Paths_salsa_party_web_server
@@ -292,6 +293,7 @@ test-suite salsa-party-web-server-test
     , microlens
     , monad-logger
     , mtl
+    , network
     , network-uri
     , password
     , path
@@ -299,6 +301,7 @@ test-suite salsa-party-web-server-test
     , path-pieces
     , persistent
     , persistent-sqlite
+    , port-utils
     , pretty-show
     , salsa-party-web-server
     , shakespeare
@@ -306,13 +309,16 @@ test-suite salsa-party-web-server-test
     , sydtest-aeson
     , sydtest-persistent
     , sydtest-persistent-sqlite
+    , sydtest-typed-process
     , sydtest-wai
     , sydtest-yesod
     , text
     , time
+    , typed-process
     , typed-uuid
     , unliftio
     , uuid
+    , webdriver
     , yesod
     , yesod-auth
     , yesod-core
