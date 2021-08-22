@@ -56,7 +56,6 @@ library
       Salsa.Party.Web.Server.Foundation.NavBar
       Salsa.Party.Web.Server.Foundation.Yesod
       Salsa.Party.Web.Server.Foundation.Yesod.Data
-      Salsa.Party.Web.Server.Foundation.Yesod.Routes
       Salsa.Party.Web.Server.Geocoding
       Salsa.Party.Web.Server.Handler
       Salsa.Party.Web.Server.Handler.Account

@@ -74,6 +74,11 @@ getSearchR query = do
   Entity _ place <- lookupPlace query
   searchResultPageWithDay (Just (placeQuery place)) (placeCoordinates place)
 
+getSearchDayR :: Text -> Day -> Handler Html
+getSearchDayR query day = do
+  Entity _ place <- lookupPlace query
+  searchResultPage (Just day) (Just (placeQuery place)) (placeCoordinates place)
+
 searchResultPageWithDay :: Maybe Text -> Coordinates -> Handler Html
 searchResultPageWithDay mAddress coordinates = do
   md <- lookupGetParam "day"
