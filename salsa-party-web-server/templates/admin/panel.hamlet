@@ -48,7 +48,7 @@
     <div .buttons>
       <a .button href="https://analytics.google.com/analytics/web/#/p275681125">
         Google Analytics
-      <a .button href="https://search.google.com/search-console?resource_id=https://salsa-parties.today/">
+      <a .button href="https://search.google.com/search-console?resource_id=https://social-dance.today/">
         Google Search Console
       <a .button href="https://sentry.io/organizations/cs-kerckhove/projects/salsa-parties">
         Sentry Apdex
