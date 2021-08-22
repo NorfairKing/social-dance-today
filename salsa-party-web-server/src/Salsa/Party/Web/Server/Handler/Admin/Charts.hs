@@ -73,7 +73,7 @@ currentAndLastMonthCountWidget m = do
   let increaseRatio :: Double
       increaseRatio = (fromIntegral nowCount - fromIntegral lastMonthCount) / fromIntegral lastMonthCount
   let increasePercentageString :: String
-      increasePercentageString = printf "+%.0f" (increaseRatio * 100)
+      increasePercentageString = printf "%+.0f" (increaseRatio * 100)
   addScriptRemote "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
   [whamlet|
      #{nowCount}, #{increasePercentageString}%
