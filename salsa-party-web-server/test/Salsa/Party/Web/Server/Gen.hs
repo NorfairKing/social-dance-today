@@ -1,9 +1,11 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE NumericUnderscores #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Salsa.Party.Web.Server.Gen where
 
 import Control.Monad
+import Data.Fixed
 import Data.GenValidity
 import Data.GenValidity.ByteString ()
 import Data.GenValidity.Persist ()
@@ -45,11 +47,11 @@ instance GenValid OrganiserForm where
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Latitude where
-  genValid = genValidStructurally
+  genValid = Latitude . MkFixed <$> choose (-90_000_000_000, 90_000_000_000)
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Longitude where
-  genValid = genValidStructurally
+  genValid = Longitude . MkFixed <$> choose (-180_000_000_000, 180_000_000_000)
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Coordinates where

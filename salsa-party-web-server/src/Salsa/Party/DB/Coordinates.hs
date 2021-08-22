@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE NumericUnderscores #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Salsa.Party.DB.Coordinates where
@@ -26,7 +27,13 @@ newtype Latitude = Latitude {unLatitude :: Nano}
       ToJSON
     )
 
-instance Validity Latitude
+instance Validity Latitude where
+  validate lat@Latitude {..} =
+    mconcat
+      [ genericValidate lat,
+        declare "Is -90 or more" $ unLatitude >= -90,
+        declare "Is 90 or less" $ unLatitude <= 90
+      ]
 
 instance Show Latitude where
   show = show . unLatitude
@@ -53,7 +60,13 @@ newtype Longitude = Longitude {unLongitude :: Nano}
       ToJSON
     )
 
-instance Validity Longitude
+instance Validity Longitude where
+  validate lon@Longitude {..} =
+    mconcat
+      [ genericValidate lon,
+        declare "Is -180 or more" $ unLongitude >= -180,
+        declare "Is 180 or less" $ unLongitude <= 180
+      ]
 
 instance Show Longitude where
   show = show . unLongitude
