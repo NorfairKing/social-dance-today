@@ -15,6 +15,7 @@ module Salsa.Party.DB
   ( module Salsa.Party.DB,
     module Salsa.Party.DB.CASKey,
     module Salsa.Party.DB.Password,
+    module Salsa.Party.DB.Coordinates,
     module Salsa.Party.DB.Recurrence,
     module Salsa.Party.DB.URI,
     module Salsa.Party.DB.UUID,
@@ -36,6 +37,7 @@ import Database.Persist.Sql
 import Database.Persist.TH
 import GHC.Generics (Generic)
 import Salsa.Party.DB.CASKey
+import Salsa.Party.DB.Coordinates
 import Salsa.Party.DB.Password
 import Salsa.Party.DB.Recurrence
 import Salsa.Party.DB.URI ()

@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -23,7 +22,6 @@ import Control.Monad.Reader
 import Data.Aeson as JSON
 import qualified Data.ByteString.Lazy as LB
 import Data.Default
-import Data.Fixed
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
@@ -33,7 +31,6 @@ import Data.Validity.Time ()
 import qualified Database.Esqueleto as E
 import qualified Database.Esqueleto.Internal.Sql as E
 import Database.Persist.Sql
-import GHC.Generics (Generic)
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation.App
 import Salsa.Party.Web.Server.Foundation.Auth
@@ -54,21 +51,8 @@ getReloadR = getAutoReloadR
 getFaviconR :: Handler TypedContent
 getFaviconR = redirect $ StaticR favicon_ico
 
-data Coordinates = Coordinates
-  { coordinatesLat :: !Nano,
-    coordinatesLon :: !Nano
-  }
-  deriving (Show, Eq, Generic)
-
-instance Validity Coordinates
-
 instance Validity Textarea where
   validate = validate . unTextarea
-
--- This could potentially be dangerous if a type is read than written
-instance PathPiece (Fixed a) where
-  fromPathPiece = fmap MkFixed . fromPathPiece
-  toPathPiece (MkFixed i) = toPathPiece i
 
 placeCoordinates :: Place -> Coordinates
 placeCoordinates Place {..} = Coordinates {coordinatesLat = placeLat, coordinatesLon = placeLon}

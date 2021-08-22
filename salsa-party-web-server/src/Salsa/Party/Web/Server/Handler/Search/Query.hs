@@ -11,7 +11,6 @@ import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import qualified Database.Esqueleto as E
-import Salsa.Party.Web.Server.Distance
 import Salsa.Party.Web.Server.Handler.Import
 import Text.EditDistance
 

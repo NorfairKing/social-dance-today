@@ -1,8 +1,26 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE NumericUnderscores #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Salsa.Party.Web.Server.Distance where
+module Salsa.Party.DB.Coordinates where
 
-import Salsa.Party.Web.Server.Foundation
+import Data.Fixed
+import Data.Validity
+import GHC.Generics (Generic)
+import Yesod
+
+data Coordinates = Coordinates
+  { coordinatesLat :: !Nano,
+    coordinatesLon :: !Nano
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity Coordinates
+
+-- This could potentially be dangerous if a type is read than written
+instance PathPiece (Fixed a) where
+  fromPathPiece = fmap MkFixed . fromPathPiece
+  toPathPiece (MkFixed i) = toPathPiece i
 
 -- See #https://en.wikipedia.org/wiki/Haversine_formula#Formulation
 distanceTo ::

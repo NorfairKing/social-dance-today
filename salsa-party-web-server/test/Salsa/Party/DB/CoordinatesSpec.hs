@@ -1,9 +1,8 @@
 {-# LANGUAGE NumericUnderscores #-}
 
-module Salsa.Party.Web.Server.DistanceSpec (spec) where
+module Salsa.Party.DB.CoordinatesSpec (spec) where
 
-import Salsa.Party.Web.Server.Distance
-import Salsa.Party.Web.Server.Foundation
+import Salsa.Party.DB.Coordinates
 import Test.Syd
 import Text.Printf
 
