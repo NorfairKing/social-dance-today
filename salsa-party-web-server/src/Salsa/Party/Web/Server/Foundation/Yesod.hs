@@ -43,7 +43,7 @@ import Yesod.Auth.Message
 import Yesod.AutoReload
 
 instance Yesod App where
-  approot = guessApprootOr $ ApprootMaster $ fromMaybe "" . appRoot
+  approot = ApprootMaster $ fromMaybe "" . appRoot
   defaultLayout widget = do
     app <- getYesod
     messages <- getMessages
