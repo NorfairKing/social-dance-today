@@ -18,7 +18,31 @@ spec :: Spec
 spec = do
   serverSpec $ do
     describe "EventR" $ do
-      it "Can get the ical calendar for an existing external event" $ \yc ->
+      it "Can get the ical calendar for an existing external event via event.ics" $ \yc ->
+        forAllValid $ \place ->
+          forAllValid $ \externalEvent ->
+            runYesodClientM yc $ do
+              testDB $ do
+                placeId <- DB.insert place
+                DB.insert_ $ externalEvent {externalEventPlace = placeId}
+              get $ EventIcsR $ externalEventUuid externalEvent
+              statusIs 200
+              mResp <- getResponse
+              case mResp of
+                Nothing -> liftIO $ expectationFailure "Should have had a response by now."
+                Just resp -> do
+                  let cts = responseBody resp
+                  case ICal.parseICalendar def "response" cts of
+                    Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
+                    Right (cals, warnings) -> do
+                      case warnings of
+                        [] ->
+                          case cals of
+                            [_] -> pure ()
+                            _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
+                        _ -> liftIO $ expectationFailure $ unlines $ "Warnings while parsing ical: " : warnings
+
+      it "Can get the ical calendar for an existing external event via an accept header" $ \yc ->
         forAllValid $ \place ->
           forAllValid $ \externalEvent ->
             runYesodClientM yc $ do
@@ -26,7 +50,7 @@ spec = do
                 placeId <- DB.insert place
                 DB.insert_ $ externalEvent {externalEventPlace = placeId}
               request $ do
-                setUrl $ EventIcsR $ externalEventUuid externalEvent
+                setUrl $ EventR $ externalEventUuid externalEvent
                 addRequestHeader ("Accept", typeCalendar)
               statusIs 200
               mResp <- getResponse
@@ -43,6 +67,7 @@ spec = do
                             [_] -> pure ()
                             _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
                         _ -> liftIO $ expectationFailure $ unlines $ "Warnings while parsing ical: " : warnings
+
   appSpec $
     describe "ICal" $
       it "outputs the same event calendar as before" $ \app ->
