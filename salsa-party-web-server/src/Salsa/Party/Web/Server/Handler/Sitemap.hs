@@ -13,6 +13,8 @@ import Yesod.Sitemap
 
 getSitemapR :: Handler TypedContent
 getSitemapR = do
+  today <- liftIO $ utctDay <$> getCurrentTime
+  let yesterday = addDays (-1) today
   acqOrganisers <- runDB $ selectSourceRes [] [Asc OrganiserId]
   acqParties <- runDB $ selectSourceRes [] [Asc PartyId]
   acqImages <- runDB $ selectSourceRes [] [Asc ImageId]
@@ -29,15 +31,15 @@ getSitemapR = do
     yield
       SitemapUrl
         { sitemapLoc = ExploreR,
-          sitemapLastMod = Nothing,
-          sitemapChangeFreq = Nothing,
+          sitemapLastMod = Just $ UTCTime today 0, -- At the beginning of the day
+          sitemapChangeFreq = Just Daily,
           sitemapPriority = Just 0.8
         }
     forM_ locations $ \location ->
       yield
         SitemapUrl
           { sitemapLoc = SearchR $ placeQuery $ locationPlace location,
-            sitemapLastMod = Nothing,
+            sitemapLastMod = Just $ UTCTime today 0, -- At the beginning of the day
             sitemapChangeFreq = Just Daily,
             sitemapPriority = Just 0.6
           }
@@ -66,8 +68,8 @@ getSitemapR = do
           SitemapUrl
             { sitemapLoc = EventR partyUuid,
               sitemapLastMod = Just $ fromMaybe partyCreated partyModified,
-              sitemapChangeFreq = Nothing,
-              sitemapPriority = Just 0.4
+              sitemapChangeFreq = if partyDay >= yesterday then Nothing else Just Never,
+              sitemapPriority = Just $ if partyDay >= yesterday then 0.4 else 0.2
             }
       )
     dbAcq
@@ -76,8 +78,8 @@ getSitemapR = do
           SitemapUrl
             { sitemapLoc = EventR externalEventUuid,
               sitemapLastMod = Just $ fromMaybe externalEventCreated externalEventModified,
-              sitemapChangeFreq = Nothing,
-              sitemapPriority = Just 0.2
+              sitemapChangeFreq = if externalEventDay >= yesterday then Nothing else Just Never,
+              sitemapPriority = Just $ if externalEventDay >= yesterday then 0.3 else 0.1
             }
       )
     dbAcq
