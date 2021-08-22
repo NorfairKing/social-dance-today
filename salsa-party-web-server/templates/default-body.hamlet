@@ -17,7 +17,7 @@ $forall (classes, message) <- messages
           <script>
             document.getElementById('copyright').appendChild(document.createTextNode(new Date().getFullYear()))
 
-    $if currentRoute == Just HomeR
+    $if mCurrentRoute == Just HomeR
       <div .columns .is-centered .py-6>
         <p .has-text-centered>
           <a href="https://wiki.openstreetmap.org/wiki/Nominatim">

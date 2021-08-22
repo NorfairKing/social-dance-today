@@ -10,11 +10,15 @@ $doctype 5
     <link rel="stylesheet" href=@{StaticR bulma_css}>
     <link rel="icon" href=@{FaviconR} type="image/x-icon">
 
+    $maybe route <- mCurrentRoute
+      $forall lang <- supportedLanguages
+        <link rel="alternate" hreflang=#{supportedLanguageAbbreviation lang} href="@{route}?#{languageQueryParameter}=#{supportedLanguageAbbreviation lang}">
+      <link rel="alternate" hreflang=x-default href=@{route}>
+
     $maybe verification <- appGoogleSearchConsoleVerification app
       <meta name="google-site-verification" content="#{verification}"/>
 
     $maybe trackingId <- appGoogleAnalyticsTracking app
-      <!-- Global site tag (gtag.js) - Google Analytics -->
       <script async src="https://www.googletagmanager.com/gtag/js?id=#{trackingId}">
       <script>
         window.dataLayer = window.dataLayer || [];

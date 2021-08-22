@@ -20,7 +20,9 @@ module Salsa.Party.Web.Server.Foundation.Yesod
   )
 where
 
+import Control.Monad
 import Data.Maybe
+import Data.Text (Text)
 import Database.Persist.Sql
 import Path
 import Salsa.Party.DB
@@ -50,11 +52,11 @@ instance Yesod App where
           if development
             then (<> autoReloadWidgetFor ReloadR)
             else id
-    currentRoute <- getCurrentRoute
+    mCurrentRoute <- getCurrentRoute
     let withSentry =
           case appSentrySettings app of
             Nothing -> id
-            Just sentrySettings -> case currentRoute of
+            Just sentrySettings -> case mCurrentRoute of
               Just (AdminR _) -> id
               _ -> (<> sentryWidget sentrySettings)
     let body = withSentry $ withAutoReload $(widgetFile "default-body")
@@ -98,6 +100,14 @@ instance Yesod App where
               then pure Authorized
               else notFound
       _ -> pure Authorized
+
+  yesodMiddleware handler = do
+    mLParam <- lookupGetParam languageQueryParameter
+    forM_ mLParam $ \l -> setLanguage l
+    defaultYesodMiddleware handler
+
+languageQueryParameter :: Text
+languageQueryParameter = "l"
 
 instance YesodAuth App where
   type AuthId App = UserId
