@@ -25,25 +25,29 @@ spec = do
   persistSpecOnValid @Longitude
   jsonSpecOnValid @Latitude
   jsonSpecOnValid @Longitude
-  let zurichMainStation = Coordinates {coordinatesLat = 47.3778579, coordinatesLon = 8.5381339}
-  let zurichPrimeTower = Coordinates {coordinatesLat = 47.3861804, coordinatesLon = 8.5150251}
-  let zurichBlatterWiese = Coordinates {coordinatesLat = 47.3547140, coordinatesLon = 8.5512022}
-  let londonVictoria = Coordinates {coordinatesLat = 51.4952237, coordinatesLon = -0.1438952}
-  let shouldBeCloseTo :: Double -> Double -> IO ()
-      shouldBeCloseTo x y =
-        let diff = abs (x - y)
-            tollerance = 1000 -- Within 1km is more than close enough.
-            p = printf "%9.2f"
-            ctx =
-              unlines
-                [ "x:          " <> p x,
-                  "y:          " <> p y,
-                  "tollerance: " <> p tollerance
-                ]
-         in if diff < tollerance
-              then pure ()
-              else context ctx $ x `shouldBe` y
+
+  describe "mkLatitude" $ it "produces valid latitudes" $ producesValidsOnValids mkLatitude
+  describe "mkLongitude" $ it "produces valid longitudes" $ producesValidsOnValids mkLongitude
+
   describe "distanceTo" $ do
+    let zurichMainStation = Coordinates {coordinatesLat = 47.3778579, coordinatesLon = 8.5381339}
+    let zurichPrimeTower = Coordinates {coordinatesLat = 47.3861804, coordinatesLon = 8.5150251}
+    let zurichBlatterWiese = Coordinates {coordinatesLat = 47.3547140, coordinatesLon = 8.5512022}
+    let londonVictoria = Coordinates {coordinatesLat = 51.4952237, coordinatesLon = -0.1438952}
+    let shouldBeCloseTo :: Double -> Double -> IO ()
+        shouldBeCloseTo x y =
+          let diff = abs (x - y)
+              tollerance = 1000 -- Within 1km is more than close enough.
+              p = printf "%9.2f"
+              ctx =
+                unlines
+                  [ "x:          " <> p x,
+                    "y:          " <> p y,
+                    "tollerance: " <> p tollerance
+                  ]
+           in if diff < tollerance
+                then pure ()
+                else context ctx $ x `shouldBe` y
     it "is close enough for the zurich main station to prime tower" $ do
       zurichMainStation `distanceTo` zurichPrimeTower `shouldBeCloseTo` 1_970 -- m
     it "is close enough for the zurich main station to Blatterwiese" $ do

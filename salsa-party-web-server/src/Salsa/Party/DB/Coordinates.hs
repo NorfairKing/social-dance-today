@@ -27,6 +27,9 @@ newtype Latitude = Latitude {unLatitude :: Nano}
       ToJSON
     )
 
+mkLatitude :: Nano -> Latitude
+mkLatitude n = Latitude $ ((n + 90) `mod'` 180) - 90
+
 instance Validity Latitude where
   validate lat@Latitude {..} =
     mconcat
@@ -39,11 +42,11 @@ instance Show Latitude where
   show = show . unLatitude
 
 instance Read Latitude where
-  readPrec = Latitude <$> readPrec
+  readPrec = mkLatitude <$> readPrec
 
 instance PersistField Latitude where
   toPersistValue = toPersistValue . unLatitude
-  fromPersistValue = fmap Latitude . fromPersistValue
+  fromPersistValue = fmap mkLatitude . fromPersistValue
 
 instance PersistFieldSql Latitude where
   sqlType Proxy = sqlType (Proxy :: Proxy Nano)
@@ -60,6 +63,9 @@ newtype Longitude = Longitude {unLongitude :: Nano}
       ToJSON
     )
 
+mkLongitude :: Nano -> Longitude
+mkLongitude n = Longitude $ ((n + 180) `mod'` 360) - 180
+
 instance Validity Longitude where
   validate lon@Longitude {..} =
     mconcat
@@ -72,11 +78,11 @@ instance Show Longitude where
   show = show . unLongitude
 
 instance Read Longitude where
-  readPrec = Longitude <$> readPrec
+  readPrec = mkLongitude <$> readPrec
 
 instance PersistField Longitude where
   toPersistValue = toPersistValue . unLongitude
-  fromPersistValue = fmap Longitude . fromPersistValue
+  fromPersistValue = fmap mkLongitude . fromPersistValue
 
 instance PersistFieldSql Longitude where
   sqlType Proxy = sqlType (Proxy :: Proxy Nano)
