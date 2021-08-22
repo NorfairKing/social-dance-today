@@ -73,19 +73,21 @@ spec =
               case mPlace of
                 Nothing -> liftIO $ expectationFailure "expected a place"
                 Just place -> do
-                  let urlRender :: Route App -> Text
-                      urlRender route = yesodRender (yesodClientSite yc) (T.pack (show (yesodClientSiteURI yc))) route []
+                  let urlRenderReal :: Route App -> Text
+                      urlRenderReal route = yesodRender (yesodClientSite yc) (T.pack (show (yesodClientSiteURI yc))) route []
+                      urlRenderRelative :: Route App -> Text
+                      urlRenderRelative route = yesodRender (yesodClientSite yc) "" route []
 
                   jsonLDResults <-
                     liftIO $
                       runNoLoggingT $
                         testJSONLD
                           (yesodClientManager yc)
-                          (urlRender (EventR (partyUuid party)))
+                          (urlRenderReal (EventR (partyUuid party)))
 
                   liftIO $ case jsonLDResults of
                     [JSONLD [ldEvent]] ->
-                      let expectedLDEvent = partyToLDEvent urlRender party organiser place Nothing
+                      let expectedLDEvent = partyToLDEvent urlRenderRelative party organiser place Nothing
                           ctx =
                             unlines
                               [ "Encoded JSON:",
@@ -124,19 +126,21 @@ spec =
               case mPlace of
                 Nothing -> liftIO $ expectationFailure "expected a place"
                 Just place -> do
-                  let urlRender :: Route App -> Text
-                      urlRender route = yesodRender (yesodClientSite yc) (T.pack (show (yesodClientSiteURI yc))) route []
+                  let urlRenderReal :: Route App -> Text
+                      urlRenderReal route = yesodRender (yesodClientSite yc) (T.pack (show (yesodClientSiteURI yc))) route []
+                      urlRenderRelative :: Route App -> Text
+                      urlRenderRelative route = yesodRender (yesodClientSite yc) "" route []
 
                   jsonLDResults <-
                     liftIO $
                       runNoLoggingT $
                         testJSONLD
                           (yesodClientManager yc)
-                          (urlRender (EventR (partyUuid party)))
+                          (urlRenderReal (EventR (partyUuid party)))
 
                   liftIO $ case jsonLDResults of
                     [JSONLD [ldEvent]] ->
-                      let expectedLDEvent = partyToLDEvent urlRender party organiser place Nothing
+                      let expectedLDEvent = partyToLDEvent urlRenderRelative party organiser place Nothing
                           ctx =
                             unlines
                               [ "Encoded JSON:",
@@ -158,19 +162,21 @@ spec =
             case mPlace of
               Nothing -> liftIO $ expectationFailure "expected a place"
               Just place -> do
-                let urlRender :: Route App -> Text
-                    urlRender route = yesodRender (yesodClientSite yc) (T.pack (show (yesodClientSiteURI yc))) route []
+                let urlRenderReal :: Route App -> Text
+                    urlRenderReal route = yesodRender (yesodClientSite yc) (T.pack (show (yesodClientSiteURI yc))) route []
+                    urlRenderRelative :: Route App -> Text
+                    urlRenderRelative route = yesodRender (yesodClientSite yc) "" route []
 
                 jsonLDResults <-
                   liftIO $
                     runNoLoggingT $
                       testJSONLD
                         (yesodClientManager yc)
-                        (urlRender (EventR (externalEventUuid externalEvent)))
+                        (urlRenderReal (EventR (externalEventUuid externalEvent)))
 
                 liftIO $ case jsonLDResults of
                   [JSONLD [ldEvent]] ->
-                    let expectedLDEvent = externalEventToLDEvent urlRender externalEvent place Nothing
+                    let expectedLDEvent = externalEventToLDEvent urlRenderRelative externalEvent place Nothing
                         ctx =
                           unlines
                             [ "Encoded JSON:",
