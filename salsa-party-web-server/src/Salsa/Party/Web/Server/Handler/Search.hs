@@ -19,15 +19,40 @@ data QueryForm = QueryForm
   }
   deriving (Show, Eq, Generic)
 
+addressParameter :: Text
+addressParameter = "address"
+
+latitudeParameter :: Text
+latitudeParameter = "latitude"
+
+longitudeParameter :: Text
+longitudeParameter = "longitude"
+
+dayParameter :: Text
+dayParameter = "day"
+
 queryForm :: FormInput Handler QueryForm
 queryForm =
   QueryForm
-    <$> iopt textField "address"
+    <$> iopt textField addressParameter
     <*> ( liftA2 Coordinates
             <$> (fmap realToFrac <$> iopt doubleField "latitude")
             <*> (fmap realToFrac <$> iopt doubleField "longitude")
         )
-    <*> iopt dayField "day"
+    <*> iopt dayField dayParameter
+
+queryFormParameters :: QueryForm -> [(Text, Text)]
+queryFormParameters QueryForm {..} =
+  concat
+    [ [(addressParameter, address) | address <- maybeToList queryFormAddress],
+      concat
+        [ [ (latitudeParameter, T.pack $ show coordinatesLat),
+            (longitudeParameter, T.pack $ show coordinatesLon)
+          ]
+          | Coordinates {..} <- maybeToList queryFormCoordinates
+        ],
+      [(dayParameter, T.pack $ formatTime defaultTimeLocale "%F" day) | day <- maybeToList queryFormDay]
+    ]
 
 postQueryR :: Handler Html
 postQueryR = do
