@@ -310,6 +310,14 @@ waitToFetch uri = do
   tokenLimiter <- asks importEnvRateLimiter
   liftIO $ waitDebit tokenLimiter 10 -- Need 10 tokens
 
+setUserAgent :: ByteString -> Request -> Request
+setUserAgent userAgent requestPrototype =
+  let oldHeaders = requestHeaders requestPrototype
+      newHeaders = case lookup "User-Agent" oldHeaders of
+        Nothing -> ("User-Agent", userAgent) : oldHeaders
+        Just _ -> oldHeaders
+   in requestPrototype {requestHeaders = newHeaders}
+
 chooseUserAgent :: IO ByteString
 chooseUserAgent = do
   index <- randomRIO (0, length userAgentList - 1)

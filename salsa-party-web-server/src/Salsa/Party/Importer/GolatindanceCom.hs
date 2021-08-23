@@ -51,6 +51,7 @@ func = do
   runConduit $
     yield "https://golatindance.com/"
       .| C.concatMap (parseRequest :: String -> Maybe Request)
+      .| C.map (setUserAgent specialUserAgent)
       .| doHttpRequestWith
       .| logRequestErrors
       .| parseCategoryUrls
@@ -58,10 +59,14 @@ func = do
       .| tribeCalendarC
       .| C.filter (isPrefixOf "https://golatindance.com/event/" . show)
       .| C.concatMap (requestFromURI :: URI -> Maybe Request)
+      .| C.map (setUserAgent specialUserAgent)
       .| doHttpRequestWith
       .| logRequestErrors
       .| jsonLDEventsC
       .| importTribeCalendarJSONLDEvents
+
+specialUserAgent :: ByteString
+specialUserAgent = "User-Agent Mozilla/5.0 (X11; Linux x86_64; rv:89.0) Gecko/20100101 Firefox/89.0"
 
 parseCategoryUrls ::
   ConduitM (Request, Response LB.ByteString) URI Import ()
