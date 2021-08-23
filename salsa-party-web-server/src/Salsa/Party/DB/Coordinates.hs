@@ -4,7 +4,17 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Salsa.Party.DB.Coordinates where
+module Salsa.Party.DB.Coordinates
+  ( Latitude,
+    unLatitude,
+    mkLatitude,
+    Longitude,
+    unLongitude,
+    mkLongitude,
+    Coordinates (..),
+    distanceTo,
+  )
+where
 
 import Data.Aeson as JSON
 import Data.Fixed
