@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE NumericUnderscores #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -37,13 +38,16 @@ where
 import Control.Arrow (left)
 import Data.Aeson as JSON
 import Data.Fixed
+import Data.List
 import Data.Proxy
+import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Validity
 import Database.Persist
 import Database.Persist.Sql
 import GHC.Generics (Generic)
 import Text.Read
+import Web.PathPieces
 
 newtype Latitude = Latitude {unLatitude :: Nano}
   deriving
@@ -226,6 +230,21 @@ data Coordinates = Coordinates
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity Coordinates
+
+instance PathPiece Coordinates where
+  toPathPiece :: Coordinates -> Text
+  toPathPiece Coordinates {..} =
+    T.pack $
+      intercalate
+        ","
+        [ show coordinatesLat,
+          show coordinatesLon
+        ]
+
+  fromPathPiece :: Text -> Maybe Coordinates
+  fromPathPiece t = case T.split (== ',') t of
+    [latText, lonText] -> Coordinates <$> readMaybe (T.unpack latText) <*> readMaybe (T.unpack lonText)
+    _ -> Nothing
 
 -- See #https://en.wikipedia.org/wiki/Haversine_formula#Formulation
 --

@@ -154,6 +154,7 @@ tests:
     - password
     - path
     - path-io
+    - path-pieces
     - persistent
     - persistent-sqlite
     - pretty-show
