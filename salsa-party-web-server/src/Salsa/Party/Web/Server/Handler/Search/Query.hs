@@ -11,6 +11,7 @@ import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import qualified Database.Esqueleto as E
+import Database.Esqueleto.Internal.Internal (unsafeSqlBinOp)
 import Salsa.Party.DB.Coordinates
 import Salsa.Party.Web.Server.Handler.Import
 import Text.EditDistance
@@ -96,22 +97,42 @@ distanceEstimationQuery Coordinates {..} p = do
   let lon = p E.^. PlaceLon
   -- We want a very rough filter of parties by distance.
   -- What follows here is a rough estimate
-  E.where_ $
-    E.between
-      (E.castNum lat)
-      (E.val (unLatitude coordinatesLat - roughMaxLatDistance), E.val (unLatitude coordinatesLat + roughMaxLatDistance))
-  E.where_ $
-    E.between
-      (E.castNum lon)
-      (E.val (unLongitude coordinatesLon - roughMaxLonDistance), E.val (unLongitude coordinatesLon + roughMaxLonDistance))
+  latitudeBetweenQuery lat coordinatesLat
+  longitudeBetweenQuery lon coordinatesLon
 
-  let latDiff = E.castNum lat E.-. E.val (unLatitude coordinatesLat)
-  let lonDiff = E.castNum lon E.-. E.val (unLongitude coordinatesLon)
+  let latDiff = lat E.-. E.val coordinatesLat
+  let lonDiff = lon E.-. E.val coordinatesLon
   let latDiffSquared = latDiff E.*. latDiff
   let lonDiffSquared = lonDiff E.*. lonDiff
   -- Luckily the square function is monotone so we don't need to sqrt here
-  let distSquared = latDiffSquared E.+. lonDiffSquared
+  -- We need to use 'unsafeSqlBinOp " + "' because the two values are of different types.
+  let distSquared :: E.SqlExpr (E.Value Coord)
+      distSquared = unsafeSqlBinOp " + " latDiffSquared lonDiffSquared
   E.orderBy [E.asc distSquared]
+
+latitudeBetweenQuery :: E.SqlExpr (E.Value Latitude) -> Latitude -> E.SqlQuery ()
+latitudeBetweenQuery latExpr coordinatesLat =
+  let mUpperBound = mkLatitude (unLatitude coordinatesLat + roughMaxLatDistance)
+      mLowerBound = mkLatitude (unLatitude coordinatesLat - roughMaxLatDistance)
+   in case (mLowerBound, mUpperBound) of
+        -- Both the upper bound was too high AND the lower bound was too low, that means we want everything.
+        (Nothing, Nothing) -> pure ()
+        -- Both upper bound and lower bound are within range, we need only one between
+        (Just lower, Just upper) -> E.where_ $ E.between latExpr (E.val lower, E.val upper)
+        (Nothing, Just upper) -> undefined
+        (Just lower, Nothing) -> undefined
+
+longitudeBetweenQuery :: E.SqlExpr (E.Value Longitude) -> Longitude -> E.SqlQuery ()
+longitudeBetweenQuery lonExpr coordinatesLon =
+  let mUpperBound = mkLongitude (unLongitude coordinatesLon + roughMaxLonDistance)
+      mLowerBound = mkLongitude (unLongitude coordinatesLon - roughMaxLonDistance)
+   in case (mLowerBound, mUpperBound) of
+        -- Both the upper bound was too high AND the lower bound was too low, that means we want everything.
+        (Nothing, Nothing) -> pure ()
+        -- Both upper bound and lower bound are within range, we need only one between
+        (Just lower, Just upper) -> E.where_ $ E.between lonExpr (E.val lower, E.val upper)
+        (Nothing, Just upper) -> undefined
+        (Just lower, Nothing) -> undefined
 
 -- One degree longitude is 111km
 roughMaxLatDistance :: Coord

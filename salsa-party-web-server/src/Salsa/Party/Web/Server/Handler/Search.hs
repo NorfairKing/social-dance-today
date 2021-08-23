@@ -6,6 +6,7 @@
 
 module Salsa.Party.Web.Server.Handler.Search where
 
+import Control.Arrow (left)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import Salsa.Party.Web.Server.Geocoding
@@ -36,10 +37,24 @@ queryForm =
   QueryForm
     <$> iopt textField addressParameter
     <*> ( liftA2 Coordinates
-            <$> (fmap realToFrac <$> iopt doubleField "latitude")
-            <*> (fmap realToFrac <$> iopt doubleField "longitude")
+            <$> iopt latitudeField "latitude"
+            <*> iopt longitudeField "longitude"
         )
     <*> iopt dayField dayParameter
+
+latitudeField :: Field Handler Latitude
+latitudeField =
+  checkMMap
+    (pure . left (const MsgInvalidLatitude) . mkLatitudeOrError . realToFrac)
+    (realToFrac . unLatitude)
+    doubleField
+
+longitudeField :: Field Handler Longitude
+longitudeField =
+  checkMMap
+    (pure . left (const MsgInvalidLongitude) . mkLongitudeOrError . realToFrac)
+    (realToFrac . unLongitude)
+    doubleField
 
 queryFormParameters :: QueryForm -> [(Text, Text)]
 queryFormParameters QueryForm {..} =
@@ -96,9 +111,9 @@ searchResultPage mDay mAddress coordinates = do
       nextDay = addDays daysAhead begin
       days = [begin .. end]
   let latitudeToDouble :: Latitude -> Double
-      latitudeToDouble = realToFrac
+      latitudeToDouble = latitudeToFloat
   let longitudeToDouble :: Longitude -> Double
-      longitudeToDouble = realToFrac
+      longitudeToDouble = longitudeToFloat
   searchResults <- runDB $ searchQuery begin (Just end) coordinates
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat

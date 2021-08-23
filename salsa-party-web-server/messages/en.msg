@@ -35,6 +35,10 @@ NavSignUp: Sign up
 NavLogIn: Log in
 NavLogOut: Log out
 
+# Form messages
+InvalidLatitude: Invalid latitude
+InvalidLongitude: Invalid longitude
+
 # Search Results
 SearchTitleAroundYourLocationToday: Social dance parties near your location today
 SearchTitleAroundYourLocationOnDay day@String: Social dance parties near your location on #{day}

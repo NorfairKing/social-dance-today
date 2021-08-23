@@ -30,8 +30,12 @@ module Salsa.Party.DB.Coordinates
   ( Coord,
     Latitude (..),
     mkLatitude,
+    mkLatitudeOrError,
+    latitudeToFloat,
     Longitude (..),
     mkLongitude,
+    mkLongitudeOrError,
+    longitudeToFloat,
     Coordinates (..),
     distanceTo,
   )
@@ -84,46 +88,6 @@ instance Validity Latitude where
         declare ("Is 90 or less: " <> show unLatitude) $ unLatitude <= 90
       ]
 
-instance Num Latitude where
-  fromInteger i = case mkLatitudeOrError (fromInteger i) of
-    Left err -> error err
-    Right l -> l
-
-  -- We have to implement negate to support literals correctly,
-  -- because this expression:
-  -- > (- 50 :: Latitude)
-  -- is interpreted as
-  -- > negate (50 :: Latitude)
-  -- instead of
-  -- > Latitude (-50)
-  negate :: Latitude -> Latitude
-  negate = Latitude . negate . unLatitude
-
-  (+) :: Latitude -> Latitude -> Latitude
-  (+) = error "It makes no sense to add latitudes."
-  (-) :: Latitude -> Latitude -> Latitude
-  (-) = error "It makes no sense to subtract latitudes."
-  (*) :: Latitude -> Latitude -> Latitude
-  (*) = error "It makes no sense to multiply latitudes."
-  abs :: Latitude -> Latitude
-  abs = error "It makes no sense to take the absolute value of latitudes."
-  signum :: Latitude -> Latitude
-  signum = error "It makes no sense to take the sign of latitudes."
-
-instance Fractional Latitude where
-  fromRational :: Rational -> Latitude
-  fromRational r = case mkLatitudeOrError (fromRational r) of
-    Left err -> error err
-    Right l -> l
-
-  (/) :: Latitude -> Latitude -> Latitude
-  (/) = error "It makes no sense to divide latitudes."
-
-instance Real Latitude where
-  -- This function promises more precision, which isn't there, but at least not less.
-  toRational :: Latitude -> Rational
-  toRational = toRational . unLatitude
-
 instance Show Latitude where
   show = show . unLatitude
 
@@ -142,6 +106,9 @@ instance PersistField Latitude where
 
 instance PersistFieldSql Latitude where
   sqlType Proxy = sqlType (Proxy :: Proxy Coord)
+
+latitudeToFloat :: RealFloat f => Latitude -> f
+latitudeToFloat = realToFrac . unLatitude
 
 newtype Longitude = Longitude {unLongitude :: Coord}
   deriving
@@ -169,50 +136,6 @@ instance Validity Longitude where
         declare ("Is 180 or less: " <> show unLongitude) $ unLongitude < 180
       ]
 
-instance Num Longitude where
-  fromInteger i = case mkLongitudeOrError (fromInteger i) of
-    Left err -> error err
-    Right l -> l
-
-  -- We have to implement negate to support literals correctly,
-  -- because this expression:
-  -- > (- 50 :: Longitude)
-  -- is interpreted as
-  -- > negate (50 :: Longitude)
-  -- instead of
-  -- > Longitude (-50)
-  --
-  -- We have to be able to error as well, because -180 is 180 and 180 is not valid.
-  negate :: Longitude -> Longitude
-  negate l = case mkLongitudeOrError (negate (unLongitude l)) of
-    Left err -> error err
-    Right l' -> l'
-
-  (+) :: Longitude -> Longitude -> Longitude
-  (+) = error "It makes no sense to add longitudes."
-  (-) :: Longitude -> Longitude -> Longitude
-  (-) = error "It makes no sense to subtract longitudes."
-  (*) :: Longitude -> Longitude -> Longitude
-  (*) = error "It makes no sense to multiply longitudes."
-  abs :: Longitude -> Longitude
-  abs = error "It makes no sense to take the absolute value of longitudes."
-  signum :: Longitude -> Longitude
-  signum = error "It makes no sense to take the sign of longitudes."
-
-instance Fractional Longitude where
-  fromRational :: Rational -> Longitude
-  fromRational r = case mkLongitudeOrError (fromRational r) of
-    Left err -> error err
-    Right l -> l
-
-  (/) :: Longitude -> Longitude -> Longitude
-  (/) = error "It makes no sense to divide latitudes."
-
-instance Real Longitude where
-  -- This function promises more precision, which isn't there, but at least not less.
-  toRational :: Longitude -> Rational
-  toRational = toRational . unLongitude
-
 instance Show Longitude where
   show = show . unLongitude
 
@@ -231,6 +154,9 @@ instance PersistField Longitude where
 
 instance PersistFieldSql Longitude where
   sqlType Proxy = sqlType (Proxy :: Proxy Coord)
+
+longitudeToFloat :: RealFloat f => Longitude -> f
+longitudeToFloat = realToFrac . unLongitude
 
 data Coordinates = Coordinates
   { coordinatesLat :: !Latitude,

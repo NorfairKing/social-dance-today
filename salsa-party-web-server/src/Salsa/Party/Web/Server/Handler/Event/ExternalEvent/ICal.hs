@@ -91,8 +91,8 @@ externalEventCalendarEvent renderUrl ExternalEvent {..} Place {..} =
           ICal.veGeo =
             Just $
               ICal.Geo
-                { ICal.geoLat = realToFrac placeLat,
-                  ICal.geoLong = realToFrac placeLon,
+                { ICal.geoLat = latitudeToFloat placeLat,
+                  ICal.geoLong = longitudeToFloat placeLon,
                   ICal.geoOther = noOther
                 },
           ICal.veLastMod =
