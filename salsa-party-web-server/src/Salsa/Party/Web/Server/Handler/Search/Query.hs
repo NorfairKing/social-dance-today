@@ -119,8 +119,10 @@ latitudeBetweenQuery latExpr coordinatesLat =
         (Nothing, Nothing) -> pure ()
         -- Both upper bound and lower bound are within range, we need only one between
         (Just lower, Just upper) -> E.where_ $ E.between latExpr (E.val lower, E.val upper)
-        (Nothing, Just upper) -> undefined
-        (Just lower, Nothing) -> undefined
+        -- FIXME: This is wrong on the south pole.
+        (Nothing, Just upper) -> E.where_ $ E.between latExpr (E.val minBound, E.val upper)
+        -- FIXME: This is wrong on the north pole.
+        (Just lower, Nothing) -> E.where_ $ E.between latExpr (E.val lower, E.val maxBound)
 
 longitudeBetweenQuery :: E.SqlExpr (E.Value Longitude) -> Longitude -> E.SqlQuery ()
 longitudeBetweenQuery lonExpr coordinatesLon =
@@ -131,8 +133,10 @@ longitudeBetweenQuery lonExpr coordinatesLon =
         (Nothing, Nothing) -> pure ()
         -- Both upper bound and lower bound are within range, we need only one between
         (Just lower, Just upper) -> E.where_ $ E.between lonExpr (E.val lower, E.val upper)
-        (Nothing, Just upper) -> undefined
-        (Just lower, Nothing) -> undefined
+        -- FIXME: This will be wrong in west Canada
+        (Nothing, Just upper) -> E.where_ $ E.between lonExpr (E.val minBound, E.val upper)
+        -- FIXME: This will be wrong in east Russia
+        (Just lower, Nothing) -> E.where_ $ E.between lonExpr (E.val lower, E.val maxBound)
 
 -- One degree longitude is 111km
 roughMaxLatDistance :: Coord
