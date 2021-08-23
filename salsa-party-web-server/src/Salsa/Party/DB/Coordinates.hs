@@ -6,6 +6,7 @@
 
 module Salsa.Party.DB.Coordinates where
 
+import Data.Aeson as JSON
 import Data.Fixed
 import Data.Proxy
 import Data.Validity
@@ -13,7 +14,6 @@ import Database.Persist
 import Database.Persist.Sql
 import GHC.Generics (Generic)
 import Text.Read
-import Yesod
 
 newtype Latitude = Latitude {unLatitude :: Nano}
   deriving
@@ -22,9 +22,7 @@ newtype Latitude = Latitude {unLatitude :: Nano}
       Generic,
       Num,
       Fractional,
-      Real,
-      FromJSON,
-      ToJSON
+      Real
     )
 
 mkLatitude :: Nano -> Latitude
@@ -44,6 +42,12 @@ instance Show Latitude where
 instance Read Latitude where
   readPrec = mkLatitude <$> readPrec
 
+instance FromJSON Latitude where
+  parseJSON v = mkLatitude <$> parseJSON v
+
+instance ToJSON Latitude where
+  toJSON = toJSON . unLatitude
+
 instance PersistField Latitude where
   toPersistValue = toPersistValue . unLatitude
   fromPersistValue = fmap mkLatitude . fromPersistValue
@@ -58,9 +62,7 @@ newtype Longitude = Longitude {unLongitude :: Nano}
       Generic,
       Num,
       Fractional,
-      Real,
-      FromJSON,
-      ToJSON
+      Real
     )
 
 mkLongitude :: Nano -> Longitude
@@ -79,6 +81,12 @@ instance Show Longitude where
 
 instance Read Longitude where
   readPrec = mkLongitude <$> readPrec
+
+instance FromJSON Longitude where
+  parseJSON v = mkLongitude <$> parseJSON v
+
+instance ToJSON Longitude where
+  toJSON = toJSON . unLongitude
 
 instance PersistField Longitude where
   toPersistValue = toPersistValue . unLongitude
