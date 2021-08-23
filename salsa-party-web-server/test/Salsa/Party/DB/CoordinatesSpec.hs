@@ -3,6 +3,7 @@
 
 module Salsa.Party.DB.CoordinatesSpec (spec) where
 
+import Data.Fixed
 import Salsa.Party.DB.Coordinates
 import Salsa.Party.Web.Server.Gen ()
 import Test.Syd
@@ -30,15 +31,19 @@ spec = do
     it "works with this example" $ do
       mkLatitude (- 110) `shouldBe` Nothing
     it "works with this example" $ do
-      mkLatitude (- 60) `shouldBe` Just (-60)
+      mkLatitude (- 60) `shouldBe` Just (- 60)
+    it "works with the lower boundary" $ do
+      mkLatitude (- 90) `shouldBe` Just (- 90)
+    it "works with the upper boundary" $ do
+      mkLatitude 90 `shouldBe` Just 90
     it "works with this example" $ do
       mkLatitude 70 `shouldBe` Just 70
     it "works with this example" $ do
       mkLatitude 100 `shouldBe` Nothing
     it "works with this example" $ do
       mkLatitude 300 `shouldBe` Nothing
-    it "produces valid latitudes" $
-      producesValidsOnValids mkLatitude
+
+    it "produces valid latitudes" $ producesValidsOnValids mkLatitude
 
   describe "mkLongitude" $ do
     it "works with this example" $ do
@@ -46,13 +51,20 @@ spec = do
     it "works with this example" $ do
       mkLongitude (-210) `shouldBe` Nothing
     it "works with this example" $ do
-      mkLongitude (- 40) `shouldBe` Just (-40)
+      mkLongitude (- 40) `shouldBe` Just (- 40)
+    it "works with the upper boundary" $ do
+      mkLongitude 180 `shouldBe` Nothing
+    it "works with the lower boundary" $ do
+      mkLongitude (- 180) `shouldBe` Just (Longitude (- 180))
+    it "works with the upper boundary" $ do
+      mkLongitude (180 - MkFixed 1) `shouldBe` Just (Longitude (180 - MkFixed 1))
     it "works with this example" $ do
       mkLongitude 50 `shouldBe` Just 50
     it "works with this example" $ do
       mkLongitude 200 `shouldBe` Nothing
     it "works with this example" $ do
       mkLongitude 410 `shouldBe` Nothing
+
     it "produces valid longitudes" $ producesValidsOnValids mkLongitude
 
   describe "distanceTo" $ do

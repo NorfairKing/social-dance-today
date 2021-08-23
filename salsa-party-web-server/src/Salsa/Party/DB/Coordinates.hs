@@ -13,17 +13,21 @@
 --
 --  * A latitude is in the range [-90, 90] where -90 is opposite to 90.
 --
---  * A longitude is in the range [-180, 180] where -180 is the same as 180.
+--  * A longitude is in the range [-180, 180[ where -180 is the same as 180, so we choose an open interval.
 --
 --  * The precision that we use matters.
 --    See https://xkcd.com/2170/ for more details.
 --    At the moment we are using Nano, but that's too precise
+--
+--  We made these decisions:
+--
+--  * Num instance for literals, but for nothing else
+--  * Real and Fractional instances to be able to convert to Double for distance calculations
+--  * No bounded and Enum instances because we don't need them.
 module Salsa.Party.DB.Coordinates
-  ( Latitude,
-    unLatitude,
+  ( Latitude (..),
     mkLatitude,
-    Longitude,
-    unLongitude,
+    Longitude (..),
     mkLongitude,
     Coordinates (..),
     distanceTo,
@@ -47,6 +51,25 @@ newtype Latitude = Latitude {unLatitude :: Nano}
       Ord,
       Generic
     )
+
+mkLatitude :: Nano -> Maybe Latitude
+mkLatitude = constructValid . Latitude
+
+mkLatitudeOrError :: Nano -> Either String Latitude
+mkLatitudeOrError = prettyValidate . Latitude
+
+mkLatitudeOrFail :: MonadFail m => Nano -> m Latitude
+mkLatitudeOrFail n = case mkLatitudeOrError n of
+  Left err -> fail err
+  Right l -> pure l
+
+instance Validity Latitude where
+  validate lat@Latitude {..} =
+    mconcat
+      [ genericValidate lat,
+        declare ("Is -180 or more: " <> show unLatitude) $ unLatitude >= -90,
+        declare ("Is 180 or less: " <> show unLatitude) $ unLatitude <= 90
+      ]
 
 instance Num Latitude where
   fromInteger i = case mkLatitudeOrError (fromInteger i) of
@@ -88,25 +111,6 @@ instance Real Latitude where
   toRational :: Latitude -> Rational
   toRational = toRational . unLatitude
 
-mkLatitude :: Nano -> Maybe Latitude
-mkLatitude = constructValid . Latitude
-
-mkLatitudeOrError :: Nano -> Either String Latitude
-mkLatitudeOrError = prettyValidate . Latitude
-
-mkLatitudeOrFail :: MonadFail m => Nano -> m Latitude
-mkLatitudeOrFail n = case mkLatitudeOrError n of
-  Left err -> fail err
-  Right l -> pure l
-
-instance Validity Latitude where
-  validate lat@Latitude {..} =
-    mconcat
-      [ genericValidate lat,
-        declare "Is -90 or more" $ unLatitude >= -90,
-        declare "Is 90 or less" $ unLatitude <= 90
-      ]
-
 instance Show Latitude where
   show = show . unLatitude
 
@@ -133,6 +137,25 @@ newtype Longitude = Longitude {unLongitude :: Nano}
       Generic
     )
 
+mkLongitude :: Nano -> Maybe Longitude
+mkLongitude = constructValid . Longitude
+
+mkLongitudeOrError :: Nano -> Either String Longitude
+mkLongitudeOrError = prettyValidate . Longitude
+
+mkLongitudeOrFail :: MonadFail m => Nano -> m Longitude
+mkLongitudeOrFail n = case mkLongitudeOrError n of
+  Left err -> fail err
+  Right l -> pure l
+
+instance Validity Longitude where
+  validate lon@Longitude {..} =
+    mconcat
+      [ genericValidate lon,
+        declare ("Is -180 or more: " <> show unLongitude) $ unLongitude >= -180,
+        declare ("Is 180 or less: " <> show unLongitude) $ unLongitude < 180
+      ]
+
 instance Num Longitude where
   fromInteger i = case mkLongitudeOrError (fromInteger i) of
     Left err -> error err
@@ -145,8 +168,12 @@ instance Num Longitude where
   -- > negate (50 :: Longitude)
   -- instead of
   -- > Longitude (-50)
+  --
+  -- We have to be able to error as well, because -180 is 180 and 180 is not valid.
   negate :: Longitude -> Longitude
-  negate = Longitude . negate . unLongitude
+  negate l = case mkLongitudeOrError (negate (unLongitude l)) of
+    Left err -> error err
+    Right l' -> l'
 
   (+) :: Longitude -> Longitude -> Longitude
   (+) = error "It makes no sense to add longitudes."
@@ -172,25 +199,6 @@ instance Real Longitude where
   -- This function promises more precision, which isn't there, but at least not less.
   toRational :: Longitude -> Rational
   toRational = toRational . unLongitude
-
-mkLongitude :: Nano -> Maybe Longitude
-mkLongitude = constructValid . Longitude
-
-mkLongitudeOrError :: Nano -> Either String Longitude
-mkLongitudeOrError = prettyValidate . Longitude
-
-mkLongitudeOrFail :: MonadFail m => Nano -> m Longitude
-mkLongitudeOrFail n = case mkLongitudeOrError n of
-  Left err -> fail err
-  Right l -> pure l
-
-instance Validity Longitude where
-  validate lon@Longitude {..} =
-    mconcat
-      [ genericValidate lon,
-        declare "Is -180 or more" $ unLongitude >= -180,
-        declare "Is 180 or less" $ unLongitude <= 180
-      ]
 
 instance Show Longitude where
   show = show . unLongitude
