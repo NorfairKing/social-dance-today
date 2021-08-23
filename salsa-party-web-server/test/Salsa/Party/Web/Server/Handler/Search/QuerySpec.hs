@@ -26,13 +26,13 @@ spec = do
             forAllValid $ \party3Prototype ->
               forAllValid $ \day ->
                 flip runSqlPool pool $ do
-                  let queryPlace = Place {placeQuery = "Search Place", placeLat = 0, placeLon = 0}
+                  let queryPlace = Place {placeQuery = "Search Place", placeLat = Latitude 0, placeLon = Longitude 0}
                   _ <- DB.insert queryPlace
-                  let place1 = Place {placeQuery = "Place 1", placeLat = 0, placeLon = 0.05}
+                  let place1 = Place {placeQuery = "Place 1", placeLat = Latitude 0, placeLon = Longitude 0.05}
                   place1Id <- DB.insert place1
-                  let place2 = Place {placeQuery = "Place 2", placeLat = 0, placeLon = 0.1}
+                  let place2 = Place {placeQuery = "Place 2", placeLat = Latitude 0, placeLon = Longitude 0.1}
                   place2Id <- DB.insert place2
-                  let place3 = Place {placeQuery = "Place 3", placeLat = 0, placeLon = 0.15}
+                  let place3 = Place {placeQuery = "Place 3", placeLat = Latitude 0, placeLon = Longitude 0.15}
                   place3Id <- DB.insert place3
                   let party1 =
                         party1Prototype
@@ -70,13 +70,13 @@ spec = do
             forAllValid $ \party3Prototype ->
               forAllValid $ \day ->
                 flip runSqlPool pool $ do
-                  let queryPlace = Place {placeQuery = "Search Place", placeLat = 0, placeLon = 0}
+                  let queryPlace = Place {placeQuery = "Search Place", placeLat = Latitude 0, placeLon = Longitude 0}
                   _ <- DB.insert queryPlace
-                  let place1 = Place {placeQuery = "Place 1", placeLat = 0, placeLon = 0.1}
+                  let place1 = Place {placeQuery = "Place 1", placeLat = Latitude 0, placeLon = Longitude 0.1}
                   place1Id <- DB.insert place1
-                  let place2 = Place {placeQuery = "Place 2", placeLat = 0.1, placeLon = 0}
+                  let place2 = Place {placeQuery = "Place 2", placeLat = Latitude 0.1, placeLon = Longitude 0}
                   place2Id <- DB.insert place2
-                  let place3 = Place {placeQuery = "Place 3", placeLat = 5, placeLon = 5}
+                  let place3 = Place {placeQuery = "Place 3", placeLat = Latitude 5, placeLon = Longitude 5}
                   place3Id <- DB.insert place3
                   let party1 =
                         party1Prototype
@@ -117,11 +117,11 @@ spec = do
                   forAll (genValid `suchThat` (\i -> imageKey image1Prototype /= imageKey i)) $ \image2Prototype ->
                     forAllValid $ \day ->
                       flip runSqlPool pool $ do
-                        let queryPlace = Place {placeQuery = "Search Place", placeLat = 0, placeLon = 0}
+                        let queryPlace = Place {placeQuery = "Search Place", placeLat = Latitude 0, placeLon = Longitude 0}
                         _ <- DB.insert queryPlace
-                        let place1 = Place {placeQuery = "Place 1", placeLat = 0, placeLon = 0.1}
+                        let place1 = Place {placeQuery = "Place 1", placeLat = Latitude 0, placeLon = Longitude 0.1}
                         place1Id <- DB.insert place1
-                        let place2 = Place {placeQuery = "Place 2", placeLat = 0.1, placeLon = 0}
+                        let place2 = Place {placeQuery = "Place 2", placeLat = Latitude 0.1, placeLon = Longitude 0}
                         place2Id <- DB.insert place2
                         let party1 =
                               party1Prototype
@@ -166,13 +166,13 @@ spec = do
                     $ \externalEvent3Prototype ->
                       forAllValid $ \day ->
                         flip runSqlPool pool $ do
-                          let queryPlace = Place {placeQuery = "Search Place", placeLat = 0, placeLon = 0}
+                          let queryPlace = Place {placeQuery = "Search Place", placeLat = Latitude 0, placeLon = Longitude 0}
                           _ <- DB.insert queryPlace
-                          let place1 = Place {placeQuery = "Place 1 abc", placeLat = 0, placeLon = 0.1}
+                          let place1 = Place {placeQuery = "Place 1 abc", placeLat = Latitude 0, placeLon = Longitude 0.1}
                           place1Id <- DB.insert place1
-                          let place2 = Place {placeQuery = "Place 2 def", placeLat = 0.1, placeLon = 0}
+                          let place2 = Place {placeQuery = "Place 2 def", placeLat = Latitude 0.1, placeLon = Longitude 0}
                           place2Id <- DB.insert place2
-                          let place3 = Place {placeQuery = "Place 3 ghi", placeLat = 0.2, placeLon = 0.1}
+                          let place3 = Place {placeQuery = "Place 3 ghi", placeLat = Latitude 0.2, placeLon = Longitude 0.1}
                           place3Id <- DB.insert place3
                           let day2 = addDays 1 day
                           let party1 = party1Prototype {partyTitle = "Party 1 abc", partyDay = day, partyPlace = place1Id}
@@ -181,11 +181,11 @@ spec = do
                           DB.insert_ party2
                           let party3 = party3Prototype {partyTitle = "Party 3 ghi", partyDay = day2, partyPlace = place3Id}
                           DB.insert_ party3
-                          let place4 = Place {placeQuery = "Place 4 lmn", placeLat = 0.1, placeLon = 0.2}
+                          let place4 = Place {placeQuery = "Place 4 lmn", placeLat = Latitude 0.1, placeLon = Longitude 0.2}
                           place4Id <- DB.insert place4
-                          let place5 = Place {placeQuery = "Place 5 opq", placeLat = 0.2, placeLon = 0.2}
+                          let place5 = Place {placeQuery = "Place 5 opq", placeLat = Latitude 0.2, placeLon = Longitude 0.2}
                           place5Id <- DB.insert place5
-                          let place6 = Place {placeQuery = "Place 6 rst", placeLat = 0.2, placeLon = 0.2}
+                          let place6 = Place {placeQuery = "Place 6 rst", placeLat = Latitude 0.2, placeLon = Longitude 0.2}
                           place6Id <- DB.insert place6
                           let externalEvent1 = externalEvent1Prototype {externalEventTitle = "External Event 1 abcdef", externalEventDay = day, externalEventPlace = place4Id}
                           externalEvent1Id <- DB.insert externalEvent1

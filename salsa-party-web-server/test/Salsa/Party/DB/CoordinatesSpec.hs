@@ -28,13 +28,13 @@ spec = do
       it "works with this example" $ do
         mkLatitude (- 110) `shouldBe` Nothing
       it "works with this example" $ do
-        mkLatitude (- 60) `shouldBe` Just (- 60)
+        mkLatitude (- 60) `shouldBe` Just (Latitude (- 60))
       it "works with the lower boundary" $ do
-        mkLatitude (- 90) `shouldBe` Just (- 90)
+        mkLatitude (- 90) `shouldBe` Just (Latitude (- 90))
       it "works with the upper boundary" $ do
-        mkLatitude 90 `shouldBe` Just 90
+        mkLatitude 90 `shouldBe` Just (Latitude 90)
       it "works with this example" $ do
-        mkLatitude 70 `shouldBe` Just 70
+        mkLatitude 70 `shouldBe` Just (Latitude 70)
       it "works with this example" $ do
         mkLatitude 100 `shouldBe` Nothing
       it "works with this example" $ do
@@ -56,7 +56,7 @@ spec = do
       it "works with this example" $ do
         mkLongitude (-210) `shouldBe` Nothing
       it "works with this example" $ do
-        mkLongitude (- 40) `shouldBe` Just (- 40)
+        mkLongitude (- 40) `shouldBe` Just (Longitude (- 40))
       it "works with the upper boundary" $ do
         mkLongitude 180 `shouldBe` Nothing
       it "works with the lower boundary" $ do
@@ -64,7 +64,7 @@ spec = do
       it "works with the upper boundary" $ do
         mkLongitude (180 - MkFixed 1) `shouldBe` Just (Longitude (180 - MkFixed 1))
       it "works with this example" $ do
-        mkLongitude 50 `shouldBe` Just 50
+        mkLongitude 50 `shouldBe` Just (Longitude 50)
       it "works with this example" $ do
         mkLongitude 200 `shouldBe` Nothing
       it "works with this example" $ do
@@ -80,14 +80,14 @@ spec = do
 
       it "outputs zurich main station's coordinates correctly" $
         toPathPiece
-          (Coordinates {coordinatesLat = 47.3778579, coordinatesLon = 8.5381339})
+          (Coordinates {coordinatesLat = Latitude 47.3778579, coordinatesLon = Longitude 8.5381339})
           `shouldBe` "47.37785,8.53813"
 
     describe "distanceTo" $ do
-      let zurichMainStation = Coordinates {coordinatesLat = 47.3778579, coordinatesLon = 8.5381339}
-      let zurichPrimeTower = Coordinates {coordinatesLat = 47.3861804, coordinatesLon = 8.5150251}
-      let zurichBlatterWiese = Coordinates {coordinatesLat = 47.3547140, coordinatesLon = 8.5512022}
-      let londonVictoria = Coordinates {coordinatesLat = 51.4952237, coordinatesLon = -0.1438952}
+      let zurichMainStation = Coordinates {coordinatesLat = Latitude 47.3778579, coordinatesLon = Longitude 8.5381339}
+      let zurichPrimeTower = Coordinates {coordinatesLat = Latitude 47.3861804, coordinatesLon = Longitude 8.5150251}
+      let zurichBlatterWiese = Coordinates {coordinatesLat = Latitude 47.3547140, coordinatesLon = Longitude 8.5512022}
+      let londonVictoria = Coordinates {coordinatesLat = Latitude 51.4952237, coordinatesLon = Longitude (-0.1438952)}
       let shouldBeCloseTo :: Double -> Double -> IO ()
           shouldBeCloseTo x y =
             let diff = abs (x - y)

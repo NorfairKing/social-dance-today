@@ -44,8 +44,8 @@ spec = do
   let examplePlace =
         Place
           { placeQuery = "Spitalgasse 4, 3011 Bern Bern",
-            placeLat = 46.948335899,
-            placeLon = 7.443078400
+            placeLat = Latitude 46.948335899,
+            placeLon = Longitude 7.443078400
           }
 
   appSpec $

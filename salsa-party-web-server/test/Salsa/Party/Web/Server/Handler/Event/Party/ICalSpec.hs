@@ -97,8 +97,8 @@ spec = do
             examplePlace =
               Place
                 { placeQuery = "Spitalgasse 4, 3011 Bern Bern",
-                  placeLat = 46.948335899,
-                  placeLon = 7.44
+                  placeLat = Latitude 46.948335899,
+                  placeLon = Longitude 7.44
                 }
 
             urlRender :: Route App -> Text
