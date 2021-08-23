@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Salsa.Party.Web.Server.Handler.Sitemap where
 
@@ -7,8 +8,11 @@ import Conduit
 import Control.Monad
 import Control.Monad.Trans.Resource
 import qualified Data.Conduit.Combinators as C
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Builder as TLB
 import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Handler.Import
+import Text.Shakespeare.Text
 import Yesod.Sitemap
 
 getSitemapR :: Handler TypedContent
@@ -93,5 +97,7 @@ getSitemapR = do
             }
       )
 
-getRobotsR :: Handler Text
-getRobotsR = robots SitemapR
+getRobotsR :: Handler TL.Text
+getRobotsR = do
+  urlRender <- getUrlRenderParams
+  pure $ TLB.toLazyText $ $(textFile "templates/robots.txt") urlRender
