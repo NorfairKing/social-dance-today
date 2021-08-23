@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -45,11 +45,48 @@ newtype Latitude = Latitude {unLatitude :: Nano}
   deriving
     ( Eq,
       Ord,
-      Generic,
-      Num,
-      Fractional,
-      Real
+      Generic
     )
+
+instance Num Latitude where
+  fromInteger i = case mkLatitudeOrError (fromInteger i) of
+    Left err -> error err
+    Right l -> l
+
+  -- We have to implement negate to support literals correctly,
+  -- because this expression:
+  -- > (- 50 :: Latitude)
+  -- is interpreted as
+  -- > negate (50 :: Latitude)
+  -- instead of
+  -- > Latitude (-50)
+  negate :: Latitude -> Latitude
+  negate = Latitude . negate . unLatitude
+
+  (+) :: Latitude -> Latitude -> Latitude
+  (+) = error "It makes no sense to add latitudes."
+  (-) :: Latitude -> Latitude -> Latitude
+  (-) = error "It makes no sense to subtract latitudes."
+  (*) :: Latitude -> Latitude -> Latitude
+  (*) = error "It makes no sense to multiply latitudes."
+  abs :: Latitude -> Latitude
+  abs = error "It makes no sense to take the absolute value of latitudes."
+  signum :: Latitude -> Latitude
+  signum = error "It makes no sense to take the sign of latitudes."
+
+instance Fractional Latitude where
+  fromRational :: Rational -> Latitude
+  fromRational r = case mkLatitudeOrError (fromRational r) of
+    Left err -> error err
+    Right l -> l
+
+  (/) :: Latitude -> Latitude -> Latitude
+  (/) = error "It makes no sense to divide latitudes."
+
+instance Real Latitude where
+  -- This function promises more precision, which isn't there, but at least not less.
+  toRational :: Latitude -> Rational
+  toRational = toRational . unLatitude
 
 mkLatitude :: Nano -> Maybe Latitude
 mkLatitude = constructValid . Latitude
@@ -93,11 +130,48 @@ newtype Longitude = Longitude {unLongitude :: Nano}
   deriving
     ( Eq,
       Ord,
-      Generic,
-      Num,
-      Fractional,
-      Real
+      Generic
     )
+
+instance Num Longitude where
+  fromInteger i = case mkLongitudeOrError (fromInteger i) of
+    Left err -> error err
+    Right l -> l
+
+  -- We have to implement negate to support literals correctly,
+  -- because this expression:
+  -- > (- 50 :: Longitude)
+  -- is interpreted as
+  -- > negate (50 :: Longitude)
+  -- instead of
+  -- > Longitude (-50)
+  negate :: Longitude -> Longitude
+  negate = Longitude . negate . unLongitude
+
+  (+) :: Longitude -> Longitude -> Longitude
+  (+) = error "It makes no sense to add longitudes."
+  (-) :: Longitude -> Longitude -> Longitude
+  (-) = error "It makes no sense to subtract longitudes."
+  (*) :: Longitude -> Longitude -> Longitude
+  (*) = error "It makes no sense to multiply longitudes."
+  abs :: Longitude -> Longitude
+  abs = error "It makes no sense to take the absolute value of longitudes."
+  signum :: Longitude -> Longitude
+  signum = error "It makes no sense to take the sign of longitudes."
+
+instance Fractional Longitude where
+  fromRational :: Rational -> Longitude
+  fromRational r = case mkLongitudeOrError (fromRational r) of
+    Left err -> error err
+    Right l -> l
+
+  (/) :: Longitude -> Longitude -> Longitude
+  (/) = error "It makes no sense to divide latitudes."
+
+instance Real Longitude where
+  -- This function promises more precision, which isn't there, but at least not less.
+  toRational :: Longitude -> Rational
+  toRational = toRational . unLongitude
 
 mkLongitude :: Nano -> Maybe Longitude
 mkLongitude = constructValid . Longitude
