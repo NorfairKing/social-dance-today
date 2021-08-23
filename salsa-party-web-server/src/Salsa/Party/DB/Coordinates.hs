@@ -25,7 +25,7 @@
 --
 --  * Num instance for literals, but for nothing else
 --  * Real and Fractional instances to be able to convert to Double for distance calculations
---  * No bounded and Enum instances because we don't need them.
+--  * No Enum instances because we don't need them.
 module Salsa.Party.DB.Coordinates
   ( Coord,
     Latitude (..),
@@ -84,8 +84,8 @@ instance Validity Latitude where
   validate lat@Latitude {..} =
     mconcat
       [ genericValidate lat,
-        declare ("Is -90 or more: " <> show unLatitude) $ unLatitude >= -90,
-        declare ("Is 90 or less: " <> show unLatitude) $ unLatitude <= 90
+        declare ("Is -90 or more: " <> show unLatitude) $ lat >= minBound,
+        declare ("Is 90 or less: " <> show unLatitude) $ lat <= maxBound
       ]
 
 instance Show Latitude where
@@ -93,6 +93,10 @@ instance Show Latitude where
 
 instance Read Latitude where
   readPrec = readPrec >>= mkLatitudeOrFail
+
+instance Bounded Latitude where
+  minBound = Latitude (-90)
+  maxBound = Latitude 90
 
 instance ToJSON Latitude where
   toJSON = toJSON . unLatitude
@@ -132,8 +136,8 @@ instance Validity Longitude where
   validate lon@Longitude {..} =
     mconcat
       [ genericValidate lon,
-        declare ("Is -180 or more: " <> show unLongitude) $ unLongitude >= -180,
-        declare ("Is 180 or less: " <> show unLongitude) $ unLongitude < 180
+        declare ("Is -180 or more: " <> show unLongitude) $ lon >= minBound,
+        declare ("Is 180 or less: " <> show unLongitude) $ lon <= maxBound
       ]
 
 instance Show Longitude where
@@ -154,6 +158,10 @@ instance PersistField Longitude where
 
 instance PersistFieldSql Longitude where
   sqlType Proxy = sqlType (Proxy :: Proxy Coord)
+
+instance Bounded Longitude where
+  minBound = Longitude (-180)
+  maxBound = Longitude (180 - MkFixed 1)
 
 longitudeToFloat :: RealFloat f => Longitude -> f
 longitudeToFloat = realToFrac . unLongitude
