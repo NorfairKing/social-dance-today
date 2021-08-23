@@ -17,8 +17,9 @@
 --  * A longitude is in the range [-180, 180[ where -180 is the same as 180, so we choose an open interval.
 --
 --  * The precision that we use matters.
+--    We are using five digits of precision, which corresponds to about 1m.
+--    This is more than enough to point at a party.
 --    See https://xkcd.com/2170/ for more details.
---    At the moment we are using Nano, but that's too precise
 --
 --  We made these decisions:
 --
@@ -26,7 +27,8 @@
 --  * Real and Fractional instances to be able to convert to Double for distance calculations
 --  * No bounded and Enum instances because we don't need them.
 module Salsa.Party.DB.Coordinates
-  ( Latitude (..),
+  ( Coord,
+    Latitude (..),
     mkLatitude,
     Longitude (..),
     mkLongitude,
@@ -49,20 +51,27 @@ import GHC.Generics (Generic)
 import Text.Read
 import Web.PathPieces
 
-newtype Latitude = Latitude {unLatitude :: Nano}
+data E5
+
+instance HasResolution E5 where
+  resolution _ = 100_000
+
+type Coord = Fixed E5
+
+newtype Latitude = Latitude {unLatitude :: Coord}
   deriving
     ( Eq,
       Ord,
       Generic
     )
 
-mkLatitude :: Nano -> Maybe Latitude
+mkLatitude :: Coord -> Maybe Latitude
 mkLatitude = constructValid . Latitude
 
-mkLatitudeOrError :: Nano -> Either String Latitude
+mkLatitudeOrError :: Coord -> Either String Latitude
 mkLatitudeOrError = prettyValidate . Latitude
 
-mkLatitudeOrFail :: MonadFail m => Nano -> m Latitude
+mkLatitudeOrFail :: MonadFail m => Coord -> m Latitude
 mkLatitudeOrFail n = case mkLatitudeOrError n of
   Left err -> fail err
   Right l -> pure l
@@ -71,8 +80,8 @@ instance Validity Latitude where
   validate lat@Latitude {..} =
     mconcat
       [ genericValidate lat,
-        declare ("Is -180 or more: " <> show unLatitude) $ unLatitude >= -90,
-        declare ("Is 180 or less: " <> show unLatitude) $ unLatitude <= 90
+        declare ("Is -90 or more: " <> show unLatitude) $ unLatitude >= -90,
+        declare ("Is 90 or less: " <> show unLatitude) $ unLatitude <= 90
       ]
 
 instance Num Latitude where
@@ -132,22 +141,22 @@ instance PersistField Latitude where
   fromPersistValue pv = fromPersistValue pv >>= (left T.pack . mkLatitudeOrError)
 
 instance PersistFieldSql Latitude where
-  sqlType Proxy = sqlType (Proxy :: Proxy Nano)
+  sqlType Proxy = sqlType (Proxy :: Proxy Coord)
 
-newtype Longitude = Longitude {unLongitude :: Nano}
+newtype Longitude = Longitude {unLongitude :: Coord}
   deriving
     ( Eq,
       Ord,
       Generic
     )
 
-mkLongitude :: Nano -> Maybe Longitude
+mkLongitude :: Coord -> Maybe Longitude
 mkLongitude = constructValid . Longitude
 
-mkLongitudeOrError :: Nano -> Either String Longitude
+mkLongitudeOrError :: Coord -> Either String Longitude
 mkLongitudeOrError = prettyValidate . Longitude
 
-mkLongitudeOrFail :: MonadFail m => Nano -> m Longitude
+mkLongitudeOrFail :: MonadFail m => Coord -> m Longitude
 mkLongitudeOrFail n = case mkLongitudeOrError n of
   Left err -> fail err
   Right l -> pure l
@@ -221,7 +230,7 @@ instance PersistField Longitude where
   fromPersistValue pv = fromPersistValue pv >>= (left T.pack . mkLongitudeOrError)
 
 instance PersistFieldSql Longitude where
-  sqlType Proxy = sqlType (Proxy :: Proxy Nano)
+  sqlType Proxy = sqlType (Proxy :: Proxy Coord)
 
 data Coordinates = Coordinates
   { coordinatesLat :: !Latitude,

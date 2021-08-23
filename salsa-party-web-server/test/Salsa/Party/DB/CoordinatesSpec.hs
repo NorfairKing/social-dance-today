@@ -81,7 +81,7 @@ spec = do
       it "outputs zurich main station's coordinates correctly" $
         toPathPiece
           (Coordinates {coordinatesLat = 47.3778579, coordinatesLon = 8.5381339})
-          `shouldBe` "47.377857900,8.538133900"
+          `shouldBe` "47.37785,8.53813"
 
     describe "distanceTo" $ do
       let zurichMainStation = Coordinates {coordinatesLat = 47.3778579, coordinatesLon = 8.5381339}

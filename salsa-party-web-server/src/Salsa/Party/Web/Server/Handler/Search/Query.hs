@@ -11,6 +11,7 @@ import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import qualified Database.Esqueleto as E
+import Salsa.Party.DB.Coordinates
 import Salsa.Party.Web.Server.Handler.Import
 import Text.EditDistance
 
@@ -113,11 +114,11 @@ distanceEstimationQuery Coordinates {..} p = do
   E.orderBy [E.asc distSquared]
 
 -- One degree longitude is 111km
-roughMaxLatDistance :: Nano
+roughMaxLatDistance :: Coord
 roughMaxLatDistance = realToFrac maximumDistance / 111_000
 
 -- Five degrees longitude is 555km at the equator and about 100km in north svalbard
-roughMaxLonDistance :: Nano
+roughMaxLonDistance :: Coord
 roughMaxLonDistance = 5 * realToFrac maximumDistance / 111_000
 
 postProcessParties ::
