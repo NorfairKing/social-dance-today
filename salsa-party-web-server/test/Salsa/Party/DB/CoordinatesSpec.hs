@@ -26,8 +26,34 @@ spec = do
   jsonSpecOnValid @Latitude
   jsonSpecOnValid @Longitude
 
-  describe "mkLatitude" $ it "produces valid latitudes" $ producesValidsOnValids mkLatitude
-  describe "mkLongitude" $ it "produces valid longitudes" $ producesValidsOnValids mkLongitude
+  describe "mkLatitude" $ do
+    it "works with this example" $ do
+      mkLatitude (- 110) `shouldBe` Nothing
+    it "works with this example" $ do
+      mkLatitude (- 60) `shouldBe` Just (-60)
+    it "works with this example" $ do
+      mkLatitude 70 `shouldBe` Just 70
+    it "works with this example" $ do
+      mkLatitude 100 `shouldBe` Nothing
+    it "works with this example" $ do
+      mkLatitude 300 `shouldBe` Nothing
+    it "produces valid latitudes" $
+      producesValidsOnValids mkLatitude
+
+  describe "mkLongitude" $ do
+    it "works with this example" $ do
+      mkLongitude (- 410) `shouldBe` Nothing
+    it "works with this example" $ do
+      mkLongitude (-210) `shouldBe` Nothing
+    it "works with this example" $ do
+      mkLongitude (- 40) `shouldBe` Just (-40)
+    it "works with this example" $ do
+      mkLongitude 50 `shouldBe` Just 50
+    it "works with this example" $ do
+      mkLongitude 200 `shouldBe` Nothing
+    it "works with this example" $ do
+      mkLongitude 410 `shouldBe` Nothing
+    it "produces valid longitudes" $ producesValidsOnValids mkLongitude
 
   describe "distanceTo" $ do
     let zurichMainStation = Coordinates {coordinatesLat = 47.3778579, coordinatesLon = 8.5381339}

@@ -4,6 +4,20 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
+-- | We store latitude and longitude as a fixed-point number so we don't have to deal with NaNs.
+--
+-- This is a much deeper rabit hole than I expected:
+--
+--  * A latitude and longitude have a qualitative difference.
+--    A longitude can be considered to wrap around modularly but a latitude rather not.
+--
+--  * A latitude is in the range [-90, 90] where -90 is opposite to 90.
+--
+--  * A longitude is in the range [-180, 180] where -180 is the same as 180.
+--
+--  * The precision that we use matters.
+--    See https://xkcd.com/2170/ for more details.
+--    At the moment we are using Nano, but that's too precise
 module Salsa.Party.DB.Coordinates
   ( Latitude,
     unLatitude,
@@ -16,9 +30,11 @@ module Salsa.Party.DB.Coordinates
   )
 where
 
+import Control.Arrow (left)
 import Data.Aeson as JSON
 import Data.Fixed
 import Data.Proxy
+import qualified Data.Text as T
 import Data.Validity
 import Database.Persist
 import Database.Persist.Sql
@@ -35,8 +51,16 @@ newtype Latitude = Latitude {unLatitude :: Nano}
       Real
     )
 
-mkLatitude :: Nano -> Latitude
-mkLatitude n = Latitude $ ((n + 90) `mod'` 180) - 90
+mkLatitude :: Nano -> Maybe Latitude
+mkLatitude = constructValid . Latitude
+
+mkLatitudeOrError :: Nano -> Either String Latitude
+mkLatitudeOrError = prettyValidate . Latitude
+
+mkLatitudeOrFail :: MonadFail m => Nano -> m Latitude
+mkLatitudeOrFail n = case mkLatitudeOrError n of
+  Left err -> fail err
+  Right l -> pure l
 
 instance Validity Latitude where
   validate lat@Latitude {..} =
@@ -50,17 +74,17 @@ instance Show Latitude where
   show = show . unLatitude
 
 instance Read Latitude where
-  readPrec = mkLatitude <$> readPrec
-
-instance FromJSON Latitude where
-  parseJSON v = mkLatitude <$> parseJSON v
+  readPrec = readPrec >>= mkLatitudeOrFail
 
 instance ToJSON Latitude where
   toJSON = toJSON . unLatitude
 
+instance FromJSON Latitude where
+  parseJSON v = parseJSON v >>= mkLatitudeOrFail
+
 instance PersistField Latitude where
   toPersistValue = toPersistValue . unLatitude
-  fromPersistValue = fmap mkLatitude . fromPersistValue
+  fromPersistValue pv = fromPersistValue pv >>= (left T.pack . mkLatitudeOrError)
 
 instance PersistFieldSql Latitude where
   sqlType Proxy = sqlType (Proxy :: Proxy Nano)
@@ -75,8 +99,16 @@ newtype Longitude = Longitude {unLongitude :: Nano}
       Real
     )
 
-mkLongitude :: Nano -> Longitude
-mkLongitude n = Longitude $ ((n + 180) `mod'` 360) - 180
+mkLongitude :: Nano -> Maybe Longitude
+mkLongitude = constructValid . Longitude
+
+mkLongitudeOrError :: Nano -> Either String Longitude
+mkLongitudeOrError = prettyValidate . Longitude
+
+mkLongitudeOrFail :: MonadFail m => Nano -> m Longitude
+mkLongitudeOrFail n = case mkLongitudeOrError n of
+  Left err -> fail err
+  Right l -> pure l
 
 instance Validity Longitude where
   validate lon@Longitude {..} =
@@ -90,17 +122,17 @@ instance Show Longitude where
   show = show . unLongitude
 
 instance Read Longitude where
-  readPrec = mkLongitude <$> readPrec
-
-instance FromJSON Longitude where
-  parseJSON v = mkLongitude <$> parseJSON v
+  readPrec = readPrec >>= mkLongitudeOrFail
 
 instance ToJSON Longitude where
   toJSON = toJSON . unLongitude
 
+instance FromJSON Longitude where
+  parseJSON v = parseJSON v >>= mkLongitudeOrFail
+
 instance PersistField Longitude where
   toPersistValue = toPersistValue . unLongitude
-  fromPersistValue = fmap mkLongitude . fromPersistValue
+  fromPersistValue pv = fromPersistValue pv >>= (left T.pack . mkLongitudeOrError)
 
 instance PersistFieldSql Longitude where
   sqlType Proxy = sqlType (Proxy :: Proxy Nano)
@@ -114,6 +146,8 @@ data Coordinates = Coordinates
 instance Validity Coordinates
 
 -- See #https://en.wikipedia.org/wiki/Haversine_formula#Formulation
+--
+-- The resulting double will be much more precise than the actual distance, so watch out.
 distanceTo ::
   Coordinates ->
   Coordinates ->

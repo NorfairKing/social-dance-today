@@ -45,11 +45,11 @@ instance GenValid OrganiserForm where
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Latitude where
-  genValid = mkLatitude <$> genValid
+  genValid = ((realToFrac :: Double -> Nano) <$> choose (-90, 90)) `suchThatMap` mkLatitude
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Longitude where
-  genValid = mkLongitude <$> genValid
+  genValid = ((realToFrac :: Double -> Nano) <$> choose (-180, 180)) `suchThatMap` mkLongitude
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Coordinates where
