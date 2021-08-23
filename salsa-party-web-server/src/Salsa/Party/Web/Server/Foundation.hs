@@ -31,7 +31,6 @@ import Data.Validity.Time ()
 import qualified Database.Esqueleto as E
 import qualified Database.Esqueleto.Internal.Sql as E
 import Database.Persist.Sql
-import Google.Maps
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation.App
 import Salsa.Party.Web.Server.Foundation.Auth
@@ -182,9 +181,3 @@ instance ToTypedContent ICal.VCalendar where
 
 typeCalendar :: ContentType
 typeCalendar = "text/calendar"
-
-makeGoogleMapsEmbedUrl :: Text -> Handler (Maybe Text)
-makeGoogleMapsEmbedUrl placeQuery = do
-  mGoogleAPIKey <- getsYesod appGoogleAPIKey
-  forM mGoogleAPIKey $ \apiKey ->
-    pure $ googleMapsEmbedUrl apiKey placeQuery

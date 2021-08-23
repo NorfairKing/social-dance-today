@@ -1,0 +1,12 @@
+var map = document.getElementById ('mymap'); 
+var maplistener = function (e) { 
+    var frame = document.createElement ('iframe'); 
+    frame.src = #{googleMapsEmbedUrl apiKey query}
+    frame.loading = "lazy";
+    frame.allowfullscreen = true;
+    frame.width = #{show mapsWidth};
+    frame.height = #{show mapsHeight};
+    map.parentNode.replaceChild(frame, map);
+    map.removeEventListener ("mouseover", maplistener); 
+}; 
+map.addEventListener ('click', maplistener);     

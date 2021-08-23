@@ -16,6 +16,7 @@ where
 
 import qualified Data.Text.Encoding as TE
 import Google.Calendar
+import Google.Maps
 import Network.URI
 import Salsa.Party.Web.Server.Handler.Event.Party.ICal
 import Salsa.Party.Web.Server.Handler.Event.Party.LD
@@ -33,7 +34,7 @@ partyPageHtml (Entity partyId party@Party {..}) = do
   organiser@Organiser {..} <- runDB $ get404 partyOrganiser
   mSchedule <- runDB $ getScheduleForParty partyId
   mPosterKey <- runDB $ getPosterForParty partyId
-  mGoogleMapsEmbedUrl <- makeGoogleMapsEmbedUrl placeQuery
+  mGoogleMapsWidget <- makeGoogleMapsWidget placeQuery
   now <- liftIO getCurrentTime
   let today = utctDay now
   renderUrl <- getUrlRender

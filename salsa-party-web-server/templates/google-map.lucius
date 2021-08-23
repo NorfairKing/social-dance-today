@@ -1,0 +1,6 @@
+.pointer {
+  cursor: pointer;
+}
+#mymap iframe {
+  border: 0;
+}

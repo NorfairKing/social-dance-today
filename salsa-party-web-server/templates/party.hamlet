@@ -51,16 +51,8 @@
             _{MsgPartyHomepage}
         
 
-    $maybe googleMapsEmbedUrl <- mGoogleMapsEmbedUrl
-      <div .content>
-        <p>
-          <iframe
-            width="600"
-            height="450"
-            style="border:0"
-            loading="lazy"
-            allowfullscreen
-            src=#{googleMapsEmbedUrl}>
+    $maybe googleMapsWidget <- mGoogleMapsWidget
+      ^{googleMapsWidget}
  
     <div .buttons>
       <a .button
