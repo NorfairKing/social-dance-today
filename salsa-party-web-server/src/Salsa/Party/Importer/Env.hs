@@ -366,7 +366,9 @@ tryToImportImage uri = do
 tryToImportImageBlob :: Text -> ByteString -> Import (Maybe ImageId)
 tryToImportImageBlob contentType imageBlob =
   case posterCropImage contentType imageBlob of
-    Left _ -> pure Nothing -- TODO log error
+    Left err -> do
+      logErrorN $ T.pack $ "Error while trying to import image: " <> err
+      pure Nothing
     Right (convertedImageType, convertedImageBlob) -> do
       let casKey = mkCASKey convertedImageType convertedImageBlob
       now <- liftIO getCurrentTime
