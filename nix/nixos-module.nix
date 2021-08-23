@@ -232,25 +232,36 @@ in
       web-server-host =
         with cfg.web-server;
 
-        let redirectHost = host: {
-          "www.${host}" = {
-            enableACME = true;
-            forceSSL = true;
-            globalRedirect = host;
-          };
-        };
-        in
-        optionalAttrs (enable && hosts != [ ]) ({
-          "${head hosts}" =
-            {
+        let
+          primaryHost = {
+            "${head hosts}" = {
               enableACME = true;
               forceSSL = true;
               locations."/" = {
                 proxyPass = "http://localhost:${builtins.toString port}";
               };
-              serverAliases = tail hosts;
             };
-        } // mergeListRecursively (builtins.map redirectHost hosts));
+          };
+          redirectHost = host: {
+            "${host}" = {
+              enableACME = true;
+              forceSSL = true;
+              globalRedirect = head hosts;
+            };
+          };
+          wwwRedirectHost = host: {
+            "www.${host}" = {
+              enableACME = true;
+              forceSSL = true;
+              globalRedirect = host;
+            };
+          };
+        in
+        optionalAttrs (enable && hosts != [ ]) (
+          primaryHost
+          // mergeListRecursively (builtins.map redirectHost (tail hosts))
+          // mergeListRecursively (builtins.map wwwRedirectHost hosts)
+        );
       end-to-end-test-service =
         optionalAttrs (cfg.end-to-end-test.enable or false) {
           "salsa-party-end-to-end-test-${envname}" = {
