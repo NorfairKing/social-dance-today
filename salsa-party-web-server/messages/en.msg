@@ -36,8 +36,8 @@ NavLogIn: Log in
 NavLogOut: Log out
 
 # Form messages
-InvalidLatitude: Invalid latitude
-InvalidLongitude: Invalid longitude
+InvalidLatitude lat@String: Invalid latitude: #{lat}
+InvalidLongitude lon@String: Invalid longitude: #{lon}
 
 # Search Results
 SearchTitleAroundYourLocationToday: Social dance parties near your location today

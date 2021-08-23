@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
@@ -14,8 +15,10 @@ import Control.Monad.Logger
 import Data.ByteString (ByteString)
 import Data.FileEmbed
 import qualified Data.Text as T
+import Data.Validity (Validity)
 import Data.Yaml as Yaml
 import Database.Persist.Sql
+import GHC.Generics (Generic)
 import Salsa.Party.DB
 import System.Exit
 import UnliftIO
@@ -35,7 +38,9 @@ completeServerMigration quiet = do
 data Location = Location
   { locationPlace :: Place
   }
-  deriving (Show)
+  deriving (Show, Generic)
+
+instance Validity Location
 
 instance FromJSON Location where
   parseJSON = withObject "Location" $ \o ->

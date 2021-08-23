@@ -8,12 +8,16 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Database.Persist.Sql
 import Salsa.Party.DB
+import Salsa.Party.DB.Migration
 import Test.Syd
 import Test.Syd.Persistent.Sqlite
+import Test.Syd.Validity
 import UnliftIO
 
 spec :: Spec
-spec = automaticMigrationsSucceedsSpec automaticMigrations
+spec = do
+  describe "locations" $ it "is valid" $ shouldBeValid locations
+  automaticMigrationsSucceedsSpec automaticMigrations
 
 automaticMigrationsSucceedsSpec :: Migration -> Spec
 automaticMigrationsSucceedsSpec currentMigration = do

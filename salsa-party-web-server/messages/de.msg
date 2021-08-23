@@ -39,6 +39,10 @@ NavSignUp: Registrieren
 NavLogIn: Anmelden
 NavLogOut: Abmelden
 
+# Form messages
+InvalidLatitude lat@String: Ungültiger Breitengrat: #{lat}
+InvalidLongitude lon@String: Ungültiger Längengrad: #{lon}
+
 # Search Results
 SearchTitleAroundYourLocationToday:  Social Dance Parties in deiner Umgebung heute
 SearchTitleAroundYourLocationOnDay day@String:  Social Dance Parties in der Nähe am #{day}

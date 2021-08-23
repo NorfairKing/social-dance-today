@@ -38,6 +38,10 @@ NavSignUp: Registreren
 NavLogIn: Aanmelden
 NavLogOut: Afmelden
 
+# Form messages
+InvalidLatitude lat@String: Ongeldige breedtegraad: #{lat}
+InvalidLongitude lon@String: Ongeldige lengtegraad: #{lon}
+
 # Search Results
 SearchTitleAroundYourLocationToday: Socialedansfeesten vandaag bij jou in de buurt
 SearchTitleAroundYourLocationOnDay day@String: Socialedansfeesten op #{day} bij jou in de buurt
