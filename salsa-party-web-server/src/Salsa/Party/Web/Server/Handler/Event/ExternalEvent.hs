@@ -13,7 +13,6 @@ where
 
 import qualified Data.Text.Encoding as TE
 import Google.Calendar
-import Network.HTTP.Types
 import Network.URI
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
@@ -29,18 +28,7 @@ externalEventPageHtml :: Entity ExternalEvent -> Handler Html
 externalEventPageHtml (Entity externalEventId externalEvent@ExternalEvent {..}) = do
   place@Place {..} <- runDB $ get404 externalEventPlace
   mPosterKey <- runDB $ getPosterForExternalEvent externalEventId
-  mGoogleAPIKey <- getsYesod appGoogleAPIKey
-  let mGoogleMapsEmbedUrl = do
-        apiKey <- mGoogleAPIKey
-        let mapsAPI = "https://www.google.com/maps/embed/v1/place"
-        let googleMapsEmbedQuery =
-              renderQuery
-                True
-                [ ("key", Just $ TE.encodeUtf8 apiKey),
-                  ("q", Just $ TE.encodeUtf8 placeQuery)
-                ]
-        let googleMapsEmbedUrl = mapsAPI <> TE.decodeUtf8 googleMapsEmbedQuery
-        pure googleMapsEmbedUrl
+  mGoogleMapsEmbedUrl <- makeGoogleMapsEmbedUrl placeQuery
   now <- liftIO getCurrentTime
   let today = utctDay now
   renderUrl <- getUrlRender
