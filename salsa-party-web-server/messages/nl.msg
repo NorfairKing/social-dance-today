@@ -270,6 +270,8 @@ DeleteScheduleErrorNotYourSchedule: Dit is niet uw herhaaldelijk feest. U kan di
 UnsubReminderTitle: Uitgeschreven
 UnsubReminderDescription: U krijgt voortaan geen herinneringsemails meer.
 
+# Google Maps
+GoogleMapAlt location@Text: Kaart van de omgeving van #{location}
 
 # Pagination
 PaginationPrevious: Vorige

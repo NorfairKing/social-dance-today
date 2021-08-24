@@ -1,4 +1,5 @@
 <img #mymap .pointer
   width=#{mapsWidth}
   height=#{mapsHeight}
-  src=#{googleMapsStaticUrl apiKey query}>
+  src=#{googleMapsStaticUrl apiKey query}
+  alt=_{MsgGoogleMapAlt query}>
