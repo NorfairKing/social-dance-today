@@ -1,66 +1,70 @@
 <section .section>
   <div .container>
-    <h1 .title .is-3>
-      $if externalEventCancelled
-        _{MsgPartyTitleCancelled externalEventTitle}
-      $else
-        _{MsgPartyTitleScheduled externalEventTitle}
+    <div .columns .is-centered>
+      <div .column .is-8-tablet .is-7-desktop .is-6-widescreen>
+        <h1 .title .is-3>
+          $if externalEventCancelled
+            _{MsgPartyTitleCancelled externalEventTitle}
+          $else
+            _{MsgPartyTitleScheduled externalEventTitle}
 
-    <h2 .title .is-4>
-      _{MsgPartyAddress placeQuery}
-    
-    <h3 .subtitle .is-5>
-      $maybe start <- externalEventStart
-        #{formatTime timeLocale prettyDateTimeFormat (LocalTime externalEventDay start)} 
-      $nothing
-        #{formatTime timeLocale prettyDayFormat externalEventDay} 
-      (_{autoDayMsg today externalEventDay})
+        <h2 .title .is-4>
+          _{MsgPartyAddress placeQuery}
+        
+        <h3 .subtitle .is-5>
+          $maybe start <- externalEventStart
+            #{formatTime timeLocale prettyDateTimeFormat (LocalTime externalEventDay start)} 
+          $nothing
+            #{formatTime timeLocale prettyDayFormat externalEventDay} 
+          (_{autoDayMsg today externalEventDay})
 
-    $maybe posterKey <- mPosterKey
-      ^{externalEventPosterImageWidget externalEvent posterKey}
+        $maybe posterKey <- mPosterKey
+          ^{externalEventPosterImageWidget externalEvent posterKey}
 
-    $maybe organiserName <- externalEventOrganiser
-      <h4 .title .is-6>
-        _{MsgPartyOrganiser organiserName}
+        $maybe organiserName <- externalEventOrganiser
+          <h4 .title .is-6>
+            _{MsgPartyOrganiser organiserName}
 
 
-    $maybe description <- externalEventDescription
-      <div .content>
-        <p>
-          #{Textarea description}
+        $maybe description <- externalEventDescription
+          <div .content>
+            <p>
+              #{Textarea description}
 
-    $maybe price <- externalEventPrice
-      <div .content>
-        <p>
-          _{MsgPartyPrice price}
-  
-    $maybe homepage <- externalEventHomepage
-      <div .content>
-        <p>
-          <a .button .is-light href=#{homepage} rel="external nofollow">
-            _{MsgPartyHomepage}
- 
-    $maybe googleMapsWidget <- mGoogleMapsWidget
-      ^{googleMapsWidget}
+        $maybe price <- externalEventPrice
+          <div .content>
+            <p>
+              _{MsgPartyPrice price}
+      
+        $maybe homepage <- externalEventHomepage
+          <div .content>
+            <p>
+              <a href=#{homepage}
+                rel="external nofollow"
+                title=_{MsgPartyHomepageTitle externalEventTitle}>
+                #{homepage}
+     
+        $maybe googleMapsWidget <- mGoogleMapsWidget
+          ^{googleMapsWidget}
 
-    <div .buttons>
-      <a .button
-        href=@{EventIcsR externalEventUuid}
-        title=_{MsgPartyDownloadCalendarEventTitle externalEventTitle}
-        type="text/calendar">
-        _{MsgPartyDownloadCalendarEvent}
-      $maybe addToGoogleLink <- mAddToGoogleLink
-        <a .button
-          href=#{show addToGoogleLink}
-          title=_{MsgPartyAddToGoogleCalendarTitle externalEventTitle}>
-          _{MsgPartyAddToGoogleCalendar}
+        <div .buttons>
+          <a .button
+            href=@{EventIcsR externalEventUuid}
+            title=_{MsgPartyDownloadCalendarEventTitle externalEventTitle}
+            type="text/calendar">
+            _{MsgPartyDownloadCalendarEvent}
+          $maybe addToGoogleLink <- mAddToGoogleLink
+            <a .button
+              href=#{show addToGoogleLink}
+              title=_{MsgPartyAddToGoogleCalendarTitle externalEventTitle}>
+              _{MsgPartyAddToGoogleCalendar}
 
-    <p .help>
-      _{MsgExternalEventCaution}
+        <p .help>
+          _{MsgExternalEventCaution}
 
-    $if development
-      <a .button .is-danger href=#{externalEventOrigin}>
-        Origin
+        $if development
+          <a .button .is-danger href=#{externalEventOrigin}>
+            Origin
 
 
 <!-- Facebook Open Graph metadata -->
