@@ -70,7 +70,7 @@ PartyTitleCancelled title@Text: ABGESAGT: #{title}
 PartyDescription description@Text:  #{description}
 PartyWithoutDescription:  Party ohne Beschreibung
 
-PartyAddress address@Text: Adresse: #{address}
+PartyAddress address@Text: #{address}
 PartyOrganiser name@Text: Veranstalter: #{name}
 PartyOrganiserTitle organiserName@Text: Veranstalterprofil von #{organiserName}
 PartyPrice price@Text: Preis: #{price}

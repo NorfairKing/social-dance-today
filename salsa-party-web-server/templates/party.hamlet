@@ -1,70 +1,73 @@
 <section .section>
   <div .container>
-    <h1 .title .is-3>
-      $if partyCancelled
-        _{MsgPartyTitleCancelled partyTitle}
-      $else
-        _{MsgPartyTitleScheduled partyTitle}
+    <div .columns .is-centered>
+      <div .column .is-8-tablet .is-7-desktop .is-6-widescreen>
+        <h1 .title .is-3 .has-text-centered>
+          $if partyCancelled
+            _{MsgPartyTitleCancelled partyTitle}
+          $else
+            _{MsgPartyTitleScheduled partyTitle}
 
-    <h2 .title .is-4>
-      _{MsgPartyAddress placeQuery}
+        <h2 .title .is-4>
+          _{MsgPartyAddress placeQuery}
 
-    <h3 .subtitle .is-5>
-      $maybe start <- partyStart
-        #{formatTime timeLocale prettyDateTimeFormat (LocalTime partyDay start)} 
-      $nothing
-        #{formatTime timeLocale prettyDayFormat partyDay} 
-      (_{autoDayMsg today partyDay})
+        <h3 .subtitle .is-5>
+          $maybe start <- partyStart
+            #{formatTime timeLocale prettyDateTimeFormat (LocalTime partyDay start)} 
+          $nothing
+            #{formatTime timeLocale prettyDayFormat partyDay} 
+          (_{autoDayMsg today partyDay})
 
+        $maybe posterKey <- mPosterKey
+          ^{posterImageWidget party organiser posterKey}
 
-    $maybe posterKey <- mPosterKey
-      ^{posterImageWidget party organiser posterKey}
-
-    <h4 .title .is-6>
-      <a
-        href=@{OrganiserR organiserUuid}
-        title=_{MsgPartyOrganiserTitle organiserName}
-        rel="author">
-        _{MsgPartyOrganiser organiserName}
-    $maybe Entity _ schedule <- mSchedule
-      <h4 .subtitle .is-6>
-        ^{recurrenceDescriptionWidget (scheduleRecurrence schedule)}
-    
-
-    $maybe description <- partyDescription
-      <div .content>
-        <p>
-          #{Textarea description}
-
-    $maybe price <- partyPrice
-      <div .content>
-        <p>
-          _{MsgPartyPrice price}
-  
-    $maybe homepage <- partyHomepage
-      <div .content>
-        <p>
-          <a .button .is-light
-            href=#{homepage}
-            title=_{MsgPartyHomepageTitle partyTitle}
-            rel="external">
-            _{MsgPartyHomepage}
+        <h4 .title .is-6>
+          <a
+            href=@{OrganiserR organiserUuid}
+            title=_{MsgPartyOrganiserTitle organiserName}
+            rel="author">
+            _{MsgPartyOrganiser organiserName}
+        $maybe Entity _ schedule <- mSchedule
+          <h4 .subtitle .is-6>
+            ^{recurrenceDescriptionWidget (scheduleRecurrence schedule)}
         
 
-    $maybe googleMapsWidget <- mGoogleMapsWidget
-      ^{googleMapsWidget}
+        $maybe description <- partyDescription
+          <div .content>
+            <p>
+              #{Textarea description}
+
+        $maybe price <- partyPrice
+          <div .content>
+            <p>
+              _{MsgPartyPrice price}
+      
+        $maybe homepage <- partyHomepage
+          <div .content>
+            <p>
+              <a
+                href=#{homepage}
+                title=_{MsgPartyHomepageTitle partyTitle}
+                rel="external">
+                #{homepage}
+
+        
+
+        $maybe googleMapsWidget <- mGoogleMapsWidget
+          ^{googleMapsWidget}
  
-    <div .buttons>
-      <a .button
-        href=@{EventIcsR partyUuid}
-        title=_{MsgPartyDownloadCalendarEventTitle partyTitle}
-        type="text/calendar">
-        _{MsgPartyDownloadCalendarEvent}
-      $maybe addToGoogleLink <- mAddToGoogleLink
-        <a .button
-          href=#{show addToGoogleLink}
-          title=_{MsgPartyAddToGoogleCalendarTitle partyTitle}>
-          _{MsgPartyAddToGoogleCalendar}
+
+        <div .buttons .is-centered>
+          <a .button
+            href=@{EventIcsR partyUuid}
+            title=_{MsgPartyDownloadCalendarEventTitle partyTitle}
+            type="text/calendar">
+            _{MsgPartyDownloadCalendarEvent}
+          $maybe addToGoogleLink <- mAddToGoogleLink
+            <a .button
+              href=#{show addToGoogleLink}
+              title=_{MsgPartyAddToGoogleCalendarTitle partyTitle}>
+              _{MsgPartyAddToGoogleCalendar}
 
 
 <!-- Facebook Open Graph metadata -->

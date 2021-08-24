@@ -68,7 +68,7 @@ PartyTitleCancelled title@Text: GEANNULEERD: #{title}
 PartyDescription description@Text: #{description}
 PartyWithoutDescription: Feest zonder beschrijving
 
-PartyAddress address@Text: Adres: #{address}
+PartyAddress address@Text: #{address}
 PartyOrganiser name@Text: Organisator: #{name}
 PartyOrganiserTitle organiserName@Text: Organisatorprofiel van #{organiserName}
 PartyPrice price@Text: Prijs: #{price}
@@ -150,18 +150,18 @@ OrganiserSaveSuccess: Organisatorprofiel opgeslagen
 # Submit
 SubmitTitle: Voeg uw feest toe
 SubmitSingleParty: Enkel feest
-SubmitRecurringParty: Terugkerend feest
-SubmitSinglePartyExplanation1: Een enkel feest gebeurt maar één keer, op een bepaalde dag.
+SubmitRecurringParty: Herhaaldelijk feest
+SubmitSinglePartyExplanation1: Een enkel feest gebeurt maar eenmalig, op een bepaalde dag.
 SubmitSinglePartyExplanation2: U kan het later nog steeds aanpassen, annuleren of verwijderen.
-SubmitRecurringPartyExplanation1: Een terugkerend feest gebeurt meerdere keren. Bijvoorbeeld elke vrijdag.
-SubmitRecurringPartyExplanation2: Wanneer u een terugkerend feest instelt, genereert de site automatisch feesten naar de toekomst toe.
-SubmitRecurringPartyExplanation3: Als u een terugkerend feest aanpast, worden alle toekomstige versies ervan ook automatisch aangepast.
-SubmitRecurringPartyExplanation4: Als u een terugkerend feest verwijdert, worden alle toekomstige versies ervan geannuleerd, en zullen er verder geen gegenereerd worden.
+SubmitRecurringPartyExplanation1: Een herhaaldelijk feest gebeurt meerdere keren. Bijvoorbeeld elke vrijdag.
+SubmitRecurringPartyExplanation2: Wanneer u een herhaaldelijk feest instelt, genereert de site automatisch toekomstige feesten.
+SubmitRecurringPartyExplanation3: Als u een herhaaldelijk feest aanpast, worden alle toekomstige versies ervan ook automatisch aangepast.
+SubmitRecurringPartyExplanation4: Als u een herhaaldelijk feest verwijdert, worden alle toekomstige versies ervan geannuleerd, en zullen er verder geen gegenereerd worden.
 
 # Your parties
 YourPartiesTitle: Uw feesten
 YourPartiesPartiesSubtitle: Feesten
-YourPartiesSchedulesSubtitle: Terugkerende feesten
+YourPartiesSchedulesSubtitle: Herhaaldelijke feesten
 YourPartiesSubmitButton: Feest indienen
 YourPartiesNoParties: U heeft nog geen feesten indienen.
 YourPartiesEditPartyButton: Bewerken
@@ -238,32 +238,32 @@ RecurrenceWeeklyType: Wekelijks
 RecurrenceWeeklyDescription weekday@String: Elke week op #{weekday}
 
 # Submit Schedule
-SubmitScheduleTitle: Terugkerend Feest
+SubmitScheduleTitle: Herhaaldelijk feest
 SubmitScheduleButton: Indienen
-SubmitScheduleSuccess: Terugkerend Feest succesvol toegevoegd
-SubmitScheduleErrorUnverified: Uw account moet geverifieerd worden vooraleer u terugkerende feesten kan indienen.
-SubmitScheduleErrorNoOrganiser: U moet eerst een organisatorprofiel aanmaken vooraleer u een terugkerend feest kan indienen.
+SubmitScheduleSuccess: Herhaaldelijk feest succesvol toegevoegd
+SubmitScheduleErrorUnverified: Uw account moet geverifieerd worden vooraleer u herhaaldelijke feesten kan indienen.
+SubmitScheduleErrorNoOrganiser: U moet eerst een organisatorprofiel aanmaken vooraleer u een herhaaldelijk feest kan indienen.
 
 # Account Schedule
 AccountScheduleParties: Gegenereerde feesten
 
 # Edit Schedule
-EditScheduleTitle: Terugkerend feest aanpassen
+EditScheduleTitle: Herhaaldelijk feest aanpassen
 EditScheduleButton: Opslaan
-EditScheduleSuccess: Terugkerend feest succesvol opgeslagen
-EditScheduleErrorNotYourSchedule: Dit is niet uw terugkerend feest. U kan dit terugkerend feest niet bewerken.
+EditScheduleSuccess: Herhaaldelijk feest succesvol opgeslagen
+EditScheduleErrorNotYourSchedule: Dit is niet uw herhaaldelijk feest. U kan dit herhaaldelijk feest niet bewerken.
 
 # Your schedules
-YourSchedulesTitle: Uw terugkerende feesten
-YourSchedulesSubmitButton: Terugkerend feest indienen
-YourSchedulesNoSchedules: U heeft nog geen terugkerende feesten ingediend.
+YourSchedulesTitle: Uw herhaaldelijke feesten
+YourSchedulesSubmitButton: herhaaldelijk feest indienen
+YourSchedulesNoSchedules: U heeft nog geen herhaaldelijke feesten ingediend.
 YourSchedulesEditScheduleButton: Aanpassen
 YourSchedulesDeleteScheduleWarning: Weet u zeker dat u dit feest wilt verwijderen? Deze actie kunt u niet ongedaan maken. Feesten die door dit herhalingsschema zijn aangemaakt zullen niet verwijderd worden.
 YourSchedulesDeleteScheduleButton: Verwijderen
 ScheduleTitle title@Text: #{title}
 
 # Delete schedule
-DeleteScheduleErrorNotYourSchedule: Dit is niet uw terugkerend feest. U kan dit terugkerend feest niet verwijderen.
+DeleteScheduleErrorNotYourSchedule: Dit is niet uw herhaaldelijk feest. U kan dit herhaaldelijk feest niet verwijderen.
 
 
 # Unsubscribe Reminder 
