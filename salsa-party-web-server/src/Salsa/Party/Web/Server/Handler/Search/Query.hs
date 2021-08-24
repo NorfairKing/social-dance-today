@@ -215,11 +215,9 @@ deduplicateExternalEventsExternally = M.mapMaybe go
       or
         [ -- At exactly the same location is probably the same event.
           place1Id == place2Id,
-          -- If they're happening at the same-ish address, it's also probably the same event.
-          placeQuery place1 `closeEnoughTo` placeQuery place2,
-          -- If the title of two events are the same-ish, it's also probably the same event.
-          -- We rely on the assumption that different events will want to differentiate themselves from eachother
-          externalEventTitle e1 `closeEnoughTo` externalEventTitle e2
+          placeQuery place1 `placeCloseEnoughTo` placeQuery place2,
+          externalEventTitle e1 `titleCloseEnoughTo` externalEventTitle e2,
+          externalEventDescription e1 `descriptionCloseEnoughTo` externalEventDescription e2
         ]
 
 -- | Find external events that look like internal events, and delete them from the external events list.
@@ -249,22 +247,37 @@ deduplicateExternalEvents internals externals = M.differenceWith go externals in
     isSimilarEnoughTo (Entity _ ExternalEvent {..}, Entity place1Id place1, _) (Entity _ Party {..}, Entity place2Id place2, _) =
       -- For the following conditions, keep in mind that it's already established that the two things happen on the same day.
       or
-        [ -- At exactly the same location is probably the same event.
-          place1Id == place2Id,
-          -- If they're happening at the same address (modulo whitespace), it's also probably the same event.
-          placeQuery place1 `closeEnoughTo` placeQuery place2,
-          -- If the title of two events are the same (modulo whitespace), it's also probably the same event.
-          -- We rely on the assumption that different events will want to differentiate themselves from eachother
-          externalEventTitle `closeEnoughTo` partyTitle
+        [ place1Id == place2Id,
+          placeQuery place1 `placeCloseEnoughTo` placeQuery place2,
+          externalEventTitle `titleCloseEnoughTo` partyTitle,
+          externalEventDescription `descriptionCloseEnoughTo` partyDescription
         ]
 
-closeEnoughTo :: Text -> Text -> Bool
-closeEnoughTo t1 t2 =
+-- If the description is close enough, then we say to deduplicate the events.
+-- This works because organisers often copy-paste event descriptions.
+descriptionCloseEnoughTo :: Maybe Text -> Maybe Text -> Bool
+descriptionCloseEnoughTo = mCloseEnoughTo 9
+
+mCloseEnoughTo :: Int -> Maybe Text -> Maybe Text -> Bool
+mCloseEnoughTo ratio mt1 mt2 = case (,) <$> mt1 <*> mt2 of
+  Nothing -> False -- Don't take any chances. If either is nothing then we say no.
+  Just (t1, t2) -> closeEnoughTo ratio t1 t2
+
+-- If they're happening at the same-ish address, it's also probably the same event.
+placeCloseEnoughTo :: Text -> Text -> Bool
+placeCloseEnoughTo = closeEnoughTo 11
+
+-- If the title of two events are the same (modulo whitespace), it's also probably the same event.
+-- We rely on the assumption that different events will want to differentiate themselves from eachother
+titleCloseEnoughTo :: Text -> Text -> Bool
+titleCloseEnoughTo = closeEnoughTo 11
+
+closeEnoughTo :: Int -> Text -> Text -> Bool
+closeEnoughTo ratio t1 t2 =
   let normalise = filter (not . Char.isSymbol) . filter Char.isPrint . T.unpack . T.toCaseFold . T.strip
       t1' = normalise t1
       t2' = normalise t2
       d = levenshteinDistance defaultEditCosts t1' t2'
       totalLength = length t1' + length t2'
-      -- For every _this many_ characters in the total length, the 'duplicate' can be one off.
-      ratio = 11
-   in ratio * d <= totalLength
+   in -- For every _this many_ characters in the total length, the 'duplicate' can be one off.
+      ratio * d < totalLength
