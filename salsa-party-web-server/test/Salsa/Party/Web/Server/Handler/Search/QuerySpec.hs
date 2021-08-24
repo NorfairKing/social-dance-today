@@ -164,44 +164,58 @@ spec = do
                                    )
                     )
                     $ \externalEvent3Prototype ->
-                      forAllValid $ \day ->
-                        flip runSqlPool pool $ do
-                          let queryPlace = Place {placeQuery = "Search Place", placeLat = Latitude 0, placeLon = Longitude 0}
-                          _ <- DB.insert queryPlace
-                          let place1 = Place {placeQuery = "Place 1 abc", placeLat = Latitude 0, placeLon = Longitude 0.1}
-                          place1Id <- DB.insert place1
-                          let place2 = Place {placeQuery = "Place 2 def", placeLat = Latitude 0.1, placeLon = Longitude 0}
-                          place2Id <- DB.insert place2
-                          let place3 = Place {placeQuery = "Place 3 ghi", placeLat = Latitude 0.2, placeLon = Longitude 0.1}
-                          place3Id <- DB.insert place3
-                          let day2 = addDays 1 day
-                          let party1 = party1Prototype {partyTitle = "Party 1 abc", partyDay = day, partyPlace = place1Id}
-                          party1Id <- DB.insert party1
-                          let party2 = party2Prototype {partyTitle = "Party 2 def", partyDay = day2, partyPlace = place2Id}
-                          DB.insert_ party2
-                          let party3 = party3Prototype {partyTitle = "Party 3 ghi", partyDay = day2, partyPlace = place3Id}
-                          DB.insert_ party3
-                          let place4 = Place {placeQuery = "Place 4 lmn", placeLat = Latitude 0.1, placeLon = Longitude 0.2}
-                          place4Id <- DB.insert place4
-                          let place5 = Place {placeQuery = "Place 5 opq", placeLat = Latitude 0.2, placeLon = Longitude 0.2}
-                          place5Id <- DB.insert place5
-                          let place6 = Place {placeQuery = "Place 6 rst", placeLat = Latitude 0.2, placeLon = Longitude 0.2}
-                          place6Id <- DB.insert place6
-                          let externalEvent1 = externalEvent1Prototype {externalEventTitle = "External Event 1 abcdef", externalEventDay = day, externalEventPlace = place4Id}
-                          externalEvent1Id <- DB.insert externalEvent1
-                          let externalEvent2 = externalEvent2Prototype {externalEventTitle = "External Event 2 ghijkl", externalEventDay = day, externalEventPlace = place5Id}
-                          externalEvent2Id <- DB.insert externalEvent2
-                          -- A duplicate of party 1, not supposed to be shown
-                          let externalEvent3 = externalEvent3Prototype {externalEventTitle = "Party 1 abcd", externalEventDay = day, externalEventPlace = place6Id}
-                          _ <- DB.insert externalEvent3
-                          sr <- searchQuery @IO day (Just day) (placeCoordinates queryPlace)
-                          liftIO $
-                            sr
-                              `shouldBe` M.fromList
-                                [ ( day,
-                                    [ Internal (Entity party1Id party1) (Entity place1Id place1) Nothing,
-                                      External (Entity externalEvent1Id externalEvent1) (Entity place4Id place4) Nothing,
-                                      External (Entity externalEvent2Id externalEvent2) (Entity place5Id place5) Nothing
+                      forAll
+                        ( genValid
+                            `suchThat` ( \ee ->
+                                           externalEventKey ee /= externalEventKey externalEvent1Prototype
+                                             && externalEventKey ee /= externalEventKey externalEvent2Prototype
+                                             && externalEventKey ee /= externalEventKey externalEvent3Prototype
+                                       )
+                        )
+                        $ \externalEvent4Prototype ->
+                          forAllValid $ \day ->
+                            flip runSqlPool pool $ do
+                              let queryPlace = Place {placeQuery = "Search Place", placeLat = Latitude 0, placeLon = Longitude 0}
+                              _ <- DB.insert queryPlace
+                              let place1 = Place {placeQuery = "Place 1 abc", placeLat = Latitude 0, placeLon = Longitude 0.1}
+                              place1Id <- DB.insert place1
+                              let place2 = Place {placeQuery = "Place 2 def", placeLat = Latitude 0.1, placeLon = Longitude 0}
+                              place2Id <- DB.insert place2
+                              let place3 = Place {placeQuery = "Place 3 ghi", placeLat = Latitude 0.2, placeLon = Longitude 0.1}
+                              place3Id <- DB.insert place3
+                              let day2 = addDays 1 day
+                              let party1 = party1Prototype {partyTitle = "Party 1 abc", partyDay = day, partyPlace = place1Id}
+                              party1Id <- DB.insert party1
+                              let party2 = party2Prototype {partyTitle = "Party 2 def", partyDay = day2, partyPlace = place2Id}
+                              DB.insert_ party2
+                              let party3 = party3Prototype {partyTitle = "Party 3 ghi", partyDay = day2, partyPlace = place3Id}
+                              DB.insert_ party3
+                              let place4 = Place {placeQuery = "Place 4 lmn", placeLat = Latitude 0.1, placeLon = Longitude 0.2}
+                              place4Id <- DB.insert place4
+                              let place5 = Place {placeQuery = "Place 5 opq", placeLat = Latitude 0.2, placeLon = Longitude 0.2}
+                              place5Id <- DB.insert place5
+                              let place6 = Place {placeQuery = "Place 6 rst", placeLat = Latitude 0.3, placeLon = Longitude 0.2}
+                              place6Id <- DB.insert place6
+                              let place7 = Place {placeQuery = "Place 7 pqr", placeLat = Latitude 0.4, placeLon = Longitude 0.2}
+                              place7Id <- DB.insert place7
+                              let externalEvent1 = externalEvent1Prototype {externalEventTitle = "External Event 1 abcdef", externalEventDay = day, externalEventPlace = place4Id}
+                              externalEvent1Id <- DB.insert externalEvent1
+                              let externalEvent2 = externalEvent2Prototype {externalEventTitle = "External Event 2 ghijkl", externalEventDay = day, externalEventPlace = place5Id}
+                              externalEvent2Id <- DB.insert externalEvent2
+                              -- A duplicate of party 1, not supposed to be shown
+                              let externalEvent3 = externalEvent3Prototype {externalEventTitle = "Party 1 abcd", externalEventDay = day, externalEventPlace = place6Id}
+                              DB.insert_ externalEvent3
+                              -- A duplicate of external event 1
+                              let externalEvent4 = externalEvent4Prototype {externalEventTitle = "External Event 1 abcdel", externalEventDay = day, externalEventPlace = place7Id}
+                              DB.insert_ externalEvent4
+                              sr <- searchQuery @IO day (Just day) (placeCoordinates queryPlace)
+                              liftIO $
+                                sr
+                                  `shouldBe` M.fromList
+                                    [ ( day,
+                                        [ Internal (Entity party1Id party1) (Entity place1Id place1) Nothing,
+                                          External (Entity externalEvent1Id externalEvent1) (Entity place4Id place4) Nothing,
+                                          External (Entity externalEvent2Id externalEvent2) (Entity place5Id place5) Nothing
+                                        ]
+                                      )
                                     ]
-                                  )
-                                ]

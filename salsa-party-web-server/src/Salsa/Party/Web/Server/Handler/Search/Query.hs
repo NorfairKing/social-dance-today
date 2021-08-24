@@ -7,6 +7,7 @@ module Salsa.Party.Web.Server.Handler.Search.Query where
 
 import Control.Monad
 import Data.Char as Char
+import Data.List
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
@@ -67,7 +68,7 @@ searchQuery begin mEnd coordinates@Coordinates {..} = do
       pure (externalEventDay externalEvent, (externalEventEntity, placeEntity, mKey))
 
   let internalResults = makeGroupedByDay partyResultsWithImages
-      externalResults = deduplicateExternalEvents internalResults $ makeGroupedByDay externalEventResultsWithImages
+      externalResults = deduplicateExternalEvents internalResults $ deduplicateExternalEventsExternally $ makeGroupedByDay externalEventResultsWithImages
 
   pure $
     M.filter (not . null) $
@@ -188,6 +189,38 @@ makeGroupedByDay = foldr go M.empty -- This could be falter with a fold
         go' :: Maybe [eTup] -> Maybe [eTup]
         go' Nothing = Just [eTup]
         go' (Just tups) = Just $ eTup : tups
+
+-- | Find external events that look like other external events, and delete them from the external events list.
+--
+-- We don't like false-positives, because then we see duplicate events: External events that are the same as some internal event we have.
+-- We don't like false-negatives, because then we don't see certain external events.
+--
+-- In general false-negatives are safer than false-positives, for the user experience.
+deduplicateExternalEventsExternally ::
+  Map Day [(Entity ExternalEvent, Entity Place, Maybe CASKey)] ->
+  Map Day [(Entity ExternalEvent, Entity Place, Maybe CASKey)]
+deduplicateExternalEventsExternally = M.mapMaybe go
+  where
+    go ::
+      [(Entity ExternalEvent, Entity Place, Maybe CASKey)] ->
+      Maybe [(Entity ExternalEvent, Entity Place, Maybe CASKey)]
+    go externalsOnDay =
+      -- TODO: This is a quadratic-time comparison.
+      -- We rely on the assumption that there are not a lot of events happening in the same area on the same day.
+      let uniques = nubBy isSimilarEnoughTo externalsOnDay
+       in if null uniques then Nothing else Just uniques
+    isSimilarEnoughTo :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Bool
+    isSimilarEnoughTo (Entity _ e1, Entity place1Id place1, _) (Entity _ e2, Entity place2Id place2, _) =
+      -- For the following conditions, keep in mind that it's already established that the two things happen on the same day.
+      or
+        [ -- At exactly the same location is probably the same event.
+          place1Id == place2Id,
+          -- If they're happening at the same-ish address, it's also probably the same event.
+          placeQuery place1 `closeEnoughTo` placeQuery place2,
+          -- If the title of two events are the same-ish, it's also probably the same event.
+          -- We rely on the assumption that different events will want to differentiate themselves from eachother
+          externalEventTitle e1 `closeEnoughTo` externalEventTitle e2
+        ]
 
 -- | Find external events that look like internal events, and delete them from the external events list.
 --
