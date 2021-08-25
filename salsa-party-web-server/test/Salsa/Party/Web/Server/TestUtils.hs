@@ -3,6 +3,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Salsa.Party.Web.Server.TestUtils where
@@ -45,10 +46,10 @@ import Yesod.Auth
 
 type ServerSpec = YesodSpec App
 
-serverSpec :: ServerSpec -> Spec
+serverSpec :: TestDef (HTTP.Manager ': outers) (YesodClient App) -> TestDef outers ()
 serverSpec = modifyMaxSuccess (`div` 20) . managerSpec . yesodSpecWithSiteSetupFunc serverSetupFunc
 
-appSpec :: TestDef '[HTTP.Manager] App -> Spec
+appSpec :: TestDef (HTTP.Manager ': outers) App -> TestDef outers ()
 appSpec = managerSpec . setupAroundWith' (\man () -> serverSetupFunc man)
 
 serverSetupFunc :: HTTP.Manager -> SetupFunc App

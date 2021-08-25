@@ -291,6 +291,7 @@ test-suite salsa-party-web-server-test
     , http-types
     , iCalendar
     , microlens
+    , monad-control
     , monad-logger
     , mtl
     , network
@@ -314,6 +315,7 @@ test-suite salsa-party-web-server-test
     , sydtest-yesod
     , text
     , time
+    , transformers-base
     , typed-process
     , typed-uuid
     , unliftio

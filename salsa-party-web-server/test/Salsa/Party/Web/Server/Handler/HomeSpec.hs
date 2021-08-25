@@ -11,6 +11,5 @@ spec = do
         get HomeR
         statusIs 200
   webdriverSpec $
-    itWithAll "GETs a 200" $ \_ yc -> do
-      pure () :: WD ()
-      WD.openPage (show (yesodClientSiteURI yc))
+    it "GETs a 200" $ do
+      openHome
