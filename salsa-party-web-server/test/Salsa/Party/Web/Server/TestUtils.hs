@@ -47,7 +47,10 @@ import Yesod.Auth
 type ServerSpec = YesodSpec App
 
 serverSpec :: TestDef (HTTP.Manager ': outers) (YesodClient App) -> TestDef outers ()
-serverSpec = modifyMaxSuccess (`div` 20) . managerSpec . yesodSpecWithSiteSetupFunc serverSetupFunc
+serverSpec = modifyMaxSuccess (`div` 20) . yesodClientSpec
+
+yesodClientSpec :: TestDef (HTTP.Manager ': outers) (YesodClient App) -> TestDef outers ()
+yesodClientSpec = managerSpec . yesodSpecWithSiteSetupFunc serverSetupFunc
 
 appSpec :: TestDef (HTTP.Manager ': outers) App -> TestDef outers ()
 appSpec = managerSpec . setupAroundWith' (\man () -> serverSetupFunc man)
@@ -111,6 +114,15 @@ adminEmail = "admin@example.com"
 
 adminPassword :: Text
 adminPassword = "dummy"
+
+dummyUser :: TestUser
+dummyUser = TestUser {testUserEmail = dummyEmail, testUserPassword = dummyPassword}
+
+dummyEmail :: Text
+dummyEmail = "dummy@example.com"
+
+dummyPassword :: Text
+dummyPassword = "dummy"
 
 asUser :: TestUser -> YesodExample App a -> YesodExample App a
 asUser testUser func = do

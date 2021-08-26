@@ -3,6 +3,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE NumericUnderscores #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -76,8 +77,32 @@ openHome = do
   uri <- asks webdriverTestEnvURI
   openPage (show uri)
 
+driveRegister :: TestUser -> WebdriverTestM ()
+driveRegister TestUser {..} = do
+  findElem (ByLinkText "Sign up") >>= click
+  findElem (ByName "email-address") >>= sendKeys testUserEmail
+  findElem (ByName "passphrase") >>= sendKeys testUserPassword
+  findElem (ByName "passphrase-confirm") >>= sendKeys testUserPassword
+  findElem (ByXPath "//button[contains(text(), 'Sign up')]") >>= click
+
+driveLogin :: TestUser -> WebdriverTestM ()
+driveLogin TestUser {..} = do
+  findElem (ByLinkText "Log in") >>= click
+  findElem (ByName "email-address") >>= sendKeys testUserEmail
+  findElem (ByName "passphrase") >>= sendKeys testUserPassword
+  findElem (ByXPath "//button[contains(text(), 'Log in')]") >>= click
+
+driveLogout :: WebdriverTestM ()
+driveLogout = do
+  findElem (ByLinkText "Log out") >>= click
+
+driveDeleteAccount :: WebdriverTestM ()
+driveDeleteAccount = do
+  findElem (ByLinkText "Account") >>= click
+  findElem (ByXPath "//button[contains(text(), 'Delete Account')]") >>= click
+
 webdriverSpec :: TestDef '[SeleniumServerHandle, HTTP.Manager] WebdriverTestEnv -> TestDef '[] ()
-webdriverSpec = serverSpec . setupAroundAll seleniumServerSetupFunc . webdriverTestEnvSpec
+webdriverSpec = modifyMaxSuccess (`div` 50) . yesodClientSpec . setupAroundAll seleniumServerSetupFunc . webdriverTestEnvSpec
 
 webdriverTestEnvSpec ::
   TestDef '[SeleniumServerHandle, HTTP.Manager] WebdriverTestEnv ->
@@ -91,7 +116,7 @@ webdriverTestEnvSpec = setupAroundWith' go2 . setupAroundWith' go1
 
 webdriverTestEnvSetupFunc :: SeleniumServerHandle -> HTTP.Manager -> YesodClient App -> SetupFunc WebdriverTestEnv
 webdriverTestEnvSetupFunc SeleniumServerHandle {..} manager YesodClient {..} = do
-  let browser = chrome {chromeOptions = ["--headless"]}
+  let browser = chrome -- {chromeOptions = ["--headless"]}
   let caps = WD.defaultCaps {browser = browser}
   let webdriverTestEnvConfig =
         WD.defaultConfig
