@@ -1,12 +1,24 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Salsa.Party.Web.Server.Handler.SearchSpec (spec) where
 
 import qualified Data.Text as T
+import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Handler.TestImport
+import Test.WebDriver as WD
 
 spec :: Spec
 spec = do
+  webdriverSpec $ do
+    describe "Search" $ do
+      it "Can do a real search" $ \env ->
+        forAll (elements locations) $ \Location {..} -> runWebdriverTestM env $ do
+          openHome
+          e <- findElem (ById "queryInput")
+          sendKeys (placeQuery locationPlace) e
+          submit e
+
   serverSpec $ do
     -- These tests are just for the form handling.
     -- They don't test search because there won't be results.

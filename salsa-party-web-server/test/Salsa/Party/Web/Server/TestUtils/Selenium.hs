@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -63,7 +64,12 @@ instance IsTest (WebdriverTestM ()) where
   runTest wdTestFunc = runTest (\() wdte -> runWebdriverTestM wdte wdTestFunc)
 
 runWebdriverTestM :: WebdriverTestEnv -> WebdriverTestM a -> IO a
-runWebdriverTestM env (WebdriverTestM func) = WD.runSession (webdriverTestEnvConfig env) (WD.finallyClose (runReaderT func env))
+runWebdriverTestM env (WebdriverTestM func) = WD.runSession (webdriverTestEnvConfig env) $
+  WD.finallyClose $ do
+    setImplicitWait 10_000
+    setScriptTimeout 10_000
+    setPageLoadTimeout 10_000
+    runReaderT func env
 
 openHome :: WebdriverTestM ()
 openHome = do
@@ -93,11 +99,7 @@ webdriverTestEnvSetupFunc SeleniumServerHandle {..} manager YesodClient {..} = d
             wdHTTPManager = Just manager,
             wdCapabilities = caps
           }
-  let webdriverTestEnvURI =
-        nullURI
-          { uriScheme = "http:",
-            uriAuthority = Just (nullURIAuth {uriRegName = "127.0.0.1", uriPort = ":" <> show seleniumServerHandlePort})
-          }
+  let webdriverTestEnvURI = yesodClientSiteURI
       webdriverTestEnvApp = yesodClientSite
   pure WebdriverTestEnv {..}
 
