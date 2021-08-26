@@ -31,7 +31,11 @@ tryHttpOnce retryStatus request man = do
           [ "Retrying, iteration",
             show $ rsIterNumber retryStatus
           ]
-  liftIO $ Right <$> httpLbs request man
+  fmap Right $ do
+    response <- liftIO $ httpLbs request man
+    let c = HTTP.statusCode (responseStatus response)
+    when (c >= 400) $ logWarnN $ T.pack $ unwords [show c, "status code while fetching", show (getUri request)]
+    pure response
 
 shouldRetryHttpRequest :: (MonadLogger m) => Either HttpException (Response LB.ByteString) -> m Bool
 shouldRetryHttpRequest = \case
