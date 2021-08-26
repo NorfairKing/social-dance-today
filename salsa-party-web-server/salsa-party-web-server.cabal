@@ -33,6 +33,7 @@ library
       Salsa.Party.Importer.GolatindanceCom
       Salsa.Party.Importer.Import
       Salsa.Party.Importer.MapdanceCom
+      Salsa.Party.Importer.SalsaBe
       Salsa.Party.Importer.SalsachicagoCom
       Salsa.Party.Importer.Selenium
       Salsa.Party.Importer.SensualDance

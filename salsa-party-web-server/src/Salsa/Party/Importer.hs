@@ -11,6 +11,7 @@ import Salsa.Party.Importer.Env
 import Salsa.Party.Importer.EventsInfo
 import Salsa.Party.Importer.GolatindanceCom
 import Salsa.Party.Importer.MapdanceCom
+import Salsa.Party.Importer.SalsaBe
 import Salsa.Party.Importer.SalsachicagoCom
 import Salsa.Party.Importer.SensualDance
 import Salsa.Party.OptParse
@@ -31,5 +32,6 @@ importerLoopers Settings {..} app =
         importerLooper mapdanceComImporter settingMapdanceComImportLooperSettings,
         importerLooper salsachicagoComImporter settingSalsachicagoComImportLooperSettings,
         importerLooper dancefloorfinderComImporter settingDancefloorfinderComImportLooperSettings,
-        importerLooper sensualDanceImporter settingSensualDanceImportLooperSettings
+        importerLooper sensualDanceImporter settingSensualDanceImportLooperSettings,
+        importerLooper salsaBeImporter settingSalsaBeImportLooperSettings
       ]
