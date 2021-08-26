@@ -226,10 +226,13 @@ importExternalEventAnd externalEvent@ExternalEvent {..} func = do
   importerId <- asks importEnvId
   mExternalEvent <- importDB $ getBy (UniqueExternalEventKey importerId externalEventKey)
   case mExternalEvent of
-    Nothing -> importDB (insert externalEvent) >>= func
+    Nothing -> do
+      logInfoN $ T.pack $ unwords ["Importing never-before-seen event from", T.unpack externalEventOrigin]
+      importDB (insert externalEvent) >>= func
     Just (Entity externalEventId oldExternalEvent) -> do
       if externalEvent `hasChangedComparedTo` oldExternalEvent
         then do
+          logInfoN $ T.pack $ unwords ["Importing known-but-changed event from", T.unpack externalEventOrigin]
           importDB $
             void $
               update
@@ -246,7 +249,9 @@ importExternalEventAnd externalEvent@ExternalEvent {..} func = do
                   ExternalEventImporter =. importerId
                 ]
           func externalEventId
-        else pure ()
+        else do
+          logInfoN $ T.pack $ unwords ["Not re-importing known event, because it was not changed, from", T.unpack externalEventOrigin]
+          pure ()
 
 jsonRequestConduit :: FromJSON a => ConduitT HTTP.Request a Import ()
 jsonRequestConduit = C.map ((,) ()) .| jsonRequestConduitWith .| C.map snd
