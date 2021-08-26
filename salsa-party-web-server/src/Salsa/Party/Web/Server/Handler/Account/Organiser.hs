@@ -34,7 +34,7 @@ organiserForm =
   OrganiserForm
     <$> ireq textField "name"
     <*> iopt textField "homepage"
-    <*> ireq checkBoxField "consent-reminder"
+    <*> ireq checkBoxField "reminder-consent"
 
 getAccountOrganiserR :: Handler Html
 getAccountOrganiserR = organiserFormPage Nothing

@@ -16,15 +16,20 @@ module Salsa.Party.Web.Server.TestUtils.Selenium where
 import Control.Monad.Base
 import Control.Monad.Reader
 import Control.Monad.Trans.Control
+import Data.Text
+import qualified Database.Persist.Sql as DB
 import Network.HTTP.Client as HTTP
 import Network.Socket
 import Network.Socket.Free
 import Network.Socket.Wait as Port
 import Network.URI
 import Path
+import Path.IO
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
+import Salsa.Party.Web.Server.Handler.Account.Organiser
 import Salsa.Party.Web.Server.TestUtils
+import System.Exit
 import System.Process.Typed
 import Test.Syd
 import Test.Syd.Path
@@ -41,6 +46,7 @@ newtype WebdriverTestM a = WebdriverTestM
     ( Functor,
       Applicative,
       Monad,
+      MonadIO,
       MonadReader WebdriverTestEnv,
       MonadBaseControl IO, -- We don't want these, but we have to because webdriver uses them.
       MonadBase IO
@@ -77,6 +83,15 @@ openHome = do
   uri <- asks webdriverTestEnvURI
   openPage (show uri)
 
+dummyUser :: TestUser
+dummyUser = TestUser {testUserEmail = dummyEmail, testUserPassword = dummyPassword}
+
+dummyEmail :: Text
+dummyEmail = "dummy@example.com"
+
+dummyPassword :: Text
+dummyPassword = "dummy"
+
 driveRegister :: TestUser -> WebdriverTestM ()
 driveRegister TestUser {..} = do
   findElem (ByLinkText "Sign up") >>= click
@@ -101,6 +116,43 @@ driveDeleteAccount = do
   findElem (ByLinkText "Account") >>= click
   findElem (ByXPath "//button[contains(text(), 'Delete Account')]") >>= click
 
+dummyOrganiserForm :: OrganiserForm
+dummyOrganiserForm =
+  OrganiserForm
+    { organiserFormName = "Dummy organiser",
+      organiserFormHomepage = Just "https://example.com",
+      organiserFormConsentReminder = True
+    }
+
+driveSubmitOrganiser :: OrganiserForm -> WebdriverTestM ()
+driveSubmitOrganiser OrganiserForm {..} = do
+  findElem (ByLinkText "Account") >>= click
+  findElem (ByLinkText "Organiser profile") >>= click
+  findElem (ByName "name") >>= sendKeys organiserFormName
+  forM_ organiserFormHomepage $ \homepage -> findElem (ByName "homepage") >>= sendKeys homepage
+  when organiserFormConsentReminder $ findElem (ByName "reminder-consent") >>= click
+
+driveAsNewUser :: TestUser -> WebdriverTestM a -> WebdriverTestM a
+driveAsNewUser testUser func = do
+  openHome
+  driveRegister testUser
+  result <- func
+  driveLogout
+  pure result
+
+driveAsUser :: TestUser -> WebdriverTestM a -> WebdriverTestM a
+driveAsUser testUser func = do
+  openHome
+  driveLogin testUser
+  result <- func
+  driveLogout
+  pure result
+
+driveDB :: DB.SqlPersistT IO a -> WebdriverTestM a
+driveDB func = do
+  pool <- asks $ appConnectionPool . webdriverTestEnvApp
+  liftIO $ DB.runSqlPool func pool
+
 webdriverSpec :: TestDef '[SeleniumServerHandle, HTTP.Manager] WebdriverTestEnv -> TestDef '[] ()
 webdriverSpec = modifyMaxSuccess (`div` 50) . yesodClientSpec . setupAroundAll seleniumServerSetupFunc . webdriverTestEnvSpec
 
@@ -116,8 +168,31 @@ webdriverTestEnvSpec = setupAroundWith' go2 . setupAroundWith' go1
 
 webdriverTestEnvSetupFunc :: SeleniumServerHandle -> HTTP.Manager -> YesodClient App -> SetupFunc WebdriverTestEnv
 webdriverTestEnvSetupFunc SeleniumServerHandle {..} manager YesodClient {..} = do
-  let browser = chrome -- {chromeOptions = ["--headless"]}
-  let caps = WD.defaultCaps {browser = browser}
+  chromeExecutable <- liftIO $ do
+    chromeFile <- parseRelFile "chromium"
+    mExecutable <- findExecutable chromeFile
+    case mExecutable of
+      Nothing -> die "No chromium found on PATH."
+      Just executable -> pure executable
+
+  userDataDir <- tempDirSetupFunc "chromium-user-data"
+
+  let browser =
+        chrome
+          { chromeOptions =
+              [ "--headless",
+                "--no-sandbox", -- Bypass OS security model to run on nix as well
+                "--disable-dev-shm-usage", -- Overcome limited resource problem
+                "--user-data-dir=" <> fromAbsDir userDataDir,
+                "--window-size=1920,1080",
+                "--use-gl=egl" -- Embedded GL
+              ],
+            chromeBinary = Just $ fromAbsFile chromeExecutable
+          }
+  let caps =
+        WD.defaultCaps
+          { browser = browser
+          }
   let webdriverTestEnvConfig =
         WD.defaultConfig
           { wdPort = (fromIntegral :: PortNumber -> Int) seleniumServerHandlePort,
@@ -138,9 +213,7 @@ seleniumServerSetupFunc = do
             setWorkingDir (fromAbsDir tempDir) $
               proc
                 "selenium-server"
-                [ "-log",
-                  "selenium.log",
-                  "-port",
+                [ "-port",
                   show portInt
                 ]
   _ <- typedProcessSetupFunc processConfig

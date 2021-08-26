@@ -32,7 +32,7 @@
         <div .control>
           <input .checkbox
             type=checkbox
-            name="consent-reminder"
+            name="reminder-consent"
             :maybe False (organiserReminderConsent . entityVal) mOrganiserReminder:checked>
         <p .help>
           _{MsgOrganiserConsentReminderHelp}

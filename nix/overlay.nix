@@ -35,7 +35,18 @@ in
             hyperlinkSource = false;
             enableLibraryProfiling = false;
             enableExecutableProfiling = false;
-            buildDepends = (old.buildInputs or [ ]) ++ [ final.haskellPackages.autoexporter ];
+            buildDepends = (old.buildInputs or [ ]) ++ (with final; [
+              chromedriver
+              chromium
+              haskellPackages.autoexporter
+              selenium-server-standalone
+            ]);
+            testDepends = (old.testDepends or [ ]) ++ (with final; [
+              chromedriver
+              chromium
+              haskellPackages.autoexporter
+              selenium-server-standalone
+            ]);
           });
       salsaPartyPkgWithComp =
         exeName: name:

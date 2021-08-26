@@ -115,29 +115,20 @@ adminEmail = "admin@example.com"
 adminPassword :: Text
 adminPassword = "dummy"
 
-dummyUser :: TestUser
-dummyUser = TestUser {testUserEmail = dummyEmail, testUserPassword = dummyPassword}
-
-dummyEmail :: Text
-dummyEmail = "dummy@example.com"
-
-dummyPassword :: Text
-dummyPassword = "dummy"
-
 asUser :: TestUser -> YesodExample App a -> YesodExample App a
 asUser testUser func = do
   testLoginUser testUser
-  r <- func
+  result <- func
   testLogout
-  pure r
+  pure result
 
 -- The only reason that this is different from 'asUser' is because we don't need to log in after registering.
 asNewUser :: TestUser -> YesodExample App a -> YesodExample App a
 asNewUser testUser func = do
   testRegisterUser testUser
-  r <- func
+  result <- func
   testLogout
-  pure r
+  pure result
 
 testRegisterUser :: TestUser -> YesodExample App ()
 testRegisterUser TestUser {..} = testRegister testUserEmail testUserPassword
