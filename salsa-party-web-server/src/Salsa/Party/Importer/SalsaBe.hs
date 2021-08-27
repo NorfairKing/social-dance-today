@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -24,11 +25,15 @@ module Salsa.Party.Importer.SalsaBe (salsaBeImporter) where
 import Conduit
 import Control.Applicative
 import qualified Data.ByteString.Lazy as LB
+import qualified Data.ByteString.Lazy.Char8 as LB8
+import Data.Char as Char
 import qualified Data.Conduit.Combinators as C
+import Data.List
 import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Encoding.Error as TE
 import Network.HTTP.Client as HTTP
 import Network.URI
 import Salsa.Party.Importer.Import
@@ -60,9 +65,9 @@ func = do
       .| logRequestErrors
       .| scrapeEventLinks
       .| deduplicateC
-      .| C.concatMap makeEventRequest
-      .| doHttpRequestWith
-      .| logRequestErrors
+      .| C.concatMap (\eventId -> (,) eventId <$> makeEventRequest eventId)
+      .| doHttpRequestWith'
+      .| logRequestErrors'
       .| importEventPage
 
 scrapeEventLinks :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Text Import ()
@@ -77,13 +82,75 @@ scrapeEventLinks = awaitForever $ \(request, response) -> do
 makeEventRequest :: Text -> Maybe HTTP.Request
 makeEventRequest eventId = parseRequest $ "http://www.salsa.be/vcalendar/event_view.php?event_id=" <> T.unpack eventId
 
-importEventPage :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Void Import ()
-importEventPage = awaitForever $ \(request, response) -> do
+importEventPage :: ConduitT (Text, HTTP.Request, HTTP.Response LB.ByteString) Void Import ()
+importEventPage = awaitForever $ \(eventId, request, response) -> do
   now <- liftIO getCurrentTime
   let today = utctDay now
   let eventScraper :: ScraperT LB.ByteString Import ExternalEvent
-      eventScraper = do
-        pure ExternalEvent {..}
+      eventScraper = chroot ("table" @: ["cellspacing" @= "5", "cellpadding" @= "0", "border" @= "0"]) $
+        chroot ("table" @: ["cellspacing" @= "0", "cellpadding" @= "0", "border" @= "0"]) $ do
+          externalEventUuid <- nextRandomUUID
+          let externalEventKey = eventId
+
+          rawHeader <- chroot ("td" @: ["valign" @= "top"]) $ text "th"
+          headerText <- utf8 rawHeader
+          (externalEventTitle, address) <- case T.splitOn " - " headerText of
+            (title : rest) -> pure (title, T.intercalate " - " rest)
+            _ -> fail "Expected two pieces in the header"
+
+          chroot ("table" @: [hasClass "Grid", "cellspacing" @= "0", "cellpadding" @= "0"]) $
+            chroot ("tr" @: [hasClass "Row"]) $ do
+              rawDay <- text "b" -- First bold element, hope that keeps working.
+              dayText <- utf8 rawDay
+              localTime <- case parseTimeM True defaultTimeLocale "%A,%d%B,%Y,%H:%M" (filter (not . Char.isSpace) (T.unpack dayText)) of
+                Nothing -> fail "Expected to be able to parse the day"
+                Just localTime -> pure localTime
+
+              let externalEventDay = localDay localTime
+
+              rawTexts <- texts "td"
+              let replaceNewline = \case
+                    '\r' -> '\n'
+                    c -> c
+              let textLines =
+                    filter (not . T.null)
+                      . map T.strip
+                      . T.lines
+                      . T.map replaceNewline
+                      . TE.decodeUtf8With TE.lenientDecode
+                      . LB.toStrict
+                      . LB.concat
+                      $ rawTexts
+
+              let descriptionLines =
+                    takeWhile (not . T.isPrefixOf "Salseros and www.salsa.be a perfect match.")
+                      . drop 1
+                      . dropWhile (not . T.isPrefixOf "Added by:")
+                      $ textLines
+
+              let externalEventDescription = do
+                    guard $ not $ null descriptionLines
+                    pure $ T.unlines descriptionLines
+
+              let externalEventOrganiser = Nothing -- Not on the page
+              let externalEventStart = Just $ localTimeOfDay localTime
+
+              let externalEventHomepage = listToMaybe $ mapMaybe (T.stripPrefix "URL: ") textLines
+              let externalEventPrice = listToMaybe $ mapMaybe (T.stripPrefix "Entrance €: ") textLines
+              let externalEventCancelled = False
+
+              app <- asks importEnvApp
+              mPlaceEntity <- lift $ runReaderT (lookupPlaceRaw address) app
+              externalEventPlace <- case mPlaceEntity of
+                Nothing -> fail "could not geolocate"
+                Just (Entity placeId _) -> pure placeId
+
+              let externalEventCreated = now
+              let externalEventModified = Nothing
+              externalEventImporter <- asks importEnvId
+              let externalEventOrigin = T.pack $ show $ getUri request
+
+              pure ExternalEvent {..}
   lift $ do
     mExternalEvent <- scrapeStringLikeT (responseBody response) eventScraper
     mapM importExternalEvent mExternalEvent

@@ -36,6 +36,7 @@ import Network.HTTP.Types as HTTP
 import Network.URI
 import Salsa.Party.AdminNotification
 import Salsa.Party.DB
+import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Poster
 import System.Random (randomRIO)
@@ -131,8 +132,8 @@ runImporter a Importer {..} = do
   let tokenLimitConfig =
         TokenLimitConfig
           { tokenLimitConfigMaxTokens = 10, -- Ten tokens maximum, represents one request
-            tokenLimitConfigInitialTokens = 9, -- Fetch almost-immediately at the start
-            tokenLimitConfigTokensPerSecond = 1
+            tokenLimitConfigInitialTokens = 0, -- Fetch almost-immediately at the start
+            tokenLimitConfigTokensPerSecond = if development then 10 else 1
           }
   tokenLimiter <- liftIO $ makeTokenLimiter tokenLimitConfig
   let env =
@@ -243,6 +244,8 @@ importExternalEventAnd externalEvent@ExternalEvent {..} func = do
                   ExternalEventDay =. externalEventDay,
                   ExternalEventStart =. externalEventStart,
                   ExternalEventHomepage =. externalEventHomepage,
+                  ExternalEventPrice =. externalEventPrice,
+                  ExternalEventCancelled =. externalEventCancelled,
                   ExternalEventModified =. Just now,
                   ExternalEventPlace =. externalEventPlace,
                   ExternalEventOrigin =. externalEventOrigin,
@@ -295,6 +298,9 @@ jsonRequestConduitWith = awaitForever $ \(c, request) -> do
 
 doHttpRequestWith :: ConduitT HTTP.Request (HTTP.Request, Either HttpException (HTTP.Response LB.ByteString)) Import ()
 doHttpRequestWith = C.mapM (\req -> (,) req <$> doHttpRequest req)
+
+doHttpRequestWith' :: ConduitT (a, HTTP.Request) (a, HTTP.Request, Either HttpException (HTTP.Response LB.ByteString)) Import ()
+doHttpRequestWith' = C.mapM (\(a, req) -> (,,) a req <$> doHttpRequest req)
 
 doHttpRequest :: HTTP.Request -> Import (Either HttpException (HTTP.Response LB.ByteString))
 doHttpRequest requestPrototype = do
@@ -400,6 +406,16 @@ logRequestErrors ::
 logRequestErrors = awaitForever $ \(request, errOrResponse) -> case errOrResponse of
   Left err -> logErrorN $ T.pack $ unlines ["Error while fetching page: " <> ppShow err]
   Right response -> yield (request, response)
+
+logRequestErrors' ::
+  ConduitT
+    (a, HTTP.Request, Either HttpException (Response LB.ByteString))
+    (a, HTTP.Request, Response LB.ByteString)
+    Import
+    ()
+logRequestErrors' = awaitForever $ \(a, request, errOrResponse) -> case errOrResponse of
+  Left err -> logErrorN $ T.pack $ unlines ["Error while fetching page: " <> ppShow err]
+  Right response -> yield (a, request, response)
 
 teePrint ::
   (Show a, MonadIO m) => ConduitT a a m ()

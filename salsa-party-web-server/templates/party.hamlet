@@ -90,3 +90,10 @@ $maybe posterKey <- mPosterKey
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content=@{ImageR posterKey}>
 
+$if development
+  <details>
+    <summary>
+      Debug info
+    <pre>
+      #{ppShow party}
+
