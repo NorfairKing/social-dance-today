@@ -131,7 +131,7 @@ runImporter a Importer {..} = do
   let tokenLimitConfig =
         TokenLimitConfig
           { tokenLimitConfigMaxTokens = 10, -- Ten tokens maximum, represents one request
-            tokenLimitConfigInitialTokens = 0,
+            tokenLimitConfigInitialTokens = 9, -- Fetch almost-immediately at the start
             tokenLimitConfigTokensPerSecond = 1
           }
   tokenLimiter <- liftIO $ makeTokenLimiter tokenLimitConfig
@@ -426,7 +426,7 @@ deduplicateC = () <$ go S.empty
 andDays :: MonadIO m => ConduitT a (a, Day) m ()
 andDays = do
   today <- liftIO $ utctDay <$> getCurrentTime
-  let days = [today .. addDays 45 today] -- A bit more than one month ahead.
+  let days = [today .. addDays daysToImportAhead today]
   awaitForever $ \a -> yieldMany $ map ((,) a) days
 
 jsonLDEventsC ::
@@ -491,3 +491,8 @@ parseJSONLDEvents = awaitForever $ \(request, response, value) ->
                               T.unpack $ LT.toStrict $ LTB.toLazyText $ JSON.encodePrettyToTextBuilder value
                             ]
                     else pure ()
+
+-- A bit more than one month ahead.
+-- We don't care about importing _too_ far ahead
+daysToImportAhead :: Integer
+daysToImportAhead = 45
