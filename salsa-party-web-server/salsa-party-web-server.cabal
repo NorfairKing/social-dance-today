@@ -147,6 +147,7 @@ library
     , random
     , resourcet
     , retry
+    , safe
     , scalpel
     , scientific
     , shakespeare

@@ -177,27 +177,27 @@ dutchTimeLocale :: TimeLocale
 dutchTimeLocale =
   TimeLocale
     { wDays =
-        [ ("zondag", "zo."),
-          ("maandag", "ma."),
-          ("dinsdag", "di."),
-          ("woensdag", "wo."),
-          ("donderdag", "do."),
-          ("vrijdag", "vr."),
-          ("zaterdag", "za.")
+        [ ("zondag", "zo"),
+          ("maandag", "ma"),
+          ("dinsdag", "di"),
+          ("woensdag", "wo"),
+          ("donderdag", "do"),
+          ("vrijdag", "vr"),
+          ("zaterdag", "za")
         ],
       months =
-        [ ("januari", "jan."),
-          ("februari", "feb."),
-          ("maart", "mrt."),
-          ("april", "apr."),
+        [ ("januari", "jan"),
+          ("februari", "feb"),
+          ("maart", "mrt"),
+          ("april", "apr"),
           ("mei", "mei"),
-          ("juni", "jun."),
-          ("juli", "jul."),
-          ("augustus", "aug."),
-          ("september", "sept."),
-          ("oktober", "okt."),
-          ("november", "nov."),
-          ("december", "dec.")
+          ("juni", "jun"),
+          ("juli", "jul"),
+          ("augustus", "aug"),
+          ("september", "sep"),
+          ("oktober", "okt"),
+          ("november", "nov"),
+          ("december", "dec")
         ],
       amPm = ("AM", "PM"), -- Not used.
       dateTimeFmt = "%a %b %e %H:%M:%S %Z %Y",
