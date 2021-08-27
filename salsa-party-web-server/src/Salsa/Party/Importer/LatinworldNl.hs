@@ -35,4 +35,41 @@ latinworldNlImporter =
 
 func :: Import ()
 func = do
-  pure ()
+  runConduit $
+    yield "https://www.latinworld.nl/salsa/agenda/"
+      .| withPeriods
+      .| makeAgendaRequestForPeriod
+      .| doHttpRequestWith
+      .| logRequestErrors
+      .| parseAgendaPageUrls
+      .| deduplicateC
+      .| makeEventPageRequest
+      .| doHttpRequestWith
+      .| logRequestErrors
+      .| C.mapM_ (liftIO . pPrint)
+
+withPeriods :: Monad m => ConduitT a (a, Maybe Int) m ()
+withPeriods = awaitForever $ \a -> yieldMany $ map ((,) a) [Nothing, Just 1, Just 2, Just 3, Just 4]
+
+makeAgendaRequestForPeriod :: Monad m => ConduitT (String, Maybe Int) HTTP.Request m ()
+makeAgendaRequestForPeriod = C.concatMap $ \(url, mp) ->
+  parseRequest
+    ( case mp of
+        Nothing -> url
+        Just p -> url <> "?periode=" <> show p
+    ) ::
+    Maybe Request
+
+parseAgendaPageUrls :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Text Import ()
+parseAgendaPageUrls = awaitForever $ \(request, response) -> do
+  let urls = fromMaybe [] $
+        scrapeStringLike (responseBody response) $
+          chroot "main" $
+            chroot ("div" @: [hasClass "media"]) $
+              chroot "table" $ do
+                refs <- chroots "td" $ attr "href" "a"
+                pure (mapMaybe maybeUtf8 refs :: [Text])
+  yieldMany urls
+
+makeEventPageRequest :: Monad m => ConduitT Text HTTP.Request m ()
+makeEventPageRequest = C.concatMap $ \url -> parseRequest ("https://www.latinworld.nl/" <> T.unpack url) :: Maybe Request
