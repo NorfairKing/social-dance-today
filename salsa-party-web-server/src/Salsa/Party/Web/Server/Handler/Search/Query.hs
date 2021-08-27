@@ -68,7 +68,10 @@ searchQuery begin mEnd coordinates@Coordinates {..} = do
       pure (externalEventDay externalEvent, (externalEventEntity, placeEntity, mKey))
 
   let internalResults = makeGroupedByDay partyResultsWithImages
-      externalResults = deduplicateExternalEvents internalResults $ deduplicateExternalEventsExternally $ makeGroupedByDay externalEventResultsWithImages
+      externalResults =
+        deduplicateExternalEvents internalResults $
+          -- deduplicateExternalEventsExternally $
+          makeGroupedByDay externalEventResultsWithImages
 
   pure $
     M.filter (not . null) $
