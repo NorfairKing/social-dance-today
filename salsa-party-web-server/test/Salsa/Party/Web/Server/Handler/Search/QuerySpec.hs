@@ -207,7 +207,7 @@ spec = do
                               DB.insert_ externalEvent3
                               -- A duplicate of external event 1
                               let externalEvent4 = externalEvent4Prototype {externalEventTitle = "External Event 1 abcdel", externalEventDay = day, externalEventPlace = place7Id}
-                              DB.insert_ externalEvent4
+                              externalEvent4Id <- DB.insert externalEvent4
                               sr <- searchQuery @IO day (Just day) (placeCoordinates queryPlace)
                               liftIO $
                                 sr
@@ -215,7 +215,8 @@ spec = do
                                     [ ( day,
                                         [ Internal (Entity party1Id party1) (Entity place1Id place1) Nothing,
                                           External (Entity externalEvent1Id externalEvent1) (Entity place4Id place4) Nothing,
-                                          External (Entity externalEvent2Id externalEvent2) (Entity place5Id place5) Nothing
+                                          External (Entity externalEvent2Id externalEvent2) (Entity place5Id place5) Nothing,
+                                          External (Entity externalEvent4Id externalEvent4) (Entity place7Id place7) Nothing
                                         ]
                                       )
                                     ]
