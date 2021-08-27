@@ -23,24 +23,18 @@
 module Salsa.Party.Importer.SalsaBe (salsaBeImporter) where
 
 import Conduit
-import Control.Applicative
 import qualified Data.ByteString.Lazy as LB
-import qualified Data.ByteString.Lazy.Char8 as LB8
 import Data.Char as Char
 import qualified Data.Conduit.Combinators as C
-import Data.List
 import Data.Maybe
-import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Encoding.Error as TE
 import Network.HTTP.Client as HTTP
-import Network.URI
 import Salsa.Party.Importer.Import
 import Salsa.Party.Web.Server.Geocoding
 import Text.HTML.Scalpel
 import Text.HTML.Scalpel.Extended
-import Text.Read (readMaybe)
 
 salsaBeImporter :: Importer
 salsaBeImporter =
@@ -71,7 +65,7 @@ func = do
       .| importEventPage
 
 scrapeEventLinks :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Text Import ()
-scrapeEventLinks = awaitForever $ \(request, response) -> do
+scrapeEventLinks = awaitForever $ \(_, response) -> do
   let mrefs = scrapeStringLike (responseBody response) $ do
         refss <- chroots "td" $ attrs "href" "a"
         pure $ mapMaybe maybeUtf8 $ concat refss
@@ -85,7 +79,6 @@ makeEventRequest eventId = parseRequest $ "http://www.salsa.be/vcalendar/event_v
 importEventPage :: ConduitT (Text, HTTP.Request, HTTP.Response LB.ByteString) Void Import ()
 importEventPage = awaitForever $ \(eventId, request, response) -> do
   now <- liftIO getCurrentTime
-  let today = utctDay now
   let eventScraper :: ScraperT LB.ByteString Import ExternalEvent
       eventScraper = chroot ("table" @: ["cellspacing" @= "5", "cellpadding" @= "0", "border" @= "0"]) $
         chroot ("table" @: ["cellspacing" @= "0", "cellpadding" @= "0", "border" @= "0"]) $ do
