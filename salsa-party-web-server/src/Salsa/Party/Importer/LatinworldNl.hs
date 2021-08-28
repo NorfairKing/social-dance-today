@@ -12,6 +12,13 @@
 -- 3. The robots.txt
 --
 -- All good so far, except the data is not machine readable and the sitemap.xml is incompelete.
+--
+-- We import what we can based on the html, but the html doesn't exactly help.
+-- It's table-based layout with no metadata for the most part.
+--
+-- TODO import the description as well.
+-- As a human it's easy to see which part is the description, but in the HTML
+-- it's just a <div> and that doesn't help at all :(
 module Salsa.Party.Importer.LatinworldNl (latinworldNlImporter) where
 
 import Conduit
@@ -42,14 +49,18 @@ latinworldNlImporter =
 func :: Import ()
 func = do
   runConduit $
-    -- yield "https://www.latinworld.nl/salsa/agenda/"
-    --   .| withPeriods
-    --   .| makeAgendaRequestForPeriod
-    --   .| doHttpRequestWith
-    --   .| logRequestErrors
-    --   .| parseAgendaPageUrls
-    --   .| deduplicateC
-    yield "latin/agenda/burn-the-floor-salsa-bachata-kizomba-29-08-2021-salsadansschool-mambomike-rotterdam-83867.php"
+    yieldMany
+      [ "https://www.latinworld.nl/salsa/agenda/",
+        "https://www.latinworld.nl/bachata/agenda/",
+        "https://www.latinworld.nl/kizomba/agenda/",
+        "https://www.latinworld.nl/cubaanse-salsa/agenda/"
+      ]
+      .| withPeriods
+      .| makeAgendaRequestForPeriod
+      .| doHttpRequestWith
+      .| logRequestErrors
+      .| parseAgendaPageUrls
+      .| deduplicateC
       .| makeEventPageRequest
       .| doHttpRequestWith'
       .| logRequestErrors'
