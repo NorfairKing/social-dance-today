@@ -36,13 +36,13 @@
             <p>
               _{MsgPartyPrice price}
       
-        $maybe homepage <- externalEventHomepage
+        $maybe homepage <- mHomepageLink
           <div .content>
             <p>
-              <a href=#{homepage}
+              <a href=#{show homepage}
                 rel="external nofollow"
                 title=_{MsgPartyHomepageTitle externalEventTitle}>
-                #{homepage}
+                #{show homepage}
      
         $maybe googleMapsWidget <- mGoogleMapsWidget
           ^{googleMapsWidget}

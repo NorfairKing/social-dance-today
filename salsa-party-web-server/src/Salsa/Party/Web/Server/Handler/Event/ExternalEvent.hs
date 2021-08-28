@@ -11,6 +11,7 @@ module Salsa.Party.Web.Server.Handler.Event.ExternalEvent
   )
 where
 
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Google.Calendar
 import Google.Maps
@@ -45,7 +46,11 @@ externalEventPageHtml (Entity externalEventId externalEvent@ExternalEvent {..}) 
     toWidgetHead $ toJSONLDData $ externalEventToLDEvent renderUrl externalEvent place mPosterKey
     addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe externalEventCreated externalEventModified
     let mAddToGoogleLink = addExternalEventToGoogleCalendarLink renderUrl externalEvent place
+    let mHomepageLink = externalEventHomepage >>= (parseURILike . T.unpack)
     $(widgetFile "external-event")
+
+parseURILike :: String -> Maybe URI
+parseURILike url = parseAbsoluteURI url <|> parseAbsoluteURI ("https://" <> url)
 
 addExternalEventToGoogleCalendarLink :: (Route App -> Text) -> ExternalEvent -> Place -> Maybe URI
 addExternalEventToGoogleCalendarLink renderUrl ExternalEvent {..} Place {..} =
