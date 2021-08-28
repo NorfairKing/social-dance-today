@@ -56,10 +56,10 @@ getEventMapR eventUUID = do
 
   imageKey <- case mImageKey of
     Just imageKey -> do
-      logDebugN $ "Static map for event found in cache."
+      logDebugN $ T.pack $ "Static map for event found in cache." <> show eventUUID
       pure imageKey
     Nothing -> do
-      logDebugN $ "Static map not in cache, fetching it first."
+      logDebugN $ T.pack $ "Static map not in cache, fetching it first." <> show eventUUID
       loadAndCacheMapImage placeId
 
   redirect (ImageR imageKey)
