@@ -62,6 +62,7 @@ setUpPlaces = do
         PlaceLon =. placeLon locationPlace
       ]
 
+{-# NOINLINE locations #-}
 locations :: [Location]
 locations =
   case Yaml.decodeEither' locationsFileContents of
