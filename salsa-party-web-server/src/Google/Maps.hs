@@ -5,6 +5,7 @@
 module Google.Maps where
 
 import Control.Monad
+import Data.ByteString (ByteString)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -24,7 +25,8 @@ googleMapsStaticUrl apiKey query =
             ("size", Just $ TE.encodeUtf8 $ T.pack $ show mapsWidth <> "x" <> show mapsHeight),
             ("maptype", Just "roadmap"),
             ("format", Just "jpg"),
-            ("markers", Just $ TE.encodeUtf8 query)
+            ("markers", Just $ TE.encodeUtf8 query),
+            ("zoom", Just zoomLevel)
           ]
    in staticAPIUrl <> TE.decodeUtf8 googleMapsEmbedQuery
 
@@ -35,9 +37,13 @@ googleMapsEmbedUrl apiKey query =
         renderQuery
           True
           [ ("key", Just $ TE.encodeUtf8 apiKey),
-            ("q", Just $ TE.encodeUtf8 query)
+            ("q", Just $ TE.encodeUtf8 query),
+            ("zoom", Just zoomLevel)
           ]
    in embedAPIUrl <> TE.decodeUtf8 googleMapsEmbedQuery
+
+zoomLevel :: ByteString
+zoomLevel = "13"
 
 mapsWidth :: Int
 mapsWidth = 640
