@@ -12,6 +12,7 @@
 -- Only events.
 /party/#EventUUID EventR GET
 /party/#EventUUID/event.ics EventIcsR GET
+/party/#EventUUID/map.jpg EventMapR GET
 
 /organiser/#OrganiserUUID OrganiserR GET
 /image/#CASKey ImageR GET

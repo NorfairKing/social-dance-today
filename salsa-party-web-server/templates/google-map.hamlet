@@ -1,5 +1,5 @@
 <img #mymap .pointer
   width=#{mapsWidth}
   height=#{mapsHeight}
-  src=@{ImageR imageCASKey}
-  alt=_{MsgGoogleMapAlt placeQuery}>
+  src=@{EventMapR eventUUID}
+  alt=_{MsgGoogleMapAlt query}>

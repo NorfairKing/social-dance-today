@@ -92,6 +92,7 @@ library
       Salsa.Party.Web.Server.Handler.Search
       Salsa.Party.Web.Server.Handler.Search.Query
       Salsa.Party.Web.Server.Handler.Sitemap
+      Salsa.Party.Web.Server.Handler.StaticMap
       Salsa.Party.Web.Server.Poster
       Salsa.Party.Web.Server.Static
       Salsa.Party.Web.Server.Static.TH
