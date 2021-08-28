@@ -160,6 +160,7 @@ tests:
     - persistent-sqlite
     - pretty-show
     - salsa-party-web-server
+    - shakespeare
     - sydtest
     - sydtest-aeson
     - sydtest-persistent

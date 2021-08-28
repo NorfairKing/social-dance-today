@@ -236,6 +236,7 @@ test-suite salsa-party-web-server-test
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICalSpec
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LDSpec
       Salsa.Party.Web.Server.Handler.Event.ExternalEventSpec
+      Salsa.Party.Web.Server.Handler.Event.Party.DescriptionSpec
       Salsa.Party.Web.Server.Handler.Event.Party.ICalSpec
       Salsa.Party.Web.Server.Handler.Event.Party.LDSpec
       Salsa.Party.Web.Server.Handler.Event.PartySpec
@@ -295,6 +296,7 @@ test-suite salsa-party-web-server-test
     , persistent-sqlite
     , pretty-show
     , salsa-party-web-server
+    , shakespeare
     , sydtest
     , sydtest-aeson
     , sydtest-persistent

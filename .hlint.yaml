@@ -29,6 +29,7 @@
   - name: setDescription
     within:
       - Salsa.Party.Web.Server.Handler.Admin.Panel
+      - Salsa.Party.Web.Server.Handler.Event.Party
     message: Use setDescriptionI instead.
   - name: addMessage
     within:

@@ -79,6 +79,12 @@ PartyDownloadCalendarEventTitle partyTitle@Text: Kalender evenement voor #{party
 PartyAddToGoogleCalendar: Toevoegen aan Google Calendar
 PartyAddToGoogleCalendarTitle partyTitle@Text: #{partyTitle} aan Google Calendar toevoegen
 
+PartyDescriptionDay day@String: op #{day}
+PartyDescriptionDateTime day@String start@String: op #{day} om #{start}
+PartyDescriptionOrganiser name@Text: door #{name}
+PartyDescriptionAddress address@Text: adres: #{address}
+PartyDescriptionPrice price@Text: prijs: #{price}
+
 ExternalEventCaution: Evenement gevonden op het web. Gelieve voorzichtig om te gaan met deze informatie.
 
 # Organiser Page

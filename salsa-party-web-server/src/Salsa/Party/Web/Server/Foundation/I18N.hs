@@ -137,6 +137,16 @@ languagePrettyDateTimeFormat = \case
   SupportedLangGerman -> "%A, %e %B - %H:%M" -- Freitag, 16 juli - 18:30
   SupportedLangDutch -> "%A, %e %B - %H:%M" -- Vrijdag, 16 juli - 18:30
 
+getPrettyTimeFormat :: MonadHandler m => m String
+getPrettyTimeFormat = languagePrettyTimeFormat <$> getFirstMatchingSupportedLanguage
+
+-- TODO turn this into AM/PM nonsense
+languagePrettyTimeFormat :: SupportedLanguage -> String
+languagePrettyTimeFormat = \case
+  SupportedLangEnglish -> "%H:%M" -- 18:30
+  SupportedLangGerman -> "%H:%M" -- 18:30
+  SupportedLangDutch -> "%H:%M" -- 18:30
+
 -- | Locale representing German usage.
 germanTimeLocale :: TimeLocale
 germanTimeLocale =
