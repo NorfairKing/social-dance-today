@@ -85,7 +85,6 @@ PartyDescriptionDay day@String: am #{day}
 PartyDescriptionDateTime day@String start@String: am #{day} um #{start}
 PartyDescriptionOrganiser name@Text: durch #{name}
 PartyDescriptionAddress address@Text: Adresse: #{address}
-PartyDescriptionPrice price@Text: Preis: #{price}
 
 ExternalEventCaution: Event via Websuche gefunden. Behandeln Sie diese Informationen mit Vorsicht. (Or: Angaben ohne Gewähr.)
 

@@ -233,6 +233,7 @@ test-suite salsa-party-web-server-test
       Salsa.Party.Web.Server.Handler.Admin.PanelSpec
       Salsa.Party.Web.Server.Handler.Admin.SiteTestSpec
       Salsa.Party.Web.Server.Handler.AuthSpec
+      Salsa.Party.Web.Server.Handler.Event.ExternalEvent.DescriptionSpec
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICalSpec
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LDSpec
       Salsa.Party.Web.Server.Handler.Event.ExternalEventSpec

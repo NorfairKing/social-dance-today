@@ -79,7 +79,6 @@ PartyDescriptionDay day@String: on #{day}
 PartyDescriptionDateTime day@String start@String: on #{day} at #{start}
 PartyDescriptionOrganiser name@Text: by #{name}
 PartyDescriptionAddress address@Text: address: #{address}
-PartyDescriptionPrice price@Text: price: #{price}
 
 ExternalEventCaution: Event found via web search, treat this information with caution.
 

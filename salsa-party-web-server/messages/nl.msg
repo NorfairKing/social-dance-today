@@ -83,7 +83,6 @@ PartyDescriptionDay day@String: op #{day}
 PartyDescriptionDateTime day@String start@String: op #{day} om #{start}
 PartyDescriptionOrganiser name@Text: door #{name}
 PartyDescriptionAddress address@Text: adres: #{address}
-PartyDescriptionPrice price@Text: prijs: #{price}
 
 ExternalEventCaution: Evenement gevonden op het web. Gelieve voorzichtig om te gaan met deze informatie.
 

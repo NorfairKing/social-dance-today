@@ -69,7 +69,7 @@ partyHtmlDescription render timeLocale prettyDayFormat prettyTimeFormat Party {.
       Place _ _ _ = undefined
    in T.unlines $
         concat
-          [ [T.take 60 (render (MsgPartyDescription description)) | description <- maybeToList partyDescription],
+          [ [T.take 80 (render (MsgPartyDescription description)) | description <- maybeToList partyDescription],
             [ render
                 ( case partyStart of
                     Nothing -> MsgPartyDescriptionDay $ formatTime timeLocale prettyDayFormat partyDay
@@ -77,6 +77,6 @@ partyHtmlDescription render timeLocale prettyDayFormat prettyTimeFormat Party {.
                 ),
               render (MsgPartyDescriptionAddress placeQuery),
               render (MsgPartyDescriptionOrganiser organiserName)
-            ],
-            [render (MsgPartyDescriptionPrice price) | price <- maybeToList partyPrice]
+            ]
+            -- We don't include the price because it's not going to be very relevant in search results
           ]
