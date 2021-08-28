@@ -19,6 +19,7 @@ import Control.Applicative
 import qualified Data.ByteString.Lazy as LB
 import Data.Char as Char
 import qualified Data.Conduit.Combinators as C
+import Data.List
 import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -125,10 +126,15 @@ importEventPage = awaitForever $ \(relativeUrl, request, response) -> do
                     Nothing -> fail "cell not found"
                     Just res -> pure res
               mOrganiser <- optional $ decodeLenient <$> cell 1
+              rawAddressCell <- cell 15
+              guard $ "adres" `T.isInfixOf` decodeLenient rawAddressCell
               addr1 <- decodeLenient <$> cell 16
               addr2 <- decodeLenient <$> cell 19
               addr3 <- decodeLenient <$> cell 22
-              mRawLink <- optional $ decodeLenient <$> cell 24
+              mRawLink <- optional $ do
+                rawLinkCell <- decodeLenient <$> cell 23
+                guard $ "zie ook" `T.isInfixOf` rawLinkCell
+                decodeLenient <$> cell 24
               let address = T.intercalate ", " [addr1, addr2, addr3]
               let mLink = mRawLink >>= (headMay . dropWhile T.null . map T.strip . T.words)
               pure (address, mOrganiser, mLink)
@@ -151,7 +157,11 @@ importEventPage = awaitForever $ \(relativeUrl, request, response) -> do
                     Just res -> pure res
               rawDateCell <- cell 2
               guard $ "datum" `T.isInfixOf` decodeLenient rawDateCell
-              rawStart <- fmap join $ optional $ headMay . T.words . decodeLenient <$> cell 5
+              rawStart <- fmap join $
+                optional $ do
+                  rawTimeCell <- decodeLenient <$> cell 4
+                  guard $ "tijd" `T.isInfixOf` rawTimeCell
+                  headMay . T.words . decodeLenient <$> cell 5
               let mStart = rawStart >>= (parseTimeM True dutchTimeLocale "%H:%M" . T.unpack)
               mPrice <- optional $ T.strip . decodeLenient <$> cell 7
               pure (mStart, mPrice)
