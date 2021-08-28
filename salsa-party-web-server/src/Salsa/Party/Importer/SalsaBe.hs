@@ -11,7 +11,7 @@
 --
 -- All good so far, except the data is not machine readable and there is no sitemap.xml.
 --
--- However shit this website may be for userso, it's pretty GREAT for me right now.
+-- However shit this website may be for users, it's pretty GREAT for me right now.
 -- There is a search page at http://www.salsa.be/vcalendar/search.php, and we can search programmatically with just a get request and query parameters like so:
 -- http://www.salsa.be/vcalendar/search.php?s_keyword=&s_category=&s_event_date_from=1%2F8%2F2021&s_event_date_to=31%2F8%2F2022
 --

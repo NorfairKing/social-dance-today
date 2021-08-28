@@ -32,6 +32,7 @@ library
       Salsa.Party.Importer.EventsInfo
       Salsa.Party.Importer.GolatindanceCom
       Salsa.Party.Importer.Import
+      Salsa.Party.Importer.LatinworldNl
       Salsa.Party.Importer.MapdanceCom
       Salsa.Party.Importer.SalsaBe
       Salsa.Party.Importer.SalsachicagoCom
@@ -146,6 +147,7 @@ library
     , random
     , resourcet
     , retry
+    , safe
     , scalpel
     , scientific
     , shakespeare

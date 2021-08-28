@@ -127,6 +127,7 @@ in
                   dancefloorfinder-com-importer = mkLooperOption "dancefloorfinder-com-importer";
                   sensual-dance-importer = mkLooperOption "sensual-dance-importer";
                   salsa-be-importer = mkLooperOption "salsa-be-importer";
+                  latinworld-nl-importer = mkLooperOption "latinworld-nl-importer";
                 };
             });
           default = null;
@@ -188,6 +189,7 @@ in
           (nullOrOption "dancefloorfinder-com-importer" dancefloorfinder-com-importer)
           (nullOrOption "sensual-dance-importer" sensual-dance-importer)
           (nullOrOption "salsa-be-importer" salsa-be-importer)
+          (nullOrOption "latinworld-nl-importer" latinworld-nl-importer)
           (nullOrOption "sentry" sentry)
           { static-dir = gitignoreSource ../salsa-party-web-server/static; }
           cfg.web-server.config
