@@ -8,18 +8,13 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -fno-warn-orphans -fno-warn-unused-pattern-binds #-}
 
-module Salsa.Party.Web.Server.Handler.Event.Party
-  ( partyPage,
-    partyPageICal,
-    partyHtmlDescription,
-  )
-where
+module Salsa.Party.Web.Server.Handler.Event.Party (partyPage) where
 
-import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Google.Calendar
 import Google.Maps
 import Network.URI
+import Salsa.Party.Web.Server.Handler.Event.Party.Description
 import Salsa.Party.Web.Server.Handler.Event.Party.ICal
 import Salsa.Party.Web.Server.Handler.Event.Party.LD
 import Salsa.Party.Web.Server.Handler.Import
@@ -61,22 +56,3 @@ addPartyToGoogleCalendarLink :: (Route App -> Text) -> Party -> Place -> Maybe U
 addPartyToGoogleCalendarLink renderUrl Party {..} Place {..} =
   let Party _ _ _ _ _ _ _ _ _ _ _ _ = undefined
    in addEventToGoogleCalendarLink (renderUrl (EventR partyUuid)) partyDay partyStart placeQuery partyTitle partyDescription
-
-partyHtmlDescription :: (AppMessage -> Text) -> TimeLocale -> String -> String -> Party -> Organiser -> Place -> Text
-partyHtmlDescription render timeLocale prettyDayFormat prettyTimeFormat Party {..} Organiser {..} Place {..} =
-  let Party _ _ _ _ _ _ _ _ _ _ _ _ = undefined
-      Organiser _ _ _ _ _ _ = undefined
-      Place _ _ _ = undefined
-   in T.unlines $
-        concat
-          [ [T.take 80 (render (MsgPartyDescription description)) | description <- maybeToList partyDescription],
-            [ render
-                ( case partyStart of
-                    Nothing -> MsgPartyDescriptionDay $ formatTime timeLocale prettyDayFormat partyDay
-                    Just start -> MsgPartyDescriptionDateTime (formatTime timeLocale prettyDayFormat partyDay) (formatTime timeLocale prettyTimeFormat start)
-                ),
-              render (MsgPartyDescriptionAddress placeQuery),
-              render (MsgPartyDescriptionOrganiser organiserName)
-            ]
-            -- We don't include the price because it's not going to be very relevant in search results
-          ]

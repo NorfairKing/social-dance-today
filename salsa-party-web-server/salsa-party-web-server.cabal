@@ -75,10 +75,12 @@ library
       Salsa.Party.Web.Server.Handler.Admin.TestOrganiserReminder
       Salsa.Party.Web.Server.Handler.Event
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent
+      Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Description
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
       Salsa.Party.Web.Server.Handler.Event.ICal
       Salsa.Party.Web.Server.Handler.Event.Party
+      Salsa.Party.Web.Server.Handler.Event.Party.Description
       Salsa.Party.Web.Server.Handler.Event.Party.ICal
       Salsa.Party.Web.Server.Handler.Event.Party.LD
       Salsa.Party.Web.Server.Handler.Explore

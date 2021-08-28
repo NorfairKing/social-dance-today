@@ -7,7 +7,7 @@ import qualified Data.Text as T
 import Data.Time
 import qualified Data.UUID as UUID
 import qualified Data.UUID.Typed as Typed
-import Salsa.Party.Web.Server.Handler.Event.ExternalEvent
+import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Description
 import Salsa.Party.Web.Server.Handler.TestImport
 import Text.Shakespeare.I18N
 
