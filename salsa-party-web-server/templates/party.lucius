@@ -1,0 +1,5 @@
+.poster {
+  max-width: 640px;
+  max-height: 360px;
+  object-fit: contain;
+}
