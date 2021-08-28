@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -46,7 +47,7 @@ func = do
     --   .| logRequestErrors
     --   .| parseAgendaPageUrls
     --   .| deduplicateC
-    yield "latin/agenda/oefenavond-salsa-en-bachata-03-09-2021-u-can-dance-almere-83706.php"
+    yield "latin/agenda/salsa-night-28-08-2021-gerjo-en-jeannette-assen-83641.php"
       .| makeEventPageRequest
       .| doHttpRequestWith'
       .| logRequestErrors'
@@ -94,21 +95,20 @@ importEventPage = awaitForever $ \(relativeUrl, request, response) -> do
 
           header <- decodeLenient <$> text "h1"
           (dateText, titleText) <- case T.splitOn ": " header of
-            (dateText : rest) ->
+            (dateText : rest) -> do
+              let replaceSpace = \case
+                    '\65533' -> ' '
+                    c -> c
               pure
-                ( T.unwords $ drop 1 $ T.words dateText,
+                ( T.unwords $ drop 1 $ T.words $ T.map replaceSpace dateText,
                   T.intercalate ": " rest
                 )
             _ -> fail "Failed to decode the header"
-          liftIO $ pPrint ("dateText", dateText)
-          liftIO $ pPrint ("titleText", titleText)
 
           let dayTextForParsing = ' ' : filter (\c -> not (Char.isSpace c) && (c /= '\65533')) (T.unpack dateText)
-          liftIO $ pPrint ("dayTextForParsing", dayTextForParsing)
           day <- case parseTimeM False dutchTimeLocale "%e%b%Y" dayTextForParsing of
             Nothing -> fail "Could not parse day"
             Just d -> pure d
-          liftIO $ pPrint ("day", day)
 
           let externalEventTitle = titleText
 
@@ -120,7 +120,6 @@ importEventPage = awaitForever $ \(relativeUrl, request, response) -> do
               h4 <- text "h4"
               guard $ h4 == "Locatie"
               cells <- texts "td"
-              liftIO $ print cells
               let cell ix = case atMay cells ix of
                     Nothing -> fail "cell not found"
                     Just res -> pure res
@@ -143,12 +142,30 @@ importEventPage = awaitForever $ \(relativeUrl, request, response) -> do
             Nothing -> fail "could not geolocate"
             Just (Entity placeId _) -> pure placeId
 
+          (mStart, mPrice) <- fmap (fromMaybe (Nothing, Nothing) . listToMaybe) $
+            chroots ("table" @: ["style" @= "width: 100%"]) $ do
+              cells <- texts "td"
+              let cell ix = case atMay cells ix of
+                    Nothing -> fail "cell not found"
+                    Just res -> pure res
+              rawDateCell <- cell 2
+              guard $ "datum" `T.isInfixOf` decodeLenient rawDateCell
+              rawStart <- fmap join $ optional $ headMay . T.words . decodeLenient <$> cell 5
+              let mStart = rawStart >>= (parseTimeM True dutchTimeLocale "%H:%M" . T.unpack)
+              mPrice <- optional $ T.strip . decodeLenient <$> cell 7
+              pure (mStart, mPrice)
+
+          cancelled <- fmap (fromMaybe False) $
+            optional $ do
+              t <- text ("font" @: ["color" @= "red"])
+              pure $ "geannuleerd" `T.isInfixOf` decodeLenient t
+
           let externalEventDescription = Nothing -- TODO
           let externalEventOrganiser = mOrganiser
-          let externalEventStart = Nothing -- TODO
+          let externalEventStart = mStart
           let externalEventHomepage = mLink
-          let externalEventPrice = Nothing -- TODO
-          let externalEventCancelled = False -- Not on the page, afaict
+          let externalEventPrice = mPrice
+          let externalEventCancelled = cancelled
           let externalEventCreated = now
           let externalEventModified = Nothing
           externalEventImporter <- asks importEnvId
