@@ -24,6 +24,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Encoding.Error as TE
 import Network.HTTP.Client as HTTP
+import Network.URI
 import Safe
 import Salsa.Party.Importer.Import
 import Salsa.Party.Web.Server.Geocoding
@@ -47,7 +48,7 @@ func = do
     --   .| logRequestErrors
     --   .| parseAgendaPageUrls
     --   .| deduplicateC
-    yield "latin/agenda/salsa-night-28-08-2021-gerjo-en-jeannette-assen-83641.php"
+    yield "latin/agenda/burn-the-floor-salsa-bachata-kizomba-29-08-2021-salsadansschool-mambomike-rotterdam-83867.php"
       .| makeEventPageRequest
       .| doHttpRequestWith'
       .| logRequestErrors'
@@ -66,7 +67,7 @@ makeAgendaRequestForPeriod = C.concatMap $ \(url, mp) ->
     Maybe Request
 
 parseAgendaPageUrls :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Text Import ()
-parseAgendaPageUrls = awaitForever $ \(request, response) -> do
+parseAgendaPageUrls = awaitForever $ \(_, response) -> do
   let urls = fromMaybe [] $
         scrapeStringLike (responseBody response) $
           chroot "main" $
@@ -85,7 +86,7 @@ importEventPage = awaitForever $ \(relativeUrl, request, response) -> do
   now <- liftIO getCurrentTime
   let today = utctDay now
       yesterday = addDays (-1) today
-  let eventScraper :: ScraperT LB.ByteString Import ExternalEvent
+  let eventScraper :: ScraperT LB.ByteString Import (ExternalEvent, Maybe Text)
       eventScraper = chroot "main" $
         chroot ("div" @: [hasClass "row"]) $ do
           externalEventUuid <- nextRandomUUID
@@ -127,12 +128,12 @@ importEventPage = awaitForever $ \(relativeUrl, request, response) -> do
               addr1 <- decodeLenient <$> cell 16
               addr2 <- decodeLenient <$> cell 19
               addr3 <- decodeLenient <$> cell 22
-              mLink <- optional $ decodeLenient <$> cell 24
+              mRawLink <- optional $ decodeLenient <$> cell 24
               let address = T.intercalate ", " [addr1, addr2, addr3]
-              let mLink = mLink >>= (headMay . dropWhile T.null . map T.strip . T.words)
-              pure (address, mOrganiser, Nothing)
+              let mLink = mRawLink >>= (headMay . dropWhile T.null . map T.strip . T.words)
+              pure (address, mOrganiser, mLink)
 
-          (address, mOrganiser, mLink) <- case mTrip of
+          (address, externalEventOrganiser, externalEventHomepage) <- case mTrip of
             Nothing -> fail "no address"
             Just (a, mO, mL) -> pure (a, mO, mL)
 
@@ -142,7 +143,7 @@ importEventPage = awaitForever $ \(relativeUrl, request, response) -> do
             Nothing -> fail "could not geolocate"
             Just (Entity placeId _) -> pure placeId
 
-          (mStart, mPrice) <- fmap (fromMaybe (Nothing, Nothing) . listToMaybe) $
+          (externalEventStart, externalEventPrice) <- fmap (fromMaybe (Nothing, Nothing) . listToMaybe) $
             chroots ("table" @: ["style" @= "width: 100%"]) $ do
               cells <- texts "td"
               let cell ix = case atMay cells ix of
@@ -160,18 +161,39 @@ importEventPage = awaitForever $ \(relativeUrl, request, response) -> do
               t <- text ("font" @: ["color" @= "red"])
               pure $ "geannuleerd" `T.isInfixOf` decodeLenient t
 
-          let externalEventDescription = Nothing -- TODO
-          let externalEventOrganiser = mOrganiser
-          let externalEventStart = mStart
-          let externalEventHomepage = mLink
-          let externalEventPrice = mPrice
+          let externalEventDescription = Nothing
           let externalEventCancelled = cancelled
           let externalEventCreated = now
           let externalEventModified = Nothing
           externalEventImporter <- asks importEnvId
           let externalEventOrigin = T.pack $ show $ getUri request
 
-          pure ExternalEvent {..}
+          mImageLink <- fmap join $
+            optional $ do
+              refs <- attrs "src" "img"
+              let candidates = mapMaybe maybeUtf8 refs
+              pure $ find ("/media/flyers" `T.isPrefixOf`) candidates
+
+          pure (ExternalEvent {..}, mImageLink)
   lift $ do
     mExternalEvent <- scrapeStringLikeT (responseBody response) eventScraper
-    mapM importExternalEvent mExternalEvent
+    forM_ mExternalEvent $ \(externalEvent, mImageUrl) -> do
+      importExternalEventAnd externalEvent $ \externalEventId -> do
+        case mImageUrl >>= (parseURI . ("https://www.latinworld.nl/" <>) . T.unpack) of
+          Nothing -> pure ()
+          Just uri -> do
+            mImageId <- tryToImportImage uri
+            forM_ mImageId $ \imageId -> do
+              importDB $
+                upsertBy
+                  (UniqueExternalEventPoster externalEventId)
+                  ( ExternalEventPoster
+                      { externalEventPosterExternalEvent = externalEventId,
+                        externalEventPosterImage = imageId,
+                        externalEventPosterCreated = now,
+                        externalEventPosterModified = Nothing
+                      }
+                  )
+                  [ ExternalEventPosterImage =. imageId,
+                    ExternalEventPosterModified =. Just now
+                  ]
