@@ -162,9 +162,7 @@ getAdminImporterEventsPageR :: ImporterMetadataId -> PageNumber -> Handler Html
 getAdminImporterEventsPageR importerId =
   externalEventsListPage
     [ExternalEventImporter ==. importerId]
-    [ Asc ExternalEventDay,
-      Asc ExternalEventId
-    ]
+    [Desc ExternalEventId]
     (AdminR . AdminImporterEventsPageR importerId)
 
 getAdminImporterUpcomingEventsR :: ImporterMetadataId -> Handler Html
@@ -177,9 +175,7 @@ getAdminImporterUpcomingEventsPageR importerId pn = do
     [ ExternalEventImporter ==. importerId,
       ExternalEventDay >=. today
     ]
-    [ Asc ExternalEventDay,
-      Asc ExternalEventId
-    ]
+    [Desc ExternalEventId]
     (AdminR . AdminImporterUpcomingEventsPageR importerId)
     pn
 
