@@ -31,7 +31,7 @@ partyPageHtml (Entity partyId party@Party {..}) = do
   organiser@Organiser {..} <- runDB $ get404 partyOrganiser
   mSchedule <- runDB $ getScheduleForParty partyId
   mPosterKey <- runDB $ getPosterForParty partyId
-  mGoogleMapsWidget <- makeGoogleMapsWidget placeQuery
+  mGoogleMapsWidget <- makeGoogleMapsWidget $ Entity partyPlace place
   now <- liftIO getCurrentTime
   let today = utctDay now
   renderUrl <- getUrlRender

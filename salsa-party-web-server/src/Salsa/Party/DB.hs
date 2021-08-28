@@ -295,6 +295,16 @@ ExternalEventPoster sql=external_event_poster
     deriving Show
     deriving Eq
     deriving Generic
+
+StaticMap
+    place PlaceId
+    image ImageId
+
+    UniqueStaticMapPlace place
+
+    deriving Show
+    deriving Eq
+    deriving Generic
 |]
 
 instance Validity User

@@ -20,5 +20,6 @@ garbageCollectImage imageId = do
   partyPosters <- count [PartyPosterImage ==. imageId]
   externalEventPosters <- count [ExternalEventPosterImage ==. imageId]
   schedulePosters <- count [SchedulePosterImage ==. imageId]
-  let total = partyPosters + externalEventPosters + schedulePosters
+  staticMaps <- count [StaticMapImage ==. imageId]
+  let total = partyPosters + externalEventPosters + schedulePosters + staticMaps
   when (total == 0) $ delete imageId

@@ -1,7 +1,7 @@
 var map = document.getElementById ('mymap'); 
 var maplistener = function (e) { 
     var frame = document.createElement ('iframe'); 
-    frame.src = #{googleMapsEmbedUrl apiKey query}
+    frame.src = #{googleMapsEmbedUrl apiKey placeQuery}
     frame.loading = "lazy";
     frame.allowfullscreen = true;
     frame.width = #{show mapsWidth};
