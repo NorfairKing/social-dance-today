@@ -75,7 +75,8 @@ runImporterWithDoubleCheck importerInterval app LooperSettings {..} importer = a
         ( ImporterMetadata
             { importerMetadataName = importerName importer,
               importerMetadataLastRunStart = Nothing,
-              importerMetadataLastRunEnd = Nothing
+              importerMetadataLastRunEnd = Nothing,
+              importerMetadataLastRunImported = Nothing
             }
         )
         []
@@ -120,11 +121,13 @@ runImporter a Importer {..} = do
         ( ImporterMetadata
             { importerMetadataName = importerName,
               importerMetadataLastRunStart = Just begin,
-              importerMetadataLastRunEnd = Nothing
+              importerMetadataLastRunEnd = Nothing,
+              importerMetadataLastRunImported = Just 0
             }
         )
         [ ImporterMetadataLastRunStart =. Just begin,
-          ImporterMetadataLastRunEnd =. Nothing
+          ImporterMetadataLastRunEnd =. Nothing,
+          ImporterMetadataLastRunImported =. Just 0
         ]
 
   userAgent <- liftIO chooseUserAgent
@@ -169,7 +172,8 @@ runImporter a Importer {..} = do
         ( ImporterMetadata
             { importerMetadataName = importerName,
               importerMetadataLastRunStart = Just begin,
-              importerMetadataLastRunEnd = Just end
+              importerMetadataLastRunEnd = Just end,
+              importerMetadataLastRunImported = Nothing
             }
         )
         [ ImporterMetadataLastRunStart =. Just begin,
@@ -225,7 +229,9 @@ importExternalEventAnd externalEvent@ExternalEvent {..} func = do
   logDebugN $ T.pack $ "Importing external event:\n" <> ppShow externalEvent
   now <- liftIO getCurrentTime
   importerId <- asks importEnvId
-  mExternalEvent <- importDB $ getBy (UniqueExternalEventKey importerId externalEventKey)
+  mExternalEvent <- importDB $ do
+    update importerId [ImporterMetadataLastRunImported +=. Just 1]
+    getBy (UniqueExternalEventKey importerId externalEventKey)
   case mExternalEvent of
     Nothing -> do
       logInfoN $ T.pack $ unwords ["Importing never-before-seen event from", T.unpack externalEventOrigin]

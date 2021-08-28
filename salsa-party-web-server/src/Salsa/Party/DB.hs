@@ -239,6 +239,7 @@ ImporterMetadata sql=importer_metadata
     name Text
     lastRunStart UTCTime Maybe sql=last_run
     lastRunEnd UTCTime Maybe sql=last_run_end
+    lastRunImported Word Maybe sql=last_run_imported
 
     UniqueImporterMetadataName name
 

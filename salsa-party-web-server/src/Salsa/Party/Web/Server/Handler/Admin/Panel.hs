@@ -212,7 +212,8 @@ postAdminImporterResetR importerId = do
     update
       importerId
       [ ImporterMetadataLastRunStart =. Nothing,
-        ImporterMetadataLastRunEnd =. Nothing
+        ImporterMetadataLastRunEnd =. Nothing,
+        ImporterMetadataLastRunImported =. Just 0
       ]
   redirect $ AdminR AdminPanelR
 
