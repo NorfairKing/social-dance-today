@@ -1,3 +1,4 @@
+
 # Logo
 Logo title@Text: #{title} Logo
 
@@ -345,5 +346,3 @@ DayInMoreThanAYear: more than a year from now
 
 # Errors
 NotFound: Page not found
-
-

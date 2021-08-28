@@ -20,6 +20,7 @@ data SupportedLanguage
   = SupportedLangEnglish
   | SupportedLangGerman
   | SupportedLangDutch
+  | SupportedLangFrench
   deriving (Show, Read, Eq, Enum, Bounded)
 
 instance PathPiece SupportedLanguage where
@@ -35,6 +36,7 @@ parseSupportedLanguage =
     "en" -> Just SupportedLangEnglish
     "de" -> Just SupportedLangGerman
     "nl" -> Just SupportedLangDutch
+    "fr" -> Just SupportedLangFrench
     _ -> Nothing
 
 supportedLanguageAbbreviation :: SupportedLanguage -> Text
@@ -43,6 +45,7 @@ supportedLanguageAbbreviation =
     SupportedLangEnglish -> "en"
     SupportedLangGerman -> "de"
     SupportedLangDutch -> "nl"
+    SupportedLangFrench -> "fr"
 
 supportedLanguageNative :: SupportedLanguage -> Text
 supportedLanguageNative =
@@ -50,6 +53,7 @@ supportedLanguageNative =
     SupportedLangEnglish -> "English"
     SupportedLangGerman -> "Deutsch"
     SupportedLangDutch -> "Nederlands"
+    SupportedLangFrench -> "Français"
 
 supportedLanguageEnglish :: SupportedLanguage -> Text
 supportedLanguageEnglish =
@@ -57,6 +61,7 @@ supportedLanguageEnglish =
     SupportedLangEnglish -> "English"
     SupportedLangGerman -> "German"
     SupportedLangDutch -> "Dutch"
+    SupportedLangFrench -> "French"
 
 getFirstMatchingSupportedLanguage :: MonadHandler m => m SupportedLanguage
 getFirstMatchingSupportedLanguage = do
