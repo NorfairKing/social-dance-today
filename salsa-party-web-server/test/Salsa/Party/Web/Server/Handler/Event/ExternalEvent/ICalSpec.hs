@@ -68,37 +68,48 @@ spec = do
                             _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
                         _ -> liftIO $ expectationFailure $ unlines $ "Warnings while parsing ical: " : warnings
 
-  appSpec $
-    describe "ICal" $
-      it "outputs the same event calendar as before" $ \app ->
-        let exampleExternalEvent =
-              ExternalEvent
-                { externalEventUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112,
-                  externalEventKey = "suavemente-cuban-party-2021-07-16-kultur-bistro-bern",
-                  externalEventTitle = "Suavemente Cuban Party",
-                  externalEventDescription = Just "Cuban Salsa Party\r\n\r\n20:00 Door open\r\n20:30 Cuban Salsa Workshop\r\n21:30 Cuban Party\r\n23:30 Animation\r\n\n\nhttps://salsaluca.ch/index.php/events",
-                  externalEventOrganiser = Just "Kultur Bistro",
-                  externalEventDay = fromGregorian 2021 07 16,
-                  externalEventStart = Just (TimeOfDay 20 15 00),
-                  externalEventHomepage = Nothing,
-                  externalEventPrice = Just "15.0 CHF",
-                  externalEventCancelled = False,
-                  externalEventCreated = UTCTime (fromGregorian 2021 07 05) 185621,
-                  externalEventModified = Nothing,
-                  externalEventPlace = toSqlKey 0,
-                  externalEventImporter = toSqlKey 0,
-                  externalEventOrigin = "https://events.info/events/suavemente-cuban-party-2021-07-16-kultur-bistro-bern"
-                }
+  modifyMaxSuccess (`div` 20) $
+    modifyMaxSize (* 10) $
+      appSpec $
+        describe "ICal" $ do
+          it "always outputs a valid bytestring (without crashing)" $ \app ->
+            forAllValid $ \externalEvent ->
+              forAllValid $ \place ->
+                let urlRender :: Route App -> Text
+                    urlRender route = yesodRender app "https://social-dance.today" route []
 
-            examplePlace =
-              Place
-                { placeQuery = "Bahnhofplatz 6207 Nottwil LU",
-                  placeLat = Latitude 47.138657700,
-                  placeLon = Longitude 8.138471299
-                }
+                    cal = externalEventCalendar urlRender externalEvent place
+                 in shouldBeValid $ LB.toStrict $ ICal.printICalendar def cal
 
-            urlRender :: Route App -> Text
-            urlRender route = yesodRender app "https://social-dance.today" route []
+          it "outputs the same event calendar as before" $ \app ->
+            let exampleExternalEvent =
+                  ExternalEvent
+                    { externalEventUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112,
+                      externalEventKey = "suavemente-cuban-party-2021-07-16-kultur-bistro-bern",
+                      externalEventTitle = "Suavemente Cuban Party",
+                      externalEventDescription = Just "Cuban Salsa Party\r\n\r\n20:00 Door open\r\n20:30 Cuban Salsa Workshop\r\n21:30 Cuban Party\r\n23:30 Animation\r\n\n\nhttps://salsaluca.ch/index.php/events",
+                      externalEventOrganiser = Just "Kultur Bistro",
+                      externalEventDay = fromGregorian 2021 07 16,
+                      externalEventStart = Just (TimeOfDay 20 15 00),
+                      externalEventHomepage = Nothing,
+                      externalEventPrice = Just "15.0 CHF",
+                      externalEventCancelled = False,
+                      externalEventCreated = UTCTime (fromGregorian 2021 07 05) 185621,
+                      externalEventModified = Nothing,
+                      externalEventPlace = toSqlKey 0,
+                      externalEventImporter = toSqlKey 0,
+                      externalEventOrigin = "https://events.info/events/suavemente-cuban-party-2021-07-16-kultur-bistro-bern"
+                    }
 
-            cal = externalEventCalendar urlRender exampleExternalEvent examplePlace
-         in pureGoldenByteStringFile "test_resources/ical/external-event.ics" $ LB.toStrict $ ICal.printICalendar def cal
+                examplePlace =
+                  Place
+                    { placeQuery = "Bahnhofplatz 6207 Nottwil LU",
+                      placeLat = Latitude 47.138657700,
+                      placeLon = Longitude 8.138471299
+                    }
+
+                urlRender :: Route App -> Text
+                urlRender route = yesodRender app "https://social-dance.today" route []
+
+                cal = externalEventCalendar urlRender exampleExternalEvent examplePlace
+             in pureGoldenByteStringFile "test_resources/ical/external-event.ics" $ LB.toStrict $ ICal.printICalendar def cal

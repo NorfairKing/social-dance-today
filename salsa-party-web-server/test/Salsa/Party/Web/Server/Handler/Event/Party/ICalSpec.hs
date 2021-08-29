@@ -75,34 +75,45 @@ spec = do
                             _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
                           _ -> liftIO $ expectationFailure $ unlines $ "Warnings while parsing ical: " : warnings
 
-  appSpec $
-    describe "ICal" $
-      it "outputs the same event calendar as before" $ \app ->
-        let exampleParty =
-              Party
-                { partyUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112,
-                  partyOrganiser = toSqlKey 0,
-                  partyTitle = "Example party at Rhythmia",
-                  partyDescription = Just "aeou\r\naoseuntha\r\noeu",
-                  partyDay = fromGregorian 2021 06 15,
-                  partyStart = Nothing,
-                  partyHomepage = Just "https://www.rhythmia.ch/",
-                  partyPrice = Just "5 CHF",
-                  partyCancelled = True,
-                  partyCreated = UTCTime (fromGregorian 2021 06 19) 164155,
-                  partyModified = Nothing,
-                  partyPlace = toSqlKey 0
-                }
+  modifyMaxSuccess (`div` 20) $
+    modifyMaxSize (* 10) $
+      appSpec $
+        describe "ICal" $ do
+          it "always outputs a valid bytestring (without crashing)" $ \app ->
+            forAllValid $ \party ->
+              forAllValid $ \place ->
+                let urlRender :: Route App -> Text
+                    urlRender route = yesodRender app "https://social-dance.today" route []
 
-            examplePlace =
-              Place
-                { placeQuery = "Spitalgasse 4, 3011 Bern Bern",
-                  placeLat = Latitude 46.948335899,
-                  placeLon = Longitude 7.44
-                }
+                    cal = partyCalendar urlRender party place
+                 in shouldBeValid $ LB.toStrict $ ICal.printICalendar def cal
 
-            urlRender :: Route App -> Text
-            urlRender route = yesodRender app "https://social-dance.today" route []
+          it "outputs the same event calendar as before" $ \app ->
+            let exampleParty =
+                  Party
+                    { partyUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112,
+                      partyOrganiser = toSqlKey 0,
+                      partyTitle = "Example party at Rhythmia",
+                      partyDescription = Just "aeou\r\naoseuntha\r\noeu",
+                      partyDay = fromGregorian 2021 06 15,
+                      partyStart = Nothing,
+                      partyHomepage = Just "https://www.rhythmia.ch/",
+                      partyPrice = Just "5 CHF",
+                      partyCancelled = True,
+                      partyCreated = UTCTime (fromGregorian 2021 06 19) 164155,
+                      partyModified = Nothing,
+                      partyPlace = toSqlKey 0
+                    }
 
-            cal = partyCalendar urlRender exampleParty examplePlace
-         in pureGoldenByteStringFile "test_resources/ical/party.ics" $ LB.toStrict $ ICal.printICalendar def cal
+                examplePlace =
+                  Place
+                    { placeQuery = "Spitalgasse 4, 3011 Bern Bern",
+                      placeLat = Latitude 46.948335899,
+                      placeLon = Longitude 7.44
+                    }
+
+                urlRender :: Route App -> Text
+                urlRender route = yesodRender app "https://social-dance.today" route []
+
+                cal = partyCalendar urlRender exampleParty examplePlace
+             in pureGoldenByteStringFile "test_resources/ical/party.ics" $ LB.toStrict $ ICal.printICalendar def cal
