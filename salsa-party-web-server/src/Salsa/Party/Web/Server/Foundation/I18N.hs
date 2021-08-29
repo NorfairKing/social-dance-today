@@ -283,3 +283,6 @@ abbreviateTo maxLen t =
         else T.take (maxLen - T.length ellipsis) t <> ellipsis
   where
     ellipsis = "..."
+
+htmlDescriptionMaxLength :: Int
+htmlDescriptionMaxLength = 160

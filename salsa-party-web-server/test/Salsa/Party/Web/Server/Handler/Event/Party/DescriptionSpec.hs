@@ -75,7 +75,7 @@ spec = do
                     forAllValid $ \place -> do
                       let descr = descrFor party organiser place app
                       let len = T.length descr
-                      shouldSatisfyNamed len "< 160" (< 160)
+                      shouldSatisfyNamed len "<= 160" (<= 160)
 
               let exampleDescr :: App -> Text
                   exampleDescr =
@@ -86,7 +86,7 @@ spec = do
 
               it ("outputs a long-enough example description in " <> T.unpack (supportedLanguageEnglish language)) $ \app -> do
                 let len = T.length (exampleDescr app)
-                shouldSatisfyNamed len "> 150" (> 150)
+                shouldSatisfyNamed len ">= 150" (>= 150)
 
               it ("outputs the same description as before in " <> T.unpack (supportedLanguageEnglish language)) $ \app ->
                 pureGoldenTextFile ("test_resources/description/party-" <> T.unpack (supportedLanguageAbbreviation language) <> ".txt") (exampleDescr app)

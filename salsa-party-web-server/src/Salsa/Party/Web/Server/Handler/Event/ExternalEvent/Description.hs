@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans -fno-warn-unused-pattern-binds #-}
 
@@ -11,17 +12,24 @@ externalEventHtmlDescription render timeLocale prettyDayFormat prettyTimeFormat 
   let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
       Organiser _ _ _ _ _ _ = undefined
       Place _ _ _ = undefined
-   in T.unlines $
+      facts =
+        T.intercalate "\n" $
+          concat
+            [ [ -- We don't abbreviate the date and time because it's of strictly limited length anyway.
+                render
+                  ( case externalEventStart of
+                      Nothing -> MsgPartyDescriptionDay $ formatTime timeLocale prettyDayFormat externalEventDay
+                      Just start -> MsgPartyDescriptionDateTime (formatTime timeLocale prettyDayFormat externalEventDay) (formatTime timeLocale prettyTimeFormat start)
+                  ),
+                T.take 40 $ render (MsgPartyDescriptionAddress placeQuery)
+              ],
+              [T.take 20 $ render (MsgPartyDescriptionOrganiser organiserName) | organiserName <- maybeToList externalEventOrganiser]
+              -- We don't include the price because it's not going to be very relevant in search results
+            ]
+      factsLength = T.length facts
+      leftoverSpace = htmlDescriptionMaxLength - factsLength - 1 -- 1 for the newline inbetween
+   in T.intercalate "\n" $
         concat
-          [ [abbreviateTo 75 (render (MsgPartyDescription description)) | description <- maybeToList externalEventDescription],
-            [ -- We don't abbreviate the date and time because it's of quite limited length anyway.
-              render
-                ( case externalEventStart of
-                    Nothing -> MsgPartyDescriptionDay $ formatTime timeLocale prettyDayFormat externalEventDay
-                    Just start -> MsgPartyDescriptionDateTime (formatTime timeLocale prettyDayFormat externalEventDay) (formatTime timeLocale prettyTimeFormat start)
-                ),
-              abbreviateTo 40 $ render (MsgPartyDescriptionAddress placeQuery)
-            ],
-            [abbreviateTo 20 $ render (MsgPartyDescriptionOrganiser organiserName) | organiserName <- maybeToList externalEventOrganiser]
-            -- We don't include the price because it's not going to be very relevant in search results
+          [ [abbreviateTo leftoverSpace (render (MsgPartyDescription description)) | description <- maybeToList externalEventDescription],
+            [facts]
           ]
