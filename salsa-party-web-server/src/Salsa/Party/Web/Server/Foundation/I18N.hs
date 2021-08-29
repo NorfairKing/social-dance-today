@@ -22,6 +22,7 @@ module Salsa.Party.Web.Server.Foundation.I18N
 where
 
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Time
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation.App
@@ -271,3 +272,14 @@ autoDayMsg today day =
             | i < 11 * 30 -> MsgDayIn10Months
             | i < 365 -> MsgDayIn11Months
             | otherwise -> MsgDayInMoreThanAYear
+
+-- Abbreviate text to the given number of characters
+-- Use an ellipsis if the given text is too long.
+abbreviateTo :: Int -> Text -> Text
+abbreviateTo maxLen t =
+  let unabbreviatedLen = T.length t
+   in if unabbreviatedLen <= maxLen
+        then t
+        else T.take (maxLen - T.length ellipsis) t <> ellipsis
+  where
+    ellipsis = "..."

@@ -26,8 +26,8 @@ spec = serverSpec $
       get $ ExploreSkylineR "kashyyyk"
       statusIs 404
 
-    it "GETS a 400 for an unknown location's skyline that isn't a relative path" $ do
-      get $ ExploreSkylineR "kash/../yyyk"
+    it "GETS a 400 for an unknown location's skyline that isn't a relative path, even if the file exists" $ do
+      get $ ExploreSkylineR "../locations/Zürich.jpg"
       statusIs 404
 
     forM_ locations $ \Location {..} -> do

@@ -46,35 +46,47 @@ spec = do
             placeLon = Longitude 7.443078400
           }
 
-  appSpec $
-    describe "partyHtmlDescription" $ do
-      forM_ supportedLanguages $ \language -> do
-        let descrFor :: Party -> Organiser -> Place -> App -> Text
-            descrFor party organiser place app =
-              partyHtmlDescription
-                (renderMessage app [supportedLanguageAbbreviation language])
-                (languageTimeLocale language)
-                (languagePrettyDayFormat language)
-                (languagePrettyTimeFormat language)
-                party
-                organiser
-                place
+  modifyMaxSuccess (`div` 20) $
+    modifyMaxSize (* 10) $
+      appSpec $
+        describe "partyHtmlDescription" $ do
+          forM_ supportedLanguages $ \language ->
+            describe (T.unpack (supportedLanguageEnglish language)) $ do
+              let descrFor :: Party -> Organiser -> Place -> App -> Text
+                  descrFor party organiser place app =
+                    partyHtmlDescription
+                      (renderMessage app [supportedLanguageAbbreviation language])
+                      (languageTimeLocale language)
+                      (languagePrettyDayFormat language)
+                      (languagePrettyTimeFormat language)
+                      party
+                      organiser
+                      place
 
-        it "always outputs a valid description" $ \app -> do
-          forAllValid $ \party ->
-            forAllValid $ \organiser ->
-              forAllValid $ \place ->
-                shouldBeValid $ descrFor party organiser place app
+              it ("always outputs a valid description in " <> T.unpack (supportedLanguageEnglish language)) $ \app -> do
+                forAllValid $ \party ->
+                  forAllValid $ \organiser ->
+                    forAllValid $ \place ->
+                      shouldBeValid $ descrFor party organiser place app
 
-        let exampleDescr :: App -> Text
-            exampleDescr =
-              descrFor
-                exampleParty
-                exampleOrganiser
-                examplePlace
+              it (" always outputs a short-enough description in " <> T.unpack (supportedLanguageEnglish language)) $ \app ->
+                forAllValid $ \party ->
+                  forAllValid $ \organiser ->
+                    forAllValid $ \place -> do
+                      let descr = descrFor party organiser place app
+                      let len = T.length descr
+                      shouldSatisfyNamed len "< 160" (< 160)
 
-        it ("outputs a description of appropriate length in " <> T.unpack (supportedLanguageEnglish language)) $ \app -> do
-          let len = T.length (exampleDescr app)
-          shouldSatisfyNamed len "< 160" (< 160)
-        it ("outputs the same description as before in " <> T.unpack (supportedLanguageEnglish language)) $ \app ->
-          pureGoldenTextFile ("test_resources/description/party-" <> T.unpack (supportedLanguageAbbreviation language) <> ".txt") (exampleDescr app)
+              let exampleDescr :: App -> Text
+                  exampleDescr =
+                    descrFor
+                      exampleParty
+                      exampleOrganiser
+                      examplePlace
+
+              it ("outputs a long-enough example description in " <> T.unpack (supportedLanguageEnglish language)) $ \app -> do
+                let len = T.length (exampleDescr app)
+                shouldSatisfyNamed len "> 150" (> 150)
+
+              it ("outputs the same description as before in " <> T.unpack (supportedLanguageEnglish language)) $ \app ->
+                pureGoldenTextFile ("test_resources/description/party-" <> T.unpack (supportedLanguageAbbreviation language) <> ".txt") (exampleDescr app)

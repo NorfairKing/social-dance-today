@@ -13,14 +13,15 @@ externalEventHtmlDescription render timeLocale prettyDayFormat prettyTimeFormat 
       Place _ _ _ = undefined
    in T.unlines $
         concat
-          [ [T.take 75 (render (MsgPartyDescription description)) | description <- maybeToList externalEventDescription],
-            [ render
+          [ [abbreviateTo 75 (render (MsgPartyDescription description)) | description <- maybeToList externalEventDescription],
+            [ -- We don't abbreviate the date and time because it's of quite limited length anyway.
+              render
                 ( case externalEventStart of
                     Nothing -> MsgPartyDescriptionDay $ formatTime timeLocale prettyDayFormat externalEventDay
                     Just start -> MsgPartyDescriptionDateTime (formatTime timeLocale prettyDayFormat externalEventDay) (formatTime timeLocale prettyTimeFormat start)
                 ),
-              render (MsgPartyDescriptionAddress placeQuery)
+              abbreviateTo 40 $ render (MsgPartyDescriptionAddress placeQuery)
             ],
-            [render (MsgPartyDescriptionOrganiser organiserName) | organiserName <- maybeToList externalEventOrganiser]
+            [abbreviateTo 20 $ render (MsgPartyDescriptionOrganiser organiserName) | organiserName <- maybeToList externalEventOrganiser]
             -- We don't include the price because it's not going to be very relevant in search results
           ]

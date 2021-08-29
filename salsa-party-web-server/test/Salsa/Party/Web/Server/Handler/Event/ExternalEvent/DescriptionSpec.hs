@@ -39,33 +39,43 @@ spec = do
             placeLon = Longitude 7.443078400
           }
 
-  appSpec $
-    describe "externalEventHtmlDescription" $
-      forM_ supportedLanguages $ \language -> do
-        let descrFor :: ExternalEvent -> Place -> App -> Text
-            descrFor externalEvent place app =
-              externalEventHtmlDescription
-                (renderMessage app [supportedLanguageAbbreviation language])
-                (languageTimeLocale language)
-                (languagePrettyDayFormat language)
-                (languagePrettyTimeFormat language)
-                externalEvent
-                place
+  modifyMaxSuccess (`div` 20) $
+    modifyMaxSize (* 10) $
+      appSpec $
+        describe "externalEventHtmlDescription" $
+          forM_ supportedLanguages $ \language ->
+            describe (T.unpack (supportedLanguageEnglish language)) $ do
+              let descrFor :: ExternalEvent -> Place -> App -> Text
+                  descrFor externalEvent place app =
+                    externalEventHtmlDescription
+                      (renderMessage app [supportedLanguageAbbreviation language])
+                      (languageTimeLocale language)
+                      (languagePrettyDayFormat language)
+                      (languagePrettyTimeFormat language)
+                      externalEvent
+                      place
 
-        it "always outputs a valid description" $ \app -> do
-          forAllValid $ \externalEvent ->
-            forAllValid $ \place ->
-              shouldBeValid $ descrFor externalEvent place app
+              it ("always outputs a valid description in " <> T.unpack (supportedLanguageEnglish language)) $ \app -> do
+                forAllValid $ \externalEvent ->
+                  forAllValid $ \place ->
+                    shouldBeValid $ descrFor externalEvent place app
 
-        let exampleDescr :: App -> Text
-            exampleDescr =
-              descrFor
-                exampleExternalEvent
-                examplePlace
+              it (" always outputs a short-enough description in " <> T.unpack (supportedLanguageEnglish language)) $ \app -> do
+                forAllValid $ \externalEvent ->
+                  forAllValid $ \place -> do
+                    let descr = descrFor externalEvent place app
+                    let len = T.length descr
+                    shouldSatisfyNamed len "< 160" (< 160)
 
-        it "outputs a description of appropriate length" $ \app -> do
-          let len = T.length (exampleDescr app)
-          shouldSatisfyNamed len "< 160" (< 160)
+              let exampleDescr :: App -> Text
+                  exampleDescr =
+                    descrFor
+                      exampleExternalEvent
+                      examplePlace
 
-        it ("outputs the same description as before in " <> T.unpack (supportedLanguageEnglish language)) $ \app ->
-          pureGoldenTextFile ("test_resources/description/external-event-" <> T.unpack (supportedLanguageAbbreviation language) <> ".txt") (exampleDescr app)
+              it ("outputs a long-enough example description in " <> T.unpack (supportedLanguageEnglish language)) $ \app -> do
+                let len = T.length (exampleDescr app)
+                shouldSatisfyNamed len "> 150" (> 150)
+
+              it ("outputs the same description as before in " <> T.unpack (supportedLanguageEnglish language)) $ \app ->
+                pureGoldenTextFile ("test_resources/description/external-event-" <> T.unpack (supportedLanguageAbbreviation language) <> ".txt") (exampleDescr app)

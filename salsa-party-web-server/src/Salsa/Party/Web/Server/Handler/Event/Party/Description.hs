@@ -13,14 +13,15 @@ partyHtmlDescription render timeLocale prettyDayFormat prettyTimeFormat Party {.
       Place _ _ _ = undefined
    in T.unlines $
         concat
-          [ [T.take 80 (render (MsgPartyDescription description)) | description <- maybeToList partyDescription],
-            [ render
+          [ [abbreviateTo 80 (render (MsgPartyDescription description)) | description <- maybeToList partyDescription],
+            [ -- We don't abbreviate the date and time because it's of quite limited length anyway.
+              render
                 ( case partyStart of
                     Nothing -> MsgPartyDescriptionDay $ formatTime timeLocale prettyDayFormat partyDay
                     Just start -> MsgPartyDescriptionDateTime (formatTime timeLocale prettyDayFormat partyDay) (formatTime timeLocale prettyTimeFormat start)
                 ),
-              render (MsgPartyDescriptionAddress placeQuery),
-              render (MsgPartyDescriptionOrganiser organiserName)
+              abbreviateTo 40 $ render (MsgPartyDescriptionAddress placeQuery),
+              abbreviateTo 20 $ render (MsgPartyDescriptionOrganiser organiserName)
             ]
             -- We don't include the price because it's not going to be very relevant in search results
           ]
