@@ -47,21 +47,34 @@ spec = do
           }
 
   appSpec $
-    describe "partyHtmlDescription" $
+    describe "partyHtmlDescription" $ do
       forM_ supportedLanguages $ \language -> do
-        let descr :: App -> Text
-            descr app =
+        let descrFor :: Party -> Organiser -> Place -> App -> Text
+            descrFor party organiser place app =
               partyHtmlDescription
                 (renderMessage app [supportedLanguageAbbreviation language])
                 (languageTimeLocale language)
                 (languagePrettyDayFormat language)
                 (languagePrettyTimeFormat language)
+                party
+                organiser
+                place
+
+        it "always outputs a valid description" $ \app -> do
+          forAllValid $ \party ->
+            forAllValid $ \organiser ->
+              forAllValid $ \place ->
+                shouldBeValid $ descrFor party organiser place app
+
+        let exampleDescr :: App -> Text
+            exampleDescr =
+              descrFor
                 exampleParty
                 exampleOrganiser
                 examplePlace
 
-        it "outputs a description of appropriate length" $ \app -> do
-          let len = T.length (descr app)
+        it ("outputs a description of appropriate length in " <> T.unpack (supportedLanguageEnglish language)) $ \app -> do
+          let len = T.length (exampleDescr app)
           shouldSatisfyNamed len "< 160" (< 160)
         it ("outputs the same description as before in " <> T.unpack (supportedLanguageEnglish language)) $ \app ->
-          pureGoldenTextFile ("test_resources/description/party-" <> T.unpack (supportedLanguageAbbreviation language) <> ".txt") (descr app)
+          pureGoldenTextFile ("test_resources/description/party-" <> T.unpack (supportedLanguageAbbreviation language) <> ".txt") (exampleDescr app)
