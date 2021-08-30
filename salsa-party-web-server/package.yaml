@@ -98,25 +98,6 @@ executables:
     dependencies:
     - salsa-party-web-server
 
-  salsa-party-web-server-e2e:
-    main:                Main.hs
-    source-dirs:         e2e
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - linkcheck
-    - monad-logger
-    - network-uri
-    - salsa-party-web-server
-    - seocheck
-    - sydtest
-    - sydtest-yesod
-    - text
-    - yesod
-    - yesod-auth
-
 tests:
   salsa-party-web-server-test:
     main: Spec.hs
