@@ -6,7 +6,7 @@
 - query: "Bern"
   lat: 46.9547232
   lon: 7.3598507
-- query:  "Geneva"
+- query: "Geneva"
   lat: 46.225650900
   lon: 6.143920900
 - query: "Lausanne"
@@ -50,6 +50,9 @@
 - query: "Cádiz"
   lat: 35.4524784
   lon: -7.260937
+- query: "Madrid"
+  lat: 40.4381311
+  lon: -3.8196194
   ## The Netherlands
 - query: "Amsterdam"
   lat: 52.374540300
@@ -81,6 +84,143 @@
 - query: "Oslo"
   lat: 59.913330100
   lon: 10.738970100
+  ## Albania
+- query: "Tirana"
+  lat: 41.3310413
+  lon: 19.7828038
+
+
+
+
+
+  ## Andorra
+- query: "Andorra la Vella"
+  lat: 42.5051006
+  lon: 1.5116108
+  ## Austria
+- query: "Vienna"
+  lat: 48.220778
+  lon: 16.3100205
+  ## Belarus
+- query: "Minsk"
+  lat: 53.8847208
+  lon: 27.5233292
+  ## Bosnia and Herzegovina
+- query: "Sarajevo"
+  lat: 43.8938256
+  lon: 18.3129519
+  ## Bulgaria
+- query: "Sofia"
+  lat: 42.695537
+  lon: 23.2539071
+  ## Croatia
+- query: "Zagreb"
+  lat: 45.8402941
+  lon: 15.894292
+  ## Czechia
+- query: "Prague"
+  lat: 50.0598058
+  lon: 14.325542
+  ## Estonia
+- query: "Tallinn"
+  lat: 59.4717925
+  lon: 24.5981607
+  ## Finland
+- query: "Helsinki"
+  lat: 60.11021
+  lon: 24.7385098
+  ## Greece
+- query: "Athens"
+  lat: 37.9908997
+  lon: 23.70332
+  ## Hungary
+- query: "Budapest"
+  lat: 47.4813602
+  lon: 18.9902208
+  ## Iceland
+- query: "Reykjavik"
+  lat: 64.1335484
+  lon: -21.9224813
+  ## Ireland
+- query: "Dublin"
+  lat: 53.3244431
+  lon: -6.3857856
+  ## Italy
+- query: "Rome"
+  lat: 41.8519772
+  lon: 12.2347302
+  ## Latvia
+- query: "Riga"
+  lat: 56.9715833
+  lon: 23.9890814
+  ## Liechtenstein
+- query: "Vaduz"
+  lat: 47.1427529
+  lon: 9.5086904
+  ## Lithuania
+- query: "Vilnius"
+  lat: 54.7008021
+  lon: 25.1129524
+  ## Luxembourg
+- query: "Luxembourg"
+  lat: 49.8154049
+  lon: 5.8531441
+  ## Malta
+- query: "Valletta"
+  lat: 35.8984892
+  lon: 14.5087876
+  ## Moldova
+- query: "Chisinau"
+  lat: 46.9999648
+  lon: 28.7881371
+  ## Monaco
+- query: "Monaco"
+  lat: 43.7378666
+  lon: 7.4170977
+  ## Montenegro
+- query: "Podgorica"
+  lat: 42.4321061
+  lon: 19.1858392
+  ## North Macedonia
+- query: "Skopje"
+  lat: 41.9991487
+  lon: 21.3898709
+  ## Poland
+- query: "Warsaw"
+  lat: 52.2330653
+  lon: 20.9211125
+  ## Portugal
+- query: "Lisbon"
+  lat: 38.7436883
+  lon: -9.1952226
+  ## Romania
+- query: "Bucharest"
+  lat: 44.4379269
+  lon: 26.024598
+  ## Russia
+- query: "Moscow"
+  lat: 55.5815245
+  lon: 36.825139
+  ## San Marino
+- query: "San Marino"
+  lat: 43.9429344
+  lon: 12.4250739
+  ## Serbia
+- query: "Belgrade"
+  lat: 44.8154033
+  lon: 20.2825145
+  ## Slovakia
+- query: "Bratislava"
+  lat: 48.1359244
+  lon: 16.9758349
+  ## Slovenia
+- query: "Ljubljana"
+  lat: 46.0662151
+  lon: 14.4620596
+  ## Ukraine
+- query: "Kiev"
+  lat: 50.4021702
+  lon: 30.3926087
   # North America
   ## Canada
 - query: "Toronto"
