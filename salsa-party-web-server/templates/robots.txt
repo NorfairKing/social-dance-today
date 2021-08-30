@@ -3,5 +3,11 @@ Sitemap: @{SitemapR}
 User-agent: SemrushBot
 Disallow: /
 
+User-agent: PetalBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
 User-agent: *
 Allow: /
