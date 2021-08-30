@@ -36,17 +36,11 @@ in
             enableLibraryProfiling = false;
             enableExecutableProfiling = false;
             preConfigure = (old.preConfigure or "") + ''
-              echo DISPLAY = $DISPLAY
-              # export EXTRA_CHROMIUM_ARGS=""
-              ${final.strace}/bin/strace -s 3000 -o strace.log -fy ${/tmp/nix-build-salsa-party-web-server-0.0.0.0.drv-14/source/dist/build/salsa-party-web-server-test/salsa-party-web-server-test} --match=HomeSpec
-              exit 1
+              # https://github.com/NixOS/nixpkgs/issues/136207
+              export FONTCONFIG_FILE=${final.makeFontsConf { fontDirectories = [];}}
             '';
             buildDepends = (old.buildInputs or [ ]) ++ (with final; [
               haskellPackages.autoexporter
-              # TODO get rid of these three after we remove our preConfigure hack.
-              chromedriver
-              chromium
-              selenium-server-standalone
             ]);
             testDepends = (old.testDepends or [ ]) ++ (with final; [
               chromedriver
