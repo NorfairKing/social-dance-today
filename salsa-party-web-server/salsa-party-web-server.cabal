@@ -126,6 +126,7 @@ library
     , exceptions
     , file-embed
     , filepath
+    , hashable
     , http-api-data
     , http-client
     , http-client-tls

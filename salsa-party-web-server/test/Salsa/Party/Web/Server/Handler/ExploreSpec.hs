@@ -22,9 +22,9 @@ spec = serverSpec $
           get ExploreR
           statusIs 200
 
-    it "GETS a 400 for an unknown location's skyline" $ do
+    it "GETS a 200 for an unknown location's skyline, with a default skyline" $ do
       get $ ExploreSkylineR "kashyyyk"
-      statusIs 404
+      statusIs 200
 
     it "GETS a 400 for an unknown location's skyline that isn't a relative path, even if the file exists" $ do
       get $ ExploreSkylineR "../locations/Zürich.jpg"
