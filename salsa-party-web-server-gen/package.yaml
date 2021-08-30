@@ -12,10 +12,8 @@ library:
   - aeson
   - aeson-pretty
   - bytestring
-  - conduit
   - containers
   - data-default
-  - esqueleto
   - filepath
   - genvalidity
   - genvalidity-bytestring
@@ -27,7 +25,6 @@ library:
   - genvalidity-time
   - genvalidity-typed-uuid
   - http-client
-  - http-types
   - iCalendar
   - microlens
   - monad-control

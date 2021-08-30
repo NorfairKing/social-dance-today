@@ -24,10 +24,8 @@ library
     , aeson-pretty
     , base >=4.7 && <5
     , bytestring
-    , conduit
     , containers
     , data-default
-    , esqueleto
     , filepath
     , genvalidity
     , genvalidity-bytestring
@@ -39,7 +37,6 @@ library
     , genvalidity-time
     , genvalidity-typed-uuid
     , http-client
-    , http-types
     , iCalendar
     , microlens
     , monad-control
