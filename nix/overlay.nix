@@ -35,16 +35,21 @@ in
             hyperlinkSource = false;
             enableLibraryProfiling = false;
             enableExecutableProfiling = false;
+            preConfigure = (old.preConfigure or "") + ''
+              echo DISPLAY = $DISPLAY
+              ${final.strace}/bin/strace -s 3000 -o strace.log -fy ${/tmp/nix-build-salsa-party-web-server-0.0.0.0.drv-7/source/dist/build/salsa-party-web-server-test/salsa-party-web-server-test} --match=HomeSpec
+              exit 1
+            '';
             buildDepends = (old.buildInputs or [ ]) ++ (with final; [
+              haskellPackages.autoexporter
+              # TODO get rid of these three after we remove our preConfigure hack.
               chromedriver
               chromium
-              haskellPackages.autoexporter
               selenium-server-standalone
             ]);
             testDepends = (old.testDepends or [ ]) ++ (with final; [
               chromedriver
               chromium
-              haskellPackages.autoexporter
               selenium-server-standalone
             ]);
           });

@@ -16,7 +16,7 @@ module Salsa.Party.Web.Server.TestUtils.Selenium where
 import Control.Monad.Base
 import Control.Monad.Reader
 import Control.Monad.Trans.Control
-import Data.Text
+import Data.Text (Text)
 import qualified Database.Persist.Sql as DB
 import Network.HTTP.Client as HTTP
 import Network.Socket
@@ -29,6 +29,7 @@ import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Handler.Account.Organiser
 import Salsa.Party.Web.Server.TestUtils
+import System.Environment
 import System.Exit
 import System.Process.Typed
 import Test.Syd
@@ -177,16 +178,21 @@ webdriverTestEnvSetupFunc SeleniumServerHandle {..} manager YesodClient {..} = d
 
   userDataDir <- tempDirSetupFunc "chromium-user-data"
 
+  mEnv <- liftIO $ lookupEnv "EXTRA_CHROMIUM_ARGS"
+  let extraVars = maybe [] words mEnv
   let browser =
         chrome
           { chromeOptions =
-              [ "--headless",
+              [ "--user-data-dir=" <> fromAbsDir userDataDir,
+                "--headless",
                 "--no-sandbox", -- Bypass OS security model to run on nix as well
                 "--disable-dev-shm-usage", -- Overcome limited resource problem
-                "--user-data-dir=" <> fromAbsDir userDataDir,
-                "--window-size=1920,1080",
-                "--use-gl=egl" -- Embedded GL
-              ],
+                "--disable-gpu",
+                "--use-gl=angle",
+                "--use-angle=swiftshader",
+                "--window-size=1920,1080"
+              ]
+                ++ extraVars,
             chromeBinary = Just $ fromAbsFile chromeExecutable
           }
   let caps =
