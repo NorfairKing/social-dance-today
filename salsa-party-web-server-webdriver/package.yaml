@@ -1,0 +1,72 @@
+name:                salsa-party-web-server-webdriver
+version:             0.0.0.0
+license:             AllRightsReserved
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  dependencies:
+  - QuickCheck
+  - genvalidity-sydtest
+  - http-client
+  - monad-control
+  - mtl
+  - network
+  - network-uri
+  - path
+  - path-io
+  - persistent
+  - port-utils
+  - pretty-show
+  - salsa-party-web-server
+  - salsa-party-web-server-gen
+  - sydtest
+  - sydtest-typed-process
+  - sydtest-yesod
+  - text
+  - time
+  - transformers-base
+  - typed-process
+  - webdriver
+  - yesod
+  - yesod-auth
+
+tests:
+  salsa-party-web-server-webdriver-test:
+    main: Spec.hs
+    source-dirs: test
+    build-tools: sydtest-discover
+    ghc-options:
+    - -Wall
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - QuickCheck
+    - genvalidity-sydtest
+    - http-client
+    - monad-control
+    - mtl
+    - network
+    - network-uri
+    - path
+    - path-io
+    - persistent
+    - port-utils
+    - pretty-show
+    - salsa-party-web-server
+    - salsa-party-web-server-gen
+    - salsa-party-web-server-webdriver
+    - sydtest
+    - sydtest-typed-process
+    - sydtest-yesod
+    - text
+    - time
+    - transformers-base
+    - typed-process
+    - typed-process
+    - webdriver
+    - yesod
+    - yesod-auth

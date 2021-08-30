@@ -6,12 +6,7 @@ import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Handler.TestImport
 
 spec :: Spec
-spec = do
-  webdriverSpec $ do
-    it "can set up an organiser profile" $
-      driveAsNewUser dummyUser $ do
-        driveSubmitOrganiser dummyOrganiserForm
-
+spec =
   serverSpec $ do
     describe "AccountOrganiserR" $ do
       it "GETs a 200 for OrganiserR" $ \yc ->

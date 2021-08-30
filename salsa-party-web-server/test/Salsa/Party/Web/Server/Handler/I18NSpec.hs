@@ -1,6 +1,8 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+-- This module makes sure that we didn't forget to translate anything, or translated too much.
+-- It has to be in this package because it deals with the messages dir which is in this library.
 module Salsa.Party.Web.Server.Handler.I18NSpec (spec) where
 
 import Control.Monad

@@ -19,6 +19,9 @@ in
           )
           (old: {
             configureFlags = (old.configureFlags or [ ]) ++ [
+              # Optimisations
+              "--ghc-options=-O2"
+              # Extra warnings
               "--ghc-options=-Wall"
               "--ghc-options=-Wincomplete-uni-patterns"
               "--ghc-options=-Wincomplete-record-updates"
@@ -77,7 +80,8 @@ in
         };
       };
       salsa-party-web-server-e2e = salsaPartyPkg "salsa-party-web-server-e2e";
-      salsa-party-web-server-gen = overrideCabal (salsaPartyPkg "salsa-party-web-server-gen") (old: {
+      salsa-party-web-server-gen = salsaPartyPkg "salsa-party-web-server-gen";
+      salsa-party-web-server-webdriver = overrideCabal (salsaPartyPkg "salsa-party-web-server-webdriver") (old: {
         preConfigure = (old.preConfigure or "") + ''
           # https://github.com/NixOS/nixpkgs/issues/136207
           export FONTCONFIG_FILE=${final.makeFontsConf { fontDirectories = [];}}
@@ -93,6 +97,7 @@ in
       inherit salsa-party-web-server;
       inherit salsa-party-web-server-e2e;
       inherit salsa-party-web-server-gen;
+      inherit salsa-party-web-server-webdriver;
     };
 
   salsaPartyRelease =
