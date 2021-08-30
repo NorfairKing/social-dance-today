@@ -14,19 +14,7 @@ pkgs.nixosTest (
   { lib, pkgs, ... }: {
     name = "salsa-party-module-test";
     nodes = {
-      client = {
-        imports = [
-          salsa-party-production
-        ];
-        services.salsa-party.production = {
-          enable = true;
-          end-to-end-test = {
-            enable = true;
-            debug = true;
-            url = "http://server:${builtins.toString port}";
-          };
-        };
-      };
+      client = { };
       server = {
         imports = [
           salsa-party-production
@@ -57,7 +45,7 @@ pkgs.nixosTest (
       server.wait_for_unit("multi-user.target")
 
       server.wait_for_open_port(${builtins.toString port})
-      client.succeed("systemctl start salsa-party-end-to-end-test-production.service --wait")
+      client.succeed("curl server:${builtins.toString port}")
     '';
   }
 )

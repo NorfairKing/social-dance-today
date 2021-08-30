@@ -41,3 +41,23 @@ executable salsa-party-web-server-e2e
     , salsa-party-web-server
     , salsa-party-web-server-e2e
   default-language: Haskell2010
+
+test-suite salsa-party-web-server-e2e-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_salsa_party_web_server_e2e
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+  build-tool-depends:
+      sydtest-discover:sydtest-discover
+  build-depends:
+      base >=4.7 && <5
+    , http-client
+    , salsa-party-web-server
+    , salsa-party-web-server-e2e
+    , salsa-party-web-server-gen
+    , sydtest
+    , sydtest-yesod
+  default-language: Haskell2010
