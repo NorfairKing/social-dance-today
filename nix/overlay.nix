@@ -76,6 +76,7 @@ in
           sha256 = "sha256:0idyjhnhv6sc6q8mr5f820qcy72s5x4al04llhz5cvgjgixlg3x5";
         };
       };
+      salsa-party-web-server-e2e = salsaPartyPkg "salsa-party-web-server-e2e";
       salsa-party-web-server-gen = overrideCabal (salsaPartyPkg "salsa-party-web-server-gen") (old: {
         preConfigure = (old.preConfigure or "") + ''
           # https://github.com/NixOS/nixpkgs/issues/136207
@@ -90,6 +91,7 @@ in
     in
     {
       inherit salsa-party-web-server;
+      inherit salsa-party-web-server-e2e;
       inherit salsa-party-web-server-gen;
     };
 

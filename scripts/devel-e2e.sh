@@ -2,7 +2,7 @@
 
 export DEVELOPMENT=True
 
-stack install salsa-party-web-server \
+stack install salsa-party-web-server salsa-party-web-server-e2e \
   --file-watch --watch-all \
   --fast \
   --no-nix-pure \

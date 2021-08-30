@@ -2,9 +2,9 @@ resolver: lts-16.12
 packages:
 - salsa-party-web-server
 - salsa-party-web-server-gen
+- salsa-party-web-server-e2e
 ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat
-allow-newer: true # Because of token-limiter
 extra-deps:
 - github: NorfairKing/token-limiter-concurrent
   commit: 336f8bb6d1281c7a11e9b11da9bc1a86b5d89057
@@ -64,7 +64,6 @@ extra-deps:
     - sydtest-yesod
 - github: NorfairKing/yesod-static-remote
   commit: ed6bf8ef434d49b160429028613a1f6882fccfdf
-- token-limiter-0.2.0.3@sha256:7e27a9032e14c3a91f5333f9b87f260a38bcdf6339ef1aa969cdfc49bca75e8b,2321
 - mime-0.4.0.2@sha256:208947d9d1a19d08850be67ecb28c6e776db697f3bba05bd9d682e51a59f241f,983
 
 - github: NorfairKing/iCalendar

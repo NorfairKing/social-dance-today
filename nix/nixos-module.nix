@@ -276,7 +276,7 @@ in
               };
             script =
               ''
-                ${salsaPartyPackages.salsa-party-web-server-gen}/bin/salsa-party-web-server-e2e ${optionalString cfg.end-to-end-test.debug "--no-randomise-execution-order --synchronous"}
+                ${salsaPartyPackages.salsa-party-web-server-e2e}/bin/salsa-party-web-server-e2e ${optionalString cfg.end-to-end-test.debug "--no-randomise-execution-order --synchronous"}
               '';
             serviceConfig =
               {

@@ -145,10 +145,8 @@ test-suite salsa-party-web-server-gen-test
     , aeson-pretty
     , base >=4.7 && <5
     , bytestring
-    , conduit
     , containers
     , data-default
-    , esqueleto
     , filepath
     , genvalidity
     , genvalidity-bytestring
@@ -160,7 +158,6 @@ test-suite salsa-party-web-server-gen-test
     , genvalidity-time
     , genvalidity-typed-uuid
     , http-client
-    , http-types
     , iCalendar
     , microlens
     , monad-control
