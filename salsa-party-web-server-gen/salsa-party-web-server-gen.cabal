@@ -1,0 +1,147 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           salsa-party-web-server-gen
+version:        0.0.0.0
+license:        AllRightsReserved
+build-type:     Simple
+
+library
+  other-modules:
+      Paths_salsa_party_web_server_gen
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , sydtest
+  default-language: Haskell2010
+
+executable salsa-party-web-server-e2e
+  main-is: Main.hs
+  other-modules:
+      Paths_salsa_party_web_server_gen
+  hs-source-dirs:
+      e2e
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , linkcheck
+    , monad-logger
+    , network-uri
+    , salsa-party-web-server
+    , seocheck
+    , sydtest
+    , sydtest-yesod
+    , text
+    , yesod
+    , yesod-auth
+  default-language: Haskell2010
+
+test-suite salsa-party-web-server-gen-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Salsa.Party.DB.CoordinatesSpec
+      Salsa.Party.DB.RecurrenceSpec
+      Salsa.Party.DBSpec
+      Salsa.Party.Looper.OrganiserReminderSpec
+      Salsa.Party.Looper.PartySchedulerSpec
+      Salsa.Party.Web.Server.Gen
+      Salsa.Party.Web.Server.Handler.Account.OrganiserSpec
+      Salsa.Party.Web.Server.Handler.Account.OverviewSpec
+      Salsa.Party.Web.Server.Handler.Account.PartiesSpec
+      Salsa.Party.Web.Server.Handler.Account.PartySpec
+      Salsa.Party.Web.Server.Handler.Account.ScheduleSpec
+      Salsa.Party.Web.Server.Handler.Admin.PanelSpec
+      Salsa.Party.Web.Server.Handler.Admin.SiteTestSpec
+      Salsa.Party.Web.Server.Handler.AuthSpec
+      Salsa.Party.Web.Server.Handler.Event.ExternalEvent.DescriptionSpec
+      Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICalSpec
+      Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LDSpec
+      Salsa.Party.Web.Server.Handler.Event.ExternalEventSpec
+      Salsa.Party.Web.Server.Handler.Event.Party.DescriptionSpec
+      Salsa.Party.Web.Server.Handler.Event.Party.ICalSpec
+      Salsa.Party.Web.Server.Handler.Event.Party.LDSpec
+      Salsa.Party.Web.Server.Handler.Event.PartySpec
+      Salsa.Party.Web.Server.Handler.ExploreSpec
+      Salsa.Party.Web.Server.Handler.Home.LDSpec
+      Salsa.Party.Web.Server.Handler.HomeSpec
+      Salsa.Party.Web.Server.Handler.ImageSpec
+      Salsa.Party.Web.Server.Handler.OrganiserSpec
+      Salsa.Party.Web.Server.Handler.ReminderSpec
+      Salsa.Party.Web.Server.Handler.Search.Query.DeduplicationSpec
+      Salsa.Party.Web.Server.Handler.Search.QuerySpec
+      Salsa.Party.Web.Server.Handler.SearchSpec
+      Salsa.Party.Web.Server.Handler.SitemapSpec
+      Salsa.Party.Web.Server.Handler.TestImport
+      Salsa.Party.Web.Server.TestUtils
+      Salsa.Party.Web.Server.TestUtils.Selenium
+      Web.JSONLD.Gen
+      Web.JSONLDSpec
+      Paths_salsa_party_web_server_gen
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+  build-tool-depends:
+      sydtest-discover:sydtest-discover
+  build-depends:
+      QuickCheck
+    , aeson
+    , aeson-pretty
+    , base >=4.7 && <5
+    , bytestring
+    , conduit
+    , containers
+    , data-default
+    , esqueleto
+    , filepath
+    , genvalidity
+    , genvalidity-bytestring
+    , genvalidity-persistent
+    , genvalidity-sydtest
+    , genvalidity-sydtest-aeson
+    , genvalidity-sydtest-persistent
+    , genvalidity-text
+    , genvalidity-time
+    , genvalidity-typed-uuid
+    , http-client
+    , http-types
+    , iCalendar
+    , microlens
+    , monad-control
+    , monad-logger
+    , mtl
+    , network
+    , network-uri
+    , password
+    , path
+    , path-io
+    , path-pieces
+    , persistent
+    , persistent-sqlite
+    , port-utils
+    , pretty-show
+    , salsa-party-web-server
+    , shakespeare
+    , sydtest
+    , sydtest-aeson
+    , sydtest-persistent
+    , sydtest-persistent-sqlite
+    , sydtest-typed-process
+    , sydtest-wai
+    , sydtest-yesod
+    , text
+    , time
+    , transformers-base
+    , typed-process
+    , typed-uuid
+    , unliftio
+    , uuid
+    , webdriver
+    , yesod
+    , yesod-auth
+    , yesod-core
+  default-language: Haskell2010

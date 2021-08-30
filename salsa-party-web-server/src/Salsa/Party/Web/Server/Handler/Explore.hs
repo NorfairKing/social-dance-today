@@ -46,7 +46,6 @@ explorePartiesAroundLocationQuery today coordinates =
 
 getExploreSkylineR :: Text -> Handler TypedContent
 getExploreSkylineR locationName = do
-  staticDir <- getsYesod appStaticDir
   locationsDir <- resolveDir staticDir "locations"
   -- To make sure that the file is definitely in this dir and we don't leak filesystem access
   case parseRelFile (T.unpack locationName <> ".jpg") of

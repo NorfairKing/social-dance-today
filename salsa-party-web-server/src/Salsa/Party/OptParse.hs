@@ -37,7 +37,6 @@ data Settings = Settings
     settingSendEmails :: !Bool,
     settingSendAddress :: !(Maybe Text),
     settingAdmin :: !(Maybe Text),
-    settingStaticDir :: !(Path Abs Dir),
     settingEnableOSMGeocoding :: !Bool,
     settingEnableGoogleGeocoding :: !Bool,
     settingGoogleAPIKey :: !(Maybe Text),
@@ -86,9 +85,6 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingSendEmails = fromMaybe False $ flagSendEmails <|> envSendEmails <|> mc confSendEmails
   let settingSendAddress = flagSendAddress <|> envSendAddress <|> mc confSendAddress
   let settingAdmin = flagAdmin <|> envAdmin <|> mc confAdmin
-  settingStaticDir <- case flagStaticDir <|> envStaticDir <|> mc confStaticDir of
-    Nothing -> resolveDir' "static"
-    Just staticDir -> resolveDir' staticDir
   let settingEnableOSMGeocoding = fromMaybe True $ flagEnableOSMGeocoding <|> envEnableOSMGeocoding <|> mc confEnableOSMGeocoding
   let settingEnableGoogleGeocoding = fromMaybe True $ flagEnableGoogleGeocoding <|> envEnableGoogleGeocoding <|> mc confEnableGoogleGeocoding
   let settingSentrySettings = combineToSentrySettings flagSentryFlags envSentryEnvironment $ mc confSentryConfiguration
@@ -127,7 +123,6 @@ data Configuration = Configuration
     confSendEmails :: !(Maybe Bool),
     confSendAddress :: !(Maybe Text),
     confAdmin :: !(Maybe Text),
-    confStaticDir :: !(Maybe FilePath),
     confEnableOSMGeocoding :: !(Maybe Bool),
     confEnableGoogleGeocoding :: !(Maybe Bool),
     confSentryConfiguration :: !(Maybe SentryConfiguration),
@@ -164,7 +159,6 @@ instance YamlSchema Configuration where
         <*> optionalField "send-emails" "Whether to send emails and require email verification"
         <*> optionalField "send-address" "The email address to send emails from"
         <*> optionalField "admin" "The email address of the admin user"
-        <*> optionalField "static-dir" "The directory that holds runtime static files"
         <*> optionalField "enable-osm-geocoding" "Enable OpenStreetMaps Geocoding"
         <*> optionalField "enable-google-geocoding" "Enable Google Geocoding"
         <*> optionalField "sentry" "Sentry configuration"
@@ -223,7 +217,6 @@ data Environment = Environment
     envSendEmails :: !(Maybe Bool),
     envSendAddress :: !(Maybe Text),
     envAdmin :: !(Maybe Text),
-    envStaticDir :: !(Maybe FilePath),
     envEnableOSMGeocoding :: !(Maybe Bool),
     envEnableGoogleGeocoding :: !(Maybe Bool),
     envSentryEnvironment :: !SentryEnvironment,
@@ -268,7 +261,6 @@ environmentParser =
       <*> Env.var (fmap Just . Env.auto) "SEND_EMAILS" (mE <> Env.help "Whether to send emails and require email verification")
       <*> Env.var (fmap Just . Env.str) "SEND_ADDRESS" (mE <> Env.help "The address to send emails from")
       <*> Env.var (fmap Just . Env.str) "ADMIN" (mE <> Env.help "The email address of the admin user")
-      <*> Env.var (fmap Just . Env.str) "STATIC_DIR" (mE <> Env.help "The directory that holds runtime-static files")
       <*> Env.var (fmap Just . Env.auto) "ENABLE_OSM_GEOCODING" (mE <> Env.help "Enable OpenStreetMaps Geocoding")
       <*> Env.var (fmap Just . Env.auto) "ENABLE_GOOGLE_GEOCODING" (mE <> Env.help "Enable Google Geocoding")
       <*> sentryEnvironmentParser
@@ -333,7 +325,6 @@ data Flags = Flags
     flagSendEmails :: !(Maybe Bool),
     flagSendAddress :: !(Maybe Text),
     flagAdmin :: !(Maybe Text),
-    flagStaticDir :: !(Maybe FilePath),
     flagEnableOSMGeocoding :: !(Maybe Bool),
     flagEnableGoogleGeocoding :: !(Maybe Bool),
     flagSentryFlags :: !SentryFlags,
@@ -437,14 +428,6 @@ parseFlags =
           ( mconcat
               [ long "admin",
                 help "Email address of the admin user"
-              ]
-          )
-      )
-    <*> optional
-      ( strOption
-          ( mconcat
-              [ long "static-dir",
-                help "The directory that holds runtime-static files"
               ]
           )
       )

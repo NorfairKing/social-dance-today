@@ -1,6 +1,7 @@
 resolver: lts-16.12
 packages:
 - salsa-party-web-server
+- salsa-party-web-server-gen
 ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat
 allow-newer: true # Because of token-limiter

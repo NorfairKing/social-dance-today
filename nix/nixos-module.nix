@@ -191,7 +191,6 @@ in
           (nullOrOption "salsa-be-importer" salsa-be-importer)
           (nullOrOption "latinworld-nl-importer" latinworld-nl-importer)
           (nullOrOption "sentry" sentry)
-          { static-dir = gitignoreSource ../salsa-party-web-server/static; }
           cfg.web-server.config
         ];
       web-server-config-file = toYamlFile "salsa-web-server-config" web-server-config;

@@ -21,7 +21,6 @@ data App = App
     appSendEmails :: !Bool,
     appSendAddress :: !(Maybe Text),
     appAdmin :: !(Maybe Text),
-    appStaticDir :: !(Path Abs Dir),
     appOSMRateLimiter :: !(Maybe TokenLimiter), -- Nothing means disabled.
     appSentrySettings :: !(Maybe SentrySettings), -- Nothing means disabled.
     appGoogleAPIKey :: !(Maybe Text), -- Nothing means disabled.

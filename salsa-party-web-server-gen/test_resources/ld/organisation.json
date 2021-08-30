@@ -1,0 +1,20 @@
+{
+    "@context": "https://schema.org",
+    "url": "https://social-dance.today/",
+    "founder": {
+        "@context": "https://schema.org",
+        "nationality": "Belgian",
+        "url": "https://cs-syd.eu",
+        "brand": "CS SYD",
+        "gender": "male",
+        "name": "Tom Sydney Kerckhove",
+        "jobTitle": "Professional Weirdo",
+        "@type": "Person",
+        "affiliation": "CS SYD",
+        "alumniOf": "ETH Zuerich",
+        "birthDate": "1994-07-25"
+    },
+    "name": "Social Dance Today",
+    "@type": "Organization",
+    "logo": "https://social-dance.today/static/res/logo.svg?etag=eMMlA8WZ"
+}

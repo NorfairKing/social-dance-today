@@ -1,0 +1,27 @@
+{
+    "@context": "http://schema.org",
+    "image": "https://www.danceus.org/events/images/153877133004832/soiree-de-salsa-the-drake-hotel-cover.jpg",
+    "location": {
+        "address": {
+            "streetAddress": "140 East Walton Place",
+            "addressCountry": "United States",
+            "addressLocality": "Chicago",
+            "@type": "PostalAddress",
+            "addressRegion": "IL"
+        },
+        "name": "The Drake Hotel, 140 East Walton Place, Chicago, IL",
+        "geo": {
+            "latitude": "41.9002443",
+            "@type": "GeoCoordinates",
+            "longitude": "-87.6233743"
+        },
+        "@type": "Place"
+    },
+    "eventStatus": "http://schema.org/EventScheduled",
+    "endDate": "2021-07-21T23:30:00-05:00",
+    "url": "https://www.danceus.org/event/15387713309508/soiree-de-salsa-the-drake-hotel-chicago-il/",
+    "startDate": "2021-07-21T18:30:00-05:00",
+    "name": "Soiree de Salsa - The Drake Hotel",
+    "@type": "Event",
+    "description": "Join Us for FIRST WEDNESDAY OF THE MOTH Salsa Soire with great Salsa Music Video mixing at the Beautiful Drake Hotel (Downtown) in the Palm Court with DJ Prieto. Starting at Wednesday Aug. 6th 2014"
+}

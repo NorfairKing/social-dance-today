@@ -3,6 +3,7 @@
 
 module Salsa.Party.Web.Server.Handler.I18NSpec (spec) where
 
+import Control.Monad
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import Data.Map.Strict (Map)
@@ -15,8 +16,8 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Path
 import Path.IO
-import Salsa.Party.Web.Server.Handler.TestImport
 import System.Exit
+import Test.Syd
 
 spec :: Spec
 spec =

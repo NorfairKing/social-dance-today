@@ -223,44 +223,7 @@ test-suite salsa-party-web-server-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Salsa.Party.DB.CoordinatesSpec
-      Salsa.Party.DB.RecurrenceSpec
-      Salsa.Party.DBSpec
-      Salsa.Party.Looper.OrganiserReminderSpec
-      Salsa.Party.Looper.PartySchedulerSpec
-      Salsa.Party.Web.Server.Gen
-      Salsa.Party.Web.Server.Handler.Account.OrganiserSpec
-      Salsa.Party.Web.Server.Handler.Account.OverviewSpec
-      Salsa.Party.Web.Server.Handler.Account.PartiesSpec
-      Salsa.Party.Web.Server.Handler.Account.PartySpec
-      Salsa.Party.Web.Server.Handler.Account.ScheduleSpec
-      Salsa.Party.Web.Server.Handler.Admin.PanelSpec
-      Salsa.Party.Web.Server.Handler.Admin.SiteTestSpec
-      Salsa.Party.Web.Server.Handler.AuthSpec
-      Salsa.Party.Web.Server.Handler.Event.ExternalEvent.DescriptionSpec
-      Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICalSpec
-      Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LDSpec
-      Salsa.Party.Web.Server.Handler.Event.ExternalEventSpec
-      Salsa.Party.Web.Server.Handler.Event.Party.DescriptionSpec
-      Salsa.Party.Web.Server.Handler.Event.Party.ICalSpec
-      Salsa.Party.Web.Server.Handler.Event.Party.LDSpec
-      Salsa.Party.Web.Server.Handler.Event.PartySpec
-      Salsa.Party.Web.Server.Handler.ExploreSpec
-      Salsa.Party.Web.Server.Handler.Home.LDSpec
-      Salsa.Party.Web.Server.Handler.HomeSpec
       Salsa.Party.Web.Server.Handler.I18NSpec
-      Salsa.Party.Web.Server.Handler.ImageSpec
-      Salsa.Party.Web.Server.Handler.OrganiserSpec
-      Salsa.Party.Web.Server.Handler.ReminderSpec
-      Salsa.Party.Web.Server.Handler.Search.Query.DeduplicationSpec
-      Salsa.Party.Web.Server.Handler.Search.QuerySpec
-      Salsa.Party.Web.Server.Handler.SearchSpec
-      Salsa.Party.Web.Server.Handler.SitemapSpec
-      Salsa.Party.Web.Server.Handler.TestImport
-      Salsa.Party.Web.Server.TestUtils
-      Salsa.Party.Web.Server.TestUtils.Selenium
-      Web.JSONLD.Gen
-      Web.JSONLDSpec
       Paths_salsa_party_web_server
   hs-source-dirs:
       test

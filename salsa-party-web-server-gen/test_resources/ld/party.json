@@ -1,0 +1,27 @@
+{
+    "@context": "https://schema.org",
+    "image": [
+        "https://social-dance.today/image/UTpq9WwrRgBrNo9GusMO2QYGN+IZCK4E+IsnbgCVmvY="
+    ],
+    "location": {
+        "address": "Spitalgasse 4, 3011 Bern Bern",
+        "geo": {
+            "latitude": 46.948335899,
+            "@type": "GeoCoordinates",
+            "longitude": 7.4430784
+        },
+        "@type": "Place"
+    },
+    "eventStatus": "https://schema.org/EventCancelled",
+    "startDate": "2021-06-15",
+    "name": "Example party at Rhythmia",
+    "@type": "Event",
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "description": "aeou\r\naoseuntha\r\noeu",
+    "organizer": {
+        "@context": "https://schema.org",
+        "url": "https://social-dance.today/organiser/0000007b-0000-01c8-0000-031500018af8",
+        "name": "CS SYD",
+        "@type": "Organization"
+    }
+}

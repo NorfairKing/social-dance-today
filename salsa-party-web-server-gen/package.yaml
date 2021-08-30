@@ -1,0 +1,99 @@
+name:                salsa-party-web-server-gen
+version:             0.0.0.0
+license:             AllRightsReserved
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  dependencies:
+    - sydtest
+
+executables:
+  salsa-party-web-server-e2e:
+    main:                Main.hs
+    source-dirs:         e2e
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - linkcheck
+    - monad-logger
+    - network-uri
+    - salsa-party-web-server
+    - seocheck
+    - sydtest
+    - sydtest-yesod
+    - text
+    - yesod
+    - yesod-auth
+
+tests:
+  salsa-party-web-server-gen-test:
+    main: Spec.hs
+    source-dirs: test
+    build-tools: sydtest-discover
+    ghc-options:
+    - -Wall
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - QuickCheck
+    - aeson
+    - aeson-pretty
+    - bytestring
+    - conduit
+    - containers
+    - data-default
+    - esqueleto
+    - filepath
+    - genvalidity
+    - genvalidity-bytestring
+    - genvalidity-persistent
+    - genvalidity-sydtest
+    - genvalidity-sydtest-aeson
+    - genvalidity-sydtest-persistent
+    - genvalidity-text
+    - genvalidity-time
+    - genvalidity-typed-uuid
+    - http-client
+    - http-types
+    - iCalendar
+    - microlens
+    - monad-control
+    - monad-logger
+    - mtl
+    - network
+    - network-uri
+    - password
+    - path
+    - path-io
+    - path-pieces
+    - persistent
+    - persistent-sqlite
+    - port-utils
+    - pretty-show
+    - salsa-party-web-server
+    - shakespeare
+    - sydtest
+    - sydtest-aeson
+    - sydtest-persistent
+    - sydtest-persistent-sqlite
+    - sydtest-typed-process
+    - sydtest-wai
+    - sydtest-yesod
+    - text
+    - time
+    - transformers-base
+    - typed-process
+    - typed-process
+    - typed-uuid
+    - unliftio
+    - uuid
+    - webdriver
+    - yesod
+    - yesod-auth
+    - yesod-core

@@ -8,6 +8,7 @@ in
 {
   salsaPartyPackages =
     let
+      staticDir = final.gitignoreSource ../static;
       salsaPartyPkg =
         name:
         overrideCabal
@@ -35,24 +36,18 @@ in
             hyperlinkSource = false;
             enableLibraryProfiling = false;
             enableExecutableProfiling = false;
-            preConfigure = (old.preConfigure or "") + ''
-              # https://github.com/NixOS/nixpkgs/issues/136207
-              export FONTCONFIG_FILE=${final.makeFontsConf { fontDirectories = [];}}
-            '';
             buildDepends = (old.buildInputs or [ ]) ++ (with final; [
               haskellPackages.autoexporter
             ]);
-            testDepends = (old.testDepends or [ ]) ++ (with final; [
-              chromedriver
-              chromium
-              selenium-server-standalone
-            ]);
+            preConfigure = (old.preConfigure or "") + ''
+              export SALSA_PARTY_STATIC_DIR=${staticDir}
+            '';
           });
       salsaPartyPkgWithComp =
         exeName: name:
         generateOptparseApplicativeCompletion exeName (salsaPartyPkg name);
       salsaPartyPkgWithOwnComp = name: salsaPartyPkgWithComp name name;
-      withStaticResources = pkg: resources: overrideCabal pkg (
+      withRemoteStaticResources = pkg: resources: overrideCabal pkg (
         old:
         {
           preConfigure =
@@ -71,7 +66,7 @@ in
             '';
         }
       );
-      salsa-party-web-server = withStaticResources (salsaPartyPkg "salsa-party-web-server") {
+      salsa-party-web-server = withRemoteStaticResources (salsaPartyPkg "salsa-party-web-server") {
         "static/bulma.css" = builtins.fetchurl {
           url = "https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css";
           sha256 = "0nbwcsa1gi36f2aq9y96bap7glkp40k3g2bjb9s1vmg0011sri1v";
@@ -81,9 +76,21 @@ in
           sha256 = "sha256:0idyjhnhv6sc6q8mr5f820qcy72s5x4al04llhz5cvgjgixlg3x5";
         };
       };
+      salsa-party-web-server-gen = overrideCabal (salsaPartyPkg "salsa-party-web-server-gen") (old: {
+        preConfigure = (old.preConfigure or "") + ''
+          # https://github.com/NixOS/nixpkgs/issues/136207
+          export FONTCONFIG_FILE=${final.makeFontsConf { fontDirectories = [];}}
+        '';
+        testDepends = (old.testDepends or [ ]) ++ (with final; [
+          chromedriver
+          chromium
+          selenium-server-standalone
+        ]);
+      });
     in
     {
       inherit salsa-party-web-server;
+      inherit salsa-party-web-server-gen;
     };
 
   salsaPartyRelease =

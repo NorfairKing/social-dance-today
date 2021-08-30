@@ -39,7 +39,7 @@ runSalsaPartyServer settings@Settings {..} = do
   runStderrLoggingT $
     filterLogger (\_ ll -> ll >= settingLogLevel) $ do
       -- Set this to true momentarily when adding a new poster
-      when False $ convertPosters settingStaticDir
+      when False convertPosters
       withSqlitePoolInfo info 1 $ \pool -> do
         runSqlPool (completeServerMigration False) pool
         sessionKeyFile <- resolveFile' "client_session_key.aes"
@@ -57,7 +57,6 @@ runSalsaPartyServer settings@Settings {..} = do
                   appSendEmails = settingSendEmails,
                   appSendAddress = settingSendAddress,
                   appAdmin = settingAdmin,
-                  appStaticDir = settingStaticDir,
                   appOSMRateLimiter = do
                     guard settingEnableOSMGeocoding
                     pure rateLimiter,
@@ -74,8 +73,8 @@ runSalsaPartyServer settings@Settings {..} = do
 
 -- We convert the posters before we commit them so that they're already
 -- converted by the time we serve them.
-convertPosters :: Path Abs Dir -> LoggingT IO ()
-convertPosters staticDir = do
+convertPosters :: LoggingT IO ()
+convertPosters = do
   locationsDir <- resolveDir staticDir "locations"
   fs <- liftIO $ snd <$> listDirRecur locationsDir
   forM_ fs $ \posterFile -> do
