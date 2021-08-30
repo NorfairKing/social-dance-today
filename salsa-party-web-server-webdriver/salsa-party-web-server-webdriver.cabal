@@ -46,13 +46,14 @@ library
 
 test-suite salsa-party-web-server-webdriver-test
   type: exitcode-stdio-1.0
-  main-is: Spec.hs
+  main-is: Main.hs
   other-modules:
       Salsa.Party.Web.Server.Handler.Account.OrganiserSpec
       Salsa.Party.Web.Server.Handler.AuthSpec
       Salsa.Party.Web.Server.Handler.HomeSpec
       Salsa.Party.Web.Server.Handler.SearchSpec
       Salsa.Party.Web.Server.Handler.TestImport
+      Spec
       Paths_salsa_party_web_server_webdriver
   hs-source-dirs:
       test

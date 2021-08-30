@@ -35,7 +35,7 @@ library:
 
 tests:
   salsa-party-web-server-webdriver-test:
-    main: Spec.hs
+    main: Main.hs
     source-dirs: test
     build-tools: sydtest-discover
     ghc-options:

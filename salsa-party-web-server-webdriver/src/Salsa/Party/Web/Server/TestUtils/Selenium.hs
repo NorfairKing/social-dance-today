@@ -154,7 +154,9 @@ driveDB func = do
   pool <- asks $ appConnectionPool . webdriverTestEnvApp
   liftIO $ DB.runSqlPool func pool
 
-webdriverSpec :: TestDef '[SeleniumServerHandle, HTTP.Manager] WebdriverTestEnv -> TestDef '[] ()
+type WebdriverSpec = TestDef '[SeleniumServerHandle, HTTP.Manager] WebdriverTestEnv
+
+webdriverSpec :: WebdriverSpec -> Spec
 webdriverSpec = modifyMaxSuccess (`div` 50) . yesodClientSpec . setupAroundAll seleniumServerSetupFunc . webdriverTestEnvSpec
 
 webdriverTestEnvSpec ::

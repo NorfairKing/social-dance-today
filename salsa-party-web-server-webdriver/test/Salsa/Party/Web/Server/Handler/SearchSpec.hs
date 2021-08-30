@@ -7,13 +7,11 @@ import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Handler.TestImport
 import Test.WebDriver as WD
 
-spec :: Spec
-spec = do
-  webdriverSpec $ do
-    describe "Search" $ do
-      it "Can do a real search" $ \env ->
-        forAll (elements locations) $ \Location {..} -> runWebdriverTestM env $ do
-          openHome
-          e <- WD.findElem (ById "queryInput")
-          WD.sendKeys (placeQuery locationPlace) e
-          WD.submit e
+spec :: WebdriverSpec
+spec =
+  it "Can do a real search" $ \env ->
+    forAll (elements locations) $ \Location {..} -> runWebdriverTestM env $ do
+      openHome
+      e <- WD.findElem (ById "queryInput")
+      WD.sendKeys (placeQuery locationPlace) e
+      WD.submit e
