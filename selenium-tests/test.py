@@ -109,7 +109,7 @@ driver.find_element_by_xpath('//a[contains(text(), "Public Party Profile")]').cl
 
 wait()
 
-# Duplicate the party
+# Duplicate the party (done)
 print("Duplicating the party")
 driver.find_element_by_xpath('//a[contains(text(), "My parties")]').click()
 driver.find_element_by_xpath('//a[contains(text(), "Test Party")]').click()

@@ -106,7 +106,9 @@
       <div .field>
         <div .control>
           <div .buttons>
-            <button .button .is-dark type="submit">
+            <button #submit
+              .button .is-dark
+              type="submit">
               _{MsgDuplicatePartyButton}
             <a .button href=@{AccountR AccountPartiesR}>
               _{MsgPartyFormBackButton}

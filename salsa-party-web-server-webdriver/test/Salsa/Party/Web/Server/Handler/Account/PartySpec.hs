@@ -21,3 +21,13 @@ spec = do
           driveAddParty dummyAddPartyForm
           driveDB $ insertPlace_ (editPartyFormAddress dummyEditPartyForm) coordinates2
           driveEditParty (addPartyFormTitle dummyAddPartyForm) dummyEditPartyForm
+
+  it "can duplicate an existing party" $ \env ->
+    forAllValid $ \coordinates1 ->
+      forAllValid $ \coordinates2 -> runWebdriverTestM env $
+        driveAsNewUser dummyUser $ do
+          driveSubmitOrganiser dummyOrganiserForm
+          driveDB $ insertPlace_ (addPartyFormAddress dummyAddPartyForm) coordinates1
+          driveAddParty dummyAddPartyForm
+          driveDB $ insertPlace_ (addPartyFormAddress dummyDuplicatePartyForm) coordinates2
+          driveDuplicateParty (addPartyFormTitle dummyAddPartyForm) dummyDuplicatePartyForm

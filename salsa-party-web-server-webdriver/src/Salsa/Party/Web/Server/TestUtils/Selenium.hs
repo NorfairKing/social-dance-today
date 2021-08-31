@@ -218,6 +218,31 @@ driveEditParty title EditPartyForm {..} = do
   findElem (ByName "address") >>= sendKeys editPartyFormAddress
   findElem (ById "submit") >>= submit
 
+dummyDuplicatePartyForm :: AddPartyForm
+dummyDuplicatePartyForm =
+  AddPartyForm
+    { addPartyFormTitle = "Example Party at Rhythmia (duplicated)",
+      addPartyFormDay = fromGregorian 2021 09 01,
+      addPartyFormAddress = dummyAddress,
+      addPartyFormDescription = Just "Super nice party at Rhythmia\nBring friends!, duplicated",
+      addPartyFormStart = Just $ TimeOfDay 18 00 00,
+      addPartyFormHomepage = Just "https://rhythmia3.ch",
+      addPartyFormPrice = Just "Free ?!",
+      addPartyFormPosterKey = Nothing
+    }
+
+driveDuplicateParty :: Text -> AddPartyForm -> WebdriverTestM ()
+driveDuplicateParty title AddPartyForm {..} = do
+  findElem (ByLinkText "My parties") >>= click
+  findElem (ByLinkText title) >>= click
+  findElem (ByLinkText "Duplicate") >>= click
+  findElem (ByName "title") >>= clearInput
+  findElem (ByName "title") >>= sendKeys addPartyFormTitle
+  findElem (ByName "day") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%F" addPartyFormDay))
+  findElem (ByName "address") >>= clearInput
+  findElem (ByName "address") >>= sendKeys addPartyFormAddress
+  findElem (ById "submit") >>= submit
+
 driveDB :: DB.SqlPersistT IO a -> WebdriverTestM a
 driveDB func = do
   pool <- asks $ appConnectionPool . webdriverTestEnvApp
