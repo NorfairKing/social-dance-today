@@ -249,6 +249,12 @@ driveCancelParty title = do
   findElem (ByLinkText title) >>= click
   findElem (ByXPath "//button[contains(text(), 'Cancel')]") >>= click
 
+driveUnCancelParty :: Text -> WebdriverTestM ()
+driveUnCancelParty title = do
+  findElem (ByLinkText "My parties") >>= click
+  findElem (ByLinkText ("CANCELLED: " <> title)) >>= click
+  findElem (ByXPath "//button[contains(text(), 'Un-Cancel')]") >>= click
+
 driveDeleteParty :: Text -> WebdriverTestM ()
 driveDeleteParty title = do
   findElem (ByLinkText "My parties") >>= click
