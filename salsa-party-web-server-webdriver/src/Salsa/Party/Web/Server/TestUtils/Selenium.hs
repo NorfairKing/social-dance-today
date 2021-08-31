@@ -243,6 +243,19 @@ driveDuplicateParty title AddPartyForm {..} = do
   findElem (ByName "address") >>= sendKeys addPartyFormAddress
   findElem (ById "submit") >>= submit
 
+driveCancelParty :: Text -> WebdriverTestM ()
+driveCancelParty title = do
+  findElem (ByLinkText "My parties") >>= click
+  findElem (ByLinkText title) >>= click
+  findElem (ByXPath "//button[contains(text(), 'Cancel')]") >>= click
+
+driveDeleteParty :: Text -> WebdriverTestM ()
+driveDeleteParty title = do
+  findElem (ByLinkText "My parties") >>= click
+  findElem (ByLinkText ("CANCELLED: " <> title)) >>= click
+  findElem (ByXPath "//button[contains(text(), 'Delete')]") >>= click
+  acceptAlert
+
 driveDB :: DB.SqlPersistT IO a -> WebdriverTestM a
 driveDB func = do
   pool <- asks $ appConnectionPool . webdriverTestEnvApp

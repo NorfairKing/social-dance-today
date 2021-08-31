@@ -9,10 +9,6 @@ packages:
 ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat
 
-# Always build with code coverage enabled
-test-arguments:
-  coverage: true
-
 extra-deps:
 - github: NorfairKing/token-limiter-concurrent
   commit: 336f8bb6d1281c7a11e9b11da9bc1a86b5d89057

@@ -31,3 +31,20 @@ spec = do
           driveAddParty dummyAddPartyForm
           driveDB $ insertPlace_ (addPartyFormAddress dummyDuplicatePartyForm) coordinates2
           driveDuplicateParty (addPartyFormTitle dummyAddPartyForm) dummyDuplicatePartyForm
+
+  it "can cancel an existing party" $ \env ->
+    forAllValid $ \coordinates -> runWebdriverTestM env $
+      driveAsNewUser dummyUser $ do
+        driveSubmitOrganiser dummyOrganiserForm
+        driveDB $ insertPlace_ (addPartyFormAddress dummyAddPartyForm) coordinates
+        driveAddParty dummyAddPartyForm
+        driveCancelParty (addPartyFormTitle dummyAddPartyForm)
+
+  it "can delete a cancelled party" $ \env ->
+    forAllValid $ \coordinates -> runWebdriverTestM env $
+      driveAsNewUser dummyUser $ do
+        driveSubmitOrganiser dummyOrganiserForm
+        driveDB $ insertPlace_ (addPartyFormAddress dummyAddPartyForm) coordinates
+        driveAddParty dummyAddPartyForm
+        driveCancelParty (addPartyFormTitle dummyAddPartyForm)
+        driveDeleteParty (addPartyFormTitle dummyAddPartyForm)
