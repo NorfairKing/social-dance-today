@@ -32,6 +32,7 @@ import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Handler.Account.Organiser
 import Salsa.Party.Web.Server.Handler.Account.Party
+import Salsa.Party.Web.Server.Handler.Account.Schedule
 import Salsa.Party.Web.Server.Handler.Auth.TestUtils
 import Salsa.Party.Web.Server.TestUtils
 import System.Environment
@@ -259,6 +260,57 @@ driveDeleteParty :: Text -> WebdriverTestM ()
 driveDeleteParty title = do
   findElem (ByLinkText "My parties") >>= click
   findElem (ByLinkText ("CANCELLED: " <> title)) >>= click
+  findElem (ByXPath "//button[contains(text(), 'Delete')]") >>= click
+  acceptAlert
+
+dummyAddScheduleForm :: AddScheduleForm
+dummyAddScheduleForm =
+  AddScheduleForm
+    { addScheduleFormTitle = "Example Schedule at Rhythmia",
+      addScheduleFormRecurrence = WeeklyRecurrence Friday,
+      addScheduleFormAddress = dummyAddress,
+      addScheduleFormDescription = Just "Super nice schedule at Rhythmia\nBring friends!",
+      addScheduleFormStart = Just $ TimeOfDay 19 00 00,
+      addScheduleFormHomepage = Just "https://rhythmia.ch",
+      addScheduleFormPrice = Just "Free"
+    }
+
+driveAddSchedule :: AddScheduleForm -> WebdriverTestM ()
+driveAddSchedule AddScheduleForm {..} = do
+  findElem (ByLinkText "Add party") >>= click
+  findElem (ByLinkText "Recurring party") >>= click
+  findElem (ByName "title") >>= sendKeys addScheduleFormTitle
+  -- findElem (ByName "recurrence") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%F" addScheduleFormDay))
+  findElem (ByName "address") >>= sendKeys addScheduleFormAddress
+  findElem (ById "submit") >>= submit
+
+dummyEditScheduleForm :: EditScheduleForm
+dummyEditScheduleForm =
+  EditScheduleForm
+    { editScheduleFormTitle = "Example Schedule at Rhythmia (Edited)",
+      editScheduleFormRecurrence = WeeklyRecurrence Thursday,
+      editScheduleFormAddress = "Badenerstrasse 451 Zürich",
+      editScheduleFormDescription = Just "Super nice schedule at Rhythmia\nBring friends! (edited)",
+      editScheduleFormStart = Just $ TimeOfDay 20 00 00,
+      editScheduleFormHomepage = Just "https://rhythmia2.ch",
+      editScheduleFormPrice = Just "Free!!"
+    }
+
+driveEditSchedule :: Text -> EditScheduleForm -> WebdriverTestM ()
+driveEditSchedule title EditScheduleForm {..} = do
+  findElem (ByLinkText "My parties") >>= click
+  findElem (ByLinkText title) >>= click
+  findElem (ByLinkText "Edit") >>= click
+  findElem (ByName "title") >>= clearInput
+  findElem (ByName "title") >>= sendKeys editScheduleFormTitle
+  findElem (ByName "address") >>= clearInput
+  findElem (ByName "address") >>= sendKeys editScheduleFormAddress
+  findElem (ById "submit") >>= submit
+
+driveDeleteSchedule :: Text -> WebdriverTestM ()
+driveDeleteSchedule title = do
+  findElem (ByLinkText "My parties") >>= click
+  findElem (ByLinkText title) >>= click
   findElem (ByXPath "//button[contains(text(), 'Delete')]") >>= click
   acceptAlert
 

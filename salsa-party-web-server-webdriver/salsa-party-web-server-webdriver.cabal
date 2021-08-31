@@ -50,6 +50,7 @@ test-suite salsa-party-web-server-webdriver-test
   other-modules:
       Salsa.Party.Web.Server.Handler.Account.OrganiserSpec
       Salsa.Party.Web.Server.Handler.Account.PartySpec
+      Salsa.Party.Web.Server.Handler.Account.ScheduleSpec
       Salsa.Party.Web.Server.Handler.AuthSpec
       Salsa.Party.Web.Server.Handler.HomeSpec
       Salsa.Party.Web.Server.Handler.SearchSpec
