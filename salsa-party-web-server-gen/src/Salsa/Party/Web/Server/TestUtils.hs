@@ -28,7 +28,6 @@ import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Gen ()
-import Salsa.Party.Web.Server.Handler.Account.Organiser
 import Salsa.Party.Web.Server.Handler.Account.Party
 import Salsa.Party.Web.Server.Handler.Account.Schedule
 import Salsa.Party.Web.Server.Static
@@ -90,30 +89,6 @@ salsaConnectionPoolSetupFunc =
        in withSqlitePoolInfo info 1 $ \pool -> do
             _ <- runSqlPool (completeServerMigration True) pool
             liftIO $ func pool
-
-testSubmitOrganiser :: OrganiserForm -> YesodClientM App ()
-testSubmitOrganiser OrganiserForm {..} = do
-  let OrganiserForm _ _ _ = undefined
-  get $ AccountR AccountOrganiserR
-  statusIs 200
-  request $ do
-    setMethod methodPost
-    setUrl $ AccountR AccountOrganiserR
-    addToken
-    addPostParam "name" organiserFormName
-    forM_ organiserFormHomepage $ \homepage -> addPostParam "homepage" homepage
-    when organiserFormConsentReminder $ addPostParam "reminder-consent" "on"
-  statusIs 303
-  locationShouldBe $ AccountR AccountOrganiserR
-  _ <- followRedirect
-  statusIs 200
-
-organiserFormShouldMatch :: OrganiserForm -> Organiser -> IO ()
-organiserFormShouldMatch OrganiserForm {..} Organiser {..} = do
-  let OrganiserForm _ _ _ = undefined -- We want to check every part of the party form
-  context "name" $ organiserName `shouldBe` organiserFormName
-  context "homepage" $ organiserHomepage `shouldBe` organiserFormHomepage
-  pure ()
 
 data TestFile = TestFile
   { testFilePath :: !FilePath,

@@ -5,6 +5,7 @@ module Salsa.Party.Web.Server.Handler.Account.ScheduleSpec (spec) where
 
 import qualified Database.Persist as DB
 import Salsa.Party.Looper.PartyScheduler
+import Salsa.Party.Web.Server.Handler.Account.Organiser.TestUtils
 import Salsa.Party.Web.Server.Handler.Account.Schedule
 import Salsa.Party.Web.Server.Handler.TestImport
 
