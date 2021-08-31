@@ -10,8 +10,4 @@ in
     inherit sources;
     pkgs = pkgs;
   };
-  "nixos-selenium-test" = import ./nix/nixos-selenium-test.nix {
-    inherit sources;
-    pkgs = pkgs;
-  };
 }
