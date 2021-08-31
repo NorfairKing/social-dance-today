@@ -17,6 +17,8 @@ import Control.Monad.Base
 import Control.Monad.Reader
 import Control.Monad.Trans.Control
 import Data.Text (Text)
+import qualified Data.Text as T
+import Data.Time
 import qualified Database.Persist.Sql as DB
 import Network.HTTP.Client as HTTP
 import Network.Socket
@@ -25,9 +27,11 @@ import Network.Socket.Wait as Port
 import Network.URI
 import Path
 import Path.IO
+import Salsa.Party.DB
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Handler.Account.Organiser
+import Salsa.Party.Web.Server.Handler.Account.Party
 import Salsa.Party.Web.Server.Handler.Auth.TestUtils
 import Salsa.Party.Web.Server.TestUtils
 import System.Environment
@@ -133,6 +137,7 @@ driveSubmitOrganiser OrganiserForm {..} = do
   findElem (ByName "name") >>= sendKeys organiserFormName
   forM_ organiserFormHomepage $ \homepage -> findElem (ByName "homepage") >>= sendKeys homepage
   when organiserFormConsentReminder $ findElem (ByName "reminder-consent") >>= click
+  findElem (ById "submit") >>= submit
 
 driveAsNewUser :: TestUser -> WebdriverTestM a -> WebdriverTestM a
 driveAsNewUser testUser func = do
@@ -149,6 +154,46 @@ driveAsUser testUser func = do
   result <- func
   driveLogout
   pure result
+
+dummyAddress :: Text
+dummyAddress = "Badenerstrasse 551 Zürich"
+
+dummyCoordinates :: Coordinates
+dummyCoordinates =
+  Coordinates
+    { coordinatesLat = Latitude 47.38326,
+      coordinatesLon = Longitude 8.49898
+    }
+
+dummyPlace :: Place
+dummyPlace =
+  Place
+    { placeQuery = dummyAddress,
+      placeLat = coordinatesLat dummyCoordinates,
+      placeLon = coordinatesLon dummyCoordinates
+    }
+
+dummyAddPartyForm :: AddPartyForm
+dummyAddPartyForm =
+  AddPartyForm
+    { addPartyFormTitle = "Example Party at Rhythmia",
+      addPartyFormDay = fromGregorian 2021 08 31,
+      addPartyFormAddress = dummyAddress,
+      addPartyFormDescription = Just "Super nice party at Rhythmia\nBring friends!",
+      addPartyFormStart = Just $ TimeOfDay 19 00 00,
+      addPartyFormHomepage = Just "https://rhythmia.ch",
+      addPartyFormPrice = Just "Free",
+      addPartyFormPosterKey = Nothing
+    }
+
+driveAddParty :: AddPartyForm -> WebdriverTestM ()
+driveAddParty AddPartyForm {..} = do
+  findElem (ByLinkText "Add party") >>= click
+  findElem (ByLinkText "Single party") >>= click
+  findElem (ByName "title") >>= sendKeys addPartyFormTitle
+  findElem (ByName "day") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%F" addPartyFormDay))
+  findElem (ByName "address") >>= sendKeys addPartyFormAddress
+  findElem (ById "submit") >>= submit
 
 driveDB :: DB.SqlPersistT IO a -> WebdriverTestM a
 driveDB func = do

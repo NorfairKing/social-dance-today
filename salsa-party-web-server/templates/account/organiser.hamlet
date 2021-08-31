@@ -41,7 +41,9 @@
       
       <div .field>
         <div .control .buttons>
-          <button .button .is-dark type="submit">
+          <button #submit
+            .button .is-dark
+            type="submit">
             _{MsgOrganiserSubmitButton}
 
           $maybe Entity _ organiser <- mOrganiser
