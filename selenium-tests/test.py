@@ -50,7 +50,7 @@ driver = webdriver.Firefox(options=options)
 print("Getting homepage")
 driver.get(host)
 
-# Do a real search
+# Do a real search (done)
 print("Doing a search")
 element = driver.find_element_by_id("queryInput")
 element.send_keys("Zürich")
@@ -58,7 +58,7 @@ element.submit()
 
 wait()
 
-# Try to register
+# Try to register (done)
 print("Registering")
 driver.find_element_by_xpath('//a[contains(text(), "Sign up")]').click()
 driver.find_element_by_name("email-address").send_keys("test@example.com")
@@ -68,7 +68,7 @@ driver.find_element_by_xpath('//button[contains(text(), "Sign up")]').click()
 
 wait()
 
-# Set up an organiser profile
+# Set up an organiser profile (done)
 print("Setting up an organiser profile")
 driver.find_element_by_xpath('//a[contains(text(), "Account")]').click()
 driver.find_element_by_xpath('//a[contains(text(), "Organiser profile")]').click()
@@ -79,7 +79,7 @@ driver.find_element_by_xpath('//a[contains(text(), "View Public Profile")]').cli
 
 wait()
 
-# Submit a party
+# Submit a party (done)
 print("Submitting a party")
 driver.find_element_by_xpath('//a[contains(text(), "Add party")]').click()
 driver.find_element_by_xpath('//a[contains(text(), "Single party")]').click()
@@ -92,7 +92,7 @@ driver.find_element_by_xpath('//a[contains(text(), "Public Party Profile")]').cl
 
 wait()
 
-# Edit the party
+# Edit the party (done)
 print("Editing the party")
 driver.find_element_by_xpath('//a[contains(text(), "My parties")]').click()
 driver.find_element_by_xpath('//a[contains(text(), "Test Party")]').click()

@@ -195,6 +195,29 @@ driveAddParty AddPartyForm {..} = do
   findElem (ByName "address") >>= sendKeys addPartyFormAddress
   findElem (ById "submit") >>= submit
 
+dummyEditPartyForm :: EditPartyForm
+dummyEditPartyForm =
+  EditPartyForm
+    { editPartyFormTitle = "Example Party at Rhythmia (Edited)",
+      editPartyFormAddress = "Badenerstrasse 451 Zürich",
+      editPartyFormDescription = Just "Super nice party at Rhythmia\nBring friends! (edited)",
+      editPartyFormStart = Just $ TimeOfDay 20 00 00,
+      editPartyFormHomepage = Just "https://rhythmia2.ch",
+      editPartyFormPrice = Just "Free!!",
+      editPartyFormPosterKey = Nothing
+    }
+
+driveEditParty :: Text -> EditPartyForm -> WebdriverTestM ()
+driveEditParty title EditPartyForm {..} = do
+  findElem (ByLinkText "My parties") >>= click
+  findElem (ByLinkText title) >>= click
+  findElem (ByLinkText "Edit") >>= click
+  findElem (ByName "title") >>= clearInput
+  findElem (ByName "title") >>= sendKeys editPartyFormTitle
+  findElem (ByName "address") >>= clearInput
+  findElem (ByName "address") >>= sendKeys editPartyFormAddress
+  findElem (ById "submit") >>= submit
+
 driveDB :: DB.SqlPersistT IO a -> WebdriverTestM a
 driveDB func = do
   pool <- asks $ appConnectionPool . webdriverTestEnvApp
