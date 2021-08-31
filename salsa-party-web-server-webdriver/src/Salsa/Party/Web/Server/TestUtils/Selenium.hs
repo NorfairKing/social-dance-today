@@ -28,6 +28,7 @@ import Path.IO
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Handler.Account.Organiser
+import Salsa.Party.Web.Server.Handler.Auth.TestUtils
 import Salsa.Party.Web.Server.TestUtils
 import System.Environment
 import System.Exit

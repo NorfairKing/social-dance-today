@@ -9,6 +9,7 @@ import Database.Persist.Sql as X (Entity (..), SqlPersistT, fromSqlKey, runSqlPo
 import Salsa.Party.DB as X
 import Salsa.Party.Web.Server.Foundation as X
 import Salsa.Party.Web.Server.Gen as X
+import Salsa.Party.Web.Server.Handler.Auth.TestUtils as X
 import Salsa.Party.Web.Server.TestUtils as X
 import Test.QuickCheck as X
 import Test.Syd as X
