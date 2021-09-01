@@ -9,8 +9,10 @@ library:
   source-dirs: src
   dependencies:
   - QuickCheck
+  - bytestring
   - genvalidity-sydtest
   - http-client
+  - http-types
   - monad-control
   - mtl
   - network

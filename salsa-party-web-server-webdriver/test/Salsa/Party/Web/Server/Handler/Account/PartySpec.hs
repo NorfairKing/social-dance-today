@@ -1,6 +1,7 @@
 module Salsa.Party.Web.Server.Handler.Account.PartySpec (spec) where
 
 import Salsa.Party.Web.Server.Handler.Account.Party
+import Salsa.Party.Web.Server.Handler.Account.Party.TestUtils
 import Salsa.Party.Web.Server.Handler.TestImport
 
 spec :: WebdriverSpec
@@ -10,7 +11,8 @@ spec = do
       driveAsNewUser_ dummyUser $ do
         driveSubmitOrganiser dummyOrganiserForm
         driveDB $ insertPlace_ (addPartyFormAddress dummyAddPartyForm) coordinates
-        driveAddParty dummyAddPartyForm
+        partyUuid_ <- driveAddParty dummyAddPartyForm
+        driveDB $ verifyPartyAdded partyUuid_ dummyAddPartyForm
 
   it "can edit an existing party" $ \env ->
     forAllValid $ \coordinates1 ->
@@ -18,7 +20,8 @@ spec = do
         driveAsNewUser_ dummyUser $ do
           driveSubmitOrganiser dummyOrganiserForm
           driveDB $ insertPlace_ (addPartyFormAddress dummyAddPartyForm) coordinates1
-          driveAddParty dummyAddPartyForm
+          partyUuid_ <- driveAddParty dummyAddPartyForm
+          driveDB $ verifyPartyAdded partyUuid_ dummyAddPartyForm
           driveDB $ insertPlace_ (editPartyFormAddress dummyEditPartyForm) coordinates2
           driveEditParty (addPartyFormTitle dummyAddPartyForm) dummyEditPartyForm
 
@@ -28,7 +31,8 @@ spec = do
         driveAsNewUser_ dummyUser $ do
           driveSubmitOrganiser dummyOrganiserForm
           driveDB $ insertPlace_ (addPartyFormAddress dummyAddPartyForm) coordinates1
-          driveAddParty dummyAddPartyForm
+          partyUuid_ <- driveAddParty dummyAddPartyForm
+          driveDB $ verifyPartyAdded partyUuid_ dummyAddPartyForm
           driveDB $ insertPlace_ (addPartyFormAddress dummyDuplicatePartyForm) coordinates2
           driveDuplicateParty (addPartyFormTitle dummyAddPartyForm) dummyDuplicatePartyForm
 
@@ -37,7 +41,8 @@ spec = do
       driveAsNewUser_ dummyUser $ do
         driveSubmitOrganiser dummyOrganiserForm
         driveDB $ insertPlace_ (addPartyFormAddress dummyAddPartyForm) coordinates
-        driveAddParty dummyAddPartyForm
+        partyUuid_ <- driveAddParty dummyAddPartyForm
+        driveDB $ verifyPartyAdded partyUuid_ dummyAddPartyForm
         driveCancelParty (addPartyFormTitle dummyAddPartyForm)
 
   it "can un-cancel a cancelled party" $ \env ->
@@ -45,7 +50,8 @@ spec = do
       driveAsNewUser_ dummyUser $ do
         driveSubmitOrganiser dummyOrganiserForm
         driveDB $ insertPlace_ (addPartyFormAddress dummyAddPartyForm) coordinates
-        driveAddParty dummyAddPartyForm
+        partyUuid_ <- driveAddParty dummyAddPartyForm
+        driveDB $ verifyPartyAdded partyUuid_ dummyAddPartyForm
         driveCancelParty (addPartyFormTitle dummyAddPartyForm)
         driveUnCancelParty (addPartyFormTitle dummyAddPartyForm)
 
@@ -54,6 +60,7 @@ spec = do
       driveAsNewUser_ dummyUser $ do
         driveSubmitOrganiser dummyOrganiserForm
         driveDB $ insertPlace_ (addPartyFormAddress dummyAddPartyForm) coordinates
-        driveAddParty dummyAddPartyForm
+        partyUuid_ <- driveAddParty dummyAddPartyForm
+        driveDB $ verifyPartyAdded partyUuid_ dummyAddPartyForm
         driveCancelParty (addPartyFormTitle dummyAddPartyForm)
         driveDeleteParty (addPartyFormTitle dummyAddPartyForm)

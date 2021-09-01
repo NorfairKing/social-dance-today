@@ -18,11 +18,13 @@ import Control.Monad.Reader
 import Control.Monad.Trans.Control
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Time
 import Database.Persist (Entity (..))
 import qualified Database.Persist as DB
 import qualified Database.Persist.Sql as DB
 import Network.HTTP.Client as HTTP
+import qualified Network.HTTP.Types as HTTP
 import Network.Socket
 import Network.Socket.Free
 import Network.Socket.Wait as Port
@@ -47,6 +49,7 @@ import Test.Syd.Yesod
 import Test.WebDriver as WD
 import Test.WebDriver.Class as WD
 import Test.WebDriver.Session as WD
+import qualified Yesod
 
 newtype WebdriverTestM a = WebdriverTestM
   { unWebdriverTestM :: ReaderT WebdriverTestEnv WD a
@@ -196,7 +199,7 @@ dummyAddPartyForm =
       addPartyFormPosterKey = Nothing
     }
 
-driveAddParty :: AddPartyForm -> WebdriverTestM ()
+driveAddParty :: AddPartyForm -> WebdriverTestM EventUUID
 driveAddParty AddPartyForm {..} = do
   findElem (ByLinkText "Add party") >>= click
   findElem (ByLinkText "Single party") >>= click
@@ -204,6 +207,22 @@ driveAddParty AddPartyForm {..} = do
   findElem (ByName "day") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%F" addPartyFormDay))
   findElem (ByName "address") >>= sendKeys addPartyFormAddress
   findElem (ById "submit") >>= submit
+  route <- getCurrentRoute
+  case route of
+    (AccountR (AccountPartyR partyUuid)) -> pure partyUuid
+    _ -> liftIO $ expectationFailure "Should have been on a party route"
+
+getCurrentRoute :: WebdriverTestM (Route App)
+getCurrentRoute = do
+  currentUrl <- getCurrentURL
+  let (textPieces, query_) = HTTP.decodePath $ TE.encodeUtf8 $ T.pack currentUrl
+      queryPieces = map unJust $ HTTP.queryToQueryText query_
+  case Yesod.parseRoute (textPieces, queryPieces) of
+    Nothing -> liftIO $ expectationFailure "Should have been able to parse an App route."
+    Just route -> pure route
+  where
+    unJust (a, Just b) = (a, b)
+    unJust (a, Nothing) = (a, mempty)
 
 dummyEditPartyForm :: EditPartyForm
 dummyEditPartyForm =

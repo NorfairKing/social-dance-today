@@ -19,8 +19,10 @@ library
   build-depends:
       QuickCheck
     , base >=4.7 && <5
+    , bytestring
     , genvalidity-sydtest
     , http-client
+    , http-types
     , monad-control
     , mtl
     , network
