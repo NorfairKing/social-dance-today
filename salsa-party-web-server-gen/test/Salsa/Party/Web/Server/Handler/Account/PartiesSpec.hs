@@ -3,6 +3,7 @@
 module Salsa.Party.Web.Server.Handler.Account.PartiesSpec (spec) where
 
 import Salsa.Party.Web.Server.Handler.Account.Organiser.TestUtils
+import Salsa.Party.Web.Server.Handler.Account.Party.TestUtils
 import Salsa.Party.Web.Server.Handler.TestImport
 
 spec :: Spec
