@@ -34,7 +34,7 @@ spec = serverSpec $ do
                 testAddParty
                   partyForm_
                   location
-              verifyPartyAdded partyUuid_ partyForm_
+              testDB $ verifyPartyAdded partyUuid_ partyForm_
 
     it "Can create a party with a poster" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -48,7 +48,7 @@ spec = serverSpec $ do
                   partyForm_
                   location
                   poster_
-              verifyPartyAddedWithPoster partyUuid_ partyForm_ poster_
+              testDB $ verifyPartyAddedWithPoster partyUuid_ partyForm_ poster_
 
     it "Can create two parties with the same poster" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -68,8 +68,8 @@ spec = serverSpec $ do
                     partyForm2_
                     location
                     poster
-                verifyPartyAddedWithPoster partyUuid1 partyForm1_ poster
-                verifyPartyAddedWithPoster partyUuid2 partyForm2_ poster
+                testDB $ verifyPartyAddedWithPoster partyUuid1 partyForm1_ poster
+                testDB $ verifyPartyAddedWithPoster partyUuid2 partyForm2_ poster
 
   describe "AccountPartyR" $ do
     it "can GET a party" $ \yc -> do
@@ -162,7 +162,7 @@ spec = serverSpec $ do
                 statusIs 303
                 _ <- followRedirect
                 statusIs 200
-                verifyPartyEdited partyUuid_ editPartyForm_
+                testDB $ verifyPartyEdited partyUuid_ editPartyForm_
 
     it "Can edit a party's poster" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -190,7 +190,7 @@ spec = serverSpec $ do
                 statusIs 303
                 _ <- followRedirect
                 statusIs 200
-                verifyPartyEditedWithPoster partyUuid_ editPartyForm_ poster2
+                testDB $ verifyPartyEditedWithPoster partyUuid_ editPartyForm_ poster2
 
     it "does not update the modified time if nothing has changed while editing" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -213,7 +213,7 @@ spec = serverSpec $ do
               statusIs 303
               _ <- followRedirect
               statusIs 200
-              verifyPartyEdited partyUuid_ editPartyForm_
+              testDB $ verifyPartyEdited partyUuid_ editPartyForm_
               mPartyAfter <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
               partyAfter <- case mPartyAfter of
                 Nothing -> liftIO $ expectationFailure "Should have gotten a party"
