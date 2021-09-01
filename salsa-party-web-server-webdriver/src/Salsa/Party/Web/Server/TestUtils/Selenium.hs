@@ -215,14 +215,23 @@ driveAddParty AddPartyForm {..} = do
 getCurrentRoute :: WebdriverTestM (Route App)
 getCurrentRoute = do
   currentUrl <- getCurrentURL
-  let (textPieces, query_) = HTTP.decodePath $ TE.encodeUtf8 $ T.pack currentUrl
-      queryPieces = map unJust $ HTTP.queryToQueryText query_
-  case Yesod.parseRoute (textPieces, queryPieces) of
-    Nothing -> liftIO $ expectationFailure "Should have been able to parse an App route."
-    Just route -> pure route
+  case parseURI currentUrl of
+    Nothing -> liftIO $ expectationFailure $ "Should have been able to parse the current url into an URI: " <> currentUrl
+    Just URI {..} -> do
+      let (textPieces, query_) = HTTP.decodePath $ TE.encodeUtf8 $ T.pack $ concat [uriPath, uriQuery]
+          queryPieces = map unJust $ HTTP.queryToQueryText query_
+      case Yesod.parseRoute (textPieces, queryPieces) of
+        Nothing ->
+          liftIO $
+            expectationFailure $
+              unlines
+                [ "Should have been able to parse an App route from " <> currentUrl,
+                  ppShow (textPieces, queryPieces)
+                ]
+        Just route -> pure route
   where
     unJust (a, Just b) = (a, b)
-    unJust (a, Nothing) = (a, mempty)
+    unJust (a, Nothing) = (a, "")
 
 dummyEditPartyForm :: EditPartyForm
 dummyEditPartyForm =
