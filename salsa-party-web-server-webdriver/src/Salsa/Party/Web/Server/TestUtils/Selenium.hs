@@ -19,6 +19,8 @@ import Control.Monad.Trans.Control
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
+import Database.Persist (Entity (..))
+import qualified Database.Persist as DB
 import qualified Database.Persist.Sql as DB
 import Network.HTTP.Client as HTTP
 import Network.Socket
@@ -140,11 +142,18 @@ driveSubmitOrganiser OrganiserForm {..} = do
   when organiserFormConsentReminder $ findElem (ByName "reminder-consent") >>= click
   findElem (ById "submit") >>= submit
 
-driveAsNewUser :: TestUser -> WebdriverTestM a -> WebdriverTestM a
+driveAsNewUser_ :: TestUser -> WebdriverTestM a -> WebdriverTestM a
+driveAsNewUser_ testUser func = driveAsNewUser testUser (\_ -> func)
+
+driveAsNewUser :: TestUser -> (Entity User -> WebdriverTestM a) -> WebdriverTestM a
 driveAsNewUser testUser func = do
   openHome
   driveRegister testUser
-  result <- func
+  mUserEntity <- driveDB $ DB.getBy (UniqueUserEmailAddress (testUserEmail testUser))
+  userEntity <- case mUserEntity of
+    Nothing -> liftIO $ expectationFailure "Expected to find a user, but found none."
+    Just userEntity -> pure userEntity
+  result <- func userEntity
   driveLogout
   pure result
 

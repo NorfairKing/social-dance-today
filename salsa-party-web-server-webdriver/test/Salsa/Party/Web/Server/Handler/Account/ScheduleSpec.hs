@@ -7,7 +7,7 @@ spec :: WebdriverSpec
 spec = do
   it "can submit a new schedule" $ \env ->
     forAllValid $ \coordinates -> runWebdriverTestM env $
-      driveAsNewUser dummyUser $ do
+      driveAsNewUser_ dummyUser $ do
         driveSubmitOrganiser dummyOrganiserForm
         driveDB $ insertPlace_ (addScheduleFormAddress dummyAddScheduleForm) coordinates
         driveAddSchedule dummyAddScheduleForm
@@ -15,7 +15,7 @@ spec = do
   it "can edit an existing schedule" $ \env ->
     forAllValid $ \coordinates1 ->
       forAllValid $ \coordinates2 -> runWebdriverTestM env $
-        driveAsNewUser dummyUser $ do
+        driveAsNewUser_ dummyUser $ do
           driveSubmitOrganiser dummyOrganiserForm
           driveDB $ insertPlace_ (addScheduleFormAddress dummyAddScheduleForm) coordinates1
           driveAddSchedule dummyAddScheduleForm
@@ -24,7 +24,7 @@ spec = do
 
   it "can delete a schedule" $ \env ->
     forAllValid $ \coordinates -> runWebdriverTestM env $
-      driveAsNewUser dummyUser $ do
+      driveAsNewUser_ dummyUser $ do
         driveSubmitOrganiser dummyOrganiserForm
         driveDB $ insertPlace_ (addScheduleFormAddress dummyAddScheduleForm) coordinates
         driveAddSchedule dummyAddScheduleForm

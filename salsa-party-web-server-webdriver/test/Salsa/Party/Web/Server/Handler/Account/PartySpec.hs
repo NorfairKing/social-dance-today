@@ -7,7 +7,7 @@ spec :: WebdriverSpec
 spec = do
   it "can submit a new party" $ \env ->
     forAllValid $ \coordinates -> runWebdriverTestM env $
-      driveAsNewUser dummyUser $ do
+      driveAsNewUser_ dummyUser $ do
         driveSubmitOrganiser dummyOrganiserForm
         driveDB $ insertPlace_ (addPartyFormAddress dummyAddPartyForm) coordinates
         driveAddParty dummyAddPartyForm
@@ -15,7 +15,7 @@ spec = do
   it "can edit an existing party" $ \env ->
     forAllValid $ \coordinates1 ->
       forAllValid $ \coordinates2 -> runWebdriverTestM env $
-        driveAsNewUser dummyUser $ do
+        driveAsNewUser_ dummyUser $ do
           driveSubmitOrganiser dummyOrganiserForm
           driveDB $ insertPlace_ (addPartyFormAddress dummyAddPartyForm) coordinates1
           driveAddParty dummyAddPartyForm
@@ -25,7 +25,7 @@ spec = do
   it "can duplicate an existing party" $ \env ->
     forAllValid $ \coordinates1 ->
       forAllValid $ \coordinates2 -> runWebdriverTestM env $
-        driveAsNewUser dummyUser $ do
+        driveAsNewUser_ dummyUser $ do
           driveSubmitOrganiser dummyOrganiserForm
           driveDB $ insertPlace_ (addPartyFormAddress dummyAddPartyForm) coordinates1
           driveAddParty dummyAddPartyForm
@@ -34,7 +34,7 @@ spec = do
 
   it "can cancel an existing party" $ \env ->
     forAllValid $ \coordinates -> runWebdriverTestM env $
-      driveAsNewUser dummyUser $ do
+      driveAsNewUser_ dummyUser $ do
         driveSubmitOrganiser dummyOrganiserForm
         driveDB $ insertPlace_ (addPartyFormAddress dummyAddPartyForm) coordinates
         driveAddParty dummyAddPartyForm
@@ -42,7 +42,7 @@ spec = do
 
   it "can un-cancel a cancelled party" $ \env ->
     forAllValid $ \coordinates -> runWebdriverTestM env $
-      driveAsNewUser dummyUser $ do
+      driveAsNewUser_ dummyUser $ do
         driveSubmitOrganiser dummyOrganiserForm
         driveDB $ insertPlace_ (addPartyFormAddress dummyAddPartyForm) coordinates
         driveAddParty dummyAddPartyForm
@@ -51,7 +51,7 @@ spec = do
 
   it "can delete a cancelled party" $ \env ->
     forAllValid $ \coordinates -> runWebdriverTestM env $
-      driveAsNewUser dummyUser $ do
+      driveAsNewUser_ dummyUser $ do
         driveSubmitOrganiser dummyOrganiserForm
         driveDB $ insertPlace_ (addPartyFormAddress dummyAddPartyForm) coordinates
         driveAddParty dummyAddPartyForm
