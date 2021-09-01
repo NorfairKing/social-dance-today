@@ -6,14 +6,19 @@
 
 module Salsa.Party.Web.Server.Handler.Auth.TestUtils where
 
+import Control.Monad.IO.Class
 import Data.GenValidity
 import Data.Text (Text)
+import Database.Persist (Entity (..))
+import qualified Database.Persist as DB
 import GHC.Generics (Generic)
+import Salsa.Party.DB
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Gen
 import Salsa.Party.Web.Server.TestUtils
 import Test.QuickCheck
+import Test.Syd
 import Test.Syd.Validity
 import Test.Syd.Yesod
 import Yesod.Auth
@@ -98,14 +103,18 @@ testLogout = do
   statusIs 200
 
 withAnyLoggedInUser_ :: YesodClient App -> YesodClientM App () -> Property
-withAnyLoggedInUser_ yc func = withAnyLoggedInUser yc (\_ -> func)
+withAnyLoggedInUser_ yc func = withAnyLoggedInUser yc (\_ _ -> func)
 
-withAnyLoggedInUser :: YesodClient App -> (TestUser -> YesodClientM App ()) -> Property
+withAnyLoggedInUser :: YesodClient App -> (Entity User -> TestUser -> YesodClientM App ()) -> Property
 withAnyLoggedInUser yc func =
   forAllValid $ \testUser ->
     runYesodClientM yc $ do
       testRegisterUser testUser
-      func testUser
+      mUser <- testDB $ DB.getBy (UniqueUserEmailAddress (testUserEmail testUser))
+      userEntity <- liftIO $ case mUser of
+        Nothing -> expectationFailure "Expected to find a user, but found none."
+        Just userEntity -> pure userEntity
+      func userEntity testUser
 
 -- We use a withX function here instead of a login so we don't accidentally register as admin twice.
 withLoggedInAdmin :: YesodClientM App () -> YesodClientM App ()
