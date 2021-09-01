@@ -20,10 +20,11 @@ spec = do
         driveAsNewUser_ dummyUser $ do
           driveSubmitOrganiser dummyOrganiserForm
           driveDB $ insertPlace_ (addPartyFormAddress dummyAddPartyForm) coordinates1
-          partyUuid_ <- driveAddParty dummyAddPartyForm
-          driveDB $ verifyPartyAdded partyUuid_ dummyAddPartyForm
+          partyUuidBefore <- driveAddParty dummyAddPartyForm
           driveDB $ insertPlace_ (editPartyFormAddress dummyEditPartyForm) coordinates2
-          driveEditParty (addPartyFormTitle dummyAddPartyForm) dummyEditPartyForm
+          partyUuidAfter <- driveEditParty (addPartyFormTitle dummyAddPartyForm) dummyEditPartyForm
+          liftIO $ partyUuidBefore `shouldBe` partyUuidAfter
+          driveDB $ verifyPartyEdited partyUuidAfter dummyEditPartyForm
 
   it "can duplicate an existing party" $ \env ->
     forAllValid $ \coordinates1 ->
@@ -34,7 +35,9 @@ spec = do
           partyUuid_ <- driveAddParty dummyAddPartyForm
           driveDB $ verifyPartyAdded partyUuid_ dummyAddPartyForm
           driveDB $ insertPlace_ (addPartyFormAddress dummyDuplicatePartyForm) coordinates2
-          driveDuplicateParty (addPartyFormTitle dummyAddPartyForm) dummyDuplicatePartyForm
+          duplicatePartyUuid <- driveDuplicateParty (addPartyFormTitle dummyAddPartyForm) dummyDuplicatePartyForm
+          liftIO $ partyUuid_ `shouldNotBe` duplicatePartyUuid
+          driveDB $ verifyPartyAdded duplicatePartyUuid dummyDuplicatePartyForm
 
   it "can cancel an existing party" $ \env ->
     forAllValid $ \coordinates -> runWebdriverTestM env $

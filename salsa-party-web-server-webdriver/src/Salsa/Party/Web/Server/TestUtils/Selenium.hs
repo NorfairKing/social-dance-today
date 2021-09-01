@@ -245,7 +245,7 @@ dummyEditPartyForm =
       editPartyFormPosterKey = Nothing
     }
 
-driveEditParty :: Text -> EditPartyForm -> WebdriverTestM ()
+driveEditParty :: Text -> EditPartyForm -> WebdriverTestM EventUUID
 driveEditParty title EditPartyForm {..} = do
   findElem (ByLinkText "My parties") >>= click
   findElem (ByLinkText title) >>= click
@@ -255,6 +255,10 @@ driveEditParty title EditPartyForm {..} = do
   findElem (ByName "address") >>= clearInput
   findElem (ByName "address") >>= sendKeys editPartyFormAddress
   findElem (ById "submit") >>= submit
+  route <- getCurrentRoute
+  case route of
+    (AccountR (AccountPartyR partyUuid)) -> pure partyUuid
+    _ -> liftIO $ expectationFailure "Should have been on a party route"
 
 dummyDuplicatePartyForm :: AddPartyForm
 dummyDuplicatePartyForm =
@@ -269,7 +273,7 @@ dummyDuplicatePartyForm =
       addPartyFormPosterKey = Nothing
     }
 
-driveDuplicateParty :: Text -> AddPartyForm -> WebdriverTestM ()
+driveDuplicateParty :: Text -> AddPartyForm -> WebdriverTestM EventUUID
 driveDuplicateParty title AddPartyForm {..} = do
   findElem (ByLinkText "My parties") >>= click
   findElem (ByLinkText title) >>= click
@@ -280,6 +284,10 @@ driveDuplicateParty title AddPartyForm {..} = do
   findElem (ByName "address") >>= clearInput
   findElem (ByName "address") >>= sendKeys addPartyFormAddress
   findElem (ById "submit") >>= submit
+  route <- getCurrentRoute
+  case route of
+    (AccountR (AccountPartyR partyUuid)) -> pure partyUuid
+    _ -> liftIO $ expectationFailure "Should have been on a party route"
 
 driveCancelParty :: Text -> WebdriverTestM ()
 driveCancelParty title = do

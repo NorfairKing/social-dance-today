@@ -89,21 +89,24 @@ addPartyFormToEditPartyForm AddPartyForm {..} =
    in EditPartyForm {..}
 
 addPartyFormShouldMatch :: AddPartyForm -> Party -> IO ()
-addPartyFormShouldMatch AddPartyForm {..} Party {..} = do
-  let AddPartyForm _ _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
-  context "day" $ partyDay `shouldBe` addPartyFormDay
-  context "title" $ partyTitle `shouldBe` addPartyFormTitle
-  -- We can't check the address because that's in the Place.
-  -- partyAddress `shouldBe` addPartyFormAddress
-  context "description" $ partyDescription `shouldBe` unTextarea <$> addPartyFormDescription
-  context "start" $ do
-    -- We only care about what the time looks like, nothing about precision.
-    let showMTime = maybe "" $ formatTime defaultTimeLocale "%H:%M"
-    showMTime partyStart `shouldBe` showMTime addPartyFormStart
-  context "homepage" $ partyHomepage `shouldBe` addPartyFormHomepage
-  context "price" $ partyPrice `shouldBe` addPartyFormPrice
-  -- We can't check the poster because it's in a separate table.
-  pure ()
+addPartyFormShouldMatch addPartyForm_@AddPartyForm {..} party@Party {..} = do
+  let ctx = unlines ["Add party form", ppShow addPartyForm_, "Party", ppShow party]
+  context ctx $ do
+    let AddPartyForm _ _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
+    let Party _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+    context "day" $ partyDay `shouldBe` addPartyFormDay
+    context "title" $ partyTitle `shouldBe` addPartyFormTitle
+    -- We can't check the address because that's in the Place.
+    -- partyAddress `shouldBe` addPartyFormAddress
+    context "description" $ partyDescription `shouldBe` unTextarea <$> addPartyFormDescription
+    context "start" $ do
+      -- We only care about what the time looks like, nothing about precision.
+      let showMTime = maybe "" $ formatTime defaultTimeLocale "%H:%M"
+      showMTime partyStart `shouldBe` showMTime addPartyFormStart
+    context "homepage" $ partyHomepage `shouldBe` addPartyFormHomepage
+    context "price" $ partyPrice `shouldBe` addPartyFormPrice
+    -- We can't check the poster because it's in a separate table.
+    pure ()
 
 testEditParty :: EventUUID -> EditPartyForm -> Coordinates -> YesodClientM App ()
 testEditParty partyUuid_ partyForm_ coordinates_ = testEditPartyHelper partyUuid_ partyForm_ coordinates_ Nothing
@@ -153,17 +156,20 @@ verifyPartyEditedHelper partyUuid_ editPartyForm_ mPoster = do
       liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
 
 editPartyFormShouldMatch :: EditPartyForm -> Party -> IO ()
-editPartyFormShouldMatch EditPartyForm {..} Party {..} = do
-  let EditPartyForm _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
-  context "title" $ partyTitle `shouldBe` editPartyFormTitle
-  -- We can't check the address because that's in the Place.
-  -- partyAddress `shouldBe` editPartyFormAddress
-  context "description" $ partyDescription `shouldBe` unTextarea <$> editPartyFormDescription
-  context "start" $ do
-    -- We only care about what the time looks like, nothing about precision.
-    let showMTime = maybe "" $ formatTime defaultTimeLocale "%H:%M"
-    showMTime partyStart `shouldBe` showMTime editPartyFormStart
-  context "homepage" $ partyHomepage `shouldBe` editPartyFormHomepage
-  context "price" $ partyPrice `shouldBe` editPartyFormPrice
-  -- We can't check the poster because it's in a separate table.
-  pure ()
+editPartyFormShouldMatch editPartyForm_@EditPartyForm {..} party@Party {..} = do
+  let ctx = unlines ["Edit party form", ppShow editPartyForm_, "Party", ppShow party]
+  context ctx $ do
+    let EditPartyForm _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
+    let Party _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+    context "title" $ partyTitle `shouldBe` editPartyFormTitle
+    -- We can't check the address because that's in the Place.
+    -- partyAddress `shouldBe` editPartyFormAddress
+    context "description" $ partyDescription `shouldBe` unTextarea <$> editPartyFormDescription
+    context "start" $ do
+      -- We only care about what the time looks like, nothing about precision.
+      let showMTime = maybe "" $ formatTime defaultTimeLocale "%H:%M"
+      showMTime partyStart `shouldBe` showMTime editPartyFormStart
+    context "homepage" $ partyHomepage `shouldBe` editPartyFormHomepage
+    context "price" $ partyPrice `shouldBe` editPartyFormPrice
+    -- We can't check the poster because it's in a separate table.
+    pure ()
