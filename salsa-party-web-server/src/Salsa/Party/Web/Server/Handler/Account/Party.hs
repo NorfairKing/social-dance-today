@@ -113,7 +113,7 @@ addParty organiserId AddPartyForm {..} mFileInfo = do
             { partyUuid = uuid,
               partyOrganiser = organiserId,
               partyTitle = addPartyFormTitle,
-              partyDescription = unTextarea <$> addPartyFormDescription,
+              partyDescription = normaliseNewlines . unTextarea <$> addPartyFormDescription,
               partyDay = addPartyFormDay,
               partyStart = addPartyFormStart,
               partyHomepage = addPartyFormHomepage,
@@ -287,7 +287,7 @@ editParty (Entity partyId party) form mFileInfo = do
       fieldUpdates =
         catMaybes
           [ whenChanged partyTitle editPartyFormTitle PartyTitle,
-            whenChanged partyDescription (fmap unTextarea . editPartyFormDescription) PartyDescription,
+            whenChanged partyDescription (fmap (normaliseNewlines . unTextarea) . editPartyFormDescription) PartyDescription,
             -- Purposely don't update the day so that partygoers can't have the rug pulled under them
             whenChanged partyStart editPartyFormStart PartyStart,
             whenChanged partyHomepage editPartyFormHomepage PartyHomepage,

@@ -1,5 +1,6 @@
 module Salsa.Party.Web.Server.Handler.Account.PartySpec (spec) where
 
+import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Handler.Account.Party
 import Salsa.Party.Web.Server.Handler.Account.Party.TestUtils
 import Salsa.Party.Web.Server.Handler.TestImport
@@ -47,6 +48,10 @@ spec = do
         partyUuid_ <- driveAddParty dummyAddPartyForm
         driveDB $ verifyPartyAdded partyUuid_ dummyAddPartyForm
         driveCancelParty (addPartyFormTitle dummyAddPartyForm)
+        mPartyEntity <- driveDB $ DB.getBy (UniquePartyUUID partyUuid_)
+        liftIO $ case mPartyEntity of
+          Nothing -> expectationFailure "Should have still found a party"
+          Just (Entity _ party) -> partyCancelled party `shouldBe` True
 
   it "can un-cancel a cancelled party" $ \env ->
     forAllValid $ \coordinates -> runWebdriverTestM env $
@@ -57,6 +62,10 @@ spec = do
         driveDB $ verifyPartyAdded partyUuid_ dummyAddPartyForm
         driveCancelParty (addPartyFormTitle dummyAddPartyForm)
         driveUnCancelParty (addPartyFormTitle dummyAddPartyForm)
+        mPartyEntity <- driveDB $ DB.getBy (UniquePartyUUID partyUuid_)
+        liftIO $ case mPartyEntity of
+          Nothing -> expectationFailure "Should have still found a party"
+          Just (Entity _ party) -> partyCancelled party `shouldBe` False
 
   it "can delete a cancelled party" $ \env ->
     forAllValid $ \coordinates -> runWebdriverTestM env $
@@ -67,3 +76,7 @@ spec = do
         driveDB $ verifyPartyAdded partyUuid_ dummyAddPartyForm
         driveCancelParty (addPartyFormTitle dummyAddPartyForm)
         driveDeleteParty (addPartyFormTitle dummyAddPartyForm)
+        mPartyEntity <- driveDB $ DB.getBy (UniquePartyUUID partyUuid_)
+        case mPartyEntity of
+          Nothing -> pure ()
+          Just _ -> liftIO $ expectationFailure "Shouldn't have found a party anymore."

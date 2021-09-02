@@ -90,7 +90,13 @@ addPartyFormToEditPartyForm AddPartyForm {..} =
 
 addPartyFormShouldMatch :: AddPartyForm -> Party -> IO ()
 addPartyFormShouldMatch addPartyForm_@AddPartyForm {..} party@Party {..} = do
-  let ctx = unlines ["Add party form", ppShow addPartyForm_, "Party", ppShow party]
+  let ctx =
+        unlines
+          [ "Add party form",
+            ppShow addPartyForm_,
+            "Party",
+            ppShow party
+          ]
   context ctx $ do
     let AddPartyForm _ _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
     let Party _ _ _ _ _ _ _ _ _ _ _ _ = undefined
@@ -157,7 +163,13 @@ verifyPartyEditedHelper partyUuid_ editPartyForm_ mPoster = do
 
 editPartyFormShouldMatch :: EditPartyForm -> Party -> IO ()
 editPartyFormShouldMatch editPartyForm_@EditPartyForm {..} party@Party {..} = do
-  let ctx = unlines ["Edit party form", ppShow editPartyForm_, "Party", ppShow party]
+  let ctx =
+        unlines
+          [ "Edit party form",
+            ppShow editPartyForm_,
+            "Party",
+            ppShow party
+          ]
   context ctx $ do
     let EditPartyForm _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
     let Party _ _ _ _ _ _ _ _ _ _ _ _ = undefined

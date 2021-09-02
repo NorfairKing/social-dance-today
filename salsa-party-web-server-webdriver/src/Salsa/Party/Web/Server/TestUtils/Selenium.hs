@@ -10,6 +10,8 @@
 {-# LANGUAGE UndecidableInstances #-}
 -- Because of webdriver using dangerous constructors
 {-# OPTIONS_GHC -fno-warn-incomplete-record-updates #-}
+-- For the undefined trick
+{-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Salsa.Party.Web.Server.TestUtils.Selenium where
 
@@ -39,7 +41,6 @@ import Salsa.Party.Web.Server.Handler.Account.Party
 import Salsa.Party.Web.Server.Handler.Account.Schedule
 import Salsa.Party.Web.Server.Handler.Auth.TestUtils
 import Salsa.Party.Web.Server.TestUtils
-import System.Environment
 import System.Exit
 import System.Process.Typed
 import Test.Syd
@@ -201,11 +202,16 @@ dummyAddPartyForm =
 
 driveAddParty :: AddPartyForm -> WebdriverTestM EventUUID
 driveAddParty AddPartyForm {..} = do
+  let AddPartyForm _ _ _ _ _ _ _ _ = undefined
   findElem (ByLinkText "Add party") >>= click
   findElem (ByLinkText "Single party") >>= click
   findElem (ByName "title") >>= sendKeys addPartyFormTitle
-  findElem (ByName "day") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%F" addPartyFormDay))
+  findElem (ByName "day") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%m%d%Y" addPartyFormDay))
   findElem (ByName "address") >>= sendKeys addPartyFormAddress
+  forM_ addPartyFormDescription $ \description -> findElem (ByName "description") >>= sendKeys (Yesod.unTextarea description)
+  forM_ addPartyFormStart $ \start -> findElem (ByName "start") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%I%M%p" start))
+  forM_ addPartyFormHomepage $ \homepage -> findElem (ByName "homepage") >>= sendKeys homepage
+  forM_ addPartyFormPrice $ \price -> findElem (ByName "price") >>= sendKeys price
   findElem (ById "submit") >>= submit
   route <- getCurrentRoute
   case route of
@@ -247,6 +253,7 @@ dummyEditPartyForm =
 
 driveEditParty :: Text -> EditPartyForm -> WebdriverTestM EventUUID
 driveEditParty title EditPartyForm {..} = do
+  let EditPartyForm _ _ _ _ _ _ _ = undefined
   findElem (ByLinkText "My parties") >>= click
   findElem (ByLinkText title) >>= click
   findElem (ByLinkText "Edit") >>= click
@@ -254,11 +261,19 @@ driveEditParty title EditPartyForm {..} = do
   findElem (ByName "title") >>= sendKeys editPartyFormTitle
   findElem (ByName "address") >>= clearInput
   findElem (ByName "address") >>= sendKeys editPartyFormAddress
+  findElem (ByName "description") >>= clearInput
+  forM_ editPartyFormDescription $ \description -> findElem (ByName "description") >>= sendKeys (Yesod.unTextarea description)
+  findElem (ByName "start") >>= clearInput
+  forM_ editPartyFormStart $ \start -> findElem (ByName "start") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%I%M%p" start))
+  findElem (ByName "homepage") >>= clearInput
+  forM_ editPartyFormHomepage $ \homepage -> findElem (ByName "homepage") >>= sendKeys homepage
+  findElem (ByName "price") >>= clearInput
+  forM_ editPartyFormPrice $ \price -> findElem (ByName "price") >>= sendKeys price
   findElem (ById "submit") >>= submit
   route <- getCurrentRoute
   case route of
-    (AccountR (AccountPartyR partyUuid)) -> pure partyUuid
-    _ -> liftIO $ expectationFailure "Should have been on a party route"
+    (AccountR (AccountPartyEditR partyUuid)) -> pure partyUuid
+    _ -> liftIO $ expectationFailure $ "Should have been on a party route, but was: " <> show route
 
 dummyDuplicatePartyForm :: AddPartyForm
 dummyDuplicatePartyForm =
@@ -275,19 +290,28 @@ dummyDuplicatePartyForm =
 
 driveDuplicateParty :: Text -> AddPartyForm -> WebdriverTestM EventUUID
 driveDuplicateParty title AddPartyForm {..} = do
+  let AddPartyForm _ _ _ _ _ _ _ _ = undefined
   findElem (ByLinkText "My parties") >>= click
   findElem (ByLinkText title) >>= click
   findElem (ByLinkText "Duplicate") >>= click
   findElem (ByName "title") >>= clearInput
   findElem (ByName "title") >>= sendKeys addPartyFormTitle
-  findElem (ByName "day") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%F" addPartyFormDay))
+  findElem (ByName "day") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%m%d%Y" addPartyFormDay))
   findElem (ByName "address") >>= clearInput
   findElem (ByName "address") >>= sendKeys addPartyFormAddress
+  findElem (ByName "description") >>= clearInput
+  forM_ addPartyFormDescription $ \description -> findElem (ByName "description") >>= sendKeys (Yesod.unTextarea description)
+  findElem (ByName "start") >>= clearInput
+  forM_ addPartyFormStart $ \start -> findElem (ByName "start") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%I%M%p" start))
+  findElem (ByName "homepage") >>= clearInput
+  forM_ addPartyFormHomepage $ \homepage -> findElem (ByName "homepage") >>= sendKeys homepage
+  findElem (ByName "price") >>= clearInput
+  forM_ addPartyFormPrice $ \price -> findElem (ByName "price") >>= sendKeys price
   findElem (ById "submit") >>= submit
   route <- getCurrentRoute
   case route of
     (AccountR (AccountPartyR partyUuid)) -> pure partyUuid
-    _ -> liftIO $ expectationFailure "Should have been on a party route"
+    _ -> liftIO $ expectationFailure $ "Should have been on a party route, but was: " <> show route
 
 driveCancelParty :: Text -> WebdriverTestM ()
 driveCancelParty title = do
@@ -307,6 +331,8 @@ driveDeleteParty title = do
   findElem (ByLinkText ("CANCELLED: " <> title)) >>= click
   findElem (ByXPath "//button[contains(text(), 'Delete')]") >>= click
   acceptAlert
+  -- Wait for refresh
+  findElem (ByLinkText "My parties") >>= click
 
 dummyAddScheduleForm :: AddScheduleForm
 dummyAddScheduleForm =
@@ -390,8 +416,6 @@ webdriverTestEnvSetupFunc SeleniumServerHandle {..} manager YesodClient {..} = d
 
   userDataDir <- tempDirSetupFunc "chromium-user-data"
 
-  mEnv <- liftIO $ lookupEnv "EXTRA_CHROMIUM_ARGS"
-  let extraVars = maybe [] words mEnv
   let browser =
         chrome
           { chromeOptions =
@@ -403,8 +427,7 @@ webdriverTestEnvSetupFunc SeleniumServerHandle {..} manager YesodClient {..} = d
                 "--use-gl=angle",
                 "--use-angle=swiftshader",
                 "--window-size=1920,1080"
-              ]
-                ++ extraVars,
+              ],
             chromeBinary = Just $ fromAbsFile chromeExecutable
           }
   let caps =
