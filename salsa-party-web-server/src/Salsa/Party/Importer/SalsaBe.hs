@@ -50,7 +50,8 @@ func = do
   let yesterday = addDays (-1) today
       endDay = addDays daysToImportAhead today
   requestPrototype <- liftIO $ parseRequest "http://www.salsa.be/vcalendar/search.php"
-  let formatDay = TE.encodeUtf8 . T.pack . formatTime defaultTimeLocale "%e/%m/%Y"
+  -- We need to T.strip because %e uses space-padding, which we can't have, but there's also no formatting character for non-space-padded-single-character-days.
+  let formatDay = TE.encodeUtf8 . T.strip . T.pack . formatTime defaultTimeLocale "%e/%m/%Y"
   let queryParams = [("s_keyword", Nothing), ("s_category", Nothing), ("s_event_date_from", Just $ formatDay yesterday), ("s_event_date_to", Just $ formatDay endDay)]
   let request = setQueryString queryParams requestPrototype
   runConduit $
