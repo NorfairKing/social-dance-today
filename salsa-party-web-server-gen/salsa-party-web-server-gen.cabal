@@ -14,6 +14,7 @@ library
       Salsa.Party.Web.Server.Gen
       Salsa.Party.Web.Server.Handler.Account.Organiser.TestUtils
       Salsa.Party.Web.Server.Handler.Account.Party.TestUtils
+      Salsa.Party.Web.Server.Handler.Account.Schedule.TestUtils
       Salsa.Party.Web.Server.Handler.Auth.TestUtils
       Salsa.Party.Web.Server.TestUtils
   other-modules:
