@@ -141,3 +141,10 @@ withLoggedInAdmin :: YesodClientM App () -> YesodClientM App ()
 withLoggedInAdmin func = do
   _ <- testRegister adminEmail adminPassword
   func
+
+verifyAccountDeleted :: MonadIO m => UserId -> SqlPersistT m ()
+verifyAccountDeleted userId = do
+  mUser <- DB.get userId
+  case mUser of
+    Nothing -> pure ()
+    Just _ -> liftIO $ expectationFailure "Should not have found a user anymore."

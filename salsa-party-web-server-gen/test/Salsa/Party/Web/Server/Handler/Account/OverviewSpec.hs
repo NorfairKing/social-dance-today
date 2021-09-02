@@ -2,7 +2,6 @@
 
 module Salsa.Party.Web.Server.Handler.Account.OverviewSpec (spec) where
 
-import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Handler.TestImport
 
 spec :: Spec
@@ -19,7 +18,7 @@ spec = serverSpec $ do
 
   describe "AccountDeleteR" $
     it "can delete an account when logged in" $ \yc ->
-      withAnyLoggedInUser_ yc $ do
+      withAnyLoggedInUser yc $ \(Entity userId _) _ -> do
         get $ AccountR AccountOverviewR
         statusIs 200
         post $ AccountR AccountDeleteR
@@ -29,5 +28,4 @@ spec = serverSpec $ do
         _ <- followRedirect
         statusIs 200
         -- User doesn't exist anymore
-        count <- testDB $ DB.count ([] :: [DB.Filter User])
-        liftIO $ count `shouldBe` 0
+        testDB $ verifyAccountDeleted userId

@@ -133,6 +133,9 @@ driveDeleteAccount :: WebdriverTestM ()
 driveDeleteAccount = do
   findElem (ById "nav-account") >>= click
   findElem (ById "delete-account") >>= click
+  acceptAlert
+  -- Wait for refresh
+  waitUntil 5 $ void $ findElem (ById "queryInput")
 
 dummyOrganiserForm :: OrganiserForm
 dummyOrganiserForm =

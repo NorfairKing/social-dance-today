@@ -27,5 +27,6 @@ spec = do
   describe "Account deletion" $
     it "can delete the account after registering" $ do
       openHome
-      _ <- driveRegister dummyUser
+      Entity userId _ <- driveRegister dummyUser
       driveDeleteAccount
+      driveDB $ verifyAccountDeleted userId
