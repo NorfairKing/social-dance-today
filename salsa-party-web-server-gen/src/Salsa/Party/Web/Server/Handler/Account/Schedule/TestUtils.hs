@@ -9,6 +9,7 @@ import qualified Data.Text as T
 import Data.Time
 import Database.Persist (Entity (..))
 import qualified Database.Persist as DB
+import Database.Persist.Sql (SqlPersistT)
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
@@ -56,24 +57,24 @@ addScheduleFormRequestBuilder AddScheduleForm {..} mPosterFile = do
   forM_ addScheduleFormPrice $ \price -> addPostParam "price" price
   forM_ mPosterFile $ \TestFile {..} -> addFileWith "poster" testFilePath testFileContents testFileType
 
-verifyScheduleAdded :: ScheduleUUID -> AddScheduleForm -> YesodClientM App ()
+verifyScheduleAdded :: MonadIO m => ScheduleUUID -> AddScheduleForm -> SqlPersistT m ()
 verifyScheduleAdded scheduleUuid_ addScheduleForm_ = verifyScheduleAddedHelper scheduleUuid_ addScheduleForm_ Nothing
 
-verifyScheduleAddedWithPoster :: ScheduleUUID -> AddScheduleForm -> TestFile -> YesodClientM App ()
+verifyScheduleAddedWithPoster :: MonadIO m => ScheduleUUID -> AddScheduleForm -> TestFile -> SqlPersistT m ()
 verifyScheduleAddedWithPoster scheduleUuid_ addScheduleForm_ poster = verifyScheduleAddedHelper scheduleUuid_ addScheduleForm_ (Just poster)
 
-verifyScheduleAddedHelper :: ScheduleUUID -> AddScheduleForm -> Maybe TestFile -> YesodClientM App ()
+verifyScheduleAddedHelper :: MonadIO m => ScheduleUUID -> AddScheduleForm -> Maybe TestFile -> SqlPersistT m ()
 verifyScheduleAddedHelper scheduleUuid_ addScheduleForm_ mPoster = do
-  mSchedule <- testDB $ DB.getBy $ UniqueScheduleUUID scheduleUuid_
+  mSchedule <- DB.getBy $ UniqueScheduleUUID scheduleUuid_
   case mSchedule of
     Nothing -> liftIO $ expectationFailure "expected the added schedule to still exist."
     Just (Entity scheduleId schedule) -> do
       liftIO $ addScheduleForm_ `addScheduleFormShouldMatch` schedule
-      mPlace <- testDB $ DB.get $ schedulePlace schedule
+      mPlace <- DB.get $ schedulePlace schedule
       liftIO $ case mPlace of
         Nothing -> expectationFailure "expected the added schedule to still have a place"
         Just place -> placeQuery place `shouldBe` addScheduleFormAddress addScheduleForm_
-      mCASKey <- testDB $ getPosterForSchedule scheduleId
+      mCASKey <- getPosterForSchedule scheduleId
       liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
 
 addScheduleFormShouldMatch :: AddScheduleForm -> Schedule -> IO ()
@@ -132,24 +133,24 @@ editScheduleFormRequestBuilder scheduleUuid_ EditScheduleForm {..} mPosterFile =
   forM_ editScheduleFormPrice $ \price -> addPostParam "price" price
   forM_ mPosterFile $ \TestFile {..} -> addFileWith "poster" testFilePath testFileContents testFileType
 
-verifyScheduleEdited :: ScheduleUUID -> EditScheduleForm -> YesodClientM App ()
+verifyScheduleEdited :: MonadIO m => ScheduleUUID -> EditScheduleForm -> SqlPersistT m ()
 verifyScheduleEdited scheduleUuid_ editScheduleForm_ = verifyScheduleEditedHelper scheduleUuid_ editScheduleForm_ Nothing
 
-verifyScheduleEditedWithPoster :: ScheduleUUID -> EditScheduleForm -> TestFile -> YesodClientM App ()
+verifyScheduleEditedWithPoster :: MonadIO m => ScheduleUUID -> EditScheduleForm -> TestFile -> SqlPersistT m ()
 verifyScheduleEditedWithPoster scheduleUuid_ editScheduleForm_ poster = verifyScheduleEditedHelper scheduleUuid_ editScheduleForm_ (Just poster)
 
-verifyScheduleEditedHelper :: ScheduleUUID -> EditScheduleForm -> Maybe TestFile -> YesodClientM App ()
+verifyScheduleEditedHelper :: MonadIO m => ScheduleUUID -> EditScheduleForm -> Maybe TestFile -> SqlPersistT m ()
 verifyScheduleEditedHelper scheduleUuid_ editScheduleForm_ mPoster = do
-  mSchedule <- testDB $ DB.getBy $ UniqueScheduleUUID scheduleUuid_
+  mSchedule <- DB.getBy $ UniqueScheduleUUID scheduleUuid_
   case mSchedule of
     Nothing -> liftIO $ expectationFailure "expected the edited schedule to still exist."
     Just (Entity scheduleId schedule) -> do
       liftIO $ editScheduleForm_ `editScheduleFormShouldMatch` schedule
-      mPlace <- testDB $ DB.get $ schedulePlace schedule
+      mPlace <- DB.get $ schedulePlace schedule
       liftIO $ case mPlace of
         Nothing -> expectationFailure "expected the edited schedule to still have a place"
         Just place -> placeQuery place `shouldBe` editScheduleFormAddress editScheduleForm_
-      mCASKey <- testDB $ getPosterForSchedule scheduleId
+      mCASKey <- getPosterForSchedule scheduleId
       liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
 
 editScheduleFormShouldMatch :: EditScheduleForm -> Schedule -> IO ()
@@ -169,24 +170,24 @@ editScheduleFormShouldMatch EditScheduleForm {..} Schedule {..} = do
   -- We can't check the poster because it's in a separate table.
   pure ()
 
-verifyScheduleAddedParty :: EventUUID -> AddScheduleForm -> YesodClientM App ()
+verifyScheduleAddedParty :: MonadIO m => EventUUID -> AddScheduleForm -> SqlPersistT m ()
 verifyScheduleAddedParty eventUuid_ addScheduleForm_ = verifyScheduleAddedPartyHelper eventUuid_ addScheduleForm_ Nothing
 
-verifyScheduleAddedPartyWithPoster :: EventUUID -> AddScheduleForm -> TestFile -> YesodClientM App ()
+verifyScheduleAddedPartyWithPoster :: MonadIO m => EventUUID -> AddScheduleForm -> TestFile -> SqlPersistT m ()
 verifyScheduleAddedPartyWithPoster eventUuid_ addScheduleForm_ poster = verifyScheduleAddedPartyHelper eventUuid_ addScheduleForm_ (Just poster)
 
-verifyScheduleAddedPartyHelper :: EventUUID -> AddScheduleForm -> Maybe TestFile -> YesodClientM App ()
+verifyScheduleAddedPartyHelper :: MonadIO m => EventUUID -> AddScheduleForm -> Maybe TestFile -> SqlPersistT m ()
 verifyScheduleAddedPartyHelper eventUuid_ addScheduleForm_ mPoster = do
-  mSchedule <- testDB $ DB.getBy $ UniquePartyUUID eventUuid_
+  mSchedule <- DB.getBy $ UniquePartyUUID eventUuid_
   case mSchedule of
     Nothing -> liftIO $ expectationFailure "expected the added party to still exist."
     Just (Entity partyId party) -> do
       liftIO $ addScheduleForm_ `addScheduleFormShouldMatchParty` party
-      mPlace <- testDB $ DB.get $ partyPlace party
+      mPlace <- DB.get $ partyPlace party
       liftIO $ case mPlace of
         Nothing -> expectationFailure "expected the added party to still have a place"
         Just place -> placeQuery place `shouldBe` addScheduleFormAddress addScheduleForm_
-      mCASKey <- testDB $ getPosterForParty partyId
+      mCASKey <- getPosterForParty partyId
       liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
 
 addScheduleFormShouldMatchParty :: AddScheduleForm -> Party -> IO ()
@@ -205,24 +206,24 @@ addScheduleFormShouldMatchParty AddScheduleForm {..} Party {..} = do
   -- We can't check the poster because it's in a separate table.
   pure ()
 
-verifyScheduleEditedParty :: EventUUID -> EditScheduleForm -> YesodClientM App ()
+verifyScheduleEditedParty :: MonadIO m => EventUUID -> EditScheduleForm -> SqlPersistT m ()
 verifyScheduleEditedParty eventUuid_ editScheduleForm_ = verifyScheduleEditedPartyHelper eventUuid_ editScheduleForm_ Nothing
 
-verifyScheduleEditedPartyWithPoster :: EventUUID -> EditScheduleForm -> TestFile -> YesodClientM App ()
+verifyScheduleEditedPartyWithPoster :: MonadIO m => EventUUID -> EditScheduleForm -> TestFile -> SqlPersistT m ()
 verifyScheduleEditedPartyWithPoster eventUuid_ editScheduleForm_ poster = verifyScheduleEditedPartyHelper eventUuid_ editScheduleForm_ (Just poster)
 
-verifyScheduleEditedPartyHelper :: EventUUID -> EditScheduleForm -> Maybe TestFile -> YesodClientM App ()
+verifyScheduleEditedPartyHelper :: MonadIO m => EventUUID -> EditScheduleForm -> Maybe TestFile -> SqlPersistT m ()
 verifyScheduleEditedPartyHelper eventUuid_ editScheduleForm_ mPoster = do
-  mSchedule <- testDB $ DB.getBy $ UniquePartyUUID eventUuid_
+  mSchedule <- DB.getBy $ UniquePartyUUID eventUuid_
   case mSchedule of
     Nothing -> liftIO $ expectationFailure "expected the edited party to still exist."
     Just (Entity partyId party) -> do
       liftIO $ editScheduleForm_ `editScheduleFormShouldMatchParty` party
-      mPlace <- testDB $ DB.get $ partyPlace party
+      mPlace <- DB.get $ partyPlace party
       liftIO $ case mPlace of
         Nothing -> expectationFailure "expected the edited party to still have a place"
         Just place -> placeQuery place `shouldBe` editScheduleFormAddress editScheduleForm_
-      mCASKey <- testDB $ getPosterForParty partyId
+      mCASKey <- getPosterForParty partyId
       liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
 
 editScheduleFormShouldMatchParty :: EditScheduleForm -> Party -> IO ()

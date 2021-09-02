@@ -30,7 +30,7 @@ spec = serverSpec $ do
                 testAddSchedule
                   scheduleForm_
                   location
-              verifyScheduleAdded scheduleUuid_ scheduleForm_
+              testDB $ verifyScheduleAdded scheduleUuid_ scheduleForm_
 
     it "Can create a schedule with a poster" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -44,7 +44,7 @@ spec = serverSpec $ do
                   scheduleForm_
                   location
                   poster_
-              verifyScheduleAddedWithPoster scheduleUuid_ scheduleForm_ poster_
+              testDB $ verifyScheduleAddedWithPoster scheduleUuid_ scheduleForm_ poster_
 
     it "can create this example schedule and have the parties created immediately" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -54,7 +54,7 @@ spec = serverSpec $ do
               testSubmitOrganiser organiserForm_
               let scheduleForm_ = scheduleFormPrototype_ {addScheduleFormRecurrence = WeeklyRecurrence Monday}
               scheduleUuid_ <- testAddSchedule scheduleForm_ location
-              verifyScheduleAdded scheduleUuid_ scheduleForm_
+              testDB $ verifyScheduleAdded scheduleUuid_ scheduleForm_
               mSchedule <- testDB $ DB.getBy (UniqueScheduleUUID scheduleUuid_)
               case mSchedule of
                 Nothing -> liftIO $ expectationFailure "Should have found a schedule"
@@ -157,7 +157,7 @@ spec = serverSpec $ do
                 statusIs 303
                 _ <- followRedirect
                 statusIs 200
-                verifyScheduleEdited scheduleUuid_ editScheduleForm_
+                testDB $ verifyScheduleEdited scheduleUuid_ editScheduleForm_
 
     it "can update a schedule and have its future parties updated automatically" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -176,7 +176,7 @@ spec = serverSpec $ do
                   Just (Entity scheduleId_ _) -> testDB $ map (schedulePartyParty . entityVal) <$> DB.selectList [SchedulePartySchedule DB.==. scheduleId_] []
                 partiesBefore <- testDB $ fmap catMaybes $ mapM DB.get partyIds
                 forM_ partiesBefore $ \partyBefore ->
-                  verifyScheduleAddedParty (partyUuid partyBefore) addScheduleForm_
+                  testDB $ verifyScheduleAddedParty (partyUuid partyBefore) addScheduleForm_
                 get $ AccountR $ AccountScheduleEditR scheduleUuid_
                 statusIs 200
                 testEditSchedule scheduleUuid_ editScheduleForm_ location
@@ -185,7 +185,7 @@ spec = serverSpec $ do
                 statusIs 200
                 partiesAfter <- testDB $ fmap catMaybes $ mapM DB.get partyIds
                 forM_ partiesAfter $ \partyAfter ->
-                  verifyScheduleEditedParty (partyUuid partyAfter) editScheduleForm_
+                  testDB $ verifyScheduleEditedParty (partyUuid partyAfter) editScheduleForm_
 
     it "can update a schedule's recurrence and have its future parties rescheduled automatically" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -245,7 +245,7 @@ spec = serverSpec $ do
                 statusIs 303
                 _ <- followRedirect
                 statusIs 200
-                verifyScheduleEditedWithPoster scheduleUuid_ editScheduleForm_ poster2
+                testDB $ verifyScheduleEditedWithPoster scheduleUuid_ editScheduleForm_ poster2
 
     it "can update a schedule and have its future parties' poster updated automatically" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -267,7 +267,7 @@ spec = serverSpec $ do
                   Just (Entity scheduleId_ _) -> testDB $ map (schedulePartyParty . entityVal) <$> DB.selectList [SchedulePartySchedule DB.==. scheduleId_] []
                 partiesBefore <- testDB $ fmap catMaybes $ mapM DB.get partyIds
                 forM_ partiesBefore $ \partyBefore -> do
-                  verifyScheduleAddedPartyWithPoster (partyUuid partyBefore) addScheduleForm_ poster1
+                  testDB $ verifyScheduleAddedPartyWithPoster (partyUuid partyBefore) addScheduleForm_ poster1
                 get $ AccountR $ AccountScheduleEditR scheduleUuid_
                 statusIs 200
                 testEditScheduleWithPoster scheduleUuid_ editScheduleForm_ location poster2
@@ -276,7 +276,7 @@ spec = serverSpec $ do
                 statusIs 200
                 partiesAfter <- testDB $ fmap catMaybes $ mapM DB.get partyIds
                 forM_ partiesAfter $ \partyAfter -> do
-                  verifyScheduleEditedPartyWithPoster (partyUuid partyAfter) editScheduleForm_ poster2
+                  testDB $ verifyScheduleEditedPartyWithPoster (partyUuid partyAfter) editScheduleForm_ poster2
 
     it "does not update the modified time if nothing has changed while editing" $ \yc ->
       forAllValid $ \organiserForm_ ->
@@ -299,7 +299,7 @@ spec = serverSpec $ do
               statusIs 303
               _ <- followRedirect
               statusIs 200
-              verifyScheduleEdited scheduleUuid_ editScheduleForm_
+              testDB $ verifyScheduleEdited scheduleUuid_ editScheduleForm_
               mScheduleAfter <- testDB $ DB.getBy $ UniqueScheduleUUID scheduleUuid_
               scheduleAfter <- case mScheduleAfter of
                 Nothing -> liftIO $ expectationFailure "Should have gotten a schedule"
@@ -367,7 +367,7 @@ spec = serverSpec $ do
               testSubmitOrganiser organiserForm_
               let scheduleForm_ = scheduleFormPrototype_ {addScheduleFormRecurrence = WeeklyRecurrence Monday}
               scheduleUuid_ <- testAddSchedule scheduleForm_ location
-              verifyScheduleAdded scheduleUuid_ scheduleForm_
+              testDB $ verifyScheduleAdded scheduleUuid_ scheduleForm_
               mScheduleBefore <- testDB (DB.getBy (UniqueScheduleUUID scheduleUuid_))
               partyIds <- case mScheduleBefore of
                 Nothing -> liftIO $ expectationFailure "Should have found a schedule"
