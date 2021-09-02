@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Salsa.Party.Web.Server.Handler.Account.PartySpec (spec) where
 
 import qualified Database.Persist as DB
@@ -26,6 +28,19 @@ spec = do
           partyUuidAfter <- driveEditParty (addPartyFormTitle dummyAddPartyForm) dummyEditPartyForm
           liftIO $ partyUuidBefore `shouldBe` partyUuidAfter
           driveDB $ verifyPartyEdited partyUuidAfter dummyEditPartyForm
+
+  it "can keep an existing party the same by submitting the edit form as-is" $ \env ->
+    forAllValid $ \coordinates -> runWebdriverTestM env $
+      driveAsNewUser_ dummyUser $ do
+        driveSubmitOrganiser dummyOrganiserForm
+        driveDB $ insertPlace_ (addPartyFormAddress dummyAddPartyForm) coordinates
+        partyUuid_ <- driveAddParty dummyAddPartyForm
+        driveDB $ verifyPartyAdded partyUuid_ dummyAddPartyForm
+        findElem (ByLinkText "My parties") >>= click
+        findElem (ByLinkText (addPartyFormTitle dummyAddPartyForm)) >>= click
+        findElem (ByLinkText "Edit") >>= click
+        findElem (ById "submit") >>= submit
+        driveDB $ verifyPartyAdded partyUuid_ dummyAddPartyForm
 
   it "can duplicate an existing party" $ \env ->
     forAllValid $ \coordinates1 ->
