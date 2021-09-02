@@ -168,7 +168,7 @@ addSchedule organiserId AddScheduleForm {..} mFileInfo = do
             scheduleOrganiser = organiserId,
             scheduleRecurrence = addScheduleFormRecurrence,
             scheduleTitle = addScheduleFormTitle,
-            scheduleDescription = unTextarea <$> addScheduleFormDescription,
+            scheduleDescription = normaliseNewlines . unTextarea <$> addScheduleFormDescription,
             scheduleStart = addScheduleFormStart,
             scheduleHomepage = addScheduleFormHomepage,
             schedulePrice = addScheduleFormPrice,
@@ -318,7 +318,7 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
          in catMaybes
               [ whenChanged scheduleTitle editScheduleFormTitle ScheduleTitle,
                 whenChanged scheduleRecurrence editScheduleFormRecurrence ScheduleRecurrence,
-                whenChanged scheduleDescription (fmap unTextarea . editScheduleFormDescription) ScheduleDescription,
+                whenChanged scheduleDescription (fmap (normaliseNewlines . unTextarea) . editScheduleFormDescription) ScheduleDescription,
                 -- Purposely don't update the day so that schedulegoers can't have the rug pulled under them
                 whenChanged scheduleStart editScheduleFormStart ScheduleStart,
                 whenChanged scheduleHomepage editScheduleFormHomepage ScheduleHomepage,

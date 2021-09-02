@@ -346,14 +346,24 @@ dummyAddScheduleForm =
       addScheduleFormPrice = Just "Free"
     }
 
-driveAddSchedule :: AddScheduleForm -> WebdriverTestM ()
+driveAddSchedule :: AddScheduleForm -> WebdriverTestM ScheduleUUID
 driveAddSchedule AddScheduleForm {..} = do
   findElem (ByLinkText "Add party") >>= click
   findElem (ByLinkText "Recurring party") >>= click
   findElem (ByName "title") >>= sendKeys addScheduleFormTitle
-  -- findElem (ByName "recurrence") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%F" addScheduleFormDay))
   findElem (ByName "address") >>= sendKeys addScheduleFormAddress
+  case addScheduleFormRecurrence of
+    WeeklyRecurrence dow ->
+      findElem (ByName "recurrence-day-of-week") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%A" dow))
+  forM_ addScheduleFormDescription $ \description -> findElem (ByName "description") >>= sendKeys (Yesod.unTextarea description)
+  forM_ addScheduleFormStart $ \start -> findElem (ByName "start") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%I%M%p" start))
+  forM_ addScheduleFormHomepage $ \homepage -> findElem (ByName "homepage") >>= sendKeys homepage
+  forM_ addScheduleFormPrice $ \price -> findElem (ByName "price") >>= sendKeys price
   findElem (ById "submit") >>= submit
+  route <- getCurrentRoute
+  case route of
+    (AccountR (AccountScheduleR partyUuid)) -> pure partyUuid
+    _ -> liftIO $ expectationFailure $ "Should have been on a schedule route, but was: " <> show route
 
 dummyEditScheduleForm :: EditScheduleForm
 dummyEditScheduleForm =
@@ -367,7 +377,7 @@ dummyEditScheduleForm =
       editScheduleFormPrice = Just "Free!!"
     }
 
-driveEditSchedule :: Text -> EditScheduleForm -> WebdriverTestM ()
+driveEditSchedule :: Text -> EditScheduleForm -> WebdriverTestM ScheduleUUID
 driveEditSchedule title EditScheduleForm {..} = do
   findElem (ByLinkText "My parties") >>= click
   findElem (ByLinkText title) >>= click
@@ -376,7 +386,22 @@ driveEditSchedule title EditScheduleForm {..} = do
   findElem (ByName "title") >>= sendKeys editScheduleFormTitle
   findElem (ByName "address") >>= clearInput
   findElem (ByName "address") >>= sendKeys editScheduleFormAddress
+  case editScheduleFormRecurrence of
+    WeeklyRecurrence dow ->
+      findElem (ByName "recurrence-day-of-week") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%A" dow))
+  findElem (ByName "description") >>= clearInput
+  forM_ editScheduleFormDescription $ \description -> findElem (ByName "description") >>= sendKeys (Yesod.unTextarea description)
+  findElem (ByName "start") >>= clearInput
+  forM_ editScheduleFormStart $ \start -> findElem (ByName "start") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%I%M%p" start))
+  findElem (ByName "homepage") >>= clearInput
+  forM_ editScheduleFormHomepage $ \homepage -> findElem (ByName "homepage") >>= sendKeys homepage
+  findElem (ByName "price") >>= clearInput
+  forM_ editScheduleFormPrice $ \price -> findElem (ByName "price") >>= sendKeys price
   findElem (ById "submit") >>= submit
+  route <- getCurrentRoute
+  case route of
+    (AccountR (AccountScheduleEditR partyUuid)) -> pure partyUuid
+    _ -> liftIO $ expectationFailure $ "Should have been on a schedule route, but was: " <> show route
 
 driveDeleteSchedule :: Text -> WebdriverTestM ()
 driveDeleteSchedule title = do
@@ -384,6 +409,7 @@ driveDeleteSchedule title = do
   findElem (ByLinkText title) >>= click
   findElem (ByXPath "//button[contains(text(), 'Delete')]") >>= click
   acceptAlert
+  findElem (ByLinkText "My parties") >>= click
 
 driveDB :: DB.SqlPersistT IO a -> WebdriverTestM a
 driveDB func = do
