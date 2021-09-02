@@ -105,13 +105,17 @@ dummyEmail = "dummy@example.com"
 dummyPassword :: Text
 dummyPassword = "dummy"
 
-driveRegister :: TestUser -> WebdriverTestM ()
+driveRegister :: TestUser -> WebdriverTestM (Entity User)
 driveRegister TestUser {..} = do
   findElem (ByLinkText "Sign up") >>= click
   findElem (ByName "email-address") >>= sendKeys testUserEmail
   findElem (ByName "passphrase") >>= sendKeys testUserPassword
   findElem (ByName "passphrase-confirm") >>= sendKeys testUserPassword
   findElem (ByXPath "//button[contains(text(), 'Sign up')]") >>= click
+  mUser <- driveDB $ DB.getBy $ UniqueUserEmailAddress testUserEmail
+  case mUser of
+    Nothing -> liftIO $ expectationFailure "Should have found a user by now."
+    Just userEntity -> pure userEntity
 
 driveLogin :: TestUser -> WebdriverTestM ()
 driveLogin TestUser {..} = do
@@ -152,11 +156,7 @@ driveAsNewUser_ testUser func = driveAsNewUser testUser (\_ -> func)
 driveAsNewUser :: TestUser -> (Entity User -> WebdriverTestM a) -> WebdriverTestM a
 driveAsNewUser testUser func = do
   openHome
-  driveRegister testUser
-  mUserEntity <- driveDB $ DB.getBy (UniqueUserEmailAddress (testUserEmail testUser))
-  userEntity <- case mUserEntity of
-    Nothing -> liftIO $ expectationFailure "Expected to find a user, but found none."
-    Just userEntity -> pure userEntity
+  userEntity <- driveRegister testUser
   result <- func userEntity
   driveLogout
   pure result

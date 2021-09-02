@@ -14,8 +14,9 @@ spec =
 
       it "can succesfully POST to the registration page" $ \yc ->
         forAllValid $ \testUser ->
-          runYesodClientM yc $
-            testRegisterUser testUser
+          runYesodClientM yc $ do
+            Entity userId _ <- testRegisterUser testUser
+            testDB $ verifyUserRegistered testUser userId
 
       it "can POST to the registration page and fail because of mismatching passphrases" $ \yc ->
         forAll genValidEmailAddress $ \emailAddress ->
@@ -41,14 +42,14 @@ spec =
       it "can POST the login page after registering" $ \yc ->
         forAllValid $ \testUser ->
           runYesodClientM yc $ do
-            testRegisterUser testUser
+            _ <- testRegisterUser testUser
             testLogout
             testLoginUser testUser
 
       it "cannot login with the wrong email address" $ \yc ->
         forAll genValidEmailAddress $ \emailAddress ->
           runYesodClientM yc $ do
-            testRegister emailAddress "example1"
+            _ <- testRegister emailAddress "example1"
             testLogout
             get $ AuthR LoginR
             statusIs 200

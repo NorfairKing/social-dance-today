@@ -101,10 +101,10 @@ spec = serverSpec $ do
             forAllValid $ \organiser2Form_ ->
               forAllValid $ \partyForm_ ->
                 forAllValid $ \location -> runYesodClientM yc $ do
-                  partyId <- asNewUser testUser1 $ do
+                  partyId <- asNewUser_ testUser1 $ do
                     testSubmitOrganiser organiser1Form_
                     testAddParty partyForm_ location
-                  asNewUser testUser2 $ do
+                  asNewUser_ testUser2 $ do
                     testSubmitOrganiser organiser2Form_
                     get $ AccountR $ AccountPartyR partyId
                     statusIs 403
@@ -138,10 +138,10 @@ spec = serverSpec $ do
             forAllValid $ \organiser2Form_ ->
               forAllValid $ \partyForm_ ->
                 forAllValid $ \location -> runYesodClientM yc $ do
-                  partyId <- asNewUser testUser1 $ do
+                  partyId <- asNewUser_ testUser1 $ do
                     testSubmitOrganiser organiser1Form_
                     testAddParty partyForm_ location
-                  asNewUser testUser2 $ do
+                  asNewUser_ testUser2 $ do
                     testSubmitOrganiser organiser2Form_
                     get $ AccountR $ AccountPartyEditR partyId
                     statusIs 403
@@ -241,11 +241,11 @@ spec = serverSpec $ do
               forAllValid $ \addPartyForm_ ->
                 forAllValid $ \editPartyForm_ ->
                   forAllValid $ \location -> runYesodClientM yc $ do
-                    partyUuid_ <- asNewUser testUser1 $ do
+                    partyUuid_ <- asNewUser_ testUser1 $ do
                       testLoginUser testUser1
                       testSubmitOrganiser organiser1Form_
                       testAddParty addPartyForm_ location
-                    asNewUser testUser2 $ do
+                    asNewUser_ testUser2 $ do
                       testSubmitOrganiser organiser2Form_
                       testEditParty partyUuid_ editPartyForm_ location
                       statusIs 403
@@ -266,10 +266,10 @@ spec = serverSpec $ do
             forAllValid $ \organiser2Form_ ->
               forAllValid $ \partyForm_ ->
                 forAllValid $ \location -> runYesodClientM yc $ do
-                  partyId <- asNewUser testUser1 $ do
+                  partyId <- asNewUser_ testUser1 $ do
                     testSubmitOrganiser organiser1Form_
                     testAddParty partyForm_ location
-                  asNewUser testUser2 $ do
+                  asNewUser_ testUser2 $ do
                     testSubmitOrganiser organiser2Form_
                     get $ AccountR $ AccountPartyDuplicateR partyId
                     statusIs 403
@@ -314,10 +314,10 @@ spec = serverSpec $ do
           forAllValid $ \organiserForm_ ->
             forAllValid $ \partyForm_ ->
               forAllValid $ \location -> runYesodClientM yc $ do
-                partyId <- asNewUser testUser1 $ do
+                partyId <- asNewUser_ testUser1 $ do
                   testSubmitOrganiser organiserForm_
                   testAddParty partyForm_ location
-                asNewUser testUser2 $ do
+                asNewUser_ testUser2 $ do
                   request $ do
                     setMethod methodPost
                     setUrl $ AccountR $ AccountPartyDeleteR partyId
@@ -376,12 +376,12 @@ spec = serverSpec $ do
           forAllValid $ \organiserForm_ ->
             forAllValid $ \partyForm_ ->
               forAllValid $ \location -> runYesodClientM yc $ do
-                partyId <- asNewUser testUser1 $ do
+                partyId <- asNewUser_ testUser1 $ do
                   testSubmitOrganiser organiserForm_
                   testAddParty
                     partyForm_
                     location
-                asNewUser testUser2 $ do
+                asNewUser_ testUser2 $ do
                   request $ do
                     setMethod methodPost
                     setUrl $ AccountR $ AccountPartyCancelR partyId
@@ -437,7 +437,7 @@ spec = serverSpec $ do
           forAllValid $ \organiserForm_ ->
             forAllValid $ \partyForm_ ->
               forAllValid $ \location -> runYesodClientM yc $ do
-                partyId <- asNewUser testUser1 $ do
+                partyId <- asNewUser_ testUser1 $ do
                   testSubmitOrganiser organiserForm_
                   partyId <-
                     testAddParty
@@ -454,7 +454,7 @@ spec = serverSpec $ do
                   _ <- followRedirect
                   statusIs 200
                   pure partyId
-                asNewUser testUser2 $ do
+                asNewUser_ testUser2 $ do
                   request $ do
                     setMethod methodPost
                     setUrl $ AccountR $ AccountPartyCancelR partyId

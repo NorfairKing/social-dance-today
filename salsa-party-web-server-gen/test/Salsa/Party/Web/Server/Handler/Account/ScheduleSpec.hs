@@ -95,10 +95,10 @@ spec = serverSpec $ do
             forAllValid $ \organiser2Form_ ->
               forAllValid $ \scheduleForm_ ->
                 forAllValid $ \location -> runYesodClientM yc $ do
-                  scheduleId <- asNewUser testUser1 $ do
+                  scheduleId <- asNewUser_ testUser1 $ do
                     testSubmitOrganiser organiser1Form_
                     testAddSchedule scheduleForm_ location
-                  asNewUser testUser2 $ do
+                  asNewUser_ testUser2 $ do
                     testSubmitOrganiser organiser2Form_
                     get $ AccountR $ AccountScheduleR scheduleId
                     statusIs 403
@@ -132,10 +132,10 @@ spec = serverSpec $ do
             forAllValid $ \organiser2Form_ ->
               forAllValid $ \scheduleForm_ ->
                 forAllValid $ \location -> runYesodClientM yc $ do
-                  scheduleId <- asNewUser testUser1 $ do
+                  scheduleId <- asNewUser_ testUser1 $ do
                     testSubmitOrganiser organiser1Form_
                     testAddSchedule scheduleForm_ location
-                  asNewUser testUser2 $ do
+                  asNewUser_ testUser2 $ do
                     testSubmitOrganiser organiser2Form_
                     get $ AccountR $ AccountScheduleEditR scheduleId
                     statusIs 403
@@ -326,11 +326,11 @@ spec = serverSpec $ do
               forAllValid $ \addScheduleForm_ ->
                 forAllValid $ \editScheduleForm_ ->
                   forAllValid $ \location -> runYesodClientM yc $ do
-                    scheduleUuid_ <- asNewUser testUser1 $ do
+                    scheduleUuid_ <- asNewUser_ testUser1 $ do
                       testLoginUser testUser1
                       testSubmitOrganiser organiser1Form_
                       testAddSchedule addScheduleForm_ location
-                    asNewUser testUser2 $ do
+                    asNewUser_ testUser2 $ do
                       testSubmitOrganiser organiser2Form_
                       testEditSchedule scheduleUuid_ editScheduleForm_ location
                       statusIs 403
@@ -395,10 +395,10 @@ spec = serverSpec $ do
           forAllValid $ \organiserForm_ ->
             forAllValid $ \scheduleForm_ ->
               forAllValid $ \location -> runYesodClientM yc $ do
-                scheduleId <- asNewUser testUser1 $ do
+                scheduleId <- asNewUser_ testUser1 $ do
                   testSubmitOrganiser organiserForm_
                   testAddSchedule scheduleForm_ location
-                asNewUser testUser2 $ do
+                asNewUser_ testUser2 $ do
                   request $ do
                     setMethod methodPost
                     setUrl $ AccountR $ AccountScheduleDeleteR scheduleId

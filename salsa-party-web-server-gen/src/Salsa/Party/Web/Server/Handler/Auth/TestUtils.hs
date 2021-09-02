@@ -8,9 +8,12 @@ module Salsa.Party.Web.Server.Handler.Auth.TestUtils where
 
 import Control.Monad.IO.Class
 import Data.GenValidity
+import Data.Maybe
+import Data.Password.Bcrypt
 import Data.Text (Text)
 import Database.Persist (Entity (..))
 import qualified Database.Persist as DB
+import Database.Persist.Sql (SqlPersistT)
 import GHC.Generics (Generic)
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Application ()
@@ -49,18 +52,22 @@ asUser testUser func = do
   pure result
 
 -- The only reason that this is different from 'asUser' is because we don't need to log in after registering.
-asNewUser :: TestUser -> YesodExample App a -> YesodExample App a
+asNewUser_ :: TestUser -> YesodExample App a -> YesodExample App a
+asNewUser_ testUser func = asNewUser testUser (\_ -> func)
+
+asNewUser :: TestUser -> (Entity User -> YesodExample App a) -> YesodExample App a
 asNewUser testUser func = do
-  testRegisterUser testUser
-  result <- func
+  userEntity <- testRegisterUser testUser
+  result <- func userEntity
   testLogout
   pure result
 
-testRegisterUser :: TestUser -> YesodExample App ()
-testRegisterUser TestUser {..} = testRegister testUserEmail testUserPassword
+testRegisterUser :: TestUser -> YesodExample App (Entity User)
+testRegisterUser TestUser {..} = do
+  testRegister testUserEmail testUserPassword
 
 testRegister ::
-  Text -> Text -> YesodExample App ()
+  Text -> Text -> YesodExample App (Entity User)
 testRegister emailAddress passphrase = do
   get $ AuthR registerR
   statusIs 200
@@ -75,6 +82,23 @@ testRegister emailAddress passphrase = do
   locationShouldBe $ AccountR AccountOverviewR
   _ <- followRedirect
   statusIs 200
+  mUser <- testDB $ DB.getBy $ UniqueUserEmailAddress emailAddress
+  case mUser of
+    Nothing -> liftIO $ expectationFailure "Expected to find a user, but found none."
+    Just userEntity -> pure userEntity
+
+verifyUserRegistered :: MonadIO m => TestUser -> UserId -> SqlPersistT m ()
+verifyUserRegistered testuser userId = do
+  mUser <- DB.get userId
+  liftIO $ case mUser of
+    Nothing -> expectationFailure "Expected to find a user, but found none."
+    Just user -> testUserMatches testuser (Entity userId user)
+
+testUserMatches :: TestUser -> Entity User -> IO ()
+testUserMatches TestUser {..} (Entity _ User {..}) = do
+  context "email address" $ userEmailAddress `shouldBe` testUserEmail
+  context "password" $ checkPassword (mkPassword testUserPassword) userPassphraseHash `shouldBe` PasswordCheckSuccess
+  context "verificationKey" $ userVerificationKey `shouldSatisfy` isJust -- Must be unverified
 
 testLoginUser :: TestUser -> YesodExample App ()
 testLoginUser TestUser {..} = testLogin testUserEmail testUserPassword
@@ -109,15 +133,11 @@ withAnyLoggedInUser :: YesodClient App -> (Entity User -> TestUser -> YesodClien
 withAnyLoggedInUser yc func =
   forAllValid $ \testUser ->
     runYesodClientM yc $ do
-      testRegisterUser testUser
-      mUser <- testDB $ DB.getBy (UniqueUserEmailAddress (testUserEmail testUser))
-      userEntity <- liftIO $ case mUser of
-        Nothing -> expectationFailure "Expected to find a user, but found none."
-        Just userEntity -> pure userEntity
+      userEntity <- testRegisterUser testUser
       func userEntity testUser
 
 -- We use a withX function here instead of a login so we don't accidentally register as admin twice.
 withLoggedInAdmin :: YesodClientM App () -> YesodClientM App ()
 withLoggedInAdmin func = do
-  testRegister adminEmail adminPassword
+  _ <- testRegister adminEmail adminPassword
   func
