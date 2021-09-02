@@ -49,6 +49,7 @@ import Test.Syd.Process.Typed
 import Test.Syd.Yesod
 import Test.WebDriver as WD
 import Test.WebDriver.Class as WD
+import Test.WebDriver.Commands.Wait as WD
 import Test.WebDriver.Session as WD
 import qualified Yesod
 
@@ -107,11 +108,11 @@ dummyPassword = "dummy"
 
 driveRegister :: TestUser -> WebdriverTestM (Entity User)
 driveRegister TestUser {..} = do
-  findElem (ByLinkText "Sign up") >>= click
+  findElem (ById "nav-register") >>= click
   findElem (ByName "email-address") >>= sendKeys testUserEmail
   findElem (ByName "passphrase") >>= sendKeys testUserPassword
   findElem (ByName "passphrase-confirm") >>= sendKeys testUserPassword
-  findElem (ByXPath "//button[contains(text(), 'Sign up')]") >>= click
+  findElem (ById "submit") >>= submit
   mUser <- driveDB $ DB.getBy $ UniqueUserEmailAddress testUserEmail
   case mUser of
     Nothing -> liftIO $ expectationFailure "Should have found a user by now."
@@ -119,19 +120,19 @@ driveRegister TestUser {..} = do
 
 driveLogin :: TestUser -> WebdriverTestM ()
 driveLogin TestUser {..} = do
-  findElem (ByLinkText "Log in") >>= click
+  findElem (ById "nav-login") >>= click
   findElem (ByName "email-address") >>= sendKeys testUserEmail
   findElem (ByName "passphrase") >>= sendKeys testUserPassword
-  findElem (ByXPath "//button[contains(text(), 'Log in')]") >>= click
+  findElem (ById "submit") >>= submit
 
 driveLogout :: WebdriverTestM ()
 driveLogout = do
-  findElem (ByLinkText "Log out") >>= click
+  findElem (ById "nav-logout") >>= click
 
 driveDeleteAccount :: WebdriverTestM ()
 driveDeleteAccount = do
-  findElem (ByLinkText "Account") >>= click
-  findElem (ByXPath "//button[contains(text(), 'Delete Account')]") >>= click
+  findElem (ById "nav-account") >>= click
+  findElem (ById "delete-account") >>= click
 
 dummyOrganiserForm :: OrganiserForm
 dummyOrganiserForm =
@@ -143,8 +144,8 @@ dummyOrganiserForm =
 
 driveSubmitOrganiser :: OrganiserForm -> WebdriverTestM ()
 driveSubmitOrganiser OrganiserForm {..} = do
-  findElem (ByLinkText "Account") >>= click
-  findElem (ByLinkText "Organiser profile") >>= click
+  findElem (ById "nav-account") >>= click
+  findElem (ById "account-organiser") >>= click
   findElem (ByName "name") >>= sendKeys organiserFormName
   forM_ organiserFormHomepage $ \homepage -> findElem (ByName "homepage") >>= sendKeys homepage
   when organiserFormConsentReminder $ findElem (ByName "reminder-consent") >>= click
@@ -203,8 +204,8 @@ dummyAddPartyForm =
 driveAddParty :: AddPartyForm -> WebdriverTestM EventUUID
 driveAddParty AddPartyForm {..} = do
   let AddPartyForm _ _ _ _ _ _ _ _ = undefined
-  findElem (ByLinkText "Add party") >>= click
-  findElem (ByLinkText "Single party") >>= click
+  findElem (ById "nav-submit") >>= click
+  findElem (ById "submit-party") >>= click
   findElem (ByName "title") >>= sendKeys addPartyFormTitle
   findElem (ByName "day") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%m%d%Y" addPartyFormDay))
   findElem (ByName "address") >>= sendKeys addPartyFormAddress
@@ -254,9 +255,9 @@ dummyEditPartyForm =
 driveEditParty :: Text -> EditPartyForm -> WebdriverTestM EventUUID
 driveEditParty title EditPartyForm {..} = do
   let EditPartyForm _ _ _ _ _ _ _ = undefined
-  findElem (ByLinkText "My parties") >>= click
+  findElem (ById "nav-account-parties") >>= click
   findElem (ByLinkText title) >>= click
-  findElem (ByLinkText "Edit") >>= click
+  findElem (ById "edit-party") >>= click
   findElem (ByName "title") >>= clearInput
   findElem (ByName "title") >>= sendKeys editPartyFormTitle
   findElem (ByName "address") >>= clearInput
@@ -291,9 +292,9 @@ dummyDuplicatePartyForm =
 driveDuplicateParty :: Text -> AddPartyForm -> WebdriverTestM EventUUID
 driveDuplicateParty title AddPartyForm {..} = do
   let AddPartyForm _ _ _ _ _ _ _ _ = undefined
-  findElem (ByLinkText "My parties") >>= click
+  findElem (ById "nav-account-parties") >>= click
   findElem (ByLinkText title) >>= click
-  findElem (ByLinkText "Duplicate") >>= click
+  findElem (ById "duplicate-party") >>= click
   findElem (ByName "title") >>= clearInput
   findElem (ByName "title") >>= sendKeys addPartyFormTitle
   findElem (ByName "day") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%m%d%Y" addPartyFormDay))
@@ -315,24 +316,24 @@ driveDuplicateParty title AddPartyForm {..} = do
 
 driveCancelParty :: Text -> WebdriverTestM ()
 driveCancelParty title = do
-  findElem (ByLinkText "My parties") >>= click
+  findElem (ById "nav-account-parties") >>= click
   findElem (ByLinkText title) >>= click
-  findElem (ByXPath "//button[contains(text(), 'Cancel')]") >>= click
+  findElem (ById "cancel-party") >>= click
 
 driveUnCancelParty :: Text -> WebdriverTestM ()
 driveUnCancelParty title = do
-  findElem (ByLinkText "My parties") >>= click
-  findElem (ByLinkText ("CANCELLED: " <> title)) >>= click
-  findElem (ByXPath "//button[contains(text(), 'Un-Cancel')]") >>= click
+  findElem (ById "nav-account-parties") >>= click
+  findElem (ByPartialLinkText title) >>= click
+  findElem (ById "uncancel-party") >>= click
 
 driveDeleteParty :: Text -> WebdriverTestM ()
 driveDeleteParty title = do
-  findElem (ByLinkText "My parties") >>= click
-  findElem (ByLinkText ("CANCELLED: " <> title)) >>= click
-  findElem (ByXPath "//button[contains(text(), 'Delete')]") >>= click
+  findElem (ById "nav-account-parties") >>= click
+  findElem (ByPartialLinkText title) >>= click
+  findElem (ById "delete-party") >>= click
   acceptAlert
   -- Wait for refresh
-  findElem (ByLinkText "My parties") >>= click
+  waitUntil 5 $ void $ findElem (ById "account-parties-title")
 
 dummyAddScheduleForm :: AddScheduleForm
 dummyAddScheduleForm =
@@ -348,8 +349,8 @@ dummyAddScheduleForm =
 
 driveAddSchedule :: AddScheduleForm -> WebdriverTestM ScheduleUUID
 driveAddSchedule AddScheduleForm {..} = do
-  findElem (ByLinkText "Add party") >>= click
-  findElem (ByLinkText "Recurring party") >>= click
+  findElem (ById "nav-submit") >>= click
+  findElem (ById "submit-schedule") >>= click
   findElem (ByName "title") >>= sendKeys addScheduleFormTitle
   findElem (ByName "address") >>= sendKeys addScheduleFormAddress
   case addScheduleFormRecurrence of
@@ -379,9 +380,9 @@ dummyEditScheduleForm =
 
 driveEditSchedule :: Text -> EditScheduleForm -> WebdriverTestM ScheduleUUID
 driveEditSchedule title EditScheduleForm {..} = do
-  findElem (ByLinkText "My parties") >>= click
+  findElem (ById "nav-account-parties") >>= click
   findElem (ByLinkText title) >>= click
-  findElem (ByLinkText "Edit") >>= click
+  findElem (ById "edit-schedule") >>= click
   findElem (ByName "title") >>= clearInput
   findElem (ByName "title") >>= sendKeys editScheduleFormTitle
   findElem (ByName "address") >>= clearInput
@@ -405,11 +406,12 @@ driveEditSchedule title EditScheduleForm {..} = do
 
 driveDeleteSchedule :: Text -> WebdriverTestM ()
 driveDeleteSchedule title = do
-  findElem (ByLinkText "My parties") >>= click
+  findElem (ById "nav-account-parties") >>= click
   findElem (ByLinkText title) >>= click
-  findElem (ByXPath "//button[contains(text(), 'Delete')]") >>= click
+  findElem (ById "delete-schedule") >>= click
   acceptAlert
-  findElem (ByLinkText "My parties") >>= click
+  -- Wait for refresh
+  waitUntil 5 $ void $ findElem (ById "account-parties-title")
 
 driveDB :: DB.SqlPersistT IO a -> WebdriverTestM a
 driveDB func = do

@@ -32,23 +32,23 @@
   
     <p .content>
       <div .buttons>
-        <a .button href=@{AccountR $ AccountPartyEditR partyUuid}>
-          _{MsgYourPartiesEditPartyButton}
-        <a .button href=@{EventR partyUuid}>
+        <a #public-party .button href=@{EventR partyUuid}>
           _{MsgYourPartiesPublicPartyButton}
-        <a .button href=@{AccountR $ AccountPartyDuplicateR partyUuid}>
+        <a #edit-party .button href=@{AccountR $ AccountPartyEditR partyUuid}>
+          _{MsgYourPartiesEditPartyButton}
+        <a #duplicate-party .button href=@{AccountR $ AccountPartyDuplicateR partyUuid}>
           _{MsgYourPartiesDuplicatePartyButton}
         $if partyCancelled
           ^{token}
           <form
             method=post
             action=@{AccountR $ AccountPartyUnCancelR partyUuid}>
-            <button .button .is-danger type=submit .mx-1>
+            <button #uncancel-party .button .is-danger type=submit .mx-1>
               _{MsgYourPartiesUnCancelPartyButton}
           <form
             method=post
             action=@{AccountR $ AccountPartyDeleteR partyUuid}>
-            <button .button .is-danger type=submit
+            <button #delete-party .button .is-danger type=submit
               onclick="return confirm('_{MsgYourPartiesDeletePartyWarning}');">
               _{MsgYourPartiesDeletePartyButton}
         $else
@@ -56,6 +56,6 @@
           <form
             method=post
             action=@{AccountR $ AccountPartyCancelR partyUuid}>
-            <button .button .is-danger type=submit .mx-1>
+            <button #cancel-party .button .is-danger type=submit .mx-1>
               _{MsgYourPartiesCancelPartyButton}
 

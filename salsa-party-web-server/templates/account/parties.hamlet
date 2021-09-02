@@ -1,6 +1,6 @@
 <section .section>
   <div .container>
-    <h1 .title .is-3>
+    <h1 #account-parties-title .title .is-3>
       _{MsgYourPartiesTitle}
 
     <p>

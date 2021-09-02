@@ -52,7 +52,7 @@
 
             <div .field .is-grouped>
               <div .control>
-                <button .button .is-light type="submit">
+                <button #submit .button .is-light type="submit">
                   _{MsgRegistrationSignUpButton}
 
 

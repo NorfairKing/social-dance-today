@@ -6,7 +6,7 @@
       _{MsgAccountEmailAddress userEmailAddress}
 
     <div .buttons>
-      <a .button href=@{AccountR AccountOrganiserR}>
+      <a #account-organiser .button href=@{AccountR AccountOrganiserR}>
         _{MsgNavOrganiser}
 
 $if requireVerification
@@ -53,7 +53,7 @@ $if requireVerification
       ^{token}
       <div .field>
         <div .control>
-          <button
+          <button #delete-account
             .button .is-danger
             type=submit
             onclick="return confirm('_{MsgAccountDeleteWarning}');">

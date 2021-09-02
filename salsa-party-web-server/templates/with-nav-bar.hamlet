@@ -11,17 +11,17 @@
 
   <div #navMenu .navbar-menu>
     <div .navbar-start>
-      <a .navbar-item href=@{HomeR}>
+      <a #nav-home .navbar-item href=@{HomeR}>
         <strong>
           _{MsgNavFind}
 
-      <a .navbar-item href=@{AccountR AccountSubmitR}>
+      <a #nav-submit .navbar-item href=@{AccountR AccountSubmitR}>
         _{MsgNavSubmitParty}
 
       $maybe _ <- mAuth
-        <a .navbar-item href=@{AccountR AccountOverviewR}>
+        <a #nav-account .navbar-item href=@{AccountR AccountOverviewR}>
           _{MsgNavAccount}
-        <a .navbar-item href=@{AccountR AccountPartiesR}>
+        <a #nav-account-parties .navbar-item href=@{AccountR AccountPartiesR}>
           _{MsgNavParties}
       
     <div .navbar-end>
@@ -43,14 +43,14 @@
 
       <div .navbar-item>
         $maybe _ <- mAuth
-          <a .button .is-light href=@{AuthR LogoutR}>
+          <a #nav-logout .button .is-light href=@{AuthR LogoutR}>
             _{MsgNavLogOut}
         $nothing
           <div .buttons>
-            <a .button .is-light href=@{AuthR registerR}>
+            <a #nav-register .button .is-light href=@{AuthR registerR}>
               _{MsgNavSignUp}
             
-            <a .button .is-light href=@{AuthR LoginR}>
+            <a #nav-login .button .is-light href=@{AuthR LoginR}>
               _{MsgNavLogIn}
 
 $forall errorMessage <- errorMessages

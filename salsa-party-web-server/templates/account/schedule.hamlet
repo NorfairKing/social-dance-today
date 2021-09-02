@@ -20,12 +20,12 @@
   
     <p .content>
       <div .buttons>
-        <a .button href=@{AccountR $ AccountScheduleEditR scheduleUuid}>
+        <a #edit-schedule .button href=@{AccountR $ AccountScheduleEditR scheduleUuid}>
           _{MsgYourPartiesEditScheduleButton}
         <form
           method=post
           action=@{AccountR $ AccountScheduleDeleteR scheduleUuid}>
-          <button .button .is-danger type=submit
+          <button #delete-schedule .button .is-danger type=submit
             onclick="return confirm('_{MsgYourSchedulesDeleteScheduleWarning}');">
             _{MsgYourSchedulesDeleteScheduleButton}
 

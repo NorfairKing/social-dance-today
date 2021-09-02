@@ -7,7 +7,7 @@
       <div .column .is-half>
         <div .has-text-centered .content>
           <p>
-            <a .button .is-dark href=@{AccountR AccountSubmitPartyR}>
+            <a #submit-party .button .is-dark href=@{AccountR AccountSubmitPartyR}>
               _{MsgSubmitSingleParty}
           <p>
             _{MsgSubmitSinglePartyExplanation1}
@@ -16,7 +16,7 @@
       <div .column .is-half>
         <div .has-text-centered .content>
           <p>
-            <a .button .is-dark href=@{AccountR AccountSubmitScheduleR}>
+            <a #submit-schedule .button .is-dark href=@{AccountR AccountSubmitScheduleR}>
               _{MsgSubmitRecurringParty}
           <p>
             _{MsgSubmitRecurringPartyExplanation1}
