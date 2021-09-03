@@ -159,7 +159,12 @@ runImporter a Importer {..} = do
   case errOrUnit of
     Right () -> pure ()
     Left err -> do
-      let message = "Importer threw an exception:\n" <> T.pack (displayException err)
+      let message =
+            T.pack $
+              unlines
+                [ unwords ["Importer threw an exception:", show importerName],
+                  displayException err
+                ]
       logErrorN message
       runReaderT (sendAdminNotification message) a
 
