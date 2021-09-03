@@ -130,7 +130,6 @@ tests:
     - text
     - time
     - typed-process
-    - typed-process
     - typed-uuid
     - unliftio
     - uuid

@@ -55,6 +55,7 @@ test-suite salsa-party-web-server-webdriver-test
       Salsa.Party.Web.Server.Handler.Account.ScheduleSpec
       Salsa.Party.Web.Server.Handler.AuthSpec
       Salsa.Party.Web.Server.Handler.HomeSpec
+      Salsa.Party.Web.Server.Handler.PartySpec
       Salsa.Party.Web.Server.Handler.SearchSpec
       Salsa.Party.Web.Server.Handler.TestImport
       Spec
@@ -73,6 +74,7 @@ test-suite salsa-party-web-server-webdriver-test
     , mtl
     , network
     , network-uri
+    , password
     , path
     , path-io
     , persistent
@@ -88,6 +90,8 @@ test-suite salsa-party-web-server-webdriver-test
     , time
     , transformers-base
     , typed-process
+    , typed-uuid
+    , uuid
     , webdriver
     , yesod
     , yesod-auth

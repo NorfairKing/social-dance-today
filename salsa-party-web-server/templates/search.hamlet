@@ -22,7 +22,7 @@ $forall day <- days
                 <div .column .is-two-thirds-tablet .is-half-desktop>
                   <div .zoom-without-container>
                     <a  href=@{EventR $ partyUuid party}>
-                      <div .card>
+                      <div .card id=#{uuidText $ partyUuid party}>
                         $maybe posterKey <- mPosterVal
                           <div .card-image .has-text-centered>
                             <img .poster
@@ -42,7 +42,7 @@ $forall day <- days
                 <div .column .is-two-thirds-tablet .is-half-desktop>
                   <div .zoom-without-container>
                     <a  href=@{EventR $ externalEventUuid externalEvent}>
-                      <div .card>
+                      <div .card id=#{uuidText $ externalEventUuid externalEvent}>
                         $maybe posterKey <- mPosterVal
                           <div .card-image .has-text-centered>
                             <img .poster

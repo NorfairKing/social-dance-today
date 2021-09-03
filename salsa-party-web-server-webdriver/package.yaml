@@ -53,6 +53,7 @@ tests:
     - mtl
     - network
     - network-uri
+    - password
     - path
     - path-io
     - persistent
@@ -69,6 +70,8 @@ tests:
     - transformers-base
     - typed-process
     - typed-process
+    - typed-uuid
+    - uuid
     - webdriver
     - yesod
     - yesod-auth

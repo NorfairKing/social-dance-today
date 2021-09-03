@@ -84,6 +84,11 @@ instance IsTest (WebdriverTestM ()) where
   type Arg2 (WebdriverTestM ()) = WebdriverTestEnv
   runTest wdTestFunc = runTest (\() wdte -> runWebdriverTestM wdte wdTestFunc)
 
+instance IsTest (WebdriverTestM (GoldenTest a)) where
+  type Arg1 (WebdriverTestM (GoldenTest a)) = ()
+  type Arg2 (WebdriverTestM (GoldenTest a)) = WebdriverTestEnv
+  runTest wdTestFunc = runTest (\() wdte -> runWebdriverTestM wdte wdTestFunc)
+
 runWebdriverTestM :: WebdriverTestEnv -> WebdriverTestM a -> IO a
 runWebdriverTestM env (WebdriverTestM func) = WD.runSession (webdriverTestEnvConfig env) $
   WD.finallyClose $ do
