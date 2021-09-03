@@ -18,6 +18,7 @@ import Salsa.Party.DB
 import Salsa.Party.Web.Server.Handler.Account.Organiser
 import Salsa.Party.Web.Server.Handler.Account.Party
 import Salsa.Party.Web.Server.Handler.Account.Schedule
+import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
 import Salsa.Party.Web.Server.Handler.Import
 import Test.QuickCheck
 
@@ -83,6 +84,10 @@ instance GenValid Party where
   shrinkValid = shrinkValidStructurally
 
 instance GenValid ExternalEvent where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid ExternalEventExport where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 

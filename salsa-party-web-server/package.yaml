@@ -79,6 +79,7 @@ library:
   - yesod
   - yesod-auth
   - yesod-autoreload
+  - yesod-core
   - yesod-sitemap
   - yesod-static
   - yesod-static-remote

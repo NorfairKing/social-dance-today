@@ -14,6 +14,7 @@ import Salsa.Party.Web.Server.TestUtils as X
 import Test.QuickCheck as X
 import Test.Syd as X
 import Test.Syd.Validity as X hiding (Location)
+import Test.Syd.Validity.Aeson as X
 import Test.Syd.Yesod as X
 import Text.Show.Pretty as X
 import Yesod as X (Textarea (..))

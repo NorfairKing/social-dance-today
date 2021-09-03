@@ -87,6 +87,7 @@ test-suite salsa-party-web-server-gen-test
       Salsa.Party.Web.Server.Handler.AuthSpec
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.DescriptionSpec
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICalSpec
+      Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSONSpec
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LDSpec
       Salsa.Party.Web.Server.Handler.Event.ExternalEventSpec
       Salsa.Party.Web.Server.Handler.Event.Party.DescriptionSpec

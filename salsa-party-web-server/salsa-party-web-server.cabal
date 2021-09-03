@@ -78,6 +78,7 @@ library
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Description
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
+      Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
       Salsa.Party.Web.Server.Handler.Event.ICal
       Salsa.Party.Web.Server.Handler.Event.Party
@@ -178,6 +179,7 @@ library
     , yesod
     , yesod-auth
     , yesod-autoreload
+    , yesod-core
     , yesod-sitemap
     , yesod-static
     , yesod-static-remote
