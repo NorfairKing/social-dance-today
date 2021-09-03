@@ -13,8 +13,8 @@ spec :: WebdriverSpec
 spec = do
   let windowSizes =
         [ (1920, 1080),
-          (740, 360), -- Galaxy S9
-          (812, 375) -- Iphone X/XS
+          (360, 740), -- Galaxy S9
+          (375, 812) -- Iphone X/XS
         ]
   forM_ windowSizes $ \(width, height) ->
     it ("Shows a party in the same way on screens of size " <> show width <> "x" <> show height) $ do
