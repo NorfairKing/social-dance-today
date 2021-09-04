@@ -2,6 +2,8 @@
 
 module Salsa.Party.Web.Server.Handler.PartySpec (spec) where
 
+import Codec.Picture
+import Codec.Picture.Png
 import Data.Aeson as JSON
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
@@ -14,7 +16,8 @@ import qualified Database.Persist as DB
 import Path
 import Path.IO
 import Salsa.Party.Web.Server.Foundation
-import Salsa.Party.Web.Server.Handler.TestImport
+import Salsa.Party.Web.Server.Handler.TestImport hiding (Image)
+import System.Exit
 
 spec :: WebdriverSpec
 spec = do
@@ -97,7 +100,10 @@ spec = do
       let fp = concat ["test_resources/party/", show width <> "x", show height, ".png"]
       pure $ pureGoldenScreenshot fp png
 
-data Screenshot = Screenshot {screenshotFile :: !(Path Abs File), screenshotContents :: !ByteString}
+data Screenshot = Screenshot
+  { screenshotFile :: !(Path Abs File),
+    screenshotImage :: !(Image PixelRGB8)
+  }
 
 pureGoldenScreenshot :: FilePath -> LB.ByteString -> GoldenTest Screenshot
 pureGoldenScreenshot fp contents =
@@ -105,25 +111,33 @@ pureGoldenScreenshot fp contents =
     { goldenTestRead = do
         resolvedFile <- resolveFile' fp
         mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile resolvedFile
-        pure $
-          ( \cts ->
-              Screenshot
-                { screenshotFile = resolvedFile,
-                  screenshotContents = cts
-                }
-          )
-            <$> mContents,
+        forM mContents $ \contents -> do
+          case decodePng contents of
+            Left err -> die err
+            Right dynamicImage ->
+              pure $
+                Screenshot
+                  { screenshotFile = resolvedFile,
+                    screenshotImage = convertRGB8 dynamicImage
+                  },
       goldenTestProduce = do
         tempDir <- getTempDir
         -- Write it to a file so we can compare it if it differs.
         (tempFilePath, h) <- openTempFile tempDir "screenshot.png"
         let sb = LB.toStrict contents
         SB.hPut h sb
-        pure $ Screenshot tempFilePath sb,
+        case decodePng sb of
+          Left err -> die err
+          Right dynamicImage ->
+            pure $
+              Screenshot
+                { screenshotFile = tempFilePath,
+                  screenshotImage = convertRGB8 dynamicImage
+                },
       goldenTestWrite = \(Screenshot _ actual) -> do
         resolvedFile <- resolveFile' fp
         ensureDir $ parent resolvedFile
-        SB.writeFile (fromAbsFile resolvedFile) actual,
+        SB.writeFile (fromAbsFile resolvedFile) (LB.toStrict (encodePng actual)),
       goldenTestCompare = \(Screenshot actualPath actual) (Screenshot expectedPath expected) ->
         if actual == expected
           then Nothing

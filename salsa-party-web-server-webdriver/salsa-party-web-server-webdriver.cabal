@@ -66,7 +66,8 @@ test-suite salsa-party-web-server-webdriver-test
   build-tool-depends:
       sydtest-discover:sydtest-discover
   build-depends:
-      QuickCheck
+      JuicyPixels
+    , QuickCheck
     , aeson
     , base >=4.7 && <5
     , bytestring

@@ -46,6 +46,7 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - JuicyPixels
     - QuickCheck
     - aeson
     - bytestring
