@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Salsa.Party.Web.Server.Handler.PartySpec (spec) where
+module Salsa.Party.Web.Server.Handler.ExternalEventSpec (spec) where
 
 import Data.Aeson as JSON
 import qualified Data.ByteString.Lazy as LB
@@ -14,6 +14,7 @@ import Salsa.Party.Web.Server.Handler.TestImport hiding (Image)
 
 spec :: WebdriverSpec
 spec = do
+  -- The most common window sizings we deal with.
   let day = fromGregorian 2021 09 02
       moment = UTCTime day 0
   forM_ screensizes $ \(width, height) -> do

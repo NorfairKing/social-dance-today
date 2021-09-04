@@ -519,6 +519,20 @@ data SeleniumServerHandle = SeleniumServerHandle
   { seleniumServerHandlePort :: PortNumber
   }
 
+screenSizes =
+  [ (1920, 1080),
+    (1536, 864),
+    (1440, 900),
+    (414, 896),
+    (412, 915),
+    (390, 844),
+    (375, 812), -- Iphone X/XS
+    (375, 667),
+    (360, 780),
+    (360, 740), -- Galaxy S9
+    (360, 640)
+  ]
+
 data Screenshot = Screenshot
   { screenshotFile :: !(Path Abs File),
     screenshotImage :: !(Picture.Image PixelRGB8)
