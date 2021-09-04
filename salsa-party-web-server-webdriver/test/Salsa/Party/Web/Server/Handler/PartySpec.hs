@@ -7,6 +7,7 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import Data.Password.Bcrypt as Password
+import qualified Data.Text.Encoding as TE
 import Data.UUID as UUID
 import Data.UUID.Typed as Typed
 import qualified Database.Persist as DB
@@ -33,7 +34,7 @@ spec = do
         ]
       day = fromGregorian 2021 09 02
       moment = UTCTime day 0
-      timeHeader = JSON.encode moment
+      timeOverride = TE.decodeUtf8 $ LB.toStrict $ JSON.encode moment
   forM_ windowSizes $ \(width, height) -> do
     let description =
           concat
@@ -91,7 +92,7 @@ spec = do
       -- Set the window size and orientation
       setWindowSize (width, height)
       -- Go to the party page
-      withRequestHeaders [(currentTimeOverrideHeader, LB.toStrict timeHeader)] $ openRoute $ EventR partyUuid_
+      openRouteWithParams (EventR partyUuid_) [(currentTimeOverrideParam, timeOverride)]
       png <- screenshot
       let fp = concat ["test_resources/party/", show width <> "x", show height, ".png"]
       pure $ pureGoldenScreenshot fp png

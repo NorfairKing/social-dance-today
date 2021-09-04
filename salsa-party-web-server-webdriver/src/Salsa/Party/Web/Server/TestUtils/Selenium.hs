@@ -106,10 +106,13 @@ openHome = do
   openPage (show uri)
 
 openRoute :: Route App -> WebdriverTestM ()
-openRoute route = do
+openRoute route = openRouteWithParams route []
+
+openRouteWithParams :: Route App -> [(Text, Text)] -> WebdriverTestM ()
+openRouteWithParams route extraParams = do
   uri <- asks webdriverTestEnvURI
   let (pathPieces, queryParams) = Yesod.renderRoute route
-  let q = queryTextToQuery $ map (second Just) queryParams
+  let q = queryTextToQuery $ map (second Just) (queryParams <> extraParams)
   let pathBS = encodePath pathPieces q
   let url = T.unpack $ TE.decodeUtf8 (LB.toStrict (BB.toLazyByteString pathBS)) -- Not safe, but it will fail during testing (if at all) so should be ok.
   openPage $ show uri <> url

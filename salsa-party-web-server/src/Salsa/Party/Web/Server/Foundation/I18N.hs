@@ -27,6 +27,7 @@ import qualified Data.ByteString.Lazy as LB
 import Data.CaseInsensitive
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Time
 import Network.Wai
 import Salsa.Party.DB
@@ -295,17 +296,14 @@ htmlDescriptionMaxLength = 160
 normaliseNewlines :: Text -> Text
 normaliseNewlines = T.replace "\r\n" "\n"
 
-currentTimeOverrideHeader :: CI ByteString
-currentTimeOverrideHeader = "CURRENT_TIME_OVERRIDE"
+currentTimeOverrideParam :: Text
+currentTimeOverrideParam = "CURRENT_TIME_OVERRIDE"
 
 getCurrentTimeH :: Handler UTCTime
 getCurrentTimeH = do
-  mContents <- lookupHeader currentTimeOverrideHeader
-  liftIO $ print mContents
-  req <- waiRequest
-  liftIO $ print $ requestHeaders req
+  mContents <- lookupGetParam currentTimeOverrideParam
   case mContents of
     Nothing -> liftIO getCurrentTime
-    Just contents -> case JSON.eitherDecode (LB.fromStrict contents) of
+    Just contents -> case JSON.eitherDecode (LB.fromStrict (TE.encodeUtf8 contents)) of
       Left err -> invalidArgs [T.pack err]
       Right t -> pure t
