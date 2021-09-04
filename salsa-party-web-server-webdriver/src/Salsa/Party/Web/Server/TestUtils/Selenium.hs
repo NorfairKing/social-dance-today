@@ -15,10 +15,12 @@
 
 module Salsa.Party.Web.Server.TestUtils.Selenium where
 
+import Codec.Picture as Picture
 import Control.Arrow
 import Control.Monad.Base
 import Control.Monad.Reader
 import Control.Monad.Trans.Control
+import qualified Data.ByteString as SB
 import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Lazy as LB
 import Data.Text (Text)
@@ -516,3 +518,54 @@ seleniumServerSetupFunc = do
 data SeleniumServerHandle = SeleniumServerHandle
   { seleniumServerHandlePort :: PortNumber
   }
+
+data Screenshot = Screenshot
+  { screenshotFile :: !(Path Abs File),
+    screenshotImage :: !(Picture.Image PixelRGB8)
+  }
+
+pureGoldenScreenshot :: FilePath -> LB.ByteString -> GoldenTest Screenshot
+pureGoldenScreenshot fp contents =
+  GoldenTest
+    { goldenTestRead = do
+        resolvedFile <- resolveFile' fp
+        forgivingAbsence $ do
+          errOrDynamicImage <- readPng (fromAbsFile resolvedFile)
+          case errOrDynamicImage of
+            Left err -> expectationFailure $ "Could not parse png: " <> err
+            Right dynamicImage ->
+              pure $
+                Screenshot
+                  { screenshotFile = resolvedFile,
+                    screenshotImage = convertRGB8 dynamicImage
+                  },
+      goldenTestProduce = do
+        tempDir <- getTempDir
+        -- Write it to a file so we can compare it if it differs.
+        (tempFilePath, h) <- openTempFile tempDir "screenshot.png"
+        let sb = LB.toStrict contents
+        SB.hPut h sb
+        case decodePng sb of
+          Left err -> die err
+          Right dynamicImage ->
+            pure $
+              Screenshot
+                { screenshotFile = tempFilePath,
+                  screenshotImage = convertRGB8 dynamicImage
+                },
+      goldenTestWrite = \(Screenshot _ actual) -> do
+        resolvedFile <- resolveFile' fp
+        ensureDir $ parent resolvedFile
+        writePng (fromAbsFile resolvedFile) actual,
+      goldenTestCompare = \(Screenshot actualPath actual) (Screenshot expectedPath expected) ->
+        if actual == expected
+          then Nothing
+          else
+            Just $
+              ExpectationFailed $
+                unlines
+                  [ "Screenshots differ.",
+                    "expected: " <> fromAbsFile expectedPath,
+                    "actual: " <> fromAbsFile actualPath
+                  ]
+    }

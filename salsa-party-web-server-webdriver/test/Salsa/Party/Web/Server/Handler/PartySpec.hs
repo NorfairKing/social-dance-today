@@ -2,22 +2,15 @@
 
 module Salsa.Party.Web.Server.Handler.PartySpec (spec) where
 
-import Codec.Picture
-import Codec.Picture.Png
 import Data.Aeson as JSON
-import Data.ByteString (ByteString)
-import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import Data.Password.Bcrypt as Password
 import qualified Data.Text.Encoding as TE
 import Data.UUID as UUID
 import Data.UUID.Typed as Typed
 import qualified Database.Persist as DB
-import Path
-import Path.IO
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Handler.TestImport hiding (Image)
-import System.Exit
 
 spec :: WebdriverSpec
 spec = do
@@ -111,54 +104,3 @@ spec = do
       png <- screenshot
       let fp = concat ["test_resources/party/", show width <> "x", show height, ".png"]
       pure $ pureGoldenScreenshot fp png
-
-data Screenshot = Screenshot
-  { screenshotFile :: !(Path Abs File),
-    screenshotImage :: !(Image PixelRGB8)
-  }
-
-pureGoldenScreenshot :: FilePath -> LB.ByteString -> GoldenTest Screenshot
-pureGoldenScreenshot fp contents =
-  GoldenTest
-    { goldenTestRead = do
-        resolvedFile <- resolveFile' fp
-        mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile resolvedFile
-        forM mContents $ \contents -> do
-          case decodePng contents of
-            Left err -> die err
-            Right dynamicImage ->
-              pure $
-                Screenshot
-                  { screenshotFile = resolvedFile,
-                    screenshotImage = convertRGB8 dynamicImage
-                  },
-      goldenTestProduce = do
-        tempDir <- getTempDir
-        -- Write it to a file so we can compare it if it differs.
-        (tempFilePath, h) <- openTempFile tempDir "screenshot.png"
-        let sb = LB.toStrict contents
-        SB.hPut h sb
-        case decodePng sb of
-          Left err -> die err
-          Right dynamicImage ->
-            pure $
-              Screenshot
-                { screenshotFile = tempFilePath,
-                  screenshotImage = convertRGB8 dynamicImage
-                },
-      goldenTestWrite = \(Screenshot _ actual) -> do
-        resolvedFile <- resolveFile' fp
-        ensureDir $ parent resolvedFile
-        writePng (fromAbsFile resolvedFile) actual,
-      goldenTestCompare = \(Screenshot actualPath actual) (Screenshot expectedPath expected) ->
-        if actual == expected
-          then Nothing
-          else
-            Just $
-              ExpectationFailed $
-                unlines
-                  [ "Screenshots differ.",
-                    "expected: " <> fromAbsFile expectedPath,
-                    "actual: " <> fromAbsFile actualPath
-                  ]
-    }
