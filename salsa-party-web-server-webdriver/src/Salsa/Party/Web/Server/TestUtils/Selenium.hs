@@ -15,9 +15,12 @@
 
 module Salsa.Party.Web.Server.TestUtils.Selenium where
 
+import Control.Arrow
 import Control.Monad.Base
 import Control.Monad.Reader
 import Control.Monad.Trans.Control
+import qualified Data.ByteString.Builder as BB
+import qualified Data.ByteString.Lazy as LB
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -101,6 +104,15 @@ openHome :: WebdriverTestM ()
 openHome = do
   uri <- asks webdriverTestEnvURI
   openPage (show uri)
+
+openRoute :: Route App -> WebdriverTestM ()
+openRoute route = do
+  uri <- asks webdriverTestEnvURI
+  let (pathPieces, queryParams) = Yesod.renderRoute route
+  let q = queryTextToQuery $ map (second Just) queryParams
+  let pathBS = encodePath pathPieces q
+  let url = T.unpack $ TE.decodeUtf8 (LB.toStrict (BB.toLazyByteString pathBS)) -- Not safe, but it will fail during testing (if at all) so should be ok.
+  openPage $ show uri <> url
 
 dummyUser :: TestUser
 dummyUser = TestUser {testUserEmail = dummyEmail, testUserPassword = dummyPassword}

@@ -21,9 +21,14 @@ module Salsa.Party.Web.Server.Foundation.I18N
   )
 where
 
+import Data.Aeson as JSON
+import Data.ByteString (ByteString)
+import qualified Data.ByteString.Lazy as LB
+import Data.CaseInsensitive
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
+import Network.Wai
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation.App
 import Salsa.Party.Web.Server.Foundation.I18N.Messages
@@ -289,3 +294,18 @@ htmlDescriptionMaxLength = 160
 
 normaliseNewlines :: Text -> Text
 normaliseNewlines = T.replace "\r\n" "\n"
+
+currentTimeOverrideHeader :: CI ByteString
+currentTimeOverrideHeader = "CURRENT_TIME_OVERRIDE"
+
+getCurrentTimeH :: Handler UTCTime
+getCurrentTimeH = do
+  mContents <- lookupHeader currentTimeOverrideHeader
+  liftIO $ print mContents
+  req <- waiRequest
+  liftIO $ print $ requestHeaders req
+  case mContents of
+    Nothing -> liftIO getCurrentTime
+    Just contents -> case JSON.eitherDecode (LB.fromStrict contents) of
+      Left err -> invalidArgs [T.pack err]
+      Right t -> pure t

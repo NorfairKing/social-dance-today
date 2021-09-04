@@ -47,6 +47,8 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - QuickCheck
+    - aeson
+    - bytestring
     - genvalidity-sydtest
     - http-client
     - monad-control

@@ -17,6 +17,7 @@ library:
   - base64-bytestring
   - blaze-html
   - bytestring
+  - case-insensitive
   - conduit
   - containers
   - cryptohash-sha256
@@ -68,6 +69,7 @@ library:
   - validity-persistent
   - validity-text
   - validity-time
+  - wai
   - wai-extra
   - warp
   - webdriver

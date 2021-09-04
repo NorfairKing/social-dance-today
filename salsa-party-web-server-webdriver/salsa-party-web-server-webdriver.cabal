@@ -67,7 +67,9 @@ test-suite salsa-party-web-server-webdriver-test
       sydtest-discover:sydtest-discover
   build-depends:
       QuickCheck
+    , aeson
     , base >=4.7 && <5
+    , bytestring
     , genvalidity-sydtest
     , http-client
     , monad-control
