@@ -14,6 +14,8 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Time
+import Database.Persist.Sql (SqlPersistT)
 import qualified Database.Persist.Sql as DB
 import Database.Persist.Sqlite (fkEnabled, mkSqliteConnectionInfo, walEnabled, withSqlitePoolInfo)
 import GHC.Generics (Generic)
@@ -103,6 +105,25 @@ readTestFile testFilePath = do
 
 testFileCASKey :: TestFile -> Maybe CASKey
 testFileCASKey TestFile {..} = mkCASKey <$> testFileType <*> pure testFileContents
+
+insertTestFileImage :: MonadIO m => TestFile -> SqlPersistT m ImageId
+insertTestFileImage TestFile {..} = do
+  case testFileType of
+    Nothing -> liftIO $ expectationFailure "Could not make the caskey of a test file"
+    Just typ -> do
+      let casKey = mkCASKey typ testFileContents
+      now <- liftIO getCurrentTime
+      DB.entityKey
+        <$> DB.upsertBy
+          (UniqueImageKey casKey)
+          ( Image
+              { imageKey = casKey,
+                imageTyp = typ,
+                imageBlob = testFileContents,
+                imageCreated = now
+              }
+          )
+          []
 
 addRecurrenceParams :: Recurrence -> RequestBuilder App ()
 addRecurrenceParams = \case

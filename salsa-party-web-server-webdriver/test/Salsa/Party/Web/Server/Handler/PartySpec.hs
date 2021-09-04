@@ -48,6 +48,8 @@ spec = do
             ]
     it description $ do
       let address = "Bürkliplatz, 8001 Zürich"
+      posterFile <- readTestFile "test_resources/posters/bachata-community.jpg"
+      mapFile <- readTestFile "test_resources/maps/bachata-community.jpg"
       partyUuid_ <- driveDB $ do
         passwordHash <- hashPassword $ mkPassword "dummy password"
         let user =
@@ -75,6 +77,8 @@ spec = do
                   placeLon = Longitude 0 -- Dummy
                 }
         placeId <- DB.insert place
+        mapId <- insertTestFileImage mapFile
+        DB.insert_ StaticMap {staticMapPlace = placeId, staticMapImage = mapId}
         let party =
               Party
                 { partyUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112, -- Dummy
@@ -90,7 +94,15 @@ spec = do
                   partyModified = Nothing,
                   partyPlace = placeId
                 }
-        _ <- DB.insert party
+        partyId <- DB.insert party
+        posterId <- insertTestFileImage posterFile
+        DB.insert_
+          PartyPoster
+            { partyPosterParty = partyId,
+              partyPosterImage = posterId,
+              partyPosterCreated = moment,
+              partyPosterModified = Nothing
+            }
         pure $ partyUuid party
       -- Set the window size and orientation
       setWindowSize (width, height)
@@ -137,7 +149,7 @@ pureGoldenScreenshot fp contents =
       goldenTestWrite = \(Screenshot _ actual) -> do
         resolvedFile <- resolveFile' fp
         ensureDir $ parent resolvedFile
-        SB.writeFile (fromAbsFile resolvedFile) (LB.toStrict (encodePng actual)),
+        writePng (fromAbsFile resolvedFile) actual,
       goldenTestCompare = \(Screenshot actualPath actual) (Screenshot expectedPath expected) ->
         if actual == expected
           then Nothing
