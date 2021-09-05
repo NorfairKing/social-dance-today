@@ -2,6 +2,7 @@ let
   sources = import ./nix/sources.nix;
   pkgs = import ./nix/pkgs.nix { inherit sources; };
   pre-commit = import ./nix/pre-commit.nix { inherit sources; };
+  fontconfigDir = pkgs.callPackage ./nix/fonts-conf.nix { };
 in
 pkgs.haskell.lib.buildStackProject {
   name = "salsa-party-nix-shell";
@@ -15,5 +16,7 @@ pkgs.haskell.lib.buildStackProject {
     chromedriver
     zlib
   ] ++ pre-commit.tools;
-  shellHook = pre-commit.run.shellHook;
+  shellHook = pre-commit.run.shellHook + ''
+    export FONTCONFIG_SYSROOT=${fontconfigDir}
+  '';
 }

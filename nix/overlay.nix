@@ -83,8 +83,7 @@ in
       salsa-party-web-server-gen = salsaPartyPkg "salsa-party-web-server-gen";
       salsa-party-web-server-webdriver = overrideCabal (salsaPartyPkg "salsa-party-web-server-webdriver") (old: {
         preConfigure = (old.preConfigure or "") + ''
-          # https://github.com/NixOS/nixpkgs/issues/136207
-          export FONTCONFIG_FILE=${final.makeFontsConf { fontDirectories = [];}}
+          export FONTCONFIG_SYSROOT=${final.callPackage ./fonts-conf.nix {}}
         '';
         testDepends = (old.testDepends or [ ]) ++ (with final; [
           chromedriver
