@@ -2,7 +2,7 @@
   <div .container>
     <div .columns .is-centered>
       <div .column .is-8-tablet .is-7-desktop .is-6-widescreen>
-        <h1 .title .is-3 .has-text-centered>
+        <h1 .title .is-3>
           $if partyCancelled
             _{MsgPartyTitleCancelled partyTitle}
           $else

@@ -22,14 +22,11 @@ module Salsa.Party.Web.Server.Foundation.I18N
 where
 
 import Data.Aeson as JSON
-import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as LB
-import Data.CaseInsensitive
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
-import Network.Wai
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation.App
 import Salsa.Party.Web.Server.Foundation.I18N.Messages
@@ -51,6 +48,7 @@ posterImageWidget Party {..} Organiser {..} posterKey = do
       src=@{ImageR posterKey}
       alt=_{MsgPosterAltFull partyTitle timeStr organiserName}>
   |]
+    <> posterCSS
 
 recurrenceDescriptionWidget :: Recurrence -> Widget
 recurrenceDescriptionWidget recurrence = do

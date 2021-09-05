@@ -20,6 +20,7 @@ import Control.Arrow
 import Control.Monad.Base
 import Control.Monad.Reader
 import Control.Monad.Trans.Control
+import Data.Aeson as JSON
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Lazy as LB
@@ -519,19 +520,14 @@ data SeleniumServerHandle = SeleniumServerHandle
   { seleniumServerHandlePort :: PortNumber
   }
 
+screenSizes :: [(Word, Word)]
 screenSizes =
   [ (1920, 1080),
-    (1536, 864),
-    (1440, 900),
-    (414, 896),
-    (412, 915),
-    (390, 844),
-    (375, 812), -- Iphone X/XS
-    (375, 667),
-    (360, 780),
-    (360, 740), -- Galaxy S9
-    (360, 640)
+    (414, 896)
   ]
+
+timeOverrideQueryParam :: UTCTime -> (Text, Text)
+timeOverrideQueryParam moment = (currentTimeOverrideParam, TE.decodeUtf8 $ LB.toStrict $ JSON.encode moment)
 
 data Screenshot = Screenshot
   { screenshotFile :: !(Path Abs File),
@@ -543,10 +539,10 @@ pureGoldenScreenshot fp contents =
   GoldenTest
     { goldenTestRead = do
         resolvedFile <- resolveFile' fp
-        forgivingAbsence $ do
-          errOrDynamicImage <- readPng (fromAbsFile resolvedFile)
-          case errOrDynamicImage of
-            Left err -> expectationFailure $ "Could not parse png: " <> err
+        mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile resolvedFile
+        forM mContents $ \cts -> do
+          case decodePng cts of
+            Left err -> die err
             Right dynamicImage ->
               pure $
                 Screenshot

@@ -2,10 +2,7 @@
 
 module Salsa.Party.Web.Server.Handler.PartySpec (spec) where
 
-import Data.Aeson as JSON
-import qualified Data.ByteString.Lazy as LB
 import Data.Password.Bcrypt as Password
-import qualified Data.Text.Encoding as TE
 import Data.UUID as UUID
 import Data.UUID.Typed as Typed
 import qualified Database.Persist as DB
@@ -16,7 +13,7 @@ spec :: WebdriverSpec
 spec = do
   let day = fromGregorian 2021 09 02
       moment = UTCTime day 0
-  forM_ screensizes $ \(width, height) -> do
+  forM_ screenSizes $ \(width, height) -> do
     let description =
           concat
             [ "Shows a party in the same way on screens of size ",
