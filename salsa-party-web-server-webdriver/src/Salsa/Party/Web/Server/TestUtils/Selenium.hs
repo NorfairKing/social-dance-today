@@ -538,7 +538,9 @@ pureGoldenScreenshot :: FilePath -> LB.ByteString -> GoldenTest Screenshot
 pureGoldenScreenshot fp contents =
   GoldenTest
     { goldenTestRead = do
-        resolvedFile <- resolveFile' fp
+        relFile <- parseRelFile fp
+        currentDir <- getCurrentDir
+        let resolvedFile = currentDir </> relFile
         mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile resolvedFile
         forM mContents $ \cts -> do
           case decodePng cts of
@@ -550,21 +552,26 @@ pureGoldenScreenshot fp contents =
                     screenshotImage = convertRGB8 dynamicImage
                   },
       goldenTestProduce = do
-        tempDir <- getTempDir
-        -- Write it to a file so we can compare it if it differs.
-        (tempFilePath, h) <- openTempFile tempDir "screenshot.png"
         let sb = LB.toStrict contents
-        SB.hPut h sb
         case decodePng sb of
-          Left err -> die err
-          Right dynamicImage ->
+          Left err -> expectationFailure $ "Could not parse screenshot as png: " <> err
+          Right dynamicImage -> do
+            let image = convertRGB8 dynamicImage
+            relFile <- parseRelFile fp
+            tempDir <- resolveDir' "screenshot-comparison"
+            let tempFile = tempDir </> relFile
+            ensureDir $ parent tempFile
+            -- Write it to a file so we can compare it if it differs.
+            writePng (fromAbsFile tempFile) image
             pure $
               Screenshot
-                { screenshotFile = tempFilePath,
-                  screenshotImage = convertRGB8 dynamicImage
+                { screenshotFile = tempFile,
+                  screenshotImage = image
                 },
       goldenTestWrite = \(Screenshot _ actual) -> do
-        resolvedFile <- resolveFile' fp
+        relFile <- parseRelFile fp
+        currentDir <- getCurrentDir
+        let resolvedFile = currentDir </> relFile
         ensureDir $ parent resolvedFile
         writePng (fromAbsFile resolvedFile) actual,
       goldenTestCompare = \(Screenshot actualPath actual) (Screenshot expectedPath expected) ->
