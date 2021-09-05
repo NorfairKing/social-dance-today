@@ -70,30 +70,30 @@
               _{MsgPartyAddToGoogleCalendar}
 
 
-<!-- Facebook Open Graph metadata -->
-<meta property="og:type" content="website">
-<meta property="og:url" content=@{EventR partyUuid}>
-<meta property="og:title" content=#{partyTitle}>
-$maybe posterKey <- mPosterKey
-  <meta property="og:image" content=@{ImageR posterKey}>
-$maybe description <- partyDescription
-  <meta property="og:description" content=#{description}>
-
-<!-- Twitter Meta tags -->
-<meta name="twitter:site" content="@kerckhove_ts">
-<meta property="twitter:domain" content=@{HomeR}>
-<meta property="twitter:url" content=@{EventR partyUuid}>
-<meta name="twitter:title" content=#{partyTitle}>
-$maybe description <- partyDescription
-  <meta property="twitter:description" content=#{description}>
-$maybe posterKey <- mPosterKey
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content=@{ImageR posterKey}>
-
-$if development
-  <details>
-    <summary>
-      Debug info
-    <pre>
-      #{ppShow party}
-
+        <!-- Facebook Open Graph metadata -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content=@{EventR partyUuid}>
+        <meta property="og:title" content=#{partyTitle}>
+        $maybe posterKey <- mPosterKey
+          <meta property="og:image" content=@{ImageR posterKey}>
+        $maybe description <- partyDescription
+          <meta property="og:description" content=#{description}>
+        
+        <!-- Twitter Meta tags -->
+        <meta name="twitter:site" content="@kerckhove_ts">
+        <meta property="twitter:domain" content=@{HomeR}>
+        <meta property="twitter:url" content=@{EventR partyUuid}>
+        <meta name="twitter:title" content=#{partyTitle}>
+        $maybe description <- partyDescription
+          <meta property="twitter:description" content=#{description}>
+        $maybe posterKey <- mPosterKey
+          <meta name="twitter:card" content="summary_large_image">
+          <meta name="twitter:image" content=@{ImageR posterKey}>
+        
+        $if development
+          <details>
+            <summary>
+              Debug info
+            <pre>
+              #{ppShow party}
+        
