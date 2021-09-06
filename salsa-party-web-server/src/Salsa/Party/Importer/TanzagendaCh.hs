@@ -37,6 +37,7 @@ func =
       .| doHttpRequestWith
       .| logRequestErrors
       .| parseEventsKeys
+      .| deduplicateC
       .| C.concatMap (\k -> (,) k <$> parseRequest ("https://tanzagenda.ch/events/" <> T.unpack k) :: Maybe (Text, Request))
       .| doHttpRequestWith'
       .| logRequestErrors'
