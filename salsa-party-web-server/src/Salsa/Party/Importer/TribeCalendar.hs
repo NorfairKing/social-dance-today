@@ -71,7 +71,10 @@ parseUrlsInCalendars =
     .| C.concatMap (parseURI . T.unpack)
 
 importTribeCalendarJSONLDEvents :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString, LD.Event) Void Import ()
-importTribeCalendarJSONLDEvents = awaitForever $ \(request, response, event) -> do
+importTribeCalendarJSONLDEvents = tribeCalendarJSONLDEvents .| C.mapM_ importExternalEventWithMImage
+
+tribeCalendarJSONLDEvents :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString, LD.Event) (ExternalEvent, Maybe URI) Import ()
+tribeCalendarJSONLDEvents = awaitForever $ \(request, response, event) -> do
   -- We use this 'unescapeHtml' function because
   -- there are still html entities in the tags that we get.
   -- I'm not sure whether that's a mistake on their part or on ours, but it's definitely weird.
@@ -162,21 +165,4 @@ importTribeCalendarJSONLDEvents = awaitForever $ \(request, response, event) -> 
         Just (Entity externalEventPlace _) -> do
           externalEventImporter <- asks importEnvId
           let externalEventOrigin = T.pack $ show $ getUri request
-          lift $
-            importExternalEventAnd ExternalEvent {..} $ \externalEventId -> do
-              forM_ mImageURI $ \imageUri -> do
-                mImageId <- tryToImportImage imageUri
-                forM_ mImageId $ \imageId -> do
-                  importDB $
-                    upsertBy
-                      (UniqueExternalEventPoster externalEventId)
-                      ( ExternalEventPoster
-                          { externalEventPosterExternalEvent = externalEventId,
-                            externalEventPosterImage = imageId,
-                            externalEventPosterCreated = now,
-                            externalEventPosterModified = Nothing
-                          }
-                      )
-                      [ ExternalEventPosterImage =. imageId,
-                        ExternalEventPosterModified =. Just now
-                      ]
+          yield (ExternalEvent {..}, mImageURI)

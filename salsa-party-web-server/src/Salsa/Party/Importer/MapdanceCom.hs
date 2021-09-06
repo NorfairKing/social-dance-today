@@ -107,7 +107,7 @@ importFestivalPage :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Void 
 importFestivalPage = awaitForever $ \(request, response) -> do
   now <- liftIO getCurrentTime
   let today = utctDay now
-  let scrapeExternalEventFromFestivalPage :: ScraperT LB.ByteString Import (ExternalEvent, Maybe Text)
+  let scrapeExternalEventFromFestivalPage :: ScraperT LB.ByteString Import (ExternalEvent, Maybe URI)
       scrapeExternalEventFromFestivalPage = do
         externalEventUuid <- nextRandomUUID
         let externalEventKey =
@@ -184,31 +184,9 @@ importFestivalPage = awaitForever $ \(request, response) -> do
         externalEventImporter <- asks importEnvId
         let externalEventOrigin = T.pack $ show $ getUri request
 
-        mImageUrl <- mutf8 $ optional $ attr "src" $ "img" @: ["itemprop" @= "image"]
+        mImageUri <- fmap (>>= parseURI . T.unpack) $ mutf8 $ optional $ attr "src" $ "img" @: ["itemprop" @= "image"]
 
-        pure (ExternalEvent {..}, mImageUrl)
-  mExternalEventAndUrl <- lift $ scrapeStringLikeT (responseBody response) scrapeExternalEventFromFestivalPage
-
-  case mExternalEventAndUrl of
-    Nothing -> pure ()
-    Just (externalEvent, mImageUrl) -> do
-      lift $
-        importExternalEventAnd externalEvent $ \externalEventId -> do
-          case mImageUrl >>= (parseURI . T.unpack) of
-            Nothing -> pure ()
-            Just uri -> do
-              mImageId <- tryToImportImage uri
-              forM_ mImageId $ \imageId -> do
-                importDB $
-                  upsertBy
-                    (UniqueExternalEventPoster externalEventId)
-                    ( ExternalEventPoster
-                        { externalEventPosterExternalEvent = externalEventId,
-                          externalEventPosterImage = imageId,
-                          externalEventPosterCreated = now,
-                          externalEventPosterModified = Nothing
-                        }
-                    )
-                    [ ExternalEventPosterImage =. imageId,
-                      ExternalEventPosterModified =. Just now
-                    ]
+        pure (ExternalEvent {..}, mImageUri)
+  lift $ do
+    mTup <- scrapeStringLikeT (responseBody response) scrapeExternalEventFromFestivalPage
+    mapM_ importExternalEventWithMImage mTup

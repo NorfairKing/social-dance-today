@@ -212,21 +212,4 @@ eventDetailsSink = awaitForever $ \(identifier, EventDetails {..}) -> do
   let externalEventOrigin = "https://events.info/events/" <> eventDetailsId
   externalEventImporter <- asks importEnvId
   -- Import the event and download its images if anything has changed.
-  lift $
-    importExternalEventAnd ExternalEvent {..} $ \externalEventId -> do
-      forM_ (listToMaybe eventDetailsImages) $ \eventImage -> do
-        mImageId <- tryToImportImage $ eventImageSrc eventImage
-        forM_ mImageId $ \imageId -> do
-          importDB $
-            upsertBy
-              (UniqueExternalEventPoster externalEventId)
-              ( ExternalEventPoster
-                  { externalEventPosterExternalEvent = externalEventId,
-                    externalEventPosterImage = imageId,
-                    externalEventPosterCreated = now,
-                    externalEventPosterModified = Nothing
-                  }
-              )
-              [ ExternalEventPosterImage =. imageId,
-                ExternalEventPosterModified =. Just now
-              ]
+  lift $ importExternalEventWithMImage (ExternalEvent {..}, eventImageSrc <$> listToMaybe eventDetailsImages)

@@ -224,6 +224,27 @@ importDB func = do
   logFunc <- askLoggerIO
   liftIO $ runLoggingT (runSqlPool func pool) logFunc
 
+importExternalEventWithMImage :: (ExternalEvent, Maybe URI) -> Import ()
+importExternalEventWithMImage (externalEvent, mImageURI) =
+  importExternalEventAnd externalEvent $ \externalEventId -> do
+    now <- liftIO getCurrentTime
+    forM_ mImageURI $ \imageUri -> do
+      mImageId <- tryToImportImage imageUri
+      forM_ mImageId $ \imageId -> do
+        importDB $
+          upsertBy
+            (UniqueExternalEventPoster externalEventId)
+            ( ExternalEventPoster
+                { externalEventPosterExternalEvent = externalEventId,
+                  externalEventPosterImage = imageId,
+                  externalEventPosterCreated = now,
+                  externalEventPosterModified = Nothing
+                }
+            )
+            [ ExternalEventPosterImage =. imageId,
+              ExternalEventPosterModified =. Just now
+            ]
+
 importExternalEvent :: ExternalEvent -> Import ()
 importExternalEvent externalEvent = importExternalEventAnd externalEvent $ \_ -> pure ()
 

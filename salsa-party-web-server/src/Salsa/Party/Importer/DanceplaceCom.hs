@@ -137,7 +137,7 @@ parseEventFromPage request response = do
         let externalEventOrigin = T.pack $ show $ getUri request
         externalEventUuid <- nextRandomUUID
 
-        mImageUri <- mutf8 $ optional $ attr "content" $ "meta" @: ["itemprop" @= "image"]
+        mImageUri <- fmap (>>= parseURI . T.unpack) $ mutf8 $ optional $ attr "content" $ "meta" @: ["itemprop" @= "image"]
 
         externalEventPlace <- do
           rawAddressPieces <- chroot ("span" @: ["itemprop" @= "address"]) $ texts ("span" @: [hasClass "text-danger"])
@@ -150,22 +150,5 @@ parseEventFromPage request response = do
             Just (Entity placeId _) -> pure placeId
 
         pure (ExternalEvent {..}, mImageUri)
-  mExternalEvent <- scrapeStringLikeT (responseBody response) scraper
-  case mExternalEvent of
-    Nothing -> pure ()
-    Just (externalEvent, mImageUriText) -> importExternalEventAnd externalEvent $ \externalEventId -> forM_ (mImageUriText >>= parseURI . T.unpack) $ \uri -> do
-      mImageId <- tryToImportImage uri
-      forM_ mImageId $ \imageId -> do
-        importDB $
-          upsertBy
-            (UniqueExternalEventPoster externalEventId)
-            ( ExternalEventPoster
-                { externalEventPosterExternalEvent = externalEventId,
-                  externalEventPosterImage = imageId,
-                  externalEventPosterCreated = now,
-                  externalEventPosterModified = Nothing
-                }
-            )
-            [ ExternalEventPosterImage =. imageId,
-              ExternalEventPosterModified =. Just now
-            ]
+  mTup <- scrapeStringLikeT (responseBody response) scraper
+  mapM_ importExternalEventWithMImage mTup
