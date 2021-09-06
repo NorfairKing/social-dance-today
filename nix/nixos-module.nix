@@ -128,6 +128,7 @@ in
                   sensual-dance-importer = mkLooperOption "sensual-dance-importer";
                   salsa-be-importer = mkLooperOption "salsa-be-importer";
                   latinworld-nl-importer = mkLooperOption "latinworld-nl-importer";
+                  tanzagenda-ch-importer = mkLooperOption "tanzagenda-ch-importer";
                 };
             });
           default = null;
@@ -190,6 +191,7 @@ in
           (nullOrOption "sensual-dance-importer" sensual-dance-importer)
           (nullOrOption "salsa-be-importer" salsa-be-importer)
           (nullOrOption "latinworld-nl-importer" latinworld-nl-importer)
+          (nullOrOption "tanzagenda-ch-importer" tanzagenda-ch-importer)
           (nullOrOption "sentry" sentry)
           cfg.web-server.config
         ];

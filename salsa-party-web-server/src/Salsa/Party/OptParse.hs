@@ -64,7 +64,9 @@ data Settings = Settings
     -- https://salsa.be
     settingSalsaBeImportLooperSettings :: !LooperSettings,
     -- https://latinworld.nl
-    settingLatinworldNlImportLooperSettings :: !LooperSettings
+    settingLatinworldNlImportLooperSettings :: !LooperSettings,
+    -- https://tanzagenda.ch
+    settingTanzagendaChImportLooperSettings :: !LooperSettings
   }
   deriving (Show, Eq, Generic)
 
@@ -104,6 +106,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingSensualDanceImportLooperSettings = deriveLooperSettings (minutes 8 + seconds 7) (hours 1) flagSensualDanceImportLooperFlags envSensualDanceImportLooperEnvironment (mc confSensualDanceImportLooperConfiguration)
   let settingSalsaBeImportLooperSettings = deriveLooperSettings (minutes 9 + seconds 8) (hours 1) flagSalsaBeImportLooperFlags envSalsaBeImportLooperEnvironment (mc confSalsaBeImportLooperConfiguration)
   let settingLatinworldNlImportLooperSettings = deriveLooperSettings (minutes 10 + seconds 9) (hours 1) flagLatinworldNlImportLooperFlags envLatinworldNlImportLooperEnvironment (mc confLatinworldNlImportLooperConfiguration)
+  let settingTanzagendaChImportLooperSettings = deriveLooperSettings (minutes 11 + seconds 10) (hours 1) flagTanzagendaChImportLooperFlags envTanzagendaChImportLooperEnvironment (mc confTanzagendaChImportLooperConfiguration)
   pure Settings {..}
   where
     mc :: (Configuration -> Maybe a) -> Maybe a
@@ -141,7 +144,8 @@ data Configuration = Configuration
     confDancefloorfinderComImportLooperConfiguration :: !(Maybe LooperConfiguration),
     confSensualDanceImportLooperConfiguration :: !(Maybe LooperConfiguration),
     confSalsaBeImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confLatinworldNlImportLooperConfiguration :: !(Maybe LooperConfiguration)
+    confLatinworldNlImportLooperConfiguration :: !(Maybe LooperConfiguration),
+    confTanzagendaChImportLooperConfiguration :: !(Maybe LooperConfiguration)
   }
   deriving (Show, Eq, Generic)
 
@@ -178,6 +182,7 @@ instance YamlSchema Configuration where
         <*> optionalField "sensual-dance-importer" "The sensual.dance import looper"
         <*> optionalField "salsa-be-importer" "The salsa.be import looper"
         <*> optionalField "latinworld-nl-importer" "The latinworld.nl import looper"
+        <*> optionalField "tanzagenda-ch-importer" "The tanzagenda.ch import looper"
 
 data SentryConfiguration = SentryConfiguration
   { sentryConfDSN :: !(Maybe Text),
@@ -235,7 +240,8 @@ data Environment = Environment
     envDancefloorfinderComImportLooperEnvironment :: !LooperEnvironment,
     envSensualDanceImportLooperEnvironment :: !LooperEnvironment,
     envSalsaBeImportLooperEnvironment :: !LooperEnvironment,
-    envLatinworldNlImportLooperEnvironment :: !LooperEnvironment
+    envLatinworldNlImportLooperEnvironment :: !LooperEnvironment,
+    envTanzagendaChImportLooperEnvironment :: !LooperEnvironment
   }
   deriving (Show, Eq, Generic)
 
@@ -280,6 +286,7 @@ environmentParser =
       <*> looperEnvironmentParser "SENSUAL_DANCE_IMPORTER"
       <*> looperEnvironmentParser "SALSA_BE_IMPORTER"
       <*> looperEnvironmentParser "LATINWORLD_NL_IMPORTER"
+      <*> looperEnvironmentParser "TANZAGENDA_CH_IMPORTER"
   where
     mE = Env.def Nothing
 
@@ -343,7 +350,8 @@ data Flags = Flags
     flagDancefloorfinderComImportLooperFlags :: !LooperFlags,
     flagSensualDanceImportLooperFlags :: !LooperFlags,
     flagSalsaBeImportLooperFlags :: !LooperFlags,
-    flagLatinworldNlImportLooperFlags :: !LooperFlags
+    flagLatinworldNlImportLooperFlags :: !LooperFlags,
+    flagTanzagendaChImportLooperFlags :: !LooperFlags
   }
   deriving (Show, Eq, Generic)
 
@@ -513,6 +521,7 @@ parseFlags =
     <*> getLooperFlags "sensual-dance-importer"
     <*> getLooperFlags "salsa-be-importer"
     <*> getLooperFlags "latinworld-nl-importer"
+    <*> getLooperFlags "tanzagenda-ch-importer"
 
 data SentryFlags = SentryFlags
   { sentryFlagDSN :: !(Maybe Text),
