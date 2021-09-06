@@ -9,14 +9,11 @@ module Salsa.Party.Importer.TanzagendaCh (tanzagendaChImporter) where
 
 import Conduit
 import Control.Applicative
-import Data.Aeson as JSON
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
-import Data.Scientific
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import qualified Data.Text.Encoding.Error as TE
 import Network.HTTP.Client as HTTP
 import Network.URI as URI
 import Salsa.Party.Importer.Import
@@ -53,7 +50,7 @@ makeListRequest :: (String, Int) -> Maybe Request
 makeListRequest (url, pageNum) = parseRequest $ url <> "&page=" <> show pageNum
 
 parseEventsKeys :: Monad m => ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Text m ()
-parseEventsKeys = awaitForever $ \(request, response) -> do
+parseEventsKeys = awaitForever $ \(_, response) -> do
   let uris = fromMaybe [] $
         scrapeStringLike (responseBody response) $ do
           refs <- attrs "href" "a"
@@ -72,7 +69,6 @@ parseEventPage = awaitForever $ \(key, request, response) -> do
         let externalEventKey = key
 
         rawTitle <- text "h1"
-        liftIO $ pPrint ("rawTitle", rawTitle)
         externalEventTitle <- utf8 rawTitle
 
         chroot ("div" @: [hasClass "card-body"]) $ do
