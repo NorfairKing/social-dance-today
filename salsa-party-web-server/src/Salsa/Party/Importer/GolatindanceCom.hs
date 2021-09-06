@@ -64,7 +64,7 @@ func = do
       .| logRequestErrors
       .| jsonLDEventsC
       .| tribeCalendarJSONLDEvents
-      .| C.map removeDetails
+      .| C.map (first removeDetails)
       .| C.mapM_ importExternalEventWithMImage
 
 specialUserAgent :: ByteString
@@ -79,5 +79,12 @@ parseCategoryUrls = awaitForever $ \(_, response) -> do
           pure $ mapMaybe maybeUtf8 $ filter ("https://golatindance.com/events/category/" `LB.isPrefixOf`) refs
   yieldMany $ mapMaybe (parseURI . T.unpack) links
 
-removeDetails :: ()
-removeDetails = ()
+-- We remove details at Jason's request, so we only link to golatindance.com
+removeDetails :: ExternalEvent -> ExternalEvent
+removeDetails externalEvent =
+  externalEvent
+    { externalEventDescription = Nothing,
+      externalEventOrganiser = Nothing,
+      externalEventHomepage = Just $ externalEventOrigin externalEvent,
+      externalEventPrice = Nothing
+    }

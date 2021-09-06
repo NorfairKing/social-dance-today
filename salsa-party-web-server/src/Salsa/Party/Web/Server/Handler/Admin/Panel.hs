@@ -217,8 +217,13 @@ postAdminImporterDeleteR :: ImporterMetadataId -> Handler Html
 postAdminImporterDeleteR importerId = do
   today <- liftIO $ utctDay <$> getCurrentTime
   runDB $ do
-    deleteWhere [ExternalEventImporter ==. importerId, ExternalEventDay ==. today]
-    delete importerId
+    deleteWhere [ExternalEventImporter ==. importerId, ExternalEventDay >=. today]
+    update
+      importerId
+      [ ImporterMetadataLastRunStart =. Nothing,
+        ImporterMetadataLastRunEnd =. Nothing,
+        ImporterMetadataLastRunImported =. Just 0
+      ]
   redirect $ AdminR AdminPanelR
 
 data Paginated a = Paginated

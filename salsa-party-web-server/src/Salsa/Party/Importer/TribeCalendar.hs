@@ -15,7 +15,12 @@
 --
 -- Developer docs here:
 -- https://theeventscalendar.com/knowledgebase/k/new-user-primer-the-events-calendar-and-events-calendar-pro/
-module Salsa.Party.Importer.TribeCalendar (tribeCalendarC, importTribeCalendarJSONLDEvents) where
+module Salsa.Party.Importer.TribeCalendar
+  ( tribeCalendarC,
+    importTribeCalendarJSONLDEvents,
+    tribeCalendarJSONLDEvents,
+  )
+where
 
 import Conduit
 import qualified Data.ByteString.Lazy as LB

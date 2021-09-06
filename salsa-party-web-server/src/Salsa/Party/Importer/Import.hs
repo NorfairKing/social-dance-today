@@ -1,5 +1,6 @@
 module Salsa.Party.Importer.Import (module X) where
 
+import Control.Arrow as X (first, second)
 import Control.Concurrent as X (threadDelay)
 import Control.Monad.IO.Class as X
 import Control.Monad.Logger as X
