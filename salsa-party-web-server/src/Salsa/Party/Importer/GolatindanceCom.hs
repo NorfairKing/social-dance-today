@@ -63,7 +63,9 @@ func = do
       .| doHttpRequestWith
       .| logRequestErrors
       .| jsonLDEventsC
-      .| importTribeCalendarJSONLDEvents
+      .| tribeCalendarJSONLDEvents
+      .| C.map removeDetails
+      .| C.mapM_ importExternalEventWithMImage
 
 specialUserAgent :: ByteString
 specialUserAgent = "User-Agent Mozilla/5.0 (X11; Linux x86_64; rv:89.0) Gecko/20100101 Firefox/89.0"
@@ -76,3 +78,6 @@ parseCategoryUrls = awaitForever $ \(_, response) -> do
           refs <- attrs "href" "a"
           pure $ mapMaybe maybeUtf8 $ filter ("https://golatindance.com/events/category/" `LB.isPrefixOf`) refs
   yieldMany $ mapMaybe (parseURI . T.unpack) links
+
+removeDetails :: ()
+removeDetails = ()
