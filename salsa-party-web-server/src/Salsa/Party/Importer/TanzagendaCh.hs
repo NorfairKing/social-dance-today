@@ -34,19 +34,16 @@ tanzagendaChImporter =
 func :: Import ()
 func =
   runConduit $
-    --  yield "https://www.tanzagenda.ch/_info/customDataLoader/eventsData.php?get=data"
-    --    .| withPages
-    --    .| C.concatMap makeListRequest
-    --    .| doHttpRequestWith
-    --    .| logRequestErrors
-    --    .| parseEventsKeys
-    -- .|
-    yield "Tanznacht40-Soho-231-234"
+    yield "https://www.tanzagenda.ch/_info/customDataLoader/eventsData.php?get=data"
+      .| withPages
+      .| C.concatMap makeListRequest
+      .| doHttpRequestWith
+      .| logRequestErrors
+      .| parseEventsKeys
       .| C.concatMap (\k -> (,) k <$> parseRequest ("https://tanzagenda.ch/events/" <> T.unpack k) :: Maybe (Text, Request))
       .| doHttpRequestWith'
       .| logRequestErrors'
       .| parseEventPage
-      .| C.mapM_ (liftIO . pPrint)
 
 withPages :: Monad m => ConduitT a (a, Int) m ()
 withPages = awaitForever $ \a -> do
@@ -106,28 +103,45 @@ parseEventPage = awaitForever $ \(key, request, response) -> do
                       Nothing -> fail "could not geolocate"
                       Just (Entity placeId _) -> pure placeId
 
-          let externalEventStart = Nothing
+          externalEventStart <- optional $
+            chroot ("div" @: [hasClass "row"]) $
+              chroot ("div" @: [hasClass "col"]) $ do
+                rawTimeText <- text "h3"
+                timeText <- utf8 rawTimeText
+                case T.stripPrefix "ab: " timeText of
+                  Nothing -> fail "couldn't find time"
+                  Just timeInput -> case parseTimeM True germanTimeLocale "%H:%M" (T.unpack timeInput) of
+                    Nothing -> fail "couldn't parse time"
+                    Just start -> pure start
 
           externalEventDescription <- optional $
             chroot ("div" @: ["class" @= "col-12"]) $ do
               rawSentences <- texts "p"
-              liftIO $ pPrint ("rawSentences", rawSentences)
               let sentences = map (T.strip . TE.decodeLatin1 . LB.toStrict) rawSentences
-              liftIO $ pPrint ("sentences", sentences)
               pure $ T.unlines sentences
-          liftIO $ pPrint ("externalEventDescription", externalEventDescription)
 
-          let externalEventOrganiser = Nothing -- TODO
-          let externalEventCancelled = False -- TODO
-          let externalEventHomepage = Nothing -- TODO
-          let externalEventPrice = Nothing
+          let externalEventOrganiser = Nothing -- Not on the page
+          let externalEventCancelled = False -- Not on the page, I think
+          externalEventHomepage <- optional $
+            chroot ("li" @: [hasClass "nav-item"]) $ do
+              ref <- attr "href" ("a" @: [hasClass "nav-social"])
+              _ <- text ("i" @: [hasClass "fal", hasClass "fa-browser"])
+              utf8 ref
 
+          let externalEventPrice = Nothing -- TODO, rather hard to parse
           let externalEventCreated = now
           let externalEventModified = Nothing
           externalEventImporter <- asks importEnvId
           let externalEventOrigin = T.pack $ show $ getUri request
 
-          let mImageUri = Nothing -- TODO
+          mImageUri <- optional $ do
+            imgAttr <- attr "href" ("a" @: ["data-fancybox" @= "gallery"])
+            linkText <- utf8 imgAttr
+            guard $ T.isPrefixOf "_bilder/" linkText
+            let url = "https://tanzagenda.ch/" <> T.unpack linkText
+            case parseURI url of
+              Nothing -> fail "couldn't parse uri"
+              Just uri -> pure uri
           pure (ExternalEvent {..}, mImageUri)
   lift $ do
     mTup <- scrapeStringLikeT (responseBody response) scrapeExternalEventFromPage
