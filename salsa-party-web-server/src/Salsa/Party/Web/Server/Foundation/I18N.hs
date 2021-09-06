@@ -166,18 +166,18 @@ germanTimeLocale =
           ("Samstag", "Sa")
         ],
       months =
-        [ ("januar", "Jan."),
-          ("februar", "Feb."),
-          ("märz", "März."),
-          ("april", "Apr."),
-          ("mai", "Mai."),
-          ("juni", "Juni."),
-          ("juli", "Juli."),
-          ("august", "Aug."),
-          ("september", "Sept."),
-          ("oktober", "Okt."),
-          ("november", "Nov."),
-          ("dezember", "Dez.")
+        [ ("Januar", "Jan."),
+          ("Februar", "Feb."),
+          ("März", "März."),
+          ("April", "Apr."),
+          ("Mai", "Mai."),
+          ("Juni", "Juni."),
+          ("Juli", "Juli."),
+          ("August", "Aug."),
+          ("September", "Sept."),
+          ("Oktober", "Okt."),
+          ("November", "Nov."),
+          ("Dezember", "Dez.")
         ],
       amPm = ("AM", "PM"), -- Not used.
       dateTimeFmt = "%a %b %e %H:%M:%S %Z %Y",
