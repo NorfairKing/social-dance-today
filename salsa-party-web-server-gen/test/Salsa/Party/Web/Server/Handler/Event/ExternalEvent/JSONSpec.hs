@@ -11,11 +11,21 @@ import qualified Data.UUID.Typed as Typed
 import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
 import Salsa.Party.Web.Server.Handler.TestImport
+import Test.Syd.Persistent
 import Yesod.Core
 
 spec :: Spec
 spec = do
+  genValidSpec @PlaceExport
+  jsonSpecOnValid @PlaceExport
+  genValidSpec @ExternalEventExport
   jsonSpecOnValid @ExternalEventExport
+  dbSpec $ do
+    describe "importPlaceExport" $
+      it "roundtrips a place export" $ \pool -> do
+        forAllValid $ \place -> runPersistentTest pool $ do
+          Entity _ place' <- importPlaceExport (placeExport place)
+          liftIO $ place' `shouldBe` place
   serverSpec $ do
     describe "EventR" $ do
       it "Can get the json export for an existing external event via an accept header" $ \yc ->
@@ -43,27 +53,37 @@ spec = do
                         DB.deleteWhere ([] :: [DB.Filter ExternalEvent])
                       -- Import the export
                       testDB $ do
-                        externalEventId <- importExternalEventJSONExport export
-                        mExternalEvent <- DB.get externalEventId
-                        case mExternalEvent of
-                          Nothing -> liftIO $ expectationFailure "Should have found the event again"
-                          Just actualExternalEvent -> do
-                            liftIO $ actualExternalEvent `shouldBe` externalEvent
-                            mPlace <- DB.get $ externalEventPlace actualExternalEvent
-                            case mPlace of
-                              Nothing -> liftIO $ expectationFailure "Should have found the place too"
-                              Just actualPlace -> liftIO $ actualPlace `shouldBe` place
+                        Entity _ actualExternalEvent <- importExternalEventExport export
+                        liftIO $ actualExternalEvent `shouldBe` externalEvent
+                        mPlace <- DB.get $ externalEventPlace actualExternalEvent
+                        case mPlace of
+                          Nothing -> liftIO $ expectationFailure "Should have found the place too"
+                          Just actualPlace -> liftIO $ actualPlace `shouldBe` place
 
   modifyMaxSuccess (`div` 20) $
     modifyMaxSize (* 10) $
-      appSpec $
+      appSpec $ do
+        describe "importExternalEventJSONExport" $
+          it "roundtrips an external event export" $ \app ->
+            forAllValid $ \externalEvent ->
+              forAllValid $ \place ->
+                runPersistentTest (appConnectionPool app) $ do
+                  let urlRender :: Route App -> Text
+                      urlRender route = yesodRender app "https://social-dance.today" route []
+                  Entity _ externalEvent' <- importExternalEventExport (externalEventExport urlRender externalEvent place)
+                  liftIO $ externalEvent' `shouldBe` externalEvent
+                  mPlace <- DB.get $ externalEventPlace externalEvent'
+                  case mPlace of
+                    Nothing -> liftIO $ expectationFailure "Should have found the place too"
+                    Just place' -> liftIO $ place' `shouldBe` place
+
         describe "JSON" $ do
           it "always outputs a valid export" $ \app ->
             forAllValid $ \externalEvent ->
               forAllValid $ \place ->
                 let urlRender :: Route App -> Text
                     urlRender route = yesodRender app "https://social-dance.today" route []
-                 in shouldBeValid $ externalEventJSONExport urlRender externalEvent place
+                 in shouldBeValid $ externalEventExport urlRender externalEvent place
 
           it "outputs the same json export as before" $ \app ->
             let exampleExternalEvent =
@@ -95,5 +115,5 @@ spec = do
                 urlRender :: Route App -> Text
                 urlRender route = yesodRender app "https://social-dance.today" route []
 
-                export = externalEventJSONExport urlRender exampleExternalEvent examplePlace
+                export = externalEventExport urlRender exampleExternalEvent examplePlace
              in pureGoldenByteStringFile "test_resources/json/external-event.json" $ LB.toStrict $ JSON.encode export

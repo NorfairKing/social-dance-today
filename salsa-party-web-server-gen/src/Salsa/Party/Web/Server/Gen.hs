@@ -71,6 +71,10 @@ instance GenValid Place where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
+instance GenValid PlaceExport where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
 instance GenValid Organiser where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
