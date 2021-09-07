@@ -30,6 +30,47 @@ spec = do
             liftIO $ context (ppShow export) $ place' `shouldBe` place
 
   serverSpec $ do
+    describe "EventExportR" $ do
+      it "Can get the json export for an existing external event via the export route" $ \yc ->
+        forAllValid $ \place ->
+          forAllValid $ \externalEvent ->
+            forAllValid $ \importerMetadata ->
+              runYesodClientM yc $ do
+                testDB $ do
+                  placeId <- DB.insert place
+                  importerMetadataId <- DB.insert importerMetadata
+                  DB.insert_ $ externalEvent {externalEventPlace = placeId, externalEventImporter = importerMetadataId}
+
+                get $ EventExportR $ externalEventUuid externalEvent
+                statusIs 200
+                mResp <- getResponse
+                case mResp of
+                  Nothing -> liftIO $ expectationFailure "Should have had a response by now."
+                  Just resp -> do
+                    let cts = responseBody resp
+                    case JSON.eitherDecode cts of
+                      Left err -> liftIO $ expectationFailure $ "Failed to parse JSON export:\n" <> err
+                      Right export -> do
+                        -- Clean database
+                        testDB $ do
+                          DB.deleteWhere ([] :: [DB.Filter Place])
+                          DB.deleteWhere ([] :: [DB.Filter ImporterMetadata])
+                          DB.deleteWhere ([] :: [DB.Filter ExternalEvent])
+                        -- Import the export
+                        testDB $ do
+                          Entity _ actualExternalEvent <- importExternalEventExport export
+                          liftIO $
+                            context (show cts) $
+                              actualExternalEvent
+                                { externalEventPlace = externalEventPlace externalEvent,
+                                  externalEventImporter = externalEventImporter externalEvent
+                                }
+                                `shouldBe` externalEvent
+                          mPlace <- DB.get $ externalEventPlace actualExternalEvent
+                          case mPlace of
+                            Nothing -> liftIO $ expectationFailure "Should have found the place too"
+                            Just actualPlace -> liftIO $ context (show cts) $ actualPlace `shouldBe` place
+
     describe "EventR" $ do
       it "Can get the json export for an existing external event via an accept header" $ \yc ->
         forAllValid $ \place ->

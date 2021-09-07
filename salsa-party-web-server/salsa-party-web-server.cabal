@@ -81,6 +81,7 @@ library
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
       Salsa.Party.Web.Server.Handler.Event.ICal
+      Salsa.Party.Web.Server.Handler.Event.JSON
       Salsa.Party.Web.Server.Handler.Event.Party
       Salsa.Party.Web.Server.Handler.Event.Party.Description
       Salsa.Party.Web.Server.Handler.Event.Party.ICal
