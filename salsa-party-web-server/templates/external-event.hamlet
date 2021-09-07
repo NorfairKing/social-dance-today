@@ -90,8 +90,13 @@
           <details>
             <summary>
               Debug info
+
+            <a .button .is-warning href=@{EventExportR externalEventUuid} download="#{uuidText externalEventUuid}.json">
+              Export
+
             <a .button .is-danger href=#{externalEventOrigin}>
               Origin
+
             <pre>
               #{ppShow externalEvent}
 
