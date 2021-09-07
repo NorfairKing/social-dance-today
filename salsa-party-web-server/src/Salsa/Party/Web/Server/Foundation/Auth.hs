@@ -316,3 +316,20 @@ getVerifyR emailAddress verificationKey = liftHandler $ do
           addMessageI "is-success" EmailVerified
           update userId [UserVerificationKey =. Nothing]
   redirect $ AccountR AccountOverviewR
+
+requireAdmin ::
+  ( app ~ App,
+    AuthId app ~ UserId,
+    AuthEntity app ~ User,
+    YesodAuthPersist app
+  ) =>
+  HandlerFor app ()
+requireAdmin = do
+  Entity _ user <- requireAuth
+  mAdmin <- getsYesod appAdmin
+  case mAdmin of
+    Nothing -> notFound -- No one can access it if there is no admin.
+    Just adminEmailAddress ->
+      if adminEmailAddress == userEmailAddress user
+        then pure ()
+        else notFound

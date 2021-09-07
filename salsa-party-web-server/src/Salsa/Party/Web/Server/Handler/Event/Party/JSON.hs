@@ -25,6 +25,7 @@ import Yesod.Core.Types
 
 partyPageJSON :: Entity Party -> Handler (JSONResponse PartyExport)
 partyPageJSON (Entity _ party) = do
+  requireAdmin
   place <- runDB $ get404 $ partyPlace party
   organiser <- runDB $ get404 $ partyOrganiser party
   user <- runDB $ get404 $ organiserUser organiser
