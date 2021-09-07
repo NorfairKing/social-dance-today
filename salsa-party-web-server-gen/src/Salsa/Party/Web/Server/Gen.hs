@@ -19,6 +19,8 @@ import Salsa.Party.Web.Server.Handler.Account.Organiser
 import Salsa.Party.Web.Server.Handler.Account.Party
 import Salsa.Party.Web.Server.Handler.Account.Schedule
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
+import Salsa.Party.Web.Server.Handler.Event.JSON.Place
+import Salsa.Party.Web.Server.Handler.Event.Party.JSON
 import Salsa.Party.Web.Server.Handler.Import
 import Test.QuickCheck
 
@@ -36,6 +38,10 @@ instance GenValid Textarea where
   shrinkValid = fmap Textarea . shrinkValid . unTextarea
 
 instance GenValid User where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid UserExport where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
@@ -87,7 +93,15 @@ instance GenValid OrganiserReminder where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
+instance GenValid OrganiserExport where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
 instance GenValid Party where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid PartyExport where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 

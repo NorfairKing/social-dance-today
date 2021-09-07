@@ -82,9 +82,11 @@ library
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
       Salsa.Party.Web.Server.Handler.Event.ICal
       Salsa.Party.Web.Server.Handler.Event.JSON
+      Salsa.Party.Web.Server.Handler.Event.JSON.Place
       Salsa.Party.Web.Server.Handler.Event.Party
       Salsa.Party.Web.Server.Handler.Event.Party.Description
       Salsa.Party.Web.Server.Handler.Event.Party.ICal
+      Salsa.Party.Web.Server.Handler.Event.Party.JSON
       Salsa.Party.Web.Server.Handler.Event.Party.LD
       Salsa.Party.Web.Server.Handler.Explore
       Salsa.Party.Web.Server.Handler.Home

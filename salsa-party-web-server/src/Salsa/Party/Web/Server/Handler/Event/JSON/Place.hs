@@ -3,11 +3,10 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
-module Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
-  ( externalEventPageJSON,
-    ExternalEventExport (..),
-    externalEventExport,
-    importExternalEventExport,
+module Salsa.Party.Web.Server.Handler.Event.JSON.Place
+  ( PlaceExport (..),
+    placeExport,
+    importPlaceExport,
   )
 where
 
@@ -18,7 +17,6 @@ import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
 import Network.URI
-import Salsa.Party.Web.Server.Handler.Event.JSON.Place
 import Salsa.Party.Web.Server.Handler.Import
 import qualified Text.ICalendar as ICal
 import Yesod
@@ -30,6 +28,52 @@ externalEventPageJSON (Entity _ externalEvent) = do
   importerMetadata <- runDB $ get404 $ externalEventImporter externalEvent
   renderUrl <- getUrlRender
   pure $ JSONResponse $ externalEventExport renderUrl externalEvent place importerMetadata
+
+placeExport :: Place -> PlaceExport
+placeExport Place {..} =
+  let Place _ _ _ = undefined
+      placeExportAddress = placeQuery
+      placeExportLatitude = placeLat
+      placeExportLongitude = placeLon
+   in PlaceExport {..}
+
+data PlaceExport = PlaceExport
+  { placeExportAddress :: !Text,
+    placeExportLatitude :: !Latitude,
+    placeExportLongitude :: !Longitude
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity PlaceExport
+
+instance FromJSON PlaceExport where
+  parseJSON = withObject "PlaceExport" $ \o ->
+    PlaceExport
+      <$> o .: "address"
+      <*> o .: "latitude"
+      <*> o .: "longitude"
+
+instance ToJSON PlaceExport where
+  toJSON PlaceExport {..} =
+    object
+      [ "address" .= placeExportAddress,
+        "latitude" .= placeExportLatitude,
+        "longitude" .= placeExportLongitude
+      ]
+
+importPlaceExport :: MonadIO m => PlaceExport -> SqlPersistT m (Entity Place)
+importPlaceExport PlaceExport {..} =
+  upsertBy
+    (UniquePlaceQuery placeExportAddress)
+    ( Place
+        { placeQuery = placeExportAddress,
+          placeLat = placeExportLatitude,
+          placeLon = placeExportLongitude
+        }
+    )
+    [ PlaceLat =. placeExportLatitude,
+      PlaceLon =. placeExportLongitude
+    ]
 
 externalEventExport :: (Route App -> Text) -> ExternalEvent -> Place -> ImporterMetadata -> ExternalEventExport
 externalEventExport renderUrl ExternalEvent {..} place ImporterMetadata {..} =

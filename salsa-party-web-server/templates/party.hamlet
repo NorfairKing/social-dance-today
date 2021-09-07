@@ -94,6 +94,10 @@
           <details>
             <summary>
               Debug info
+
+            <a .button .is-warning href=@{EventExportR partyUuid} download="#{uuidText partyUuid}.json">
+              Export
+
             <pre>
               #{ppShow party}
         

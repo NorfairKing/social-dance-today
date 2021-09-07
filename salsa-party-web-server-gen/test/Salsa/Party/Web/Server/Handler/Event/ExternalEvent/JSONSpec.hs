@@ -16,19 +16,8 @@ import Yesod.Core
 
 spec :: Spec
 spec = do
-  genValidSpec @PlaceExport
-  jsonSpecOnValid @PlaceExport
   genValidSpec @ExternalEventExport
   jsonSpecOnValid @ExternalEventExport
-  modifyMaxSize (* 10) $
-    dbSpec $ do
-      describe "importPlaceExport" $ do
-        it "roundtrips a place export" $ \pool -> do
-          forAllValid $ \place -> runPersistentTest pool $ do
-            let export = placeExport place
-            Entity _ place' <- importPlaceExport export
-            liftIO $ context (ppShow export) $ place' `shouldBe` place
-
   serverSpec $ do
     describe "EventExportR" $ do
       it "Can get the json export for an existing external event via the export route" $ \yc ->
