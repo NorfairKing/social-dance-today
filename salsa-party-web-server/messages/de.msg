@@ -68,7 +68,6 @@ SearchNavLater: Später
 PartyTitleScheduled title@Text: #{title}
 PartyTitleCancelled title@Text: ABGESAGT: #{title}
 PartyDescription description@Text:  #{description}
-PartyWithoutDescription:  Party ohne Beschreibung
 
 PartyAddress address@Text: #{address}
 PartyOrganiser name@Text: Veranstalter: #{name}

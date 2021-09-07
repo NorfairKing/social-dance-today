@@ -13,6 +13,7 @@ import qualified Data.Text.Encoding as TE
 import Google.Calendar
 import Google.Maps
 import Network.URI
+import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Description
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
 import Salsa.Party.Web.Server.Handler.Import
 
@@ -27,12 +28,14 @@ externalEventPageHtml (Entity externalEventId externalEvent@ExternalEvent {..}) 
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
   prettyDateTimeFormat <- getPrettyDateTimeFormat
+  prettyTimeFormat <- getPrettyTimeFormat
+  messageRender <- getMessageRender
   withNavBar $ do
     setTitleI $
       if externalEventCancelled
         then MsgPartyTitleCancelled externalEventTitle
         else MsgPartyTitleScheduled externalEventTitle
-    setDescriptionI $ maybe MsgPartyWithoutDescription MsgPartyDescription externalEventDescription
+    setDescription $ externalEventHtmlDescription messageRender timeLocale prettyDayFormat prettyTimeFormat externalEvent place
     toWidgetHead $ toJSONLDData $ externalEventToLDEvent renderUrl externalEvent place mPosterKey
     addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe externalEventCreated externalEventModified
     let mAddToGoogleLink = addExternalEventToGoogleCalendarLink renderUrl externalEvent place

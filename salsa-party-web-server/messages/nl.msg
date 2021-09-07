@@ -66,7 +66,6 @@ SearchNavLater: Volgende
 PartyTitleScheduled title@Text: #{title}
 PartyTitleCancelled title@Text: GEANNULEERD: #{title}
 PartyDescription description@Text: #{description}
-PartyWithoutDescription: Feest zonder beschrijving
 
 PartyAddress address@Text: #{address}
 PartyOrganiser name@Text: Organisator: #{name}
