@@ -3,7 +3,6 @@ module Salsa.Party.Web.Server.Handler.Event.JSON
   )
 where
 
-import Data.Aeson as JSON
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
 import Salsa.Party.Web.Server.Handler.Event.Party.JSON
 import Salsa.Party.Web.Server.Handler.Import

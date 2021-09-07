@@ -18,16 +18,8 @@ module Salsa.Party.Web.Server.Handler.Event.Party.JSON
 where
 
 import Data.Aeson as JSON
-import Data.Default
-import qualified Data.Map as M
-import qualified Data.Set as S
-import qualified Data.Text as T
-import qualified Data.Text.Lazy as LT
-import Network.URI
 import Salsa.Party.Web.Server.Handler.Event.JSON.Place
 import Salsa.Party.Web.Server.Handler.Import
-import qualified Text.ICalendar as ICal
-import Yesod
 import Yesod.Core.Types
 
 partyPageJSON :: Entity Party -> Handler (JSONResponse PartyExport)
@@ -35,8 +27,7 @@ partyPageJSON (Entity _ party) = do
   place <- runDB $ get404 $ partyPlace party
   organiser <- runDB $ get404 $ partyOrganiser party
   user <- runDB $ get404 $ organiserUser organiser
-  renderUrl <- getUrlRender
-  pure $ JSONResponse $ partyExport renderUrl party place organiser user
+  pure $ JSONResponse $ partyExport party place organiser user
 
 data UserExport = UserExport
   { userExportEmailAddress :: !Text,
@@ -117,8 +108,8 @@ instance ToJSON OrganiserExport where
         "modified" .= organiserExportModified
       ]
 
-organiserExport :: (Route App -> Text) -> Organiser -> User -> OrganiserExport
-organiserExport renderUrl Organiser {..} user =
+organiserExport :: Organiser -> User -> OrganiserExport
+organiserExport Organiser {..} user =
   let Organiser _ _ _ _ _ _ = undefined
    in OrganiserExport
         { organiserExportUser = userExport user,
@@ -145,12 +136,12 @@ importOrganiserExport OrganiserExport {..} = do
     )
     []
 
-partyExport :: (Route App -> Text) -> Party -> Place -> Organiser -> User -> PartyExport
-partyExport renderUrl Party {..} place organiser user =
+partyExport :: Party -> Place -> Organiser -> User -> PartyExport
+partyExport Party {..} place organiser user =
   let Party _ _ _ _ _ _ _ _ _ _ _ _ = undefined
       Place _ _ _ = undefined
       partyExportUuid = partyUuid
-      partyExportOrganiser = organiserExport renderUrl organiser user
+      partyExportOrganiser = organiserExport organiser user
       partyExportTitle = partyTitle
       partyExportDescription = partyDescription
       partyExportDay = partyDay

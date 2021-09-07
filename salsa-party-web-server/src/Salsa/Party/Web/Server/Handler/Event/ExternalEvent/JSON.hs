@@ -12,29 +12,20 @@ module Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
 where
 
 import Data.Aeson as JSON
-import Data.Default
-import qualified Data.Map as M
-import qualified Data.Set as S
-import qualified Data.Text as T
-import qualified Data.Text.Lazy as LT
-import Network.URI
 import Salsa.Party.Web.Server.Handler.Event.JSON.Place
 import Salsa.Party.Web.Server.Handler.Import
-import qualified Text.ICalendar as ICal
-import Yesod
 import Yesod.Core.Types
 
 externalEventPageJSON :: Entity ExternalEvent -> Handler (JSONResponse ExternalEventExport)
 externalEventPageJSON (Entity _ externalEvent) = do
   place@Place {..} <- runDB $ get404 $ externalEventPlace externalEvent
   importerMetadata <- runDB $ get404 $ externalEventImporter externalEvent
-  renderUrl <- getUrlRender
-  pure $ JSONResponse $ externalEventExport renderUrl externalEvent place importerMetadata
+  pure $ JSONResponse $ externalEventExport externalEvent place importerMetadata
 
-externalEventExport :: (Route App -> Text) -> ExternalEvent -> Place -> ImporterMetadata -> ExternalEventExport
-externalEventExport renderUrl ExternalEvent {..} place ImporterMetadata {..} =
+externalEventExport :: ExternalEvent -> Place -> ImporterMetadata -> ExternalEventExport
+externalEventExport ExternalEvent {..} place ImporterMetadata {..} =
   let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
-      Place _ _ _ = undefined
+      ImporterMetadata _ _ _ _ = undefined
       externalEventExportUuid = externalEventUuid
       externalEventExportKey = externalEventKey
       externalEventExportTitle = externalEventTitle
