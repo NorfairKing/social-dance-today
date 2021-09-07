@@ -108,9 +108,42 @@ spec = do
                             case mPlace of
                               Nothing -> liftIO $ expectationFailure "Should have found the place too"
                               Just actualPlace -> liftIO $ context (show cts) $ actualPlace `shouldBe` place
+                            mOrganiser <- DB.get $ partyOrganiser actualParty
+                            case mOrganiser of
+                              Nothing -> liftIO $ expectationFailure "Should have found the organiser too"
+                              Just actualOrganiser -> do
+                                liftIO $ context (show cts) $ actualOrganiser {organiserUser = organiserUser organiser} `shouldBe` organiser
+                                mUser <- DB.get $ organiserUser actualOrganiser
+                                case mUser of
+                                  Nothing -> liftIO $ expectationFailure "Should have found the user too"
+                                  Just actualUser -> liftIO $ context (show cts) $ actualUser `shouldBe` user
 
   dbSpec $ do
-    describe "importPartyJSONExport" $
+    describe "importPartyJSONExport" $ do
+      it "roundtrips a user export" $ \pool ->
+        forAllValid $ \user ->
+          runPersistentTest pool $ do
+            let export = userExport user
+            Entity _ user' <- importUserExport export
+            liftIO $ context (ppShow export) $ user' `shouldBe` user
+
+      it "roundtrips an organiser export" $ \pool ->
+        forAllValid $ \organiser ->
+          forAllValid $ \user ->
+            runPersistentTest pool $ do
+              let export = organiserExport organiser user
+              Entity _ organiser' <- importOrganiserExport export
+              liftIO $
+                context (ppShow export) $
+                  organiser'
+                    { organiserUser = organiserUser organiser
+                    }
+                    `shouldBe` organiser
+              mUser <- DB.get $ organiserUser organiser'
+              case mUser of
+                Nothing -> liftIO $ expectationFailure "Should have found the user too"
+                Just user' -> liftIO $ context (ppShow export) $ user' `shouldBe` user
+
       it "roundtrips a party export" $ \pool ->
         forAllValid $ \party ->
           forAllValid $ \place ->
@@ -130,6 +163,15 @@ spec = do
                   case mPlace of
                     Nothing -> liftIO $ expectationFailure "Should have found the place too"
                     Just place' -> liftIO $ context (ppShow export) $ place' `shouldBe` place
+                  mOrganiser <- DB.get $ partyOrganiser party'
+                  case mOrganiser of
+                    Nothing -> liftIO $ expectationFailure "Should have found the organiser too"
+                    Just actualOrganiser -> do
+                      liftIO $ actualOrganiser {organiserUser = organiserUser organiser} `shouldBe` organiser
+                      mUser <- DB.get $ organiserUser actualOrganiser
+                      case mUser of
+                        Nothing -> liftIO $ expectationFailure "Should have found the user too"
+                        Just actualUser -> liftIO $ actualUser `shouldBe` user
 
   it "always outputs a valid export" $
     forAllValid $ \party ->

@@ -32,6 +32,7 @@ partyPageJSON (Entity _ party) = do
 data UserExport = UserExport
   { userExportEmailAddress :: !Text,
     userExportPassphraseHash :: !(PasswordHash Bcrypt),
+    userExportVerificationKey :: !(Maybe Text),
     userExportCreated :: !UTCTime
   }
   deriving (Show, Eq, Generic)
@@ -43,6 +44,7 @@ instance FromJSON UserExport where
     UserExport
       <$> o .: "email-address"
       <*> (PasswordHash <$> o .: "passphrase-hash")
+      <*> o .:? "verification-key"
       <*> o .: "created"
 
 instance ToJSON UserExport where
@@ -50,6 +52,7 @@ instance ToJSON UserExport where
     object
       [ "email-address" .= userExportEmailAddress,
         "passphrase-hash" .= unPasswordHash userExportPassphraseHash,
+        "verification-key" .= userExportVerificationKey,
         "created" .= userExportCreated
       ]
 
@@ -59,6 +62,7 @@ userExport User {..} =
    in UserExport
         { userExportEmailAddress = userEmailAddress,
           userExportPassphraseHash = userPassphraseHash,
+          userExportVerificationKey = userVerificationKey,
           userExportCreated = userCreated
         }
 
@@ -69,7 +73,7 @@ importUserExport UserExport {..} =
     ( User
         { userEmailAddress = userExportEmailAddress,
           userPassphraseHash = userExportPassphraseHash,
-          userVerificationKey = Nothing,
+          userVerificationKey = userExportVerificationKey,
           userCreated = userExportCreated
         }
     )
