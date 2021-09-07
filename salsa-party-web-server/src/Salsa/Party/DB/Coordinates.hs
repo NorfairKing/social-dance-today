@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -29,6 +28,8 @@
 --  * No Enum instances because we don't need them.
 module Salsa.Party.DB.Coordinates
   ( Coord (..),
+    fixedToCoord,
+    coordToFixed,
     Latitude (..),
     mkLatitude,
     mkLatitudeOrError,
@@ -48,6 +49,7 @@ import Data.Fixed
 import Data.Int
 import Data.List
 import Data.Proxy
+import Data.Ratio
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Validity
@@ -59,35 +61,64 @@ import Web.PathPieces
 
 data E5
 
+coordResolution :: Integer
+coordResolution = 100_000
+
 instance HasResolution E5 where
-  resolution _ = 100_000
+  resolution _ = coordResolution
+
+fixedToCoord :: Fixed E5 -> Coord
+fixedToCoord (MkFixed i) = Coord {unCoord = fromInteger i}
+
+coordToFixed :: Coord -> Fixed E5
+coordToFixed (Coord i) = MkFixed (fromIntegral i)
 
 -- Newtype for a custom 'PersistFieldSql' instance. (and to hide unused instances)
-newtype Coord = Coord {unCoord :: Fixed E5}
-  deriving (Eq, Ord, Generic, Num, Fractional, Real)
+--
+-- We store a coordinate as a fixed-point number with scale factor 10E5
+newtype Coord = Coord {unCoord :: Int64}
+  deriving (Eq, Ord, Generic)
 
 instance Validity Coord
 
 instance Show Coord where
-  show (Coord f) = show f
+  show = show . coordToFixed
 
 instance Read Coord where
-  readPrec = Coord <$> readPrec
+  readPrec = fixedToCoord <$> readPrec
 
 instance ToJSON Coord where
-  toJSON (Coord f) = toJSON f
+  toJSON = toJSON . coordToFixed
 
 instance FromJSON Coord where
-  parseJSON = fmap Coord . parseJSON
+  parseJSON = fmap fixedToCoord . parseJSON
 
 instance PersistField Coord where
-  toPersistValue (Coord (MkFixed i)) = toPersistValue (fromInteger i :: Int64)
-  fromPersistValue pv = do
-    i <- fromPersistValue pv
-    pure $ Coord $ MkFixed (fromIntegral (i :: Int64))
+  toPersistValue (Coord i) = toPersistValue i -- Store coordinates as integers so we don't lose precision
+  fromPersistValue (PersistInt64 i) = pure $ Coord i
+  fromPersistValue pv = fixedToCoord <$> fromPersistValue pv
 
 instance PersistFieldSql Coord where
-  sqlType Proxy = SqlNumeric 15 5 -- Without this custom instance, it would be SqlNumeric 15 5
+  sqlType Proxy = SqlInt64
+
+instance Num Coord where
+  fromInteger = Coord . fromInteger . (* coordResolution)
+  (+) = binOpFixed (+)
+  (-) = binOpFixed (-)
+  (*) = binOpFixed (*)
+  abs (Coord i) = Coord $ abs i
+  signum (Coord i) = Coord $ signum i
+  negate (Coord i) = Coord $ negate i
+
+binOpFixed :: (Fixed E5 -> Fixed E5 -> Fixed E5) -> (Coord -> Coord -> Coord)
+binOpFixed f c1 c2 = fixedToCoord $ coordToFixed c1 `f` coordToFixed c2
+
+instance Real Coord where
+  toRational (Coord i) = fromIntegral i % coordResolution
+
+instance Fractional Coord where
+  (/) = binOpFixed (/)
+  fromRational = fixedToCoord . fromRational
 
 newtype Latitude = Latitude {unLatitude :: Coord}
   deriving
@@ -188,7 +219,7 @@ instance PersistFieldSql Longitude where
 
 instance Bounded Longitude where
   minBound = Longitude (-180)
-  maxBound = Longitude (180 - Coord (MkFixed 1))
+  maxBound = Longitude (180 - Coord 1)
 
 longitudeToFloat :: RealFloat f => Longitude -> f
 longitudeToFloat = realToFrac . unLongitude
@@ -226,10 +257,10 @@ distanceTo ::
   Double
 distanceTo co1 co2 =
   let toRadians = (* (pi / 180))
-      lat1 = toRadians $ realToFrac (unLatitude $ coordinatesLat co1) :: Double
-      lat2 = toRadians $ realToFrac (unLatitude $ coordinatesLat co2) :: Double
-      lon1 = toRadians $ realToFrac (unLongitude $ coordinatesLon co1) :: Double
-      lon2 = toRadians $ realToFrac (unLongitude $ coordinatesLon co2) :: Double
+      lat1 = toRadians $ latitudeToFloat $ coordinatesLat co1 :: Double
+      lat2 = toRadians $ latitudeToFloat $ coordinatesLat co2 :: Double
+      lon1 = toRadians $ longitudeToFloat $ coordinatesLon co1 :: Double
+      lon2 = toRadians $ longitudeToFloat $ coordinatesLon co2 :: Double
       latDiff = lat2 - lat1
       lonDiff = lon2 - lon1
       sinSqLat = sin (latDiff / 2) ^ (2 :: Int)

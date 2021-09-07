@@ -45,14 +45,14 @@ queryForm =
 latitudeField :: Field Handler Latitude
 latitudeField =
   checkMMap
-    (\d -> pure . left (const (MsgInvalidLatitude (show d))) . mkLatitudeOrError . realToFrac $ d)
+    (\d -> pure . left (const (MsgInvalidLatitude (show d))) . mkLatitudeOrError . fixedToCoord . realToFrac $ d)
     (realToFrac . unLatitude)
     doubleField
 
 longitudeField :: Field Handler Longitude
 longitudeField =
   checkMMap
-    (\d -> pure . left (const (MsgInvalidLongitude (show d))) . mkLongitudeOrError . realToFrac $ d)
+    (\d -> pure . left (const (MsgInvalidLongitude (show d))) . mkLongitudeOrError . fixedToCoord . realToFrac $ d)
     (realToFrac . unLongitude)
     doubleField
 

@@ -144,11 +144,11 @@ longitudeBetweenQuery lonExpr coordinatesLon =
 
 -- One degree longitude is 111km
 roughMaxLatDistance :: Coord
-roughMaxLatDistance = realToFrac maximumDistance / 111_000
+roughMaxLatDistance = fixedToCoord $ realToFrac maximumDistance / 111_000
 
 -- Five degrees longitude is 555km at the equator and about 100km in north svalbard
 roughMaxLonDistance :: Coord
-roughMaxLonDistance = 5 * realToFrac maximumDistance / 111_000
+roughMaxLonDistance = fixedToCoord $ 5 * realToFrac maximumDistance / 111_000
 
 postProcessParties ::
   Coordinates ->

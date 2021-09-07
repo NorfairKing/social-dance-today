@@ -37,6 +37,8 @@ spec = do
         mkLatitude (- 110) `shouldBe` Nothing
       it "works with this example" $ do
         mkLatitude (- 60) `shouldBe` Just (Latitude (- 60))
+      it "works with this example" $ do
+        mkLatitude (-15) `shouldBe` Just (Latitude (Coord (-15_00000)))
       it "works with the lower boundary" $ do
         mkLatitude (- 90) `shouldBe` Just (Latitude (- 90))
       it "works with the upper boundary" $ do
@@ -65,12 +67,14 @@ spec = do
         mkLongitude (-210) `shouldBe` Nothing
       it "works with this example" $ do
         mkLongitude (- 40) `shouldBe` Just (Longitude (- 40))
+      it "works with this example" $ do
+        mkLongitude 15 `shouldBe` Just (Longitude (Coord 15_00000))
       it "works with the upper boundary" $ do
         mkLongitude 180 `shouldBe` Nothing
       it "works with the lower boundary" $ do
         mkLongitude (- 180) `shouldBe` Just (Longitude (- 180))
       it "works with the upper boundary" $ do
-        mkLongitude (180 - Coord (MkFixed 1)) `shouldBe` Just (Longitude (180 - Coord (MkFixed 1)))
+        mkLongitude (180 - fixedToCoord (MkFixed 1)) `shouldBe` Just (Longitude (180 - fixedToCoord (MkFixed 1)))
       it "works with this example" $ do
         mkLongitude 50 `shouldBe` Just (Longitude 50)
       it "works with this example" $ do

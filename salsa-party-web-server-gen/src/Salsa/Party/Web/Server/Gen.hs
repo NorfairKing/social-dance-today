@@ -52,11 +52,11 @@ instance GenValid Coord where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Latitude where
-  genValid = choose (-90_000_000_000, 90_000_000_000) `suchThatMap` (mkLatitude . Coord . MkFixed)
+  genValid = choose (-90_00000, 90_00000) `suchThatMap` (mkLatitude . fixedToCoord . MkFixed)
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Longitude where
-  genValid = choose (-180_000_000_000, 180_000_000_000 -1) `suchThatMap` (mkLongitude . Coord . MkFixed)
+  genValid = choose (-180_00000, 180_00000 -1) `suchThatMap` (mkLongitude . fixedToCoord . MkFixed)
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Coordinates where
