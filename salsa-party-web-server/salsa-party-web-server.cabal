@@ -77,6 +77,7 @@ library
       Salsa.Party.Web.Server.Handler.Event
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Description
+      Salsa.Party.Web.Server.Handler.Event.ExternalEvent.HTML
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
@@ -85,6 +86,7 @@ library
       Salsa.Party.Web.Server.Handler.Event.JSON.Place
       Salsa.Party.Web.Server.Handler.Event.Party
       Salsa.Party.Web.Server.Handler.Event.Party.Description
+      Salsa.Party.Web.Server.Handler.Event.Party.HTML
       Salsa.Party.Web.Server.Handler.Event.Party.ICal
       Salsa.Party.Web.Server.Handler.Event.Party.JSON
       Salsa.Party.Web.Server.Handler.Event.Party.LD
