@@ -62,6 +62,7 @@ data R -- Phantom type anyway
 -- This will be a secret id that a user has to present to one-click unsubscribe from reminder emails
 type ReminderSecret = UUID R
 
+-- When adding a table here, be sure to add the corresponding roundtrip test as well.
 share
   [mkPersist sqlSettings, mkMigrate "automaticMigrations"]
   [persistLowerCase|
@@ -321,6 +322,8 @@ instance Validity Party
 
 instance Validity ExternalEvent
 
+instance Validity ExternalEventPoster
+
 instance Validity ImporterMetadata
 
 instance Validity Image
@@ -328,6 +331,10 @@ instance Validity Image
 instance Validity Schedule
 
 instance Validity ScheduleParty
+
+instance Validity SchedulePoster
+
+instance Validity StaticMap
 
 hasChangedComparedTo :: ExternalEvent -> ExternalEvent -> Bool
 hasChangedComparedTo ee1 ee2 =

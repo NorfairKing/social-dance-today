@@ -99,6 +99,10 @@ instance GenValid ExternalEvent where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
+instance GenValid ExternalEventPoster where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
 instance GenValid ExternalEventExport where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
@@ -119,6 +123,10 @@ instance GenValid Schedule where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
+instance GenValid SchedulePoster where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
 instance GenValid ScheduleParty where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
@@ -128,6 +136,10 @@ instance GenValid AddScheduleForm where
   shrinkValid = shrinkValidStructurally
 
 instance GenValid EditScheduleForm where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid StaticMap where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 

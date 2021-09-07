@@ -5,7 +5,6 @@ module Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSONSpec (spec) where
 
 import Data.Aeson as JSON
 import qualified Data.ByteString.Lazy as LB
-import Data.Fixed
 import Data.Text (Text)
 import qualified Data.UUID as UUID
 import qualified Data.UUID.Typed as Typed
@@ -24,25 +23,6 @@ spec = do
   modifyMaxSize (* 10) $
     dbSpec $ do
       describe "importPlaceExport" $ do
-        it "roundtrips this place export" $ \pool -> runPersistentTest pool $ do
-          let place =
-                Place
-                  { placeQuery = "",
-                    placeLat = Latitude (Coord (MkFixed 5382884)),
-                    placeLon = Longitude (Coord (MkFixed 13388659))
-                  }
-          let export = placeExport place
-          Entity _ place' <- importPlaceExport export
-          liftIO $ context (ppShow export) $ place' `shouldBe` place
-
-        it "roundtrips a place" $ \pool -> do
-          forAllValid $ \place -> runPersistentTest pool $ do
-            placeId <- DB.insert (place :: Place)
-            mPlace <- DB.get placeId
-            case mPlace of
-              Nothing -> liftIO $ expectationFailure "should have found a place"
-              Just place' -> liftIO $ place' `shouldBe` place
-
         it "roundtrips a place export" $ \pool -> do
           forAllValid $ \place -> runPersistentTest pool $ do
             let export = placeExport place

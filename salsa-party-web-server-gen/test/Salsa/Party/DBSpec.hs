@@ -1,4 +1,8 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Salsa.Party.DBSpec (spec) where
 
@@ -6,18 +10,58 @@ import Control.Monad
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import Database.Persist
 import Database.Persist.Sql
 import Salsa.Party.DB
 import Salsa.Party.DB.Migration
+import Salsa.Party.Web.Server.Gen ()
+import Salsa.Party.Web.Server.TestUtils
 import Test.Syd
+import Test.Syd.Persistent
 import Test.Syd.Persistent.Sqlite
 import Test.Syd.Validity
+import Test.Syd.Validity.Utils
 import UnliftIO
 
 spec :: Spec
 spec = do
   describe "locations" $ it "is valid" $ shouldBeValid locations
   automaticMigrationsSucceedsSpec automaticMigrations
+
+  dbSpec $ do
+    persistEntitySpecOnValid @User
+    persistEntitySpecOnValid @Organiser
+    persistEntitySpecOnValid @OrganiserReminder
+    persistEntitySpecOnValid @Place
+    persistEntitySpecOnValid @Party
+    persistEntitySpecOnValid @PartyPoster
+    persistEntitySpecOnValid @Image
+    persistEntitySpecOnValid @Schedule
+    persistEntitySpecOnValid @SchedulePoster
+    persistEntitySpecOnValid @ScheduleParty
+    persistEntitySpecOnValid @ImporterMetadata
+    persistEntitySpecOnValid @ExternalEvent
+    persistEntitySpecOnValid @ExternalEventPoster
+    persistEntitySpecOnValid @StaticMap
+
+persistEntitySpecOnValid ::
+  forall a outers.
+  ( Show a,
+    Eq a,
+    Typeable a,
+    GenValid a,
+    PersistEntity a,
+    PersistEntityBackend a ~ SqlBackend
+  ) =>
+  TestDef outers ConnectionPool
+persistEntitySpecOnValid = describe ("Persistent " <> nameOf @a) $
+  it "roundtrips through the database" $ \pool ->
+    forAllValid $ \(a :: a) -> runPersistentTest pool $ do
+      aId <- insert a
+      mA <- get aId
+      liftIO $ case mA of
+        Nothing -> expectationFailure "Expected to find it in the database."
+        Just a' -> a' `shouldBe` a
 
 automaticMigrationsSucceedsSpec :: Migration -> Spec
 automaticMigrationsSucceedsSpec currentMigration = do
