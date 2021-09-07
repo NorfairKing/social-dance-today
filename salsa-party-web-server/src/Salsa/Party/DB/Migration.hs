@@ -13,6 +13,7 @@ import Conduit
 import Control.Monad
 import Control.Monad.Logger
 import Data.ByteString (ByteString)
+import qualified Data.Conduit.Combinators as C
 import Data.FileEmbed
 import qualified Data.Text as T
 import Data.Validity (Validity)
@@ -33,6 +34,7 @@ completeServerMigration quiet = do
             )
   logInfoN "Autmatic migrations done, starting application-specific migrations."
   setUpPlaces
+  migratePlaces
   logInfoN "Migrations done."
 
 data Location = Location
@@ -61,6 +63,23 @@ setUpPlaces = do
       [ PlaceLat =. placeLat locationPlace,
         PlaceLon =. placeLon locationPlace
       ]
+
+-- TODO remove this once the database has been migrated
+migratePlaces :: (MonadUnliftIO m, MonadLogger m) => SqlPersistT m ()
+migratePlaces = do
+  logInfoN "Migrating places"
+  ackPlaceSource <- selectSourceRes [] [Asc PlaceId]
+  withAcquire ackPlaceSource $ \placeSource ->
+    runConduit $
+      placeSource
+        .| C.mapM_
+          ( \(Entity placeId Place {..}) ->
+              update
+                placeId
+                [ PlaceLat =. placeLat,
+                  PlaceLon =. placeLon
+                ]
+          )
 
 {-# NOINLINE locations #-}
 locations :: [Location]
