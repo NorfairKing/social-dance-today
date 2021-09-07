@@ -321,6 +321,8 @@ instance Validity Party
 
 instance Validity ExternalEvent
 
+instance Validity ImporterMetadata
+
 instance Validity Image
 
 instance Validity Schedule

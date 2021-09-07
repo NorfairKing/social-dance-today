@@ -47,12 +47,16 @@ instance GenValid OrganiserForm where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
+instance GenValid Coord where
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+
 instance GenValid Latitude where
-  genValid = choose (-90_000_000_000, 90_000_000_000) `suchThatMap` (mkLatitude . MkFixed)
+  genValid = choose (-90_000_000_000, 90_000_000_000) `suchThatMap` (mkLatitude . Coord . MkFixed)
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Longitude where
-  genValid = choose (-180_000_000_000, 180_000_000_000 -1) `suchThatMap` (mkLongitude . MkFixed)
+  genValid = choose (-180_000_000_000, 180_000_000_000 -1) `suchThatMap` (mkLongitude . Coord . MkFixed)
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Coordinates where
@@ -84,6 +88,10 @@ instance GenValid OrganiserReminder where
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Party where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid ImporterMetadata where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 

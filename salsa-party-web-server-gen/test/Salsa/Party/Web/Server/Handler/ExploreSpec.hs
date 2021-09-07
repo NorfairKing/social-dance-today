@@ -70,5 +70,5 @@ genPlaceAround Coordinates {..} =
   let Latitude latCoord = coordinatesLat
       Longitude lonCoord = coordinatesLon
    in Place <$> genValid
-        <*> (((+) latCoord <$> sized (pure . MkFixed . fromIntegral)) `suchThatMap` mkLatitude)
-        <*> (((+) lonCoord <$> sized (pure . MkFixed . fromIntegral)) `suchThatMap` mkLongitude)
+        <*> (((+) latCoord <$> sized (pure . Coord . MkFixed . fromIntegral)) `suchThatMap` mkLatitude)
+        <*> (((+) lonCoord <$> sized (pure . Coord . MkFixed . fromIntegral)) `suchThatMap` mkLongitude)

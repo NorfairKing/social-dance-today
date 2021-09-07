@@ -16,6 +16,14 @@ import Web.PathPieces
 
 spec :: Spec
 spec = do
+  describe "Coord" $ do
+    genValidSpec @Coord
+    eqSpecOnValid @Coord
+    ordSpecOnValid @Coord
+    showReadSpecOnValid @Coord
+    persistSpecOnValid @Coord
+    jsonSpecOnValid @Coord
+
   describe "Latitude" $ do
     genValidSpec @Latitude
     eqSpecOnValid @Latitude
@@ -62,7 +70,7 @@ spec = do
       it "works with the lower boundary" $ do
         mkLongitude (- 180) `shouldBe` Just (Longitude (- 180))
       it "works with the upper boundary" $ do
-        mkLongitude (180 - MkFixed 1) `shouldBe` Just (Longitude (180 - MkFixed 1))
+        mkLongitude (180 - Coord (MkFixed 1)) `shouldBe` Just (Longitude (180 - Coord (MkFixed 1)))
       it "works with this example" $ do
         mkLongitude 50 `shouldBe` Just (Longitude 50)
       it "works with this example" $ do

@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -27,7 +28,7 @@
 --  * Real and Fractional instances to be able to convert to Double for distance calculations
 --  * No Enum instances because we don't need them.
 module Salsa.Party.DB.Coordinates
-  ( Coord,
+  ( Coord (..),
     Latitude (..),
     mkLatitude,
     mkLatitudeOrError,
@@ -44,6 +45,7 @@ where
 import Control.Arrow (left)
 import Data.Aeson as JSON
 import Data.Fixed
+import Data.Int
 import Data.List
 import Data.Proxy
 import Data.Text (Text)
@@ -60,7 +62,32 @@ data E5
 instance HasResolution E5 where
   resolution _ = 100_000
 
-type Coord = Fixed E5
+-- Newtype for a custom 'PersistFieldSql' instance. (and to hide unused instances)
+newtype Coord = Coord {unCoord :: Fixed E5}
+  deriving (Eq, Ord, Generic, Num, Fractional, Real)
+
+instance Validity Coord
+
+instance Show Coord where
+  show (Coord f) = show f
+
+instance Read Coord where
+  readPrec = Coord <$> readPrec
+
+instance ToJSON Coord where
+  toJSON (Coord f) = toJSON f
+
+instance FromJSON Coord where
+  parseJSON = fmap Coord . parseJSON
+
+instance PersistField Coord where
+  toPersistValue (Coord (MkFixed i)) = toPersistValue (fromInteger i :: Int64)
+  fromPersistValue pv = do
+    i <- fromPersistValue pv
+    pure $ Coord $ MkFixed (fromIntegral (i :: Int64))
+
+instance PersistFieldSql Coord where
+  sqlType Proxy = SqlNumeric 15 5 -- Without this custom instance, it would be SqlNumeric 15 5
 
 newtype Latitude = Latitude {unLatitude :: Coord}
   deriving
@@ -161,7 +188,7 @@ instance PersistFieldSql Longitude where
 
 instance Bounded Longitude where
   minBound = Longitude (-180)
-  maxBound = Longitude (180 - MkFixed 1)
+  maxBound = Longitude (180 - Coord (MkFixed 1))
 
 longitudeToFloat :: RealFloat f => Longitude -> f
 longitudeToFloat = realToFrac . unLongitude
