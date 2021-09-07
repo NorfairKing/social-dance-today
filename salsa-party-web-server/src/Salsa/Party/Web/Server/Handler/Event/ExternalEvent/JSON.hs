@@ -14,6 +14,7 @@ where
 import Data.Aeson as JSON
 import Salsa.Party.Web.Server.Handler.Event.JSON.Place
 import Salsa.Party.Web.Server.Handler.Import
+import Web.JSONLD (mField)
 import Yesod.Core.Types
 
 externalEventPageJSON :: Entity ExternalEvent -> Handler (JSONResponse ExternalEventExport)
@@ -67,23 +68,25 @@ instance Validity ExternalEventExport
 instance ToJSON ExternalEventExport where
   toJSON ExternalEventExport {..} =
     let ExternalEventExport _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
-     in object
-          [ "uuid" .= externalEventExportUuid,
-            "key" .= externalEventExportKey,
-            "title" .= externalEventExportTitle,
-            "description" .= externalEventExportDescription,
-            "organiser" .= externalEventExportOrganiser,
-            "day" .= externalEventExportDay,
-            "start" .= externalEventExportStart,
-            "homepage" .= externalEventExportHomepage,
-            "price" .= externalEventExportPrice,
-            "cancelled" .= externalEventExportCancelled,
-            "created" .= externalEventExportCreated,
-            "modified" .= externalEventExportModified,
-            "place" .= externalEventExportPlace,
-            "importer" .= externalEventExportImporter,
-            "origin" .= externalEventExportOrigin
-          ]
+     in object $
+          concat
+            [ [ "uuid" .= externalEventExportUuid,
+                "key" .= externalEventExportKey,
+                "title" .= externalEventExportTitle,
+                "day" .= externalEventExportDay,
+                "cancelled" .= externalEventExportCancelled,
+                "created" .= externalEventExportCreated,
+                "place" .= externalEventExportPlace,
+                "importer" .= externalEventExportImporter,
+                "origin" .= externalEventExportOrigin
+              ],
+              mField "organiser" externalEventExportOrganiser,
+              mField "description" externalEventExportDescription,
+              mField "homepage" externalEventExportHomepage,
+              mField "start" externalEventExportStart,
+              mField "price" externalEventExportPrice,
+              mField "modified" externalEventExportModified
+            ]
 
 instance FromJSON ExternalEventExport where
   parseJSON = withObject "ExternalEventExport" $ \o -> do

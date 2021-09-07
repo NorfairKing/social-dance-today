@@ -20,6 +20,7 @@ where
 import Data.Aeson as JSON
 import Salsa.Party.Web.Server.Handler.Event.JSON.Place
 import Salsa.Party.Web.Server.Handler.Import
+import Web.JSONLD (mField)
 import Yesod.Core.Types
 
 partyPageJSON :: Entity Party -> Handler (JSONResponse PartyExport)
@@ -49,12 +50,14 @@ instance FromJSON UserExport where
 
 instance ToJSON UserExport where
   toJSON UserExport {..} =
-    object
-      [ "email-address" .= userExportEmailAddress,
-        "passphrase-hash" .= unPasswordHash userExportPassphraseHash,
-        "verification-key" .= userExportVerificationKey,
-        "created" .= userExportCreated
-      ]
+    object $
+      concat
+        [ [ "email-address" .= userExportEmailAddress,
+            "passphrase-hash" .= unPasswordHash userExportPassphraseHash,
+            "created" .= userExportCreated
+          ],
+          mField "verification-key" userExportVerificationKey
+        ]
 
 userExport :: User -> UserExport
 userExport User {..} =
@@ -97,20 +100,22 @@ instance FromJSON OrganiserExport where
       <$> o .: "user"
       <*> o .: "uuid"
       <*> o .: "name"
-      <*> o .: "homepage"
+      <*> o .:? "homepage"
       <*> o .: "created"
-      <*> o .: "modified"
+      <*> o .:? "modified"
 
 instance ToJSON OrganiserExport where
   toJSON OrganiserExport {..} =
-    object
-      [ "user" .= organiserExportUser,
-        "uuid" .= organiserExportUuid,
-        "name" .= organiserExportName,
-        "homepage" .= organiserExportHomepage,
-        "created" .= organiserExportCreated,
-        "modified" .= organiserExportModified
-      ]
+    object $
+      concat
+        [ [ "user" .= organiserExportUser,
+            "uuid" .= organiserExportUuid,
+            "name" .= organiserExportName,
+            "created" .= organiserExportCreated
+          ],
+          mField "homepage" organiserExportHomepage,
+          mField "modified" organiserExportModified
+        ]
 
 organiserExport :: Organiser -> User -> OrganiserExport
 organiserExport Organiser {..} user =
@@ -178,20 +183,22 @@ instance Validity PartyExport
 
 instance ToJSON PartyExport where
   toJSON PartyExport {..} =
-    object
-      [ "uuid" .= partyExportUuid,
-        "title" .= partyExportTitle,
-        "description" .= partyExportDescription,
-        "organiser" .= partyExportOrganiser,
-        "day" .= partyExportDay,
-        "start" .= partyExportStart,
-        "homepage" .= partyExportHomepage,
-        "price" .= partyExportPrice,
-        "cancelled" .= partyExportCancelled,
-        "created" .= partyExportCreated,
-        "modified" .= partyExportModified,
-        "place" .= partyExportPlace
-      ]
+    object $
+      concat
+        [ [ "uuid" .= partyExportUuid,
+            "title" .= partyExportTitle,
+            "organiser" .= partyExportOrganiser,
+            "day" .= partyExportDay,
+            "cancelled" .= partyExportCancelled,
+            "created" .= partyExportCreated,
+            "place" .= partyExportPlace
+          ],
+          mField "description" partyExportDescription,
+          mField "start" partyExportStart,
+          mField "price" partyExportPrice,
+          mField "homepage" partyExportHomepage,
+          mField "modified" partyExportModified
+        ]
 
 instance FromJSON PartyExport where
   parseJSON = withObject "PartyExport" $ \o -> do
