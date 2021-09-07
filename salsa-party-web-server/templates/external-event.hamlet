@@ -99,4 +99,6 @@
 
             <pre>
               #{ppShow externalEvent}
+            <pre>
+              #{ppShow place}
 

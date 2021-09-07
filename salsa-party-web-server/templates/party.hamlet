@@ -100,4 +100,11 @@
 
             <pre>
               #{ppShow party}
+            <pre>
+              #{ppShow place}
+            <pre>
+              #{ppShow organiser}
+            $maybe schedule <- mSchedule
+              <pre>
+                #{ppShow schedule}
         
