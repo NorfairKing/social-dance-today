@@ -69,9 +69,9 @@ searchQuery begin mEnd coordinates@Coordinates {..} = do
 
   let internalResults = makeGroupedByDay partyResultsWithImages
       externalResults =
-        -- deduplicateExternalEvents internalResults $
-        -- deduplicateExternalEventsExternally $
-        makeGroupedByDay externalEventResultsWithImages
+        deduplicateExternalEvents internalResults $
+          deduplicateExternalEventsExternally $
+            makeGroupedByDay externalEventResultsWithImages
 
   pure $
     M.filter (not . null) $
@@ -214,13 +214,10 @@ deduplicateExternalEventsExternally = M.mapMaybe go
        in if null uniques then Nothing else Just uniques
 
 externalEventIsSimilarEnoughTo :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Bool
-externalEventIsSimilarEnoughTo (Entity _ e1, Entity place1Id place1, _) (Entity _ e2, Entity place2Id place2, _) =
+externalEventIsSimilarEnoughTo (Entity _ e1, _, _) (Entity _ e2, _, _) =
   -- For the following conditions, keep in mind that it's already established that the two things happen on the same day.
   or
-    [ -- At exactly the same location is probably the same event.
-      place1Id == place2Id,
-      placeQuery place1 `placeCloseEnoughTo` placeQuery place2,
-      externalEventTitle e1 `titleCloseEnoughTo` externalEventTitle e2,
+    [ externalEventTitle e1 `titleCloseEnoughTo` externalEventTitle e2,
       externalEventDescription e1 `descriptionCloseEnoughTo` externalEventDescription e2
     ]
 

@@ -23,22 +23,26 @@ spec :: Spec
 spec = do
   dbSpec $
     describe "externalEventIsSimilarEnoughToParty" $ do
-      externalEvents <- liftIO $ do
+      eventExports <- liftIO $ do
         deduplicationDir <- resolveDir' "test_resources/deduplication"
         externalEventDir <- resolveDir deduplicationDir "event"
         readEventsMap externalEventDir
 
       describe "positives" $
-        forM_ (M.toList externalEvents) $ \(eventName, externalEventExports) ->
-          describe (fromRelDir eventName) $
-            forM_ (tuples (M.toList externalEventExports)) $ \(t1, t2) ->
-              positiveTest t1 t2
+        forM_ (M.toList eventExports) $ \(dayDir, eventExportsPerDay) ->
+          describe (fromRelDir dayDir) $
+            forM_ (M.toList eventExportsPerDay) $ \(eventName, externalEventExports) ->
+              describe (fromRelDir eventName) $
+                forM_ (tuples (M.toList externalEventExports)) $ \(t1, t2) ->
+                  positiveTest t1 t2
 
       describe "negatives" $
-        forM_ (tuples (M.toList externalEvents)) $ \((exportDir1, filesMap1), (exportDir2, filesMap2)) -> do
-          let description1 = unwords [fromRelDir exportDir1, "and", fromRelDir exportDir2]
-          describe description1 $
-            forM_ ((,) <$> M.toList filesMap1 <*> M.toList filesMap2) $ \(t1, t2) -> negativeTest t1 t2
+        forM_ (M.toList eventExports) $ \(dayDir, eventExportsPerDay) ->
+          describe (fromRelDir dayDir) $
+            forM_ (tuples (M.toList eventExportsPerDay)) $ \((exportDir1, filesMap1), (exportDir2, filesMap2)) -> do
+              let description1 = unwords [fromRelDir exportDir1, "and", fromRelDir exportDir2]
+              describe description1 $
+                forM_ ((,) <$> M.toList filesMap1 <*> M.toList filesMap2) $ \(t1, t2) -> negativeTest t1 t2
 
   describe "descriptionCloseEnoughTo" $ do
     it "considers these salsavida descriptions equal." $ do
@@ -97,20 +101,24 @@ data AnyExport
   | ExternalExport ExternalEventExport
   deriving (Show, Eq)
 
-readEventsMap :: Path Abs Dir -> IO (Map (Path Rel Dir) (Map (Path Rel File) AnyExport))
+readEventsMap :: Path Abs Dir -> IO (Map (Path Rel Dir) (Map (Path Rel Dir) (Map (Path Rel File) AnyExport)))
 readEventsMap externalEventsDir = do
-  externalEventUnitDirs <- fst <$> listDir externalEventsDir
+  dayDirs <- fst <$> listDir externalEventsDir
   fmap M.fromList $
-    forM externalEventUnitDirs $ \unitDir -> do
-      files <- snd <$> listDir unitDir
-      filesMap <- forM files $ \file -> do
-        contents <- SB.readFile (fromAbsFile file)
-        case JSON.eitherDecodeStrict' contents of
-          Right externalEvent -> pure (filename file, ExternalExport externalEvent)
-          Left err1 -> case JSON.eitherDecodeStrict' contents of
-            Right party -> pure (filename file, InternalExport party)
-            Left err2 -> expectationFailure $ unlines ["Could not parse event file:" <> fromAbsFile file, err1, err2]
-      pure (dirname unitDir, M.fromList filesMap)
+    forM dayDirs $ \dayDir -> do
+      externalEventUnitDirs <- fst <$> listDir dayDir
+      eventsPerDay <- fmap M.fromList $
+        forM externalEventUnitDirs $ \unitDir -> do
+          files <- snd <$> listDir unitDir
+          filesMap <- forM files $ \file -> do
+            contents <- SB.readFile (fromAbsFile file)
+            case JSON.eitherDecodeStrict' contents of
+              Right externalEvent -> pure (filename file, ExternalExport externalEvent)
+              Left err1 -> case JSON.eitherDecodeStrict' contents of
+                Right party -> pure (filename file, InternalExport party)
+                Left err2 -> expectationFailure $ unlines ["Could not parse event file:" <> fromAbsFile file, err1, err2]
+          pure (dirname unitDir, M.fromList filesMap)
+      pure (dirname dayDir, eventsPerDay)
 
 tuples :: [b] -> [(b, b)]
 tuples = \case
@@ -147,7 +155,7 @@ positiveTest t1@(exportFile1, export1) t2@(exportFile2, export2) = do
             "and",
             descHelper export2,
             fromRelFile exportFile2,
-            "are duplicates"
+            "_are_ duplicates"
           ]
   case (export1, export2) of
     (InternalExport _, ExternalExport _) -> positiveTest t2 t1 -- Assuming that duplicateness is symmetric
@@ -193,7 +201,7 @@ negativeTest t1@(exportFile1, export1) t2@(exportFile2, export2) = do
             "and",
             descHelper export2,
             fromRelFile exportFile2,
-            "are duplicates"
+            "_are not_ duplicates"
           ]
   case (export1, export2) of
     (InternalExport _, ExternalExport _) -> negativeTest t2 t1 -- Assuming that duplicateness is symmetric
