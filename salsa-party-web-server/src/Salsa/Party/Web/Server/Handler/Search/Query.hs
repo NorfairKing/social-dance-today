@@ -210,18 +210,19 @@ deduplicateExternalEventsExternally = M.mapMaybe go
     go externalsOnDay =
       -- TODO: This is a quadratic-time comparison.
       -- We rely on the assumption that there are not a lot of events happening in the same area on the same day.
-      let uniques = nubBy isSimilarEnoughTo externalsOnDay
+      let uniques = nubBy externalEventIsSimilarEnoughTo externalsOnDay
        in if null uniques then Nothing else Just uniques
-    isSimilarEnoughTo :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Bool
-    isSimilarEnoughTo (Entity _ e1, Entity place1Id place1, _) (Entity _ e2, Entity place2Id place2, _) =
-      -- For the following conditions, keep in mind that it's already established that the two things happen on the same day.
-      or
-        [ -- At exactly the same location is probably the same event.
-          place1Id == place2Id,
-          placeQuery place1 `placeCloseEnoughTo` placeQuery place2,
-          externalEventTitle e1 `titleCloseEnoughTo` externalEventTitle e2,
-          externalEventDescription e1 `descriptionCloseEnoughTo` externalEventDescription e2
-        ]
+
+externalEventIsSimilarEnoughTo :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Bool
+externalEventIsSimilarEnoughTo (Entity _ e1, Entity place1Id place1, _) (Entity _ e2, Entity place2Id place2, _) =
+  -- For the following conditions, keep in mind that it's already established that the two things happen on the same day.
+  or
+    [ -- At exactly the same location is probably the same event.
+      place1Id == place2Id,
+      placeQuery place1 `placeCloseEnoughTo` placeQuery place2,
+      externalEventTitle e1 `titleCloseEnoughTo` externalEventTitle e2,
+      externalEventDescription e1 `descriptionCloseEnoughTo` externalEventDescription e2
+    ]
 
 -- | Find external events that look like internal events, and delete them from the external events list.
 --
@@ -244,17 +245,18 @@ deduplicateExternalEvents internals externals = M.differenceWith go externals in
       -- We rely on the assumption that there are not a lot of events happening in the same area on the same day.
       Just $
         filter
-          (\externalEvent -> not $ any (isSimilarEnoughTo externalEvent) internalsOnDay)
+          (\externalEvent -> not $ any (externalEventIsSimilarEnoughToParty externalEvent) internalsOnDay)
           externalsOnDay
-    isSimilarEnoughTo :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> (Entity Party, Entity Place, Maybe CASKey) -> Bool
-    isSimilarEnoughTo (Entity _ ExternalEvent {..}, Entity place1Id place1, _) (Entity _ Party {..}, Entity place2Id place2, _) =
-      -- For the following conditions, keep in mind that it's already established that the two things happen on the same day.
-      or
-        [ place1Id == place2Id,
-          placeQuery place1 `placeCloseEnoughTo` placeQuery place2,
-          externalEventTitle `titleCloseEnoughTo` partyTitle,
-          externalEventDescription `descriptionCloseEnoughTo` partyDescription
-        ]
+
+externalEventIsSimilarEnoughToParty :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> (Entity Party, Entity Place, Maybe CASKey) -> Bool
+externalEventIsSimilarEnoughToParty (Entity _ ExternalEvent {..}, Entity place1Id place1, _) (Entity _ Party {..}, Entity place2Id place2, _) =
+  -- For the following conditions, keep in mind that it's already established that the two things happen on the same day.
+  or
+    [ place1Id == place2Id,
+      placeQuery place1 `placeCloseEnoughTo` placeQuery place2,
+      externalEventTitle `titleCloseEnoughTo` partyTitle,
+      externalEventDescription `descriptionCloseEnoughTo` partyDescription
+    ]
 
 -- If the description is close enough, then we say to deduplicate the events.
 -- This works because organisers often copy-paste event descriptions.

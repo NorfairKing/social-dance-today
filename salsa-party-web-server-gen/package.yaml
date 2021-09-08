@@ -85,6 +85,8 @@ tests:
     - monad-logger
     - mtl
     - password
+    - path
+    - path-io
     - path-io
     - path-pieces
     - persistent
@@ -107,3 +109,4 @@ tests:
     - yesod
     - yesod-auth
     - yesod-core
+    
