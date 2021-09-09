@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NumericUnderscores #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -22,6 +23,7 @@ import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
 import Salsa.Party.Web.Server.Handler.Event.JSON.Place
 import Salsa.Party.Web.Server.Handler.Event.Party.JSON
 import Salsa.Party.Web.Server.Handler.Import
+import Salsa.Party.Web.Server.Handler.Search.Deduplication
 import Test.QuickCheck
 
 instance GenValid Password where
@@ -156,6 +158,21 @@ instance GenValid EditScheduleForm where
 instance GenValid StaticMap where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
+
+instance GenValid Similarity where
+  genValid = Similarity <$> choose (0, 1)
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid SimilarityFormula where
+  shrinkValid = shrinkValidStructurally
+  genValid = (`suchThat` isValid) $
+    sized $ \case
+      0 -> Factor <$> genValid <*> genValid
+      _ ->
+        oneof
+          [ Factor <$> genValid <*> genValid,
+            Terms <$> genValid <*> genValid
+          ]
 
 -- This isn't very general, but that's probably fine.
 genValidEmailAddress :: Gen Text

@@ -1,5 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Salsa.Party.Web.Server.Handler.Search.DeduplicationSpec (spec) where
 
@@ -21,28 +22,18 @@ import Test.Syd.Persistent
 
 spec :: Spec
 spec = do
-  dbSpec $
-    describe "externalEventIsSimilarEnoughToParty" $ do
-      deduplicationDir <- liftIO $ resolveDir' "test_resources/deduplication"
-      eventsDir <- liftIO $ resolveDir deduplicationDir "event"
-      eventExports <- liftIO $ readEventsMap eventsDir
-
-      describe "positives" $
-        forM_ (M.toList eventExports) $ \(dayDir, eventExportsPerDay) ->
-          describe (fromRelDir dayDir) $
-            forM_ (M.toList eventExportsPerDay) $ \(eventName, externalEventExports) ->
-              describe (fromRelDir eventName) $
-                forM_ (tuples (M.toList externalEventExports)) $ \(t1, t2) ->
-                  positiveTest (eventsDir </> dayDir </> eventName) t1 t2
-
-      describe "negatives" $
-        forM_ (M.toList eventExports) $ \(dayDir, eventExportsPerDay) ->
-          describe (fromRelDir dayDir) $
-            forM_ (tuples (M.toList eventExportsPerDay)) $ \((exportDir1, filesMap1), (exportDir2, filesMap2)) -> do
-              let description1 = unwords [fromRelDir exportDir1, "and", fromRelDir exportDir2]
-              describe description1 $
-                forM_ ((,) <$> M.toList filesMap1 <*> M.toList filesMap2) $ \(t1, t2) ->
-                  negativeTest (eventsDir </> dayDir </> exportDir1) (eventsDir </> dayDir </> exportDir2) t1 t2
+  describe "Similarities" $ do
+    genValidSpec @Similarity
+    genValidSpec @SimilarityFormula
+    describe "computeSimilarityFormula" $
+      it "produces valid similarities" $ producesValidsOnValids computeSimilarityFormula
+    describe "sumSimilarities" $ do
+      it "says 0 for this formula" $ sumSimilarities [(0.0, Similarity 1)] `shouldBe` Similarity 0
+    describe "placeSimilarity" $ similarityFormulaFunctionSpec placeSimilarity
+    describe "textSimilarity" $ similarityFunctionSpec textSimilarity
+    describe "timeSimilarity" $ similarityFunctionSpec timeSimilarity
+    describe "rationalSimilarity" $ similarityFunctionSpec rationalSimilarity
+    describe "boolSimilarity" $ similarityFunctionSpec rationalSimilarity
 
   describe "descriptionCloseEnoughTo" $ do
     it "considers these salsavida descriptions equal." $ do
@@ -95,6 +86,29 @@ spec = do
         titleCloseEnoughTo
           "平仮名"
           "漢字"
+
+  dbSpec $
+    describe "externalEventIsSimilarEnoughToParty" $ do
+      deduplicationDir <- liftIO $ resolveDir' "test_resources/deduplication"
+      eventsDir <- liftIO $ resolveDir deduplicationDir "event"
+      eventExports <- liftIO $ readEventsMap eventsDir
+
+      describe "positives" $
+        forM_ (M.toList eventExports) $ \(dayDir, eventExportsPerDay) ->
+          describe (fromRelDir dayDir) $
+            forM_ (M.toList eventExportsPerDay) $ \(eventName, externalEventExports) ->
+              describe (fromRelDir eventName) $
+                forM_ (tuples (M.toList externalEventExports)) $ \(t1, t2) ->
+                  positiveTest (eventsDir </> dayDir </> eventName) t1 t2
+
+      describe "negatives" $
+        forM_ (M.toList eventExports) $ \(dayDir, eventExportsPerDay) ->
+          describe (fromRelDir dayDir) $
+            forM_ (tuples (M.toList eventExportsPerDay)) $ \((exportDir1, filesMap1), (exportDir2, filesMap2)) -> do
+              let description1 = unwords [fromRelDir exportDir1, "and", fromRelDir exportDir2]
+              describe description1 $
+                forM_ ((,) <$> M.toList filesMap1 <*> M.toList filesMap2) $ \(t1, t2) ->
+                  negativeTest (eventsDir </> dayDir </> exportDir1) (eventsDir </> dayDir </> exportDir2) t1 t2
 
 data AnyExport
   = InternalExport PartyExport
@@ -172,8 +186,12 @@ positiveTest rootDir t1@(exportFile1, export1) t2@(exportFile2, export2) = do
               expectationFailure $
                 unlines
                   [ "This external event was not considered a duplicate of this party but it should have been:",
+                    fromAbsFile (rootDir </> exportFile1),
                     ppShow externalEventExport1,
-                    ppShow partyExport2
+                    fromAbsFile (rootDir </> exportFile2),
+                    ppShow partyExport2,
+                    ppShow $ similarityScoreExternalToInternal tup1 tup2,
+                    ppShow $ computeSimilarityFormula $ similarityScoreExternalToInternal tup1 tup2
                   ]
     (ExternalExport externalEventExport1, ExternalExport externalEventExport2) ->
       it itDescription $ \pool -> runPersistentTest pool $ do
@@ -187,8 +205,12 @@ positiveTest rootDir t1@(exportFile1, export1) t2@(exportFile2, export2) = do
               expectationFailure $
                 unlines
                   [ "These external events were not considered duplicates but they should have been:",
+                    fromAbsFile (rootDir </> exportFile1),
                     ppShow externalEventExport1,
-                    ppShow externalEventExport2
+                    fromAbsFile (rootDir </> exportFile2),
+                    ppShow externalEventExport2,
+                    ppShow $ similarityScoreExternalToExternal tup1 tup2,
+                    ppShow $ computeSimilarityFormula $ similarityScoreExternalToExternal tup1 tup2
                   ]
 
 negativeTest :: Path Abs Dir -> Path Abs Dir -> (Path Rel File, AnyExport) -> (Path Rel File, AnyExport) -> TestDef outers DB.ConnectionPool
@@ -220,7 +242,9 @@ negativeTest rootDir1 rootDir2 t1@(exportFile1, export1) t2@(exportFile2, export
                     fromAbsFile (rootDir1 </> exportFile1),
                     ppShow externalEventExport1,
                     fromAbsFile (rootDir2 </> exportFile2),
-                    ppShow partyExport2
+                    ppShow partyExport2,
+                    ppShow $ similarityScoreExternalToInternal tup1 tup2,
+                    ppShow $ computeSimilarityFormula $ similarityScoreExternalToInternal tup1 tup2
                   ]
           else pure ()
     (ExternalExport externalEventExport1, ExternalExport externalEventExport2) ->
@@ -237,7 +261,9 @@ negativeTest rootDir1 rootDir2 t1@(exportFile1, export1) t2@(exportFile2, export
                     fromAbsFile (rootDir1 </> exportFile1),
                     ppShow externalEventExport1,
                     fromAbsFile (rootDir2 </> exportFile2),
-                    ppShow externalEventExport2
+                    ppShow externalEventExport2,
+                    ppShow $ similarityScoreExternalToExternal tup1 tup2,
+                    ppShow $ computeSimilarityFormula $ similarityScoreExternalToExternal tup1 tup2
                   ]
           else pure ()
 
@@ -245,3 +271,22 @@ descHelper :: AnyExport -> String
 descHelper = \case
   InternalExport _ -> "party"
   ExternalExport _ -> "external event"
+
+similarityFormulaFunctionSpec :: (Show a, GenValid a) => (a -> a -> SimilarityFormula) -> Spec
+similarityFormulaFunctionSpec func = similarityFunctionSpec (\a1 a2 -> computeSimilarityFormula (func a1 a2))
+
+similarityFunctionSpec :: (Show a, GenValid a) => (a -> a -> Similarity) -> Spec
+similarityFunctionSpec similar = do
+  it "produces valid similarities" $
+    forAllValid $ \a1 ->
+      forAllValid $ \a2 ->
+        shouldBeValid $ similar a1 a2
+  it "scores equal things as 1" $
+    forAllValid $ \a -> similar a a `shouldBeCloseEnough` Similarity 1
+  it "is symmetric" $
+    forAllValid $ \a ->
+      forAllValid $ \b ->
+        similar a b `shouldBeCloseEnough` similar b a
+
+shouldBeCloseEnough :: Similarity -> Similarity -> IO ()
+shouldBeCloseEnough (Similarity d1) (Similarity d2) = abs (d1 - d2) `shouldSatisfy` (< 1E-16)
