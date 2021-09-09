@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Salsa.Party.Web.Server.Handler.Search.Query.DeduplicationSpec (spec) where
+module Salsa.Party.Web.Server.Handler.Search.DeduplicationSpec (spec) where
 
 import Data.Aeson as JSON
 import qualified Data.ByteString as SB
@@ -15,7 +15,7 @@ import Path
 import Path.IO
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
 import Salsa.Party.Web.Server.Handler.Event.Party.JSON
-import Salsa.Party.Web.Server.Handler.Search.Query
+import Salsa.Party.Web.Server.Handler.Search.Deduplication
 import Salsa.Party.Web.Server.Handler.TestImport
 import Test.Syd.Persistent
 

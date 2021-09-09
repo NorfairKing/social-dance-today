@@ -98,6 +98,7 @@ library
       Salsa.Party.Web.Server.Handler.Organiser
       Salsa.Party.Web.Server.Handler.Reminder
       Salsa.Party.Web.Server.Handler.Search
+      Salsa.Party.Web.Server.Handler.Search.Deduplication
       Salsa.Party.Web.Server.Handler.Search.Query
       Salsa.Party.Web.Server.Handler.Sitemap
       Salsa.Party.Web.Server.Handler.StaticMap
