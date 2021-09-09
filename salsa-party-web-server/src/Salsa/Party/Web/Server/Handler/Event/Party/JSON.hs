@@ -5,6 +5,7 @@
 
 module Salsa.Party.Web.Server.Handler.Event.Party.JSON
   ( partyPageJSON,
+    exportParty,
     UserExport (..),
     userExport,
     importUserExport,
@@ -24,12 +25,15 @@ import Web.JSONLD (mField)
 import Yesod.Core.Types
 
 partyPageJSON :: Entity Party -> Handler (JSONResponse PartyExport)
-partyPageJSON (Entity _ party) = do
+partyPageJSON = do fmap JSONResponse . exportParty
+
+exportParty :: Entity Party -> Handler PartyExport
+exportParty (Entity _ party) = do
   requireAdmin
   place <- runDB $ get404 $ partyPlace party
   organiser <- runDB $ get404 $ partyOrganiser party
   user <- runDB $ get404 $ organiserUser organiser
-  pure $ JSONResponse $ partyExport party place organiser user
+  pure $ partyExport party place organiser user
 
 data UserExport = UserExport
   { userExportEmailAddress :: !Text,

@@ -5,6 +5,7 @@
 
 module Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
   ( externalEventPageJSON,
+    exportExternalEvent,
     ExternalEventExport (..),
     externalEventExport,
     importExternalEventExport,
@@ -18,11 +19,14 @@ import Web.JSONLD (mField)
 import Yesod.Core.Types
 
 externalEventPageJSON :: Entity ExternalEvent -> Handler (JSONResponse ExternalEventExport)
-externalEventPageJSON (Entity _ externalEvent) = do
+externalEventPageJSON = fmap JSONResponse . exportExternalEvent
+
+exportExternalEvent :: Entity ExternalEvent -> Handler ExternalEventExport
+exportExternalEvent (Entity _ externalEvent) = do
   requireAdmin
   place@Place {..} <- runDB $ get404 $ externalEventPlace externalEvent
   importerMetadata <- runDB $ get404 $ externalEventImporter externalEvent
-  pure $ JSONResponse $ externalEventExport externalEvent place importerMetadata
+  pure $ externalEventExport externalEvent place importerMetadata
 
 externalEventExport :: ExternalEvent -> Place -> ImporterMetadata -> ExternalEventExport
 externalEventExport ExternalEvent {..} place ImporterMetadata {..} =

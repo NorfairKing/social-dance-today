@@ -197,8 +197,6 @@ makeGroupedByDay = foldr go M.empty -- This could be falter with a fold
 --
 -- We don't like false-positives, because then we see duplicate events: External events that are the same as some internal event we have.
 -- We don't like false-negatives, because then we don't see certain external events.
---
--- In general false-negatives are safer than false-positives, for the user experience.
 deduplicateExternalEventsExternally ::
   Map Day [(Entity ExternalEvent, Entity Place, Maybe CASKey)] ->
   Map Day [(Entity ExternalEvent, Entity Place, Maybe CASKey)]
@@ -225,8 +223,6 @@ externalEventIsSimilarEnoughTo (Entity _ e1, _, _) (Entity _ e2, _, _) =
 --
 -- We don't like false-positives, because then we see duplicate events: External events that are the same as some internal event we have.
 -- We don't like false-negatives, because then we don't see certain external events.
---
--- In general false-negatives are safer than false-positives, for the user experience.
 deduplicateExternalEvents ::
   Map Day [(Entity Party, Entity Place, Maybe CASKey)] ->
   Map Day [(Entity ExternalEvent, Entity Place, Maybe CASKey)] ->
@@ -276,7 +272,12 @@ titleCloseEnoughTo = closeEnoughTo 11
 
 closeEnoughTo :: Int -> Text -> Text -> Bool
 closeEnoughTo ratio t1 t2 =
-  let normalise = filter (not . Char.isSymbol) . filter Char.isPrint . T.unpack . T.toCaseFold . T.strip
+  let normalise =
+        filter (not . Char.isSymbol)
+          . filter Char.isPrint
+          . T.unpack
+          . T.toCaseFold
+          . T.strip
       t1' = normalise t1
       t2' = normalise t2
       d = levenshteinDistance defaultEditCosts t1' t2'

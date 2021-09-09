@@ -83,6 +83,7 @@ library:
   - yesod-sitemap
   - yesod-static
   - yesod-static-remote
+  - zip-archive
 
 executables:
   salsa-party-web-server:

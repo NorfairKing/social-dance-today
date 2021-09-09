@@ -63,6 +63,8 @@
   /organiser-reminders/#PageNumber AdminOrganiserRemindersPageR GET
 
 
+  /export-day/#Day AdminExportDayR GET
+
   /parties AdminPartiesR GET
   /parties/#PageNumber AdminPartiesPageR GET
   /upcoming-parties AdminUpcomingPartiesR GET

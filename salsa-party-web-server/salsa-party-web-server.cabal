@@ -70,6 +70,7 @@ library
       Salsa.Party.Web.Server.Handler.Account.Schedule
       Salsa.Party.Web.Server.Handler.Admin
       Salsa.Party.Web.Server.Handler.Admin.Charts
+      Salsa.Party.Web.Server.Handler.Admin.Export
       Salsa.Party.Web.Server.Handler.Admin.Geocoding
       Salsa.Party.Web.Server.Handler.Admin.Panel
       Salsa.Party.Web.Server.Handler.Admin.SiteTest
@@ -188,6 +189,7 @@ library
     , yesod-sitemap
     , yesod-static
     , yesod-static-remote
+    , zip-archive
   default-language: Haskell2010
 
 executable salsa-party-web-server

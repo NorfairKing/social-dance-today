@@ -23,10 +23,9 @@ spec :: Spec
 spec = do
   dbSpec $
     describe "externalEventIsSimilarEnoughToParty" $ do
-      eventExports <- liftIO $ do
-        deduplicationDir <- resolveDir' "test_resources/deduplication"
-        externalEventDir <- resolveDir deduplicationDir "event"
-        readEventsMap externalEventDir
+      deduplicationDir <- liftIO $ resolveDir' "test_resources/deduplication"
+      eventsDir <- liftIO $ resolveDir deduplicationDir "event"
+      eventExports <- liftIO $ readEventsMap eventsDir
 
       describe "positives" $
         forM_ (M.toList eventExports) $ \(dayDir, eventExportsPerDay) ->
@@ -34,7 +33,7 @@ spec = do
             forM_ (M.toList eventExportsPerDay) $ \(eventName, externalEventExports) ->
               describe (fromRelDir eventName) $
                 forM_ (tuples (M.toList externalEventExports)) $ \(t1, t2) ->
-                  positiveTest t1 t2
+                  positiveTest (eventsDir </> dayDir </> eventName) t1 t2
 
       describe "negatives" $
         forM_ (M.toList eventExports) $ \(dayDir, eventExportsPerDay) ->
@@ -42,7 +41,8 @@ spec = do
             forM_ (tuples (M.toList eventExportsPerDay)) $ \((exportDir1, filesMap1), (exportDir2, filesMap2)) -> do
               let description1 = unwords [fromRelDir exportDir1, "and", fromRelDir exportDir2]
               describe description1 $
-                forM_ ((,) <$> M.toList filesMap1 <*> M.toList filesMap2) $ \(t1, t2) -> negativeTest t1 t2
+                forM_ ((,) <$> M.toList filesMap1 <*> M.toList filesMap2) $ \(t1, t2) ->
+                  negativeTest (eventsDir </> dayDir </> exportDir1) (eventsDir </> dayDir </> exportDir2) t1 t2
 
   describe "descriptionCloseEnoughTo" $ do
     it "considers these salsavida descriptions equal." $ do
@@ -145,8 +145,8 @@ importExternalEvent export = do
   mCasKey <- getPosterForExternalEvent externalEventId
   pure (externalEventEntity, placeEntity, mCasKey)
 
-positiveTest :: (Path Rel File, AnyExport) -> (Path Rel File, AnyExport) -> TestDef outers DB.ConnectionPool
-positiveTest t1@(exportFile1, export1) t2@(exportFile2, export2) = do
+positiveTest :: Path Abs Dir -> (Path Rel File, AnyExport) -> (Path Rel File, AnyExport) -> TestDef outers DB.ConnectionPool
+positiveTest rootDir t1@(exportFile1, export1) t2@(exportFile2, export2) = do
   let itDescription =
         unwords
           [ "says that",
@@ -158,7 +158,7 @@ positiveTest t1@(exportFile1, export1) t2@(exportFile2, export2) = do
             "_are_ duplicates"
           ]
   case (export1, export2) of
-    (InternalExport _, ExternalExport _) -> positiveTest t2 t1 -- Assuming that duplicateness is symmetric
+    (InternalExport _, ExternalExport _) -> positiveTest rootDir t2 t1 -- Assuming that duplicateness is symmetric
     (InternalExport _, InternalExport _) -> pure () -- Nothing to test yet.
     (ExternalExport externalEventExport1, InternalExport partyExport2) ->
       it itDescription $ \pool -> runPersistentTest pool $ do
@@ -191,8 +191,8 @@ positiveTest t1@(exportFile1, export1) t2@(exportFile2, export2) = do
                     ppShow externalEventExport2
                   ]
 
-negativeTest :: (Path Rel File, AnyExport) -> (Path Rel File, AnyExport) -> TestDef outers DB.ConnectionPool
-negativeTest t1@(exportFile1, export1) t2@(exportFile2, export2) = do
+negativeTest :: Path Abs Dir -> Path Abs Dir -> (Path Rel File, AnyExport) -> (Path Rel File, AnyExport) -> TestDef outers DB.ConnectionPool
+negativeTest rootDir1 rootDir2 t1@(exportFile1, export1) t2@(exportFile2, export2) = do
   let itDescription =
         unwords
           [ "says that",
@@ -204,7 +204,7 @@ negativeTest t1@(exportFile1, export1) t2@(exportFile2, export2) = do
             "_are not_ duplicates"
           ]
   case (export1, export2) of
-    (InternalExport _, ExternalExport _) -> negativeTest t2 t1 -- Assuming that duplicateness is symmetric
+    (InternalExport _, ExternalExport _) -> negativeTest rootDir2 rootDir1 t2 t1 -- Assuming that duplicateness is symmetric
     (InternalExport _, InternalExport _) -> pure () -- Nothing to test yet.
     (ExternalExport externalEventExport1, InternalExport partyExport2) ->
       it itDescription $ \pool -> runPersistentTest pool $ do
@@ -217,7 +217,9 @@ negativeTest t1@(exportFile1, export1) t2@(exportFile2, export2) = do
               expectationFailure $
                 unlines
                   [ "These external events were considered duplicates but they should not have been:",
+                    fromAbsFile (rootDir1 </> exportFile1),
                     ppShow externalEventExport1,
+                    fromAbsFile (rootDir2 </> exportFile2),
                     ppShow partyExport2
                   ]
           else pure ()
@@ -232,7 +234,9 @@ negativeTest t1@(exportFile1, export1) t2@(exportFile2, export2) = do
               expectationFailure $
                 unlines
                   [ "These external events were considered duplicates but they should not have been:",
+                    fromAbsFile (rootDir1 </> exportFile1),
                     ppShow externalEventExport1,
+                    fromAbsFile (rootDir2 </> exportFile2),
                     ppShow externalEventExport2
                   ]
           else pure ()
