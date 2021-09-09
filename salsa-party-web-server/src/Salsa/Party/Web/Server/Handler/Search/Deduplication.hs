@@ -183,7 +183,7 @@ descriptionSimilarity t1 t2 =
     ]
 
 priceSimilarity :: Text -> Text -> Similarity
-priceSimilarity = stringSimilarity `on` (filter (Char.isDigit) . T.unpack)
+priceSimilarity = stringSimilarity `on` (filter Char.isDigit . T.unpack)
 
 homepageSimilarity :: Text -> Text -> Similarity
 homepageSimilarity =
@@ -208,7 +208,7 @@ stringSimilarity t1 t2 = case (t1, t2) of
   _ ->
     distanceToSimilarity $
       fromIntegral (levenshteinDistance defaultEditCosts t1 t2)
-        / (fromIntegral (length t1 + length t2))
+        / fromIntegral (length t1 + length t2)
 
 textLevenshteinSimilarity :: Text -> Text -> Similarity
 textLevenshteinSimilarity t1 t2 =

@@ -22,6 +22,8 @@
     name: "Use lambda"
 - ignore:
     name: "Use record patterns"
+- ignore:
+    name: "Avoid lambda using `infix`"
 - functions:
   - name: setTitle
     within:
