@@ -7,6 +7,7 @@
 module Salsa.Party.Web.Server.Handler.Search.Deduplication where
 
 import Data.Char as Char
+import Data.Foldable
 import Data.Function
 import Data.List
 import Data.Map.Strict (Map)
@@ -34,7 +35,7 @@ deduplicateExternalEventsExternally = M.mapMaybe go
        in if null uniques then Nothing else Just uniques
 
 externalEventIsSimilarEnoughTo :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Bool
-externalEventIsSimilarEnoughTo trip1 trip2 = similarEnough 0.8 $ computeSimilarityFormula $ similarityScoreExternalToExternal trip1 trip2
+externalEventIsSimilarEnoughTo trip1 trip2 = similarEnough 0.744 $ computeSimilarityFormula $ similarityScoreExternalToExternal trip1 trip2
 
 -- | Find external events that look like internal events, and delete them from the external events list.
 --
@@ -102,24 +103,25 @@ similarityScoreExternalToExternal ::
   SimilarityFormula
 similarityScoreExternalToExternal (Entity _ externalEvent1, Entity _ place1, _) (Entity _ externalEvent2, Entity _ place2, _) =
   let simVia simFunc fieldFunc = simFunc (fieldFunc externalEvent1) (fieldFunc externalEvent2)
-      mSim f s simFunc fieldFunc =
-        [ (f, Factor s (simFunc v1 v2))
+      mSim f s simFunc fieldFunc = mSimFunc f (\v1 v2 -> Factor s (simFunc v1 v2)) fieldFunc
+      mSimFunc f simFunc fieldFunc =
+        [ (f, simFunc v1 v2)
           | v1 <- maybeToList $ fieldFunc externalEvent1,
             v2 <- maybeToList $ fieldFunc externalEvent2
         ]
    in Terms "External to external" $
         concat
           [ [ (1, placeSimilarity place1 place2),
-              (3, Factor "Title" $ simVia textSimilarity externalEventTitle),
+              (3, Factor "Title" $ simVia titleSimilarity externalEventTitle),
               -- Don't consider the day because we only look at events on the same day anyway
               -- (1, Factor "Day" $ simVia daySimilarity externalEventDay),
               (0.1, Factor "Cancelled" $ simVia boolSimilarity externalEventCancelled)
             ],
-            mSim 1 "Description" descriptionSimilarity externalEventDescription,
-            mSim 1 "Price" textSimilarity externalEventPrice,
-            mSim 2 "Homepage" textSimilarity externalEventHomepage,
+            mSimFunc 3 descriptionSimilarity externalEventDescription,
+            mSim 0.5 "Price" priceSimilarity externalEventPrice,
+            mSim 1 "Homepage" homepageSimilarity externalEventHomepage,
             mSim 1 "Organiser" textSimilarity externalEventOrganiser,
-            mSim 1 "Start" timeSimilarity externalEventStart
+            mSim 0.25 "Start" timeSimilarity externalEventStart
           ]
 
 similarityScoreExternalToInternal ::
@@ -128,24 +130,25 @@ similarityScoreExternalToInternal ::
   SimilarityFormula
 similarityScoreExternalToInternal (Entity _ externalEvent, Entity _ place1, _) (Entity _ party, Entity _ place2, _) =
   let sim simFunc fieldFunc1 fieldFunc2 = simFunc (fieldFunc1 externalEvent) (fieldFunc2 party)
-      mSim f s simFunc fieldFunc1 fieldFunc2 =
-        [ (f, Factor s (simFunc v1 v2))
+      mSim f s simFunc fieldFunc1 fieldFunc2 = mSimFunc f (\v1 v2 -> Factor s (simFunc v1 v2)) fieldFunc1 fieldFunc2
+      mSimFunc f simFunc fieldFunc1 fieldFunc2 =
+        [ (f, simFunc v1 v2)
           | v1 <- maybeToList $ fieldFunc1 externalEvent,
             v2 <- maybeToList $ fieldFunc2 party
         ]
    in Terms "External to internal" $
         concat
           [ [ (1, placeSimilarity place1 place2),
-              (3, Factor "Title" $ sim textSimilarity externalEventTitle partyTitle),
+              (3, Factor "Title" $ sim titleSimilarity externalEventTitle partyTitle),
               -- Don't consider the day because we only look at events on the same day anyway
               -- (1, Factor "Day" $ sim daySimilarity externalEventDay partyDay),
               (0.1, Factor "Cancelled" $ sim boolSimilarity externalEventCancelled partyCancelled)
             ],
             -- TODO organiser?
-            mSim 1 "Description" descriptionSimilarity externalEventDescription partyDescription,
-            mSim 1 "Price" textSimilarity externalEventPrice partyPrice,
-            mSim 2 "Homepage" textSimilarity externalEventHomepage partyHomepage,
-            mSim 1 "Start" timeSimilarity externalEventStart partyStart
+            mSimFunc 3 descriptionSimilarity externalEventDescription partyDescription,
+            mSim 0.5 "Price" priceSimilarity externalEventPrice partyPrice,
+            mSim 1 "Homepage" homepageSimilarity externalEventHomepage partyHomepage,
+            mSim 0.25 "Start" timeSimilarity externalEventStart partyStart
           ]
 
 placeSimilarity :: Place -> Place -> SimilarityFormula
@@ -160,16 +163,41 @@ placeSimilarity p1 p2 =
       (1, Factor "Address" $ textSimilarity (placeQuery p1) (placeQuery p2))
     ]
 
-preprocessText :: Text -> String
+preprocessText :: Text -> Text
 preprocessText =
-  filter (not . Char.isSymbol)
-    . filter Char.isPrint
-    . T.unpack
+  T.filter (not . Char.isSymbol)
+    . T.filter Char.isPrint
     . T.toCaseFold
     . T.strip
 
-descriptionSimilarity :: Text -> Text -> Similarity
-descriptionSimilarity = stringSimilarity `on` preprocessText
+titleSimilarity :: Text -> Text -> Similarity
+titleSimilarity = textSimilarity `on` preprocessText
+
+descriptionSimilarity :: Text -> Text -> SimilarityFormula
+descriptionSimilarity t1 t2 =
+  Terms
+    "Description"
+    [ (2, Factor "Preprocessed" $ (textSimilarity `on` preprocessText) t1 t2) -- ,
+    -- (1, Factor "Cosine" $ cosineSimilarity t1 t2),
+    -- (1, Factor "Literal" $ textSimilarity t1 t2)
+    ]
+
+priceSimilarity :: Text -> Text -> Similarity
+priceSimilarity = stringSimilarity `on` (filter (Char.isDigit) . T.unpack)
+
+homepageSimilarity :: Text -> Text -> Similarity
+homepageSimilarity =
+  textLevenshteinSimilarity
+    `on` stripPrefixes
+      [ "https://www.",
+        "http://www.",
+        "https://",
+        "http://",
+        "www."
+      ]
+  where
+    stripPrefixes [] t = t
+    stripPrefixes (p : ps) t = fromMaybe (stripPrefixes ps t) (T.stripPrefix p t)
 
 textSimilarity :: Text -> Text -> Similarity
 textSimilarity = stringSimilarity `on` T.unpack
@@ -180,13 +208,31 @@ stringSimilarity t1 t2 = case (t1, t2) of
   _ ->
     distanceToSimilarity $
       fromIntegral (levenshteinDistance defaultEditCosts t1 t2)
-        / fromIntegral (length t1 + length t2)
+        / (fromIntegral (length t1 + length t2))
+
+textLevenshteinSimilarity :: Text -> Text -> Similarity
+textLevenshteinSimilarity t1 t2 =
+  distanceToSimilarity $ fromIntegral (levenshteinDistance defaultEditCosts (T.unpack t1) (T.unpack t2))
+
+cosineSimilarity :: Text -> Text -> Similarity
+cosineSimilarity = go `on` (filter (not . T.null) . map T.strip . T.words)
+  where
+    go :: [Text] -> [Text] -> Similarity
+    go words1 words2 =
+      let countMap1 = countMap words1
+          countMap2 = countMap words2
+          dotProduct = fromIntegral $ sum $ M.intersectionWith (*) countMap1 countMap2
+          norm v = sqrt $ sum $ map ((** 2) . fromIntegral) $ toList v
+       in Similarity $ dotProduct / (norm countMap1 * norm countMap2)
+
+countMap :: [Text] -> Map Text Word
+countMap = M.unionsWith (+) . map (\t -> M.singleton t 1)
 
 daySimilarity :: Day -> Day -> Similarity
 daySimilarity d1 d2 = distanceToSimilarity $ fromInteger $ abs $ diffDays d1 d2
 
 timeSimilarity :: TimeOfDay -> TimeOfDay -> Similarity
-timeSimilarity = realSimilarity `on` timeOfDayToDayFraction
+timeSimilarity = realSimilarity `on` ((* 24) . timeOfDayToDayFraction)
 
 realSimilarity :: Real a => a -> a -> Similarity
 realSimilarity = rationalSimilarity `on` toRational
