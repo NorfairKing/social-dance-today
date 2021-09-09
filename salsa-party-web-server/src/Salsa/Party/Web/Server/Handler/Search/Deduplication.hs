@@ -40,11 +40,12 @@ deleteWorstDuplicates = \case
   (d : ds) -> case findDel (externalEventIsSimilarEnoughTo d) ds of
     Nothing -> d : deleteWorstDuplicates ds
     Just (dup, rest) ->
-      ( if scoreExternalEventTrip d >= scoreExternalEventTrip dup
-          then d
-          else dup
-      ) :
-      deleteWorstDuplicates rest
+      let chosen =
+            ( if scoreExternalEventTrip d >= scoreExternalEventTrip dup
+                then d
+                else dup
+            )
+       in deleteWorstDuplicates (chosen : rest)
 
 findDel :: (a -> Bool) -> [a] -> Maybe (a, [a])
 findDel predicate = go
