@@ -9,11 +9,11 @@ module Salsa.Party.Web.Server.Handler.Search.Deduplication where
 import Data.Char as Char
 import Data.Foldable
 import Data.Function
-import Data.List
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import Salsa.Party.Web.Server.Handler.Import
+import Salsa.Party.Web.Server.Handler.Search.Scoring
 import Text.EditDistance
 
 -- | Find external events that look like other external events, and delete them from the external events list.
@@ -31,8 +31,30 @@ deduplicateExternalEventsExternally = M.mapMaybe go
     go externalsOnDay =
       -- TODO: This is a quadratic-time comparison.
       -- We rely on the assumption that there are not a lot of events happening in the same area on the same day.
-      let uniques = nubBy externalEventIsSimilarEnoughTo externalsOnDay
+      let uniques = deleteWorstDuplicates externalsOnDay
        in if null uniques then Nothing else Just uniques
+
+deleteWorstDuplicates :: [(Entity ExternalEvent, Entity Place, Maybe CASKey)] -> [(Entity ExternalEvent, Entity Place, Maybe CASKey)]
+deleteWorstDuplicates = \case
+  [] -> []
+  (d : ds) -> case findDel (externalEventIsSimilarEnoughTo d) ds of
+    Nothing -> d : deleteWorstDuplicates ds
+    Just (dup, rest) ->
+      ( if scoreExternalEventTrip d >= scoreExternalEventTrip dup
+          then d
+          else dup
+      ) :
+      deleteWorstDuplicates rest
+
+findDel :: (a -> Bool) -> [a] -> Maybe (a, [a])
+findDel predicate = go
+  where
+    go [] = Nothing
+    go (a : as)
+      | predicate a = Just (a, as)
+      | otherwise = do
+        (f, rest) <- go as
+        pure (f, a : rest)
 
 externalEventIsSimilarEnoughTo :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Bool
 externalEventIsSimilarEnoughTo trip1 trip2 = similarEnough 0.745 $ computeSimilarityFormula $ similarityScoreExternalToExternal trip1 trip2

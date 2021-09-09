@@ -198,20 +198,24 @@ spec = do
                               DB.insert_ party2
                               let party3 = party3Prototype {partyTitle = "Party 3 ghi", partyDay = otherDay, partyPlace = place3Id}
                               DB.insert_ party3
-                              let place4 = Place {placeQuery = "Place 4 lmn", placeLat = Latitude 0.2, placeLon = Longitude (-0.2)}
+                              let place4 = Place {placeQuery = "Place 4 lmn 😃", placeLat = Latitude 0.2, placeLon = Longitude (-0.2)}
                               place4Id <- DB.insert place4
                               let place5 = Place {placeQuery = "Place 5 opq", placeLat = Latitude (-0.2), placeLon = Longitude 0.2}
                               place5Id <- DB.insert place5
                               let place6 = Place {placeQuery = "Place 6 rst", placeLat = Latitude 0, placeLon = Longitude 0.1}
                               place6Id <- DB.insert place6
-                              let place7 = Place {placeQuery = "Place 7 pqr", placeLat = Latitude 0.2, placeLon = Longitude (-0.2)}
+                              let place7 = Place {placeQuery = "Place 4 lmr", placeLat = Latitude 0.2, placeLon = Longitude (-0.2)}
                               place7Id <- DB.insert place7
                               let externalEvent1 =
                                     externalEvent1Prototype
-                                      { externalEventTitle = "foo bar quux",
+                                      { externalEventTitle = "foo bar quux 😃",
                                         externalEventDay = day,
                                         externalEventPlace = place4Id,
                                         externalEventDescription = Nothing,
+                                        externalEventOrganiser = Nothing,
+                                        externalEventStart = Nothing,
+                                        externalEventHomepage = Nothing,
+                                        externalEventPrice = Nothing,
                                         externalEventCancelled = False
                                       }
                               externalEvent1Id <- DB.insert externalEvent1
@@ -229,6 +233,7 @@ spec = do
                                         externalEventDay = day,
                                         externalEventPlace = place6Id,
                                         externalEventDescription = Nothing,
+                                        externalEventOrganiser = Nothing,
                                         externalEventHomepage = Nothing,
                                         externalEventCancelled = False
                                       }
@@ -240,6 +245,10 @@ spec = do
                                         externalEventDay = day,
                                         externalEventPlace = place7Id,
                                         externalEventDescription = Nothing,
+                                        externalEventOrganiser = Nothing,
+                                        externalEventStart = Nothing,
+                                        externalEventHomepage = Nothing,
+                                        externalEventPrice = Nothing,
                                         externalEventCancelled = False
                                       }
                               DB.insert_ externalEvent4
