@@ -39,10 +39,12 @@ minimumUpcomingParties = 10
 explorePartiesAroundLocationQuery :: MonadIO m => Day -> Coordinates -> SqlPersistT m Int
 explorePartiesAroundLocationQuery today coordinates =
   countSearchResults
-    <$> searchQuery
-      today
-      Nothing
-      coordinates
+    <$> runSearchQuery
+      SearchQuery
+        { searchQueryBegin = today,
+          searchQueryMEnd = Nothing,
+          searchQueryCoordinates = coordinates
+        }
 
 getExploreSkylineR :: Text -> Handler TypedContent
 getExploreSkylineR locationName = do

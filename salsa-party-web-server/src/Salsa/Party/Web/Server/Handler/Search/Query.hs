@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -14,18 +15,18 @@ import Salsa.Party.DB.Coordinates
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Deduplication
 
+data SearchQuery = SearchQuery
+  { searchQueryBegin :: !Day,
+    searchQueryMEnd :: !(Maybe Day),
+    searchQueryCoordinates :: !Coordinates
+  }
+  deriving (Show, Eq, Generic)
+
 nullSearchResults :: Map Day [Result] -> Bool
 nullSearchResults = (== 0) . countSearchResults -- Not the same as M.null!
 
 countSearchResults :: Map Day [Result] -> Int
 countSearchResults = M.foldl (+) 0 . M.map length
-
--- TODO this can be optimised
--- We can probably use a count query, and there's definitely no need to fetch the posters for example
-noDataQuery :: MonadIO m => Coordinates -> SqlPersistT m Bool -- True means no data
-noDataQuery coordinates = do
-  today <- liftIO $ utctDay <$> getCurrentTime
-  nullSearchResults <$> searchQuery today Nothing coordinates
 
 data Result
   = External (Entity ExternalEvent) (Entity Place) (Maybe CASKey)
@@ -34,31 +35,31 @@ data Result
 
 -- For a begin day end day (inclusive) and a given place, find all parties per
 -- day sorted by distance, and with external parties at the end in any case.
-searchQuery :: MonadIO m => Day -> Maybe Day -> Coordinates -> SqlPersistT m (Map Day [Result])
-searchQuery begin mEnd coordinates@Coordinates {..} = do
+runSearchQuery :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
+runSearchQuery SearchQuery {..} = do
   rawPartyResults <- E.select $
-    E.from $ \((party `E.InnerJoin` p)) -> do
-      E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
-      E.where_ $ dayLimit (party E.^. PartyDay) begin mEnd
-      distanceEstimationQuery coordinates p
-      pure (party, p)
+    E.from $ \((party `E.InnerJoin` place)) -> do
+      E.on (party E.^. PartyPlace E.==. place E.^. PlaceId)
+      E.where_ $ dayLimit (party E.^. PartyDay) searchQueryBegin searchQueryMEnd
+      distanceEstimationQuery searchQueryCoordinates place
+      pure (party, place)
 
   -- Post-process the distance before we fetch images so we don't fetch too many images.
-  let partyResultsWithoutImages = postProcessParties coordinates rawPartyResults
+  let partyResultsWithoutImages = postProcessParties searchQueryCoordinates rawPartyResults
   partyResultsWithImages <-
     forM partyResultsWithoutImages $ \(partyEntity@(Entity partyId party), placeEntity) -> do
       mKey <- getPosterForParty partyId
       pure (partyDay party, (partyEntity, placeEntity, mKey))
 
   rawExternalEventResults <- E.select $
-    E.from $ \(externalEvent `E.InnerJoin` p) -> do
-      E.on (externalEvent E.^. ExternalEventPlace E.==. p E.^. PlaceId)
-      E.where_ $ dayLimit (externalEvent E.^. ExternalEventDay) begin mEnd
-      distanceEstimationQuery coordinates p
-      pure (externalEvent, p)
+    E.from $ \(externalEvent `E.InnerJoin` place) -> do
+      E.on (externalEvent E.^. ExternalEventPlace E.==. place E.^. PlaceId)
+      E.where_ $ dayLimit (externalEvent E.^. ExternalEventDay) searchQueryBegin searchQueryMEnd
+      distanceEstimationQuery searchQueryCoordinates place
+      pure (externalEvent, place)
 
   -- TODO deduplicate external events before fetching posters
-  let externalEventResultsWithoutImages = postProcessExternalEvents coordinates rawExternalEventResults
+  let externalEventResultsWithoutImages = postProcessExternalEvents searchQueryCoordinates rawExternalEventResults
   externalEventResultsWithImages <-
     forM externalEventResultsWithoutImages $ \(externalEventEntity@(Entity externalEventId externalEvent), placeEntity) -> do
       mKey <- getPosterForExternalEvent externalEventId
@@ -189,3 +190,16 @@ makeGroupedByDay = foldr go M.empty -- This could be falter with a fold
         go' :: Maybe [eTup] -> Maybe [eTup]
         go' Nothing = Just [eTup]
         go' (Just tups) = Just $ eTup : tups
+
+-- TODO this can be optimised
+-- We can probably use a count query, and there's definitely no need to fetch the posters for example
+noDataQuery :: MonadIO m => Coordinates -> SqlPersistT m Bool -- True means no data
+noDataQuery coordinates = do
+  today <- liftIO $ utctDay <$> getCurrentTime
+  nullSearchResults
+    <$> runSearchQuery
+      SearchQuery
+        { searchQueryBegin = today,
+          searchQueryMEnd = Nothing,
+          searchQueryCoordinates = coordinates
+        }

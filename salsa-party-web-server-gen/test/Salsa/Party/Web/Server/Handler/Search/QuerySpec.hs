@@ -15,9 +15,15 @@ spec = do
       it "runs without results, and returns a map with empty days (and not an empty map)" $ \pool ->
         forAllValid $ \begin ->
           forAllValid $ \mEnd ->
-            forAllValid $ \place ->
+            forAllValid $ \coordinates ->
               flip runSqlPool pool $ do
-                sr <- searchQuery @IO begin mEnd place
+                sr <-
+                  runSearchQuery @IO
+                    SearchQuery
+                      { searchQueryBegin = begin,
+                        searchQueryMEnd = mEnd,
+                        searchQueryCoordinates = coordinates
+                      }
                 liftIO $ sr `shouldBe` M.empty
 
       it "runs correctly with these three parties where one is on a different day" $ \pool ->
@@ -53,7 +59,13 @@ spec = do
                             partyPlace = place3Id
                           }
                   DB.insert_ party3
-                  sr <- searchQuery @IO day (Just day) (placeCoordinates queryPlace)
+                  sr <-
+                    runSearchQuery @IO
+                      SearchQuery
+                        { searchQueryBegin = day,
+                          searchQueryMEnd = Just day,
+                          searchQueryCoordinates = placeCoordinates queryPlace
+                        }
                   liftIO $
                     sr
                       `shouldBe` M.fromList
@@ -97,7 +109,13 @@ spec = do
                             partyPlace = place3Id
                           }
                   DB.insert_ party3
-                  sr <- searchQuery @IO day (Just day) (placeCoordinates queryPlace)
+                  sr <-
+                    runSearchQuery @IO
+                      SearchQuery
+                        { searchQueryBegin = day,
+                          searchQueryMEnd = Just day,
+                          searchQueryCoordinates = placeCoordinates queryPlace
+                        }
                   liftIO $
                     sr
                       `shouldBe` M.fromList
@@ -139,7 +157,13 @@ spec = do
                         DB.insert_ partyPoster1Prototype {partyPosterParty = party1Id, partyPosterImage = image1Id}
                         image2Id <- DB.insert image2Prototype
                         DB.insert_ partyPoster2Prototype {partyPosterParty = party2Id, partyPosterImage = image2Id}
-                        sr <- searchQuery @IO day (Just day) (placeCoordinates queryPlace)
+                        sr <-
+                          runSearchQuery @IO
+                            SearchQuery
+                              { searchQueryBegin = day,
+                                searchQueryMEnd = Just day,
+                                searchQueryCoordinates = placeCoordinates queryPlace
+                              }
                         liftIO $
                           sr
                             `shouldBe` M.fromList
@@ -252,7 +276,13 @@ spec = do
                                         externalEventCancelled = False
                                       }
                               DB.insert_ externalEvent4
-                              sr <- searchQuery @IO day (Just day) (placeCoordinates queryPlace)
+                              sr <-
+                                runSearchQuery @IO
+                                  SearchQuery
+                                    { searchQueryBegin = day,
+                                      searchQueryMEnd = Just day,
+                                      searchQueryCoordinates = placeCoordinates queryPlace
+                                    }
                               liftIO $
                                 sr
                                   `shouldBe` M.fromList

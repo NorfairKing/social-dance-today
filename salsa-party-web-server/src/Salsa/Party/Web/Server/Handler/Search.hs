@@ -114,7 +114,15 @@ searchResultPage mDay mAddress coordinates = do
       latitudeToDouble = latitudeToFloat
   let longitudeToDouble :: Longitude -> Double
       longitudeToDouble = longitudeToFloat
-  searchResults <- runDB $ searchQuery begin (Just end) coordinates
+  searchResults <-
+    runDB $
+      runSearchQuery
+        SearchQuery
+          { searchQueryBegin = begin,
+            searchQueryMEnd = Just end,
+            searchQueryCoordinates = coordinates
+          }
+
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
 
