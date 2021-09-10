@@ -111,6 +111,12 @@ data SearchParameters = SearchParameters
   }
   deriving (Show, Eq, Generic)
 
+searchParametersForm :: FormInput Handler SearchParameters
+searchParametersForm =
+  SearchParameters
+    <$> searchParameterLocationForm
+    <*> searchParameterBeginForm
+
 data SearchLocation
   = SearchAddress !Text
   | SearchCoordinates !Coordinates
