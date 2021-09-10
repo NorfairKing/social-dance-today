@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -86,34 +87,65 @@ getQueryR = do
 
 getSearchR :: Text -> Handler Html
 getSearchR query = do
-  Entity _ place <- lookupPlace query
-  searchResultPageWithDay (Just (placeQuery place)) (placeCoordinates place)
+  searchResultsPage
+    SearchParameters
+      { searchParameterLocation = SearchAddress query,
+        searchParameterBegin = BeginToday
+      }
 
 getSearchDayR :: Text -> Day -> Handler Html
-getSearchDayR query day = do
-  Entity _ place <- lookupPlace query
-  searchResultPage (Just day) (Just (placeQuery place)) (placeCoordinates place)
+getSearchDayR query day =
+  searchResultsPage
+    SearchParameters
+      { searchParameterLocation = SearchAddress query,
+        searchParameterBegin = BeginOn day
+      }
 
-searchResultPageWithDay :: Maybe Text -> Coordinates -> Handler Html
-searchResultPageWithDay mAddress coordinates = do
-  md <- lookupGetParam "day"
-  let mDay = md >>= parseTimeM True defaultTimeLocale "%F" . T.unpack
-  searchResultPage mDay mAddress coordinates
+-- | Search parameters contain everything necessary to produce the html page of search results.
+--
+-- We do as much computation ahead of time, but not too much.
+-- For example, the 'SearchBegin' parameter could be computed ahead of time, but then we would not be able to compute a nice title and description
+data SearchParameters = SearchParameters
+  { searchParameterLocation :: !SearchLocation,
+    searchParameterBegin :: !SearchBegin
+  }
+  deriving (Show, Eq, Generic)
 
-searchResultPage :: Maybe Day -> Maybe Text -> Coordinates -> Handler Html
-searchResultPage mDay mAddress coordinates = do
+data SearchLocation
+  = SearchAddress !Text
+  | SearchCoordinates !Coordinates
+  deriving (Show, Eq, Generic)
+
+resolveSearchLocation :: SearchLocation -> Handler Coordinates
+resolveSearchLocation = \case
+  SearchCoordinates coordinates -> pure coordinates
+  SearchAddress address -> do
+    Entity _ place <- lookupPlace address
+    pure $ placeCoordinates place
+
+data SearchBegin
+  = BeginToday
+  | BeginOn !Day
+  deriving (Show, Eq, Generic)
+
+searchResultsPage :: SearchParameters -> Handler Html
+searchResultsPage searchParameters@SearchParameters {..} = do
   today <- liftIO $ utctDay <$> getCurrentTime -- today
-  let day = fromMaybe today mDay
-  let daysAhead = 7
-  let begin = day
+  let daysAhead = 7 -- TODO turn into a parameter
+
+  -- Resolve begin day
+  let begin = case searchParameterBegin of
+        BeginToday -> today
+        BeginOn day -> day
+
+  -- Resolve end day
+  -- TODO incorporate search end parameter
   let end = addDays (daysAhead - 1) begin
-      prevDay = addDays (negate daysAhead) begin
-      nextDay = addDays daysAhead begin
-      days = [begin .. end]
-  let latitudeToDouble :: Latitude -> Double
-      latitudeToDouble = latitudeToFloat
-  let longitudeToDouble :: Longitude -> Double
-      longitudeToDouble = longitudeToFloat
+
+  -- Resolve coordinates
+  coordinates <- resolveSearchLocation searchParameterLocation
+
+  -- Do the actual search
   searchResults <-
     runDB $
       runSearchQuery
@@ -123,34 +155,42 @@ searchResultPage mDay mAddress coordinates = do
             searchQueryCoordinates = coordinates
           }
 
-  timeLocale <- getTimeLocale
-  prettyDayFormat <- getPrettyDayFormat
-
-  let title = case (mAddress, mDay) of
-        (Nothing, Nothing) -> MsgSearchTitleAroundYourLocationToday
-        (Nothing, Just d) -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat d
-        (Just address, Nothing) -> MsgSearchTitleAroundAddressToday address
-        (Just address, Just d) -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat d
-
-  let description = case (mAddress, mDay) of
-        (Nothing, Nothing) -> MsgSearchDescriptionAroundYourLocationToday
-        (Nothing, Just d) -> MsgSearchDescriptionAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat d
-        (Just address, Nothing) -> MsgSearchDescriptionAroundAddressToday address
-        (Just address, Just d) -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat d
-
+  -- If no results were returned, check if there was any data at all
   noData <-
     if nullSearchResults searchResults
       then runDB $ noDataQuery coordinates
       else pure False
-  if noData
-    then do
-      withNavBar $ do
-        setTitleI title
-        setDescriptionI description
-        $(widgetFile "search-no-results")
-    else do
-      withNavBar $ do
-        setTitleI title
-        setDescriptionI description
+
+  withNavBar $ do
+    setTitleI $ searchParametersTitle searchParameters
+    setDescriptionI $ searchParametersDescription searchParameters
+    timeLocale <- getTimeLocale
+    prettyDayFormat <- getPrettyDayFormat
+    if noData
+      then $(widgetFile "search-no-results")
+      else do
+        let prevDay = addDays (negate daysAhead) begin
+        let nextDay = addDays daysAhead begin
+        let days = [begin .. end]
         let pagination = $(widgetFile "search-pagination")
         $(widgetFile "search")
+
+searchParametersTitle :: SearchParameters -> AppMessage
+searchParametersTitle SearchParameters {..} =
+  case searchParameterLocation of
+    SearchCoordinates _ -> case searchParameterBegin of
+      BeginToday -> MsgSearchTitleAroundYourLocationToday
+      BeginOn d -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat d
+    SearchAddress address -> case searchParameterBegin of
+      BeginToday -> MsgSearchTitleAroundAddressToday address
+      BeginOn d -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat d
+
+searchParametersDescription :: SearchParameters -> AppMessage
+searchParametersDescription SearchParameters {..} =
+  case searchParameterLocation of
+    SearchCoordinates _ -> case searchParameterBegin of
+      BeginToday -> MsgSearchDescriptionAroundYourLocationToday
+      BeginOn day -> MsgSearchDescriptionAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
+    SearchAddress -> case searchParameterBegin of
+      BeginToday -> MsgSearchDescriptionAroundAddressToday address
+      BeginOn day -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat d

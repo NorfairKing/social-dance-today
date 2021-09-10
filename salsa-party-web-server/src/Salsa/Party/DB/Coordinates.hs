@@ -34,10 +34,12 @@ module Salsa.Party.DB.Coordinates
     mkLatitude,
     mkLatitudeOrError,
     latitudeToFloat,
+    latitudeToDouble,
     Longitude (..),
     mkLongitude,
     mkLongitudeOrError,
     longitudeToFloat,
+    longitudeToDouble,
     Coordinates (..),
     distanceTo,
   )
@@ -172,6 +174,10 @@ instance PersistFieldSql Latitude where
 latitudeToFloat :: RealFloat f => Latitude -> f
 latitudeToFloat = realToFrac . unLatitude
 
+-- | Type-constrained version of 'latitudeToFloat'
+latitudeToDouble :: Latitude -> Double
+latitudeToDouble = latitudeToFloat
+
 newtype Longitude = Longitude {unLongitude :: Coord}
   deriving
     ( Eq,
@@ -223,6 +229,10 @@ instance Bounded Longitude where
 
 longitudeToFloat :: RealFloat f => Longitude -> f
 longitudeToFloat = realToFrac . unLongitude
+
+-- | Type-constrained version of 'longitudeToFloat'
+longitudeToDouble :: Longitude -> Double
+longitudeToDouble = longitudeToFloat
 
 data Coordinates = Coordinates
   { coordinatesLat :: !Latitude,
