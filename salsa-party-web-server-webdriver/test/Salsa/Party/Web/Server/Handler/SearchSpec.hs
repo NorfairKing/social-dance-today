@@ -8,10 +8,14 @@ import Salsa.Party.Web.Server.Handler.TestImport
 import Test.WebDriver as WD
 
 spec :: WebdriverSpec
-spec =
+spec = do
   it "Can do a real search" $ \env ->
     forAll (elements locations) $ \Location {..} -> runWebdriverTestM env $ do
       openHome
-      e <- WD.findElem (ById "queryInput")
+      e <- WD.findElem (ById "query")
       WD.sendKeys (placeQuery locationPlace) e
-      WD.submit e
+      WD.findElem (ById "submit") >>= WD.submit
+      route <- getCurrentRoute
+      liftIO $ case route of
+        SearchR loc -> loc `shouldBe` placeQuery locationPlace
+        _ -> expectationFailure $ "Should have been at search results, but was at: " <> show route

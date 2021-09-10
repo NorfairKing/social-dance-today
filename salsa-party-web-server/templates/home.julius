@@ -14,7 +14,7 @@ function geoFindMe() {
     status.classList.add("is-dark");
     status.disabled = true;
 
-    document.querySelector('#queryInput').required = false;
+    document.querySelector('#query').required = false;
     document.querySelector('#latitudeInput').value = latitude;
     document.querySelector('#longitudeInput').value = longitude;
     document.querySelector('#help').innerText = #{messageRender MsgHomeFormHelp};

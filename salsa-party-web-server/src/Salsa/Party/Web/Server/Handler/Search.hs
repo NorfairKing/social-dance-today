@@ -69,9 +69,9 @@ queryFormParameters QueryForm {..} =
       [(dayParameter, T.pack $ formatTime defaultTimeLocale "%F" day) | day <- maybeToList queryFormDay]
     ]
 
-postQueryR :: Handler Html
-postQueryR = do
-  QueryForm {..} <- runInputPost queryForm
+getQueryR :: Handler Html
+getQueryR = do
+  QueryForm {..} <- runInputGet queryForm
   case queryFormAddress of
     Just address -> do
       redirect

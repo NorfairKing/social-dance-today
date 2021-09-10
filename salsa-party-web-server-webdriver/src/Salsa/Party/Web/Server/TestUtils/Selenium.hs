@@ -158,7 +158,7 @@ driveDeleteAccount = do
   findElem (ById "delete-account") >>= click
   acceptAlert
   -- Wait for refresh
-  waitUntil 5 $ void $ findElem (ById "queryInput")
+  waitUntil 5 $ void $ findElem (ById "query")
 
 dummyOrganiserForm :: OrganiserForm
 dummyOrganiserForm =

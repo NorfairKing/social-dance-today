@@ -79,8 +79,8 @@ spec uri = do
               do
                 request $ do
                   setUrl QueryR
-                  setMethod methodPost
-                  addPostParam "address" $ placeQuery locationPlace
+                  setMethod methodGet
+                  addGetParam "address" $ placeQuery locationPlace
                 statusIs 303
                 locationShouldBe $ SearchR $ placeQuery locationPlace
                 _ <- followRedirect

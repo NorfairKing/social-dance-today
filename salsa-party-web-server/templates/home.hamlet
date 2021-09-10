@@ -7,14 +7,14 @@
     <div .columns .is-centered>
       <div .column .is-half>
         <form
-          method=post
+          method=get
           action=@{QueryR}>
           <div .field .has-text-centered>
             <div .control>
               <div .field .has-text-centered .has-addons .has-addons-centered>
                 <p .control>
                   <input .input
-                    #queryInput
+                    #query
                     type=text
                     name="address"
                     placeholder="Zürich"
@@ -28,7 +28,7 @@
 
           <div .field .has-text-centered>
             <div .control>
-              <button .button .is-dark type="submit">
+              <button #submit .button .is-dark type="submit">
                 _{MsgHomeFormSearch}
 
           <div .field .has-text-centered>

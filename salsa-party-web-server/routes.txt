@@ -5,7 +5,7 @@
 
 /select-language/#SupportedLanguage SelectLanguageR POST
 
-/query QueryR POST
+/query QueryR GET
 
 -- On the inside, an event can be internal or external,
 -- but from the outside, there are no external events.

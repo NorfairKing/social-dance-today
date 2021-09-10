@@ -12,7 +12,7 @@ spec =
     -- They don't test search because there won't be results.
     describe "QueryR" $ do
       it "Can GET a 400 query page for an empty query" $ do
-        post QueryR
+        get QueryR
         statusIs 400
 
       it "Can GET a 200 query page for a nonempty query" $ \yc ->
@@ -21,9 +21,9 @@ spec =
             runYesodClientM yc $ do
               testDB $ insertPlace_ query coordinates
               request $ do
-                setMethod methodPost
+                setMethod methodGet
                 setUrl QueryR
-                addPostParam "address" query
+                addGetParam "address" query
               statusIs 303
               locationShouldBe $ SearchR query
               _ <- followRedirect
@@ -36,10 +36,10 @@ spec =
               runYesodClientM yc $ do
                 testDB $ insertPlace_ query coordinates
                 request $ do
-                  setMethod methodPost
+                  setMethod methodGet
                   setUrl QueryR
-                  addPostParam "address" query
-                  addPostParam "day" $ T.pack $ show (day :: Day)
+                  addGetParam "address" query
+                  addGetParam "day" $ T.pack $ show (day :: Day)
                 statusIs 303
                 locationShouldBe $ SearchR query
                 _ <- followRedirect
@@ -49,10 +49,10 @@ spec =
         forAllValid $ \coordinates ->
           runYesodClientM yc $ do
             request $ do
-              setMethod methodPost
+              setMethod methodGet
               setUrl QueryR
-              addPostParam "latitude" $ T.pack $ show $ coordinatesLat coordinates
-              addPostParam "longitude" $ T.pack $ show $ coordinatesLon coordinates
+              addGetParam "latitude" $ T.pack $ show $ coordinatesLat coordinates
+              addGetParam "longitude" $ T.pack $ show $ coordinatesLon coordinates
             statusIs 200
 
       it "Can GET a 200 query page by coordinates and day" $ \yc ->
@@ -60,11 +60,11 @@ spec =
           forAllValid $ \day ->
             runYesodClientM yc $ do
               request $ do
-                setMethod methodPost
+                setMethod methodGet
                 setUrl QueryR
-                addPostParam "latitude" $ T.pack $ show $ coordinatesLat coordinates
-                addPostParam "longitude" $ T.pack $ show $ coordinatesLon coordinates
-                addPostParam "day" $ T.pack $ show (day :: Day)
+                addGetParam "latitude" $ T.pack $ show $ coordinatesLat coordinates
+                addGetParam "longitude" $ T.pack $ show $ coordinatesLon coordinates
+                addGetParam "day" $ T.pack $ show (day :: Day)
               statusIs 200
 
     describe "SearchR" $ do
