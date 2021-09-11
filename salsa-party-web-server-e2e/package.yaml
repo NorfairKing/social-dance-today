@@ -8,13 +8,6 @@ dependencies:
 library:
   source-dirs: src
   dependencies:
-  - monad-logger
-  - network-uri
-  - salsa-party-web-server
-  - sydtest
-  - sydtest-yesod
-  - text
-  - yesod-auth
   - linkcheck
   - monad-logger
   - network-uri
@@ -23,6 +16,7 @@ library:
   - sydtest
   - sydtest-yesod
   - text
+  - time
   - yesod-auth
 
 executables:

@@ -7,6 +7,7 @@ import Control.Monad
 import Control.Monad.Logger
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Time
 import LinkCheck (runLinkCheck)
 import qualified LinkCheck.OptParse.Types as LinkCheck (Settings (..))
 import Network.URI
@@ -72,21 +73,24 @@ spec uri = do
       it "RobotsR" $ do
         get RobotsR
         statusIs 200
-      describe "Search" $
+      describe "Search" $ do
+        today <- liftIO $ utctDay <$> getCurrentTime
         forM_ locations $ \Location {..} ->
           describe (T.unpack (placeQuery locationPlace)) $ do
-            it "QueryR" $
-              do
-                request $ do
-                  setUrl QueryR
-                  setMethod methodGet
-                  addGetParam "address" $ placeQuery locationPlace
-                statusIs 303
-                locationShouldBe $ SearchR $ placeQuery locationPlace
-                _ <- followRedirect
-                statusIs 200
+            it "QueryR" $ do
+              request $ do
+                setUrl QueryR
+                setMethod methodGet
+                addGetParam "address" $ placeQuery locationPlace
+              statusIs 303
+              locationShouldBe $ SearchR $ placeQuery locationPlace
+              _ <- followRedirect
+              statusIs 200
             it "SearchR" $ do
               get $ SearchR (placeQuery locationPlace)
+              statusIs 200
+            it "SearchDayR" $ do
+              get $ SearchDayR (placeQuery locationPlace) today
               statusIs 200
       doNotRandomiseExecutionOrder $
         sequential $ do

@@ -29,7 +29,7 @@ spec =
               _ <- followRedirect
               statusIs 200
 
-      it "Can GET a 200 query page for a nonempty query and day" $ \yc ->
+      it "Can GET a 200 query page for a nonempty query and begin day" $ \yc ->
         forAll (genValid `suchThat` (not . T.null)) $ \query ->
           forAllValid $ \day ->
             forAllValid $ \coordinates ->
@@ -39,7 +39,20 @@ spec =
                   setMethod methodGet
                   setUrl QueryR
                   addGetParam "address" query
-                  addGetParam "day" $ T.pack $ show (day :: Day)
+                  addGetParam "begin" $ T.pack $ show (day :: Day)
+                statusIs 200
+
+      it "Can GET a 200 query page for a nonempty query and exact day" $ \yc ->
+        forAll (genValid `suchThat` (not . T.null)) $ \query ->
+          forAllValid $ \day ->
+            forAllValid $ \coordinates ->
+              runYesodClientM yc $ do
+                testDB $ insertPlace_ query coordinates
+                request $ do
+                  setMethod methodGet
+                  setUrl QueryR
+                  addGetParam "address" query
+                  addGetParam "on" $ T.pack $ show (day :: Day)
                 statusIs 303
                 locationShouldBe $ SearchDayR query day
                 _ <- followRedirect
