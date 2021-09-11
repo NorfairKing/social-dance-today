@@ -4,11 +4,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Salsa.Party.Web.Server.Handler.Search where
 
 import Control.Arrow (left)
 import qualified Data.Map.Strict as M
+import Data.String
 import qualified Data.Text as T
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
@@ -70,20 +72,22 @@ queryFormParameters QueryForm {..} =
       [(dayParameter, T.pack $ formatTime defaultTimeLocale "%F" day) | day <- maybeToList queryFormDay]
     ]
 
+runAForm :: AForm Handler a -> Handler a
+runAForm form = do
+  ((formResult, _), _) <- runFormGet $ renderDivs form
+  case formResult of
+    FormMissing -> invalidArgs ["Missing form parameters"]
+    FormFailure errs -> invalidArgs errs
+    FormSuccess a -> pure a
+
 getQueryR :: Handler Html
 getQueryR = do
-  QueryForm {..} <- runInputGet queryForm
-  case queryFormAddress of
-    Just address -> do
-      redirect
-        ( SearchR address,
-          [ ("day", T.pack $ formatTime defaultTimeLocale "%F" day)
-            | day <- maybeToList queryFormDay
-          ]
-        )
-    Nothing -> case queryFormCoordinates of
-      Just coordinates -> searchResultPage queryFormDay queryFormAddress coordinates
-      Nothing -> invalidArgs ["Must supply either an address or coordinates."]
+  searchParameters@SearchParameters {..} <- runAForm searchParametersForm
+  case searchParameterLocation of
+    SearchCoordinates _ -> searchResultsPage searchParameters
+    SearchAddress address -> redirect $ case searchParameterBegin of
+      BeginToday -> SearchR address
+      BeginOn day -> SearchDayR address day
 
 getSearchR :: Text -> Handler Html
 getSearchR query = do
@@ -101,6 +105,11 @@ getSearchDayR query day =
         searchParameterBegin = BeginOn day
       }
 
+searchParametersQueryRoute :: (MonadHandler m, HandlerSite m ~ App) => SearchParameters -> m Text
+searchParametersQueryRoute searchParameters = do
+  urlRenderParams <- getUrlRenderParams
+  pure $ urlRenderParams QueryR $ searchParameterParameters searchParameters
+
 -- | Search parameters contain everything necessary to produce the html page of search results.
 --
 -- We do as much computation ahead of time, but not too much.
@@ -111,16 +120,39 @@ data SearchParameters = SearchParameters
   }
   deriving (Show, Eq, Generic)
 
-searchParametersForm :: FormInput Handler SearchParameters
+searchParametersForm :: AForm Handler SearchParameters
 searchParametersForm =
   SearchParameters
     <$> searchParameterLocationForm
     <*> searchParameterBeginForm
 
+searchParameterParameters :: SearchParameters -> [(Text, Text)]
+searchParameterParameters SearchParameters {..} =
+  concat
+    [ searchParameterLocationParameters searchParameterLocation,
+      searchParameterBeginParameters searchParameterBegin
+    ]
+
 data SearchLocation
   = SearchAddress !Text
   | SearchCoordinates !Coordinates
   deriving (Show, Eq, Generic)
+
+searchParameterLocationForm :: AForm Handler SearchLocation
+searchParameterLocationForm =
+  (SearchAddress <$> areq textField (textToFieldSettings addressParameter) Nothing)
+    <|> ( SearchCoordinates
+            <$> ( Coordinates
+                    <$> areq latitudeField (textToFieldSettings latitudeParameter) Nothing
+                    <*> areq longitudeField (textToFieldSettings longitudeParameter) Nothing
+                )
+        )
+
+textToFieldSettings :: Text -> FieldSettings App
+textToFieldSettings = fromString . T.unpack
+
+searchParameterLocationParameters :: SearchLocation -> [(Text, Text)]
+searchParameterLocationParameters = undefined
 
 resolveSearchLocation :: SearchLocation -> Handler Coordinates
 resolveSearchLocation = \case
@@ -133,6 +165,12 @@ data SearchBegin
   = BeginToday
   | BeginOn !Day
   deriving (Show, Eq, Generic)
+
+searchParameterBeginForm :: AForm Handler SearchBegin
+searchParameterBeginForm = undefined
+
+searchParameterBeginParameters :: SearchBegin -> [(Text, Text)]
+searchParameterBeginParameters = undefined
 
 searchResultsPage :: SearchParameters -> Handler Html
 searchResultsPage searchParameters@SearchParameters {..} = do
@@ -168,8 +206,9 @@ searchResultsPage searchParameters@SearchParameters {..} = do
       else pure False
 
   withNavBar $ do
-    setTitleI $ searchParametersTitle searchParameters
-    setDescriptionI $ searchParametersDescription searchParameters
+    searchParametersHtmlTitle searchParameters >>= setTitleI
+    searchParametersHtmlDescription searchParameters >>= setDescriptionI
+    title <- searchParametersHtmlTitle searchParameters
     timeLocale <- getTimeLocale
     prettyDayFormat <- getPrettyDayFormat
     if noData
@@ -178,25 +217,36 @@ searchResultsPage searchParameters@SearchParameters {..} = do
         let prevDay = addDays (negate daysAhead) begin
         let nextDay = addDays daysAhead begin
         let days = [begin .. end]
+        prevDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterBegin = BeginOn prevDay}
+        nextDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterBegin = BeginOn nextDay}
         let pagination = $(widgetFile "search-pagination")
         $(widgetFile "search")
 
-searchParametersTitle :: SearchParameters -> AppMessage
-searchParametersTitle SearchParameters {..} =
-  case searchParameterLocation of
+searchParametersHtmlTitle :: SearchParameters -> WidgetFor App AppMessage
+searchParametersHtmlTitle SearchParameters {..} = do
+  timeLocale <- getTimeLocale
+  prettyDayFormat <- getPrettyDayFormat
+  pure $ case searchParameterLocation of
     SearchCoordinates _ -> case searchParameterBegin of
       BeginToday -> MsgSearchTitleAroundYourLocationToday
-      BeginOn d -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat d
+      BeginOn day -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
     SearchAddress address -> case searchParameterBegin of
       BeginToday -> MsgSearchTitleAroundAddressToday address
-      BeginOn d -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat d
+      BeginOn day -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
 
-searchParametersDescription :: SearchParameters -> AppMessage
-searchParametersDescription SearchParameters {..} =
-  case searchParameterLocation of
+searchParametersHtmlDescription :: SearchParameters -> WidgetFor App AppMessage
+searchParametersHtmlDescription SearchParameters {..} = do
+  timeLocale <- getTimeLocale
+  prettyDayFormat <- getPrettyDayFormat
+  pure $ case searchParameterLocation of
     SearchCoordinates _ -> case searchParameterBegin of
       BeginToday -> MsgSearchDescriptionAroundYourLocationToday
       BeginOn day -> MsgSearchDescriptionAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
-    SearchAddress -> case searchParameterBegin of
+    SearchAddress address -> case searchParameterBegin of
       BeginToday -> MsgSearchDescriptionAroundAddressToday address
-      BeginOn day -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat d
+      BeginOn day -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
+
+searchParametersTitle :: SearchParameters -> AppMessage
+searchParametersTitle SearchParameters {..} = case searchParameterLocation of
+  SearchAddress address -> MsgSearchPartiesAroundAddress address
+  SearchCoordinates _ -> MsgSearchPartiesAroundYourLocation

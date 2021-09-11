@@ -1,12 +1,10 @@
 <section .section>
   <div .container>
     <h1 #search-results-title .title .is-3 .has-text-centered>
-      $maybe address <- mAddress
-        _{MsgSearchPartiesAroundAddress address}
-      $nothing
-        _{MsgSearchPartiesAroundYourLocation}
+      _{title}
 
     ^{pagination}
+
 
 $forall day <- days
   <section .section>

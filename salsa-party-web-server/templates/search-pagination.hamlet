@@ -1,22 +1,5 @@
 <nav .pagination role="navigation" aria-label="pagination">
-  <form .form
-    method=post
-    action=@{QueryR}>
-    <input name="day" type="hidden" value="#{formatTime defaultTimeLocale "%F" prevDay}">
-    $maybe address <- mAddress
-      <input name="address" type="hidden" value="#{address}">
-    <input name="latitude" type="hidden" value="#{latitudeToDouble $ coordinatesLat coordinates}">
-    <input name="longitude" type="hidden" value="#{longitudeToDouble $ coordinatesLon coordinates}">
-    <button .pagination-previous type="submit">
-      _{MsgSearchNavEarlier}
-  
-  <form .form
-    method=post
-    action=@{QueryR}>
-    <input name="day" type="hidden" value="#{formatTime defaultTimeLocale "%F" nextDay}">
-    $maybe address <- mAddress
-      <input name="address" type="hidden" value="#{address}">
-    <input name="latitude" type="hidden" value="#{latitudeToDouble $ coordinatesLat coordinates}">
-    <input name="longitude" type="hidden" value="#{longitudeToDouble $ coordinatesLon coordinates}">
-    <button .pagination-next type="submit">
-      _{MsgSearchNavLater}
+  <a .pagination-previous href=#{prevDayRoute}>
+    _{MsgSearchNavEarlier}
+  <a .pagination-next href=#{nextDayRoute}>
+    _{MsgSearchNavLater}
