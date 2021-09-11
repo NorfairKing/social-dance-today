@@ -2,10 +2,20 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 
+-- This module contains all the routes that lead to a search results page.
+--
+-- The QueryR route parses query parameters into a QueryForm.
+-- This QueryForm is then turned into SearchParameters.
+-- (This step is necessary because FormInput m is not an Alternative.)
+--
+-- Using 'SearchParameters', we can then either show a results page directly
+-- using 'searchResultsPage', or redirect to a more general /search page with
+-- the query parameters filled in.
 module Salsa.Party.Web.Server.Handler.Search where
 
 import Control.Arrow (left)
@@ -187,6 +197,14 @@ searchResultsPage searchParameters@SearchParameters {..} = do
     title <- searchParametersHtmlTitle searchParameters
     timeLocale <- getTimeLocale
     prettyDayFormat <- getPrettyDayFormat
+    let makeDayLink :: Day -> Widget
+        makeDayLink day = do
+          route <- searchParametersQueryRoute $ searchParameters {searchParameterBegin = BeginOn day}
+          [whamlet|
+            <a href=#{route}>
+                #{formatTime timeLocale prettyDayFormat day}
+                (_{autoDayMsg today day})
+          |]
     if noData
       then $(widgetFile "search-no-results")
       else do

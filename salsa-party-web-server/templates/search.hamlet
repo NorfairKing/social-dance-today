@@ -10,8 +10,7 @@ $forall day <- days
   <section .section>
     <div .container>
       <h2 .title .is-4 .has-text-centered>
-        #{formatTime timeLocale prettyDayFormat day}
-        (_{autoDayMsg today day})
+        ^{makeDayLink day}
       $maybe results <- M.lookup day searchResults
         <div .columns .is-multiline .is-centered>
           $forall result <- results
