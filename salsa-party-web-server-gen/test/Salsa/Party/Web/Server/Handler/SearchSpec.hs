@@ -41,7 +41,7 @@ spec =
                   addGetParam "address" query
                   addGetParam "day" $ T.pack $ show (day :: Day)
                 statusIs 303
-                locationShouldBe $ SearchR query
+                locationShouldBe $ SearchDayR query day
                 _ <- followRedirect
                 statusIs 200
 

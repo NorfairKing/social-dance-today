@@ -10,7 +10,6 @@ module Salsa.Party.Web.Server.Handler.Search where
 
 import Control.Arrow (left)
 import qualified Data.Map.Strict as M
-import Data.String
 import qualified Data.Text as T
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
@@ -40,8 +39,8 @@ queryForm =
   QueryForm
     <$> iopt textField addressParameter
     <*> ( liftA2 Coordinates
-            <$> iopt latitudeField "latitude"
-            <*> iopt longitudeField "longitude"
+            <$> iopt latitudeField latitudeParameter
+            <*> iopt longitudeField longitudeParameter
         )
     <*> iopt dayField dayParameter
 
@@ -59,30 +58,22 @@ longitudeField =
     (realToFrac . unLongitude)
     doubleField
 
-queryFormParameters :: QueryForm -> [(Text, Text)]
-queryFormParameters QueryForm {..} =
-  concat
-    [ [(addressParameter, address) | address <- maybeToList queryFormAddress],
-      concat
-        [ [ (latitudeParameter, T.pack $ show coordinatesLat),
-            (longitudeParameter, T.pack $ show coordinatesLon)
-          ]
-          | Coordinates {..} <- maybeToList queryFormCoordinates
-        ],
-      [(dayParameter, T.pack $ formatTime defaultTimeLocale "%F" day) | day <- maybeToList queryFormDay]
-    ]
-
-runAForm :: AForm Handler a -> Handler a
-runAForm form = do
-  ((formResult, _), _) <- runFormGet $ renderDivs form
-  case formResult of
-    FormMissing -> invalidArgs ["Missing form parameters"]
-    FormFailure errs -> invalidArgs errs
-    FormSuccess a -> pure a
+queryFormToSearchParameters :: QueryForm -> Handler SearchParameters
+queryFormToSearchParameters QueryForm {..} = do
+  searchParameterLocation <-
+    case queryFormAddress of
+      Just address -> pure $ SearchAddress address
+      Nothing -> case queryFormCoordinates of
+        Just coordinates -> pure $ SearchCoordinates coordinates
+        Nothing -> invalidArgsI [MsgAddressOrCoordinates]
+  let searchParameterBegin = case queryFormDay of
+        Nothing -> BeginToday
+        Just day -> BeginOn day
+  pure SearchParameters {..}
 
 getQueryR :: Handler Html
 getQueryR = do
-  searchParameters@SearchParameters {..} <- runAForm searchParametersForm
+  searchParameters@SearchParameters {..} <- runInputGet queryForm >>= queryFormToSearchParameters
   case searchParameterLocation of
     SearchCoordinates _ -> searchResultsPage searchParameters
     SearchAddress address -> redirect $ case searchParameterBegin of
@@ -120,12 +111,6 @@ data SearchParameters = SearchParameters
   }
   deriving (Show, Eq, Generic)
 
-searchParametersForm :: AForm Handler SearchParameters
-searchParametersForm =
-  SearchParameters
-    <$> searchParameterLocationForm
-    <*> searchParameterBeginForm
-
 searchParameterParameters :: SearchParameters -> [(Text, Text)]
 searchParameterParameters SearchParameters {..} =
   concat
@@ -138,21 +123,13 @@ data SearchLocation
   | SearchCoordinates !Coordinates
   deriving (Show, Eq, Generic)
 
-searchParameterLocationForm :: AForm Handler SearchLocation
-searchParameterLocationForm =
-  (SearchAddress <$> areq textField (textToFieldSettings addressParameter) Nothing)
-    <|> ( SearchCoordinates
-            <$> ( Coordinates
-                    <$> areq latitudeField (textToFieldSettings latitudeParameter) Nothing
-                    <*> areq longitudeField (textToFieldSettings longitudeParameter) Nothing
-                )
-        )
-
-textToFieldSettings :: Text -> FieldSettings App
-textToFieldSettings = fromString . T.unpack
-
 searchParameterLocationParameters :: SearchLocation -> [(Text, Text)]
-searchParameterLocationParameters = undefined
+searchParameterLocationParameters = \case
+  SearchAddress address -> [(addressParameter, address)]
+  SearchCoordinates Coordinates {..} ->
+    [ (latitudeParameter, T.pack $ show coordinatesLat),
+      (longitudeParameter, T.pack $ show coordinatesLon)
+    ]
 
 resolveSearchLocation :: SearchLocation -> Handler Coordinates
 resolveSearchLocation = \case
@@ -166,11 +143,10 @@ data SearchBegin
   | BeginOn !Day
   deriving (Show, Eq, Generic)
 
-searchParameterBeginForm :: AForm Handler SearchBegin
-searchParameterBeginForm = undefined
-
 searchParameterBeginParameters :: SearchBegin -> [(Text, Text)]
-searchParameterBeginParameters = undefined
+searchParameterBeginParameters = \case
+  BeginToday -> []
+  BeginOn day -> [(dayParameter, T.pack $ formatTime defaultTimeLocale "%F" day)]
 
 searchResultsPage :: SearchParameters -> Handler Html
 searchResultsPage searchParameters@SearchParameters {..} = do
