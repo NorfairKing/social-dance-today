@@ -41,6 +41,7 @@ NavLogOut: Afmelden
 # Form messages
 InvalidLatitude lat@String: Ongeldige breedtegraad: #{lat}
 InvalidLongitude lon@String: Ongeldige lengtegraad: #{lon}
+AddressOrCoordinates: Voer ofwel een adres, ofwel coördinaten in.
 
 # Search Results
 SearchTitleAroundYourLocationToday: Socialedansfeesten vandaag bij jou in de buurt

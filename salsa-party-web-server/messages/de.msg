@@ -42,6 +42,7 @@ NavLogOut: Abmelden
 # Form messages
 InvalidLatitude lat@String: Ungültiger Breitengrat: #{lat}
 InvalidLongitude lon@String: Ungültiger Längengrad: #{lon}
+AddressOrCoordinates: Geben Sie entweder eine Adresse oder Koordinate ein.
 
 # Search Results
 SearchTitleAroundYourLocationToday:  Social Dance Parties in deiner Umgebung heute
