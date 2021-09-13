@@ -89,12 +89,22 @@ mkSlug contents = do
   let unSlug =
         stripReplacements $
           T.pack $
-            mapMaybe mkSlugChar $
-              T.unpack $
-                ICU.toCaseFold True $
-                  ICU.normalize ICU.NFD contents
+            deduplicateReplacements $
+              mapMaybe mkSlugChar $
+                T.unpack $
+                  ICU.toCaseFold True $
+                    ICU.normalize ICU.NFD contents
   guard $ not $ T.null unSlug
   pure Slug {..}
+
+deduplicateReplacements :: String -> String
+deduplicateReplacements = go
+  where
+    go [] = []
+    go [c] = [c]
+    go (c1 : c2 : cs)
+      | c1 == replacementChar && c2 == replacementChar = go (c2 : cs)
+      | otherwise = c1 : go (c2 : cs)
 
 stripReplacements :: Text -> Text
 stripReplacements = T.dropWhile (== replacementChar) . T.dropWhileEnd (== replacementChar)

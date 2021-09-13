@@ -13,6 +13,7 @@ import Conduit
 import Control.Monad
 import Control.Monad.Logger
 import Data.ByteString (ByteString)
+import qualified Data.Conduit.Combinators as C
 import Data.FileEmbed
 import qualified Data.Text as T
 import Data.Validity (Validity)
@@ -33,6 +34,7 @@ completeServerMigration quiet = do
             )
   logInfoN "Autmatic migrations done, starting application-specific migrations."
   setUpPlaces
+  setUpSlugs
   logInfoN "Migrations done."
 
 data Location = Location
@@ -61,6 +63,32 @@ setUpPlaces = do
       [ PlaceLat =. placeLat locationPlace,
         PlaceLon =. placeLon locationPlace
       ]
+
+setUpSlugs :: (MonadUnliftIO m, MonadLogger m) => SqlPersistT m ()
+setUpSlugs = do
+  logInfoN "Setting up slugs for slugless events"
+  setUpPartySlugs
+  setUpExternalEventSlugs
+
+setUpPartySlugs :: MonadUnliftIO m => SqlPersistT m ()
+setUpPartySlugs = do
+  -- Don't update slugs, otherwise urls might stop working.
+  ackPartySource <- selectSourceRes [PartySlug ==. Nothing] []
+  withAcquire ackPartySource $ \partySource ->
+    runConduit $ partySource .| C.mapM_ setupPartySlug
+
+setupPartySlug :: MonadIO m => Entity Party -> SqlPersistT m ()
+setupPartySlug (Entity partyId Party {..}) = update partyId [PartySlug =. mkSlug partyTitle]
+
+setUpExternalEventSlugs :: MonadUnliftIO m => SqlPersistT m ()
+setUpExternalEventSlugs = do
+  -- Don't update slugs, otherwise urls might stop working.
+  ackExternalEventSource <- selectSourceRes [ExternalEventSlug ==. Nothing] []
+  withAcquire ackExternalEventSource $ \externalEventSource ->
+    runConduit $ externalEventSource .| C.mapM_ setupExternalEventSlug
+
+setupExternalEventSlug :: MonadIO m => Entity ExternalEvent -> SqlPersistT m ()
+setupExternalEventSlug (Entity externalEventId ExternalEvent {..}) = update externalEventId [ExternalEventSlug =. mkSlug externalEventTitle]
 
 {-# NOINLINE locations #-}
 locations :: [Location]

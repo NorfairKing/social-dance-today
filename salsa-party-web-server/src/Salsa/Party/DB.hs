@@ -57,8 +57,6 @@ data S -- Phantom type anyway
 
 type ScheduleUUID = UUID S
 
-type ScheduleSlug = Slug S
-
 data O -- Phantom type anyway
 
 type OrganiserUUID = UUID O
@@ -148,6 +146,11 @@ Party sql=party
     uuid EventUUID
 
     -- An event slug for nicer URLS, in a shared namespace with the ExternalEvent table
+    -- Slugs are optional because there are good reasons why we may not be able to make a slug for a party.
+    -- They're also not unique so;
+    --   - We use a party slug so that organisers can't steal eachother's audiences
+    --   - We use the day to deduplicate a similar party by the same organisers
+    --   - When in doubt we prefer the 'Party' version over the 'ExternalEvent' version.
     slug EventSlug Maybe default=null
 
     organiser OrganiserId
