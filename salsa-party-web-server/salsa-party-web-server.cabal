@@ -92,6 +92,7 @@ library
       Salsa.Party.Web.Server.Handler.Event.Party.ICal
       Salsa.Party.Web.Server.Handler.Event.Party.JSON
       Salsa.Party.Web.Server.Handler.Event.Party.LD
+      Salsa.Party.Web.Server.Handler.Event.Party.Query
       Salsa.Party.Web.Server.Handler.Explore
       Salsa.Party.Web.Server.Handler.Home
       Salsa.Party.Web.Server.Handler.Image
