@@ -12,12 +12,10 @@ getPartySlugR organiserSlug_ partySlug_ day = do
   mPartyTup <- runDB $ getPartyTupBySlug organiserSlug_ partySlug_ day
   case mPartyTup of
     Nothing -> notFound
-    Just (_, partyEntity) -> do
-      -- TODO we can make this much more efficient if we fetch the organiser only once.
-      partyPage partyEntity
+    Just partyTup -> partyPage partyTup
 
-partyPage :: Entity Party -> Handler TypedContent
-partyPage partyEntity = selectRep $ do
+partyPage :: (Entity Organiser, Entity Party) -> Handler TypedContent
+partyPage (_, partyEntity) = selectRep $ do
   provideRep $ partyPageHtml partyEntity
   provideRep $ partyPageLD partyEntity
   provideRep $ partyPageICal partyEntity
