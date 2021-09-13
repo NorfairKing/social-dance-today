@@ -4,6 +4,7 @@
     "created": "2021-09-05T00:00:18Z",
     "start": "20:15:00",
     "organiser": {
+        "slug": "dj-schenker",
         "uuid": "0000007b-0000-01c8-0000-031500018af8",
         "created": "2021-09-01T00:00:19Z",
         "user": {

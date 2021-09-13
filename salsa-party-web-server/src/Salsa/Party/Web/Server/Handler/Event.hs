@@ -2,6 +2,7 @@ module Salsa.Party.Web.Server.Handler.Event
   ( getEventR,
     getEventIcsR,
     getEventExportR,
+    getPartySlugR,
   )
 where
 

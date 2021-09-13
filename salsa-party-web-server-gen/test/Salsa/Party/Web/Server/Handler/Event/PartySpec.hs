@@ -27,6 +27,21 @@ spec = serverSpec $ do
               get $ EventR $ partyUuid party
               statusIs 200
 
+    it "Can get the party page for an existing party by slugs" $ \yc ->
+      forAllValid $ \organiser ->
+        forAllValid $ \place ->
+          forAllValid $ \party ->
+            case (,) <$> organiserSlug organiser <*> partySlug party of
+              Nothing -> pure () -- Don't care if they don't both have slugs.
+              Just (organiserSlug_, partySlug_) -> do
+                runYesodClientM yc $ do
+                  testDB $ do
+                    organiserId <- DB.insert organiser
+                    placeId <- DB.insert place
+                    DB.insert_ $ party {partyOrganiser = organiserId, partyPlace = placeId}
+                  get $ PartySlugR organiserSlug_ partySlug_ (partyDay party)
+                  statusIs 200
+
     it "Can get the party page for an existing party in application/ld+json format" $ \yc ->
       forAllValid $ \organiser ->
         forAllValid $ \place ->
