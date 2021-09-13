@@ -25,7 +25,11 @@ spec = do
       let address = "Bürkliplatz, 8001 Zürich"
       posterFile <- readTestFile "test_resources/posters/bachata-community.jpg"
       mapFile <- readTestFile "test_resources/maps/bachata-community.jpg"
-      partyUuid_ <- driveDB $ do
+
+      let organiserSlug_ = Slug "dj-schenker"
+      let partySlug_ = Slug "bachata-community-zurich-mondays"
+
+      driveDB $ do
         passwordHash <- hashPassword $ mkPassword "dummy password"
         let user =
               User
@@ -38,6 +42,7 @@ spec = do
         let organiser =
               Organiser
                 { organiserUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112, -- Dummy
+                  organiserSlug = Just organiserSlug_,
                   organiserUser = userId,
                   organiserName = "DJ Schenker🎵",
                   organiserHomepage = Nothing,
@@ -57,6 +62,7 @@ spec = do
         let party =
               Party
                 { partyUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112, -- Dummy
+                  partySlug = Just partySlug_,
                   partyOrganiser = organiserId,
                   partyTitle = "Bachata Community Zürich Mondays 💃🕺",
                   partyDescription = Just "Bachata Community Zürich Bürkliplatz Montags 💃🕺\n🕢 19:30 - 20:30 Warmup & Workshop\n🕣 20:30 - 23:30 Party\n📌Bürkliplatz Musikpavillon\nhttps://maps.app.goo.gl/JoTu9pabbsrHWXcZ7\n\n👍Start with Warmup and Musicality support\n\nPopular Song Wishes for dancing Bachateras and Bachateros 😊🎵\n\nKommst du auch mit uns tanzen?🕺💃\n\nPrice: FREE (Freiwillig Twint oder Kässeli)",
@@ -78,11 +84,10 @@ spec = do
               partyPosterCreated = moment,
               partyPosterModified = Nothing
             }
-        pure $ partyUuid party
       -- Set the window size and orientation
       setWindowSize (width, height)
       -- Go to the party page
-      openRouteWithParams (EventR partyUuid_) [timeOverrideQueryParam moment]
+      openRouteWithParams (PartySlugR organiserSlug_ partySlug_ day) [timeOverrideQueryParam moment]
       png <- screenshot
       let fp = concat ["test_resources/party/", show width <> "x", show height, ".png"]
       pure $ pureGoldenScreenshot fp png
