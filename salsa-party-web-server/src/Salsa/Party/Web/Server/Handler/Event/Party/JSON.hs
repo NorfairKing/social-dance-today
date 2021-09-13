@@ -90,6 +90,7 @@ importUserExport UserExport {..} =
 data OrganiserExport = OrganiserExport
   { organiserExportUser :: !UserExport,
     organiserExportUuid :: !OrganiserUUID,
+    organiserExportSlug :: !(Maybe OrganiserSlug),
     organiserExportName :: !Text,
     organiserExportHomepage :: !(Maybe Text),
     organiserExportCreated :: !UTCTime,
@@ -104,6 +105,7 @@ instance FromJSON OrganiserExport where
     OrganiserExport
       <$> o .: "user"
       <*> o .: "uuid"
+      <*> o .:? "slug"
       <*> o .: "name"
       <*> o .:? "homepage"
       <*> o .: "created"
@@ -118,16 +120,18 @@ instance ToJSON OrganiserExport where
             "name" .= organiserExportName,
             "created" .= organiserExportCreated
           ],
+          mField "slug" organiserExportSlug,
           mField "homepage" organiserExportHomepage,
           mField "modified" organiserExportModified
         ]
 
 organiserExport :: Organiser -> User -> OrganiserExport
 organiserExport Organiser {..} user =
-  let Organiser _ _ _ _ _ _ = undefined
+  let Organiser _ _ _ _ _ _ _ = undefined
    in OrganiserExport
         { organiserExportUser = userExport user,
           organiserExportUuid = organiserUuid,
+          organiserExportSlug = organiserSlug,
           organiserExportName = organiserName,
           organiserExportHomepage = organiserHomepage,
           organiserExportCreated = organiserCreated,
@@ -142,6 +146,7 @@ importOrganiserExport OrganiserExport {..} = do
     ( Organiser
         { organiserUser = userId,
           organiserUuid = organiserExportUuid,
+          organiserSlug = organiserExportSlug,
           organiserName = organiserExportName,
           organiserHomepage = organiserExportHomepage,
           organiserCreated = organiserExportCreated,

@@ -46,7 +46,7 @@ verifyOrganiserSubmitted userId organiserForm = do
 organiserFormShouldMatch :: OrganiserForm -> Organiser -> Maybe OrganiserReminder -> IO ()
 organiserFormShouldMatch OrganiserForm {..} Organiser {..} mOrganiserReminder = do
   let OrganiserForm _ _ _ = undefined -- We want to check every part of the party form
-      Organiser _ _ _ _ _ _ = undefined -- We want to check every part of the organiser
+      Organiser _ _ _ _ _ _ _ = undefined -- We want to check every part of the organiser
       OrganiserReminder _ _ _ _ = undefined
   context "name" $ organiserName `shouldBe` organiserFormName
   context "homepage" $ organiserHomepage `shouldBe` organiserFormHomepage

@@ -90,6 +90,8 @@ Organiser sql=organiser
     -- UUID, for external usage
     uuid OrganiserUUID
 
+    slug OrganiserSlug Maybe default=null
+
     user UserId
 
     name Text

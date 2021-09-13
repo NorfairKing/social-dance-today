@@ -67,12 +67,23 @@ setUpPlaces = do
 setUpSlugs :: (MonadUnliftIO m, MonadLogger m) => SqlPersistT m ()
 setUpSlugs = do
   logInfoN "Setting up slugs for slugless events"
+  setUpOrganiserSlugs
   setUpPartySlugs
   setUpExternalEventSlugs
 
+setUpOrganiserSlugs :: MonadUnliftIO m => SqlPersistT m ()
+setUpOrganiserSlugs = do
+  -- Don't update slugs, otherwise urls might stop working behind organisers' backs.
+  ackOrganiserSource <- selectSourceRes [OrganiserSlug ==. Nothing] []
+  withAcquire ackOrganiserSource $ \organiserSource ->
+    runConduit $ organiserSource .| C.mapM_ setupOrganiserSlug
+
+setupOrganiserSlug :: MonadIO m => Entity Organiser -> SqlPersistT m ()
+setupOrganiserSlug (Entity organiserId Organiser {..}) = update organiserId [OrganiserSlug =. mkSlug organiserName]
+
 setUpPartySlugs :: MonadUnliftIO m => SqlPersistT m ()
 setUpPartySlugs = do
-  -- Don't update slugs, otherwise urls might stop working.
+  -- Don't update slugs, otherwise urls might stop working behind organisers' backs.
   ackPartySource <- selectSourceRes [PartySlug ==. Nothing] []
   withAcquire ackPartySource $ \partySource ->
     runConduit $ partySource .| C.mapM_ setupPartySlug
@@ -82,7 +93,7 @@ setupPartySlug (Entity partyId Party {..}) = update partyId [PartySlug =. mkSlug
 
 setUpExternalEventSlugs :: MonadUnliftIO m => SqlPersistT m ()
 setUpExternalEventSlugs = do
-  -- Don't update slugs, otherwise urls might stop working.
+  -- Don't update slugs, otherwise urls might stop working behind organisers' backs.
   ackExternalEventSource <- selectSourceRes [ExternalEventSlug ==. Nothing] []
   withAcquire ackExternalEventSource $ \externalEventSource ->
     runConduit $ externalEventSource .| C.mapM_ setupExternalEventSlug

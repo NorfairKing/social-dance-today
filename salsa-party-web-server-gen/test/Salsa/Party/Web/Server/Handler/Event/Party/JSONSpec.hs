@@ -211,6 +211,7 @@ spec = do
           Organiser
             { organiserUser = toSqlKey 0,
               organiserUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112,
+              organiserSlug = Just $ Slug "dj-schenker",
               organiserName = "DJ Schenker🎵",
               organiserHomepage = Nothing,
               organiserCreated = UTCTime (fromGregorian 2021 09 01) 19,

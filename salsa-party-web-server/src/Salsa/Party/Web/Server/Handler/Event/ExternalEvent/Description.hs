@@ -10,7 +10,7 @@ import Salsa.Party.Web.Server.Handler.Import
 externalEventHtmlDescription :: (AppMessage -> Text) -> TimeLocale -> String -> String -> ExternalEvent -> Place -> Text
 externalEventHtmlDescription render timeLocale prettyDayFormat prettyTimeFormat ExternalEvent {..} Place {..} =
   let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
-      Organiser _ _ _ _ _ _ = undefined
+      Organiser _ _ _ _ _ _ _ = undefined
       Place _ _ _ = undefined
       facts =
         T.intercalate "\n" $

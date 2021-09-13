@@ -61,6 +61,7 @@ organiserFormPage mResult = do
               ( Organiser
                   { organiserUuid = uuid,
                     organiserUser = userId,
+                    organiserSlug = mkSlug organiserFormName,
                     organiserName = organiserFormName,
                     organiserHomepage = organiserFormHomepage,
                     organiserCreated = now,
