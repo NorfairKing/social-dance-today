@@ -14,9 +14,10 @@
 module Salsa.Party.DB
   ( module Salsa.Party.DB,
     module Salsa.Party.DB.CASKey,
-    module Salsa.Party.DB.Password,
     module Salsa.Party.DB.Coordinates,
+    module Salsa.Party.DB.Password,
     module Salsa.Party.DB.Recurrence,
+    module Salsa.Party.DB.Slug,
     module Salsa.Party.DB.URI,
     module Salsa.Party.DB.UUID,
     module Data.UUID.Typed,
@@ -39,6 +40,7 @@ import Salsa.Party.DB.CASKey
 import Salsa.Party.DB.Coordinates
 import Salsa.Party.DB.Password
 import Salsa.Party.DB.Recurrence
+import Salsa.Party.DB.Slug
 import Salsa.Party.DB.URI ()
 import Salsa.Party.DB.UUID ()
 

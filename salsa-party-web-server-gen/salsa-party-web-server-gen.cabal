@@ -74,6 +74,7 @@ test-suite salsa-party-web-server-gen-test
   other-modules:
       Salsa.Party.DB.CoordinatesSpec
       Salsa.Party.DB.RecurrenceSpec
+      Salsa.Party.DB.SlugSpec
       Salsa.Party.DBSpec
       Salsa.Party.Looper.OrganiserReminderSpec
       Salsa.Party.Looper.PartySchedulerSpec

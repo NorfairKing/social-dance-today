@@ -58,6 +58,7 @@ library:
   - tagsoup
   - template-haskell
   - text
+  - text-icu
   - time
   - token-limiter-concurrent
   - typed-process

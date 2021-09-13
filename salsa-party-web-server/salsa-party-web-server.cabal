@@ -23,6 +23,7 @@ library
       Salsa.Party.DB.Migration
       Salsa.Party.DB.Password
       Salsa.Party.DB.Recurrence
+      Salsa.Party.DB.Slug
       Salsa.Party.DB.URI
       Salsa.Party.DB.UUID
       Salsa.Party.Importer
@@ -166,6 +167,7 @@ library
     , tagsoup
     , template-haskell
     , text
+    , text-icu
     , time
     , token-limiter-concurrent
     , typed-process

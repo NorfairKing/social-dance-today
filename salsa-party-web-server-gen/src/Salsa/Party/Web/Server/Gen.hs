@@ -39,6 +39,10 @@ instance GenValid Textarea where
   genValid = Textarea <$> genValid
   shrinkValid = fmap Textarea . shrinkValid . unTextarea
 
+instance GenValid Slug where
+  genValid = genValid `suchThatMap` mkSlug
+  shrinkValid = mapMaybe mkSlug . shrinkValid . unSlug
+
 instance GenValid User where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally

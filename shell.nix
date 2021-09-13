@@ -13,6 +13,7 @@ pkgs.haskell.lib.buildStackProject {
     chromium
     git
     haskellPackages.autoexporter
+    icu
     killall
     selenium-server-standalone
     zlib
