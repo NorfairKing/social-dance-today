@@ -4,13 +4,13 @@
 module Salsa.Party.Web.Server.Handler.Event.Party.JSONSpec (spec) where
 
 import Data.Aeson as JSON
-import qualified Data.ByteString.Lazy as LB
 import Data.Password
 import qualified Data.UUID as UUID
 import qualified Data.UUID.Typed as Typed
 import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Handler.Event.Party.JSON
 import Salsa.Party.Web.Server.Handler.TestImport
+import Test.Syd.Aeson
 import Test.Syd.Persistent
 import Yesod.Core
 
@@ -186,6 +186,7 @@ spec = do
     let exampleParty =
           Party
             { partyUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112,
+              partySlug = Just $ Slug "bachata-community-zurich-mondays",
               partyTitle = "Bachata Community Zürich Mondays 💃🕺",
               partyDescription = Just "Bachata Community Zürich Bürkliplatz Montags 💃🕺\n🕢 19:30 - 20:30 Warmup & Workshop\n🕣 20:30 - 23:30 Party\n📌Bürkliplatz Musikpavillon\nhttps://maps.app.goo.gl/JoTu9pabbsrHWXcZ7\n\n👍Start with Warmup and Musicality support\n\nPopular Song Wishes for dancing Bachateras and Bachateros 😊🎵\n\nKommst du auch mit uns tanzen?🕺💃",
               partyOrganiser = toSqlKey 0,
@@ -194,7 +195,7 @@ spec = do
               partyHomepage = Nothing,
               partyPrice = Just "15.0 CHF",
               partyCancelled = False,
-              partyCreated = UTCTime (fromGregorian 2021 09 05) 185621,
+              partyCreated = UTCTime (fromGregorian 2021 09 05) 18,
               partyModified = Nothing,
               partyPlace = toSqlKey 0
             }
@@ -212,7 +213,7 @@ spec = do
               organiserUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112,
               organiserName = "DJ Schenker🎵",
               organiserHomepage = Nothing,
-              organiserCreated = UTCTime (fromGregorian 2021 09 01) 185621,
+              organiserCreated = UTCTime (fromGregorian 2021 09 01) 19,
               organiserModified = Nothing
             }
 
@@ -221,8 +222,8 @@ spec = do
             { userEmailAddress = "marv.schenker@gmail.com",
               userPassphraseHash = PasswordHash "$2b$10$u3NwikkxT0bH778pEyQc6ONCwa1HkPpSLSbtI7kWbc/FPtJ4aesEe",
               userVerificationKey = Nothing,
-              userCreated = UTCTime (fromGregorian 2021 09 01) 175621
+              userCreated = UTCTime (fromGregorian 2021 09 01) 1756
             }
 
         export = partyExport exampleParty examplePlace exampleOrganiser exampleUser
-     in pureGoldenByteStringFile "test_resources/json/party.json" $ LB.toStrict $ JSON.encode export
+     in pureGoldenJSONValueFile "test_resources/json/party.json" export

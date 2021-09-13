@@ -152,9 +152,10 @@ importOrganiserExport OrganiserExport {..} = do
 
 partyExport :: Party -> Place -> Organiser -> User -> PartyExport
 partyExport Party {..} place organiser user =
-  let Party _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+  let Party _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
       Place _ _ _ = undefined
       partyExportUuid = partyUuid
+      partyExportSlug = partySlug
       partyExportOrganiser = organiserExport organiser user
       partyExportTitle = partyTitle
       partyExportDescription = partyDescription
@@ -169,11 +170,12 @@ partyExport Party {..} place organiser user =
    in PartyExport {..}
 
 data PartyExport = PartyExport
-  { partyExportUuid :: EventUUID,
-    partyExportTitle :: Text,
+  { partyExportUuid :: !EventUUID,
+    partyExportSlug :: !(Maybe EventSlug),
+    partyExportTitle :: !Text,
     partyExportDescription :: !(Maybe Text),
     partyExportOrganiser :: !OrganiserExport,
-    partyExportDay :: Day,
+    partyExportDay :: !Day,
     partyExportStart :: !(Maybe TimeOfDay),
     partyExportHomepage :: !(Maybe Text),
     partyExportPrice :: !(Maybe Text),
@@ -198,6 +200,7 @@ instance ToJSON PartyExport where
             "created" .= partyExportCreated,
             "place" .= partyExportPlace
           ],
+          mField "slug" partyExportSlug,
           mField "description" partyExportDescription,
           mField "start" partyExportStart,
           mField "price" partyExportPrice,
@@ -208,6 +211,7 @@ instance ToJSON PartyExport where
 instance FromJSON PartyExport where
   parseJSON = withObject "PartyExport" $ \o -> do
     partyExportUuid <- o .: "uuid"
+    partyExportSlug <- o .:? "slug"
     partyExportTitle <- o .: "title"
     partyExportDescription <- o .:? "description"
     partyExportOrganiser <- o .: "organiser"
@@ -224,6 +228,7 @@ instance FromJSON PartyExport where
 importPartyExport :: MonadIO m => PartyExport -> SqlPersistT m (Entity Party)
 importPartyExport PartyExport {..} = do
   let partyUuid = partyExportUuid
+  let partySlug = partyExportSlug
   let partyTitle = partyExportTitle
   let partyDescription = partyExportDescription
   let partyDay = partyExportDay

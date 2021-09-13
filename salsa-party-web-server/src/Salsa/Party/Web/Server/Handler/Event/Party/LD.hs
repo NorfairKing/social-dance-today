@@ -20,7 +20,7 @@ partyPageLD (Entity partyId party@Party {..}) = do
 
 partyToLDEvent :: (Route App -> Text) -> Party -> Organiser -> Place -> Maybe CASKey -> LD.Event
 partyToLDEvent renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
-  let Party _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+  let Party _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
    in LD.Event
         { LD.eventName = partyTitle,
           LD.eventLocation =

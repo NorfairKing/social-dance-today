@@ -147,6 +147,9 @@ Party sql=party
     -- UUID, for external usage in a shared namespace with the ExternalEvent table
     uuid EventUUID
 
+    -- A party slug for nicer URLS
+    slug EventSlug Maybe default=null
+
     organiser OrganiserId
     title Text
     description Text Maybe

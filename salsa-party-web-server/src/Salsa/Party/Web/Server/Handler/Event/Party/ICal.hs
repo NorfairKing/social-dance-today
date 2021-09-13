@@ -42,7 +42,7 @@ partyCalendar renderUrl party@Party {..} place =
 
 partyCalendarEvent :: (Route App -> Text) -> Party -> Place -> ICal.VEvent
 partyCalendarEvent renderUrl Party {..} Place {..} =
-  let Party _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+  let Party _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
       noOther = def
    in ICal.VEvent
         { ICal.veDTStamp =

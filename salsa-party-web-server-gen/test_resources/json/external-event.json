@@ -1,1 +1,19 @@
-{"origin":"https://events.info/events/suavemente-cuban-party-2021-07-16-kultur-bistro-bern","importer":"https://events.info","uuid":"0000007b-0000-01c8-0000-031500018af8","created":"2021-07-05T23:59:x1Z","start":"20:15:00","organiser":"Kultur Bistro","day":"2021-07-16","key":"suavemente-cuban-party-2021-07-16-kultur-bistro-bern","price":"15.0 CHF","title":"Suavemente Cuban Party","cancelled":false,"place":{"latitude":47.13865,"address":"Bahnhofplatz 6207 Nottwil LU","longitude":8.13847},"description":"Cuban Salsa Party\r\n\r\n20:00 Door open\r\n20:30 Cuban Salsa Workshop\r\n21:30 Cuban Party\r\n23:30 Animation\r\n\n\nhttps://salsaluca.ch/index.php/events"}
+{
+    "origin": "https://events.info/events/suavemente-cuban-party-2021-07-16-kultur-bistro-bern",
+    "importer": "https://events.info",
+    "uuid": "0000007b-0000-01c8-0000-031500018af8",
+    "created": "2021-07-05T00:03:05Z",
+    "start": "20:15:00",
+    "organiser": "Kultur Bistro",
+    "day": "2021-07-16",
+    "key": "suavemente-cuban-party-2021-07-16-kultur-bistro-bern",
+    "price": "15.0 CHF",
+    "title": "Suavemente Cuban Party",
+    "cancelled": false,
+    "place": {
+        "latitude": 47.13865,
+        "address": "Bahnhofplatz 6207 Nottwil LU",
+        "longitude": 8.13847
+    },
+    "description": "Cuban Salsa Party\r\n\r\n20:00 Door open\r\n20:30 Cuban Salsa Workshop\r\n21:30 Cuban Party\r\n23:30 Animation\r\n\n\nhttps://salsaluca.ch/index.php/events"
+}

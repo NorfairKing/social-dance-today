@@ -4,12 +4,12 @@
 module Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSONSpec (spec) where
 
 import Data.Aeson as JSON
-import qualified Data.ByteString.Lazy as LB
 import qualified Data.UUID as UUID
 import qualified Data.UUID.Typed as Typed
 import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
 import Salsa.Party.Web.Server.Handler.TestImport
+import Test.Syd.Aeson
 import Test.Syd.Persistent
 import Yesod.Core
 
@@ -37,7 +37,7 @@ spec = do
               externalEventHomepage = Nothing,
               externalEventPrice = Just "15.0 CHF",
               externalEventCancelled = False,
-              externalEventCreated = UTCTime (fromGregorian 2021 07 05) 185621,
+              externalEventCreated = UTCTime (fromGregorian 2021 07 05) 185,
               externalEventModified = Nothing,
               externalEventPlace = toSqlKey 0,
               externalEventImporter = toSqlKey 0,
@@ -60,7 +60,7 @@ spec = do
             }
 
         export = externalEventExport exampleExternalEvent examplePlace exampleImporterMetadata
-     in pureGoldenByteStringFile "test_resources/json/external-event.json" $ LB.toStrict $ JSON.encode export
+     in pureGoldenJSONValueFile "test_resources/json/external-event.json" export
 
   serverSpec $ do
     describe "EventExportR" $ do

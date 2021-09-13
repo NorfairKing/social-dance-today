@@ -47,5 +47,5 @@ partyPageHtml (Entity partyId party@Party {..}) = do
 
 addPartyToGoogleCalendarLink :: (Route App -> Text) -> Party -> Place -> Maybe URI
 addPartyToGoogleCalendarLink renderUrl Party {..} Place {..} =
-  let Party _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+  let Party _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
    in addEventToGoogleCalendarLink (renderUrl (EventR partyUuid)) partyDay partyStart placeQuery partyTitle partyDescription

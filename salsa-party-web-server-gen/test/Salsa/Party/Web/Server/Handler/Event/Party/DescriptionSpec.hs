@@ -26,6 +26,7 @@ spec = do
   let exampleParty =
         Party
           { partyUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112,
+            partySlug = Just (Slug "bachata-community-zurich-mondays"),
             partyOrganiser = toSqlKey 0,
             partyTitle = "Bachata Community Zürich Mondays 💃🕺",
             partyDescription = Just "Bachata Community Zürich Bürkliplatz Montags 💃🕺\n🕢 19:30 - 20:30 Warmup & Workshop\n🕣 20:30 - 23:30 Party\n📌Bürkliplatz Musikpavillon\nhttps://maps.app.goo.gl/JoTu9pabbsrHWXcZ7",

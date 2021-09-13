@@ -48,6 +48,7 @@ spec =
                 Party
                   { partyUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112,
                     partyOrganiser = toSqlKey 0,
+                    partySlug = Just $ Slug "example-party-at-rhythmia",
                     partyTitle = "Example party at Rhythmia",
                     partyDescription = Just "aeou\r\naoseuntha\r\noeu",
                     partyDay = fromGregorian 2021 06 15,

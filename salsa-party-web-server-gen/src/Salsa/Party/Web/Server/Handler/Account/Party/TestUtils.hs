@@ -99,7 +99,7 @@ addPartyFormShouldMatch addPartyForm_@AddPartyForm {..} party@Party {..} = do
           ]
   context ctx $ do
     let AddPartyForm _ _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
-    let Party _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+    let Party _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
     context "day" $ partyDay `shouldBe` addPartyFormDay
     context "title" $ partyTitle `shouldBe` addPartyFormTitle
     -- We can't check the address because that's in the Place.
@@ -172,7 +172,7 @@ editPartyFormShouldMatch editPartyForm_@EditPartyForm {..} party@Party {..} = do
           ]
   context ctx $ do
     let EditPartyForm _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
-    let Party _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+    let Party _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
     context "title" $ partyTitle `shouldBe` editPartyFormTitle
     -- We can't check the address because that's in the Place.
     -- partyAddress `shouldBe` editPartyFormAddress
