@@ -139,15 +139,19 @@ tuples = \case
   [] -> []
   (b : bs) -> map ((,) b) bs ++ tuples bs
 
-importParty :: MonadIO m => PartyExport -> SqlPersistT m (Entity Party, Entity Place, Maybe CASKey)
+importParty :: MonadIO m => PartyExport -> SqlPersistT m (Entity Organiser, Entity Party, Entity Place, Maybe CASKey)
 importParty export = do
   partyEntity@(Entity partyId party) <- importPartyExport export
+  mOrganiser <- DB.get (partyOrganiser party)
+  organiserEntity <- case mOrganiser of
+    Nothing -> liftIO $ expectationFailure "Organiser not found."
+    Just organiser -> pure (Entity (partyOrganiser party) organiser)
   mPlace <- DB.get (partyPlace party)
   placeEntity <- case mPlace of
     Nothing -> liftIO $ expectationFailure "Place not found."
     Just place -> pure (Entity (partyPlace party) place)
   mCasKey <- getPosterForParty partyId
-  pure (partyEntity, placeEntity, mCasKey)
+  pure (organiserEntity, partyEntity, placeEntity, mCasKey)
 
 importExternalEvent :: MonadIO m => ExternalEventExport -> SqlPersistT m (Entity ExternalEvent, Entity Place, Maybe CASKey)
 importExternalEvent export = do

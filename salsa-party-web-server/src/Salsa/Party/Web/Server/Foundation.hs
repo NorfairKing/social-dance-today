@@ -181,3 +181,12 @@ instance ToTypedContent ICal.VCalendar where
 
 typeCalendar :: ContentType
 typeCalendar = "text/calendar"
+
+partyRoute :: Organiser -> Party -> Route App
+partyRoute organiser party = fromMaybe (EventR (partyUuid party)) $ partySlugRoute organiser party
+
+partySlugRoute :: Organiser -> Party -> Maybe (Route App)
+partySlugRoute Organiser {..} Party {..} = do
+  organiserSlug_ <- organiserSlug
+  partySlug_ <- partySlug
+  pure $ PartySlugR organiserSlug_ partySlug_ partyDay

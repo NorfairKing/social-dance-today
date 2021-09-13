@@ -65,14 +65,14 @@ externalEventIsSimilarEnoughTo trip1 trip2 = similarEnough 0.745 $ computeSimila
 -- We don't like false-positives, because then we see duplicate events: External events that are the same as some internal event we have.
 -- We don't like false-negatives, because then we don't see certain external events.
 deduplicateExternalEvents ::
-  Map Day [(Entity Party, Entity Place, Maybe CASKey)] ->
+  Map Day [(Entity Organiser, Entity Party, Entity Place, Maybe CASKey)] ->
   Map Day [(Entity ExternalEvent, Entity Place, Maybe CASKey)] ->
   Map Day [(Entity ExternalEvent, Entity Place, Maybe CASKey)]
 deduplicateExternalEvents internals externals = M.differenceWith go externals internals
   where
     go ::
       [(Entity ExternalEvent, Entity Place, Maybe CASKey)] ->
-      [(Entity Party, Entity Place, Maybe CASKey)] ->
+      [(Entity Organiser, Entity Party, Entity Place, Maybe CASKey)] ->
       Maybe [(Entity ExternalEvent, Entity Place, Maybe CASKey)]
     go externalsOnDay internalsOnDay =
       -- TODO: This is a quadratic-time comparison.
@@ -82,8 +82,8 @@ deduplicateExternalEvents internals externals = M.differenceWith go externals in
           (\externalEvent -> not $ any (externalEventIsSimilarEnoughToParty externalEvent) internalsOnDay)
           externalsOnDay
 
-externalEventIsSimilarEnoughToParty :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> (Entity Party, Entity Place, Maybe CASKey) -> Bool
-externalEventIsSimilarEnoughToParty trip1 trip2 = similarEnough 0.8 $ computeSimilarityFormula $ similarityScoreExternalToInternal trip1 trip2
+externalEventIsSimilarEnoughToParty :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> (Entity Organiser, Entity Party, Entity Place, Maybe CASKey) -> Bool
+externalEventIsSimilarEnoughToParty tup tup2 = similarEnough 0.8 $ computeSimilarityFormula $ similarityScoreExternalToInternal tup tup2
 
 -- If the description is close enough, then we say to deduplicate the events.
 -- This works because organisers often copy-paste event descriptions.
@@ -149,9 +149,9 @@ similarityScoreExternalToExternal (Entity _ externalEvent1, Entity _ place1, _) 
 
 similarityScoreExternalToInternal ::
   (Entity ExternalEvent, Entity Place, Maybe CASKey) ->
-  (Entity Party, Entity Place, Maybe CASKey) ->
+  (Entity Organiser, Entity Party, Entity Place, Maybe CASKey) ->
   SimilarityFormula
-similarityScoreExternalToInternal (Entity _ externalEvent, Entity _ place1, _) (Entity _ party, Entity _ place2, _) =
+similarityScoreExternalToInternal (Entity _ externalEvent, Entity _ place1, _) (Entity _ organiser, Entity _ party, Entity _ place2, _) =
   let sim simFunc fieldFunc1 fieldFunc2 = simFunc (fieldFunc1 externalEvent) (fieldFunc2 party)
       mSim f s simFunc fieldFunc1 fieldFunc2 = mSimFunc f (\v1 v2 -> Factor s (simFunc v1 v2)) fieldFunc1 fieldFunc2
       mSimFunc f simFunc fieldFunc1 fieldFunc2 =
@@ -167,7 +167,7 @@ similarityScoreExternalToInternal (Entity _ externalEvent, Entity _ place1, _) (
               -- (1, Factor "Day" $ sim daySimilarity externalEventDay partyDay),
               (0.1, Factor "Cancelled" $ sim boolSimilarity externalEventCancelled partyCancelled)
             ],
-            -- TODO organiser?
+            [(1, Factor "Organiser" $ textSimilarity externalOrganiser (organiserName organiser)) | externalOrganiser <- maybeToList $ externalEventOrganiser externalEvent],
             mSimFunc 3 descriptionSimilarity externalEventDescription partyDescription,
             mSim 0.5 "Price" priceSimilarity externalEventPrice partyPrice,
             mSim 1 "Homepage" homepageSimilarity externalEventHomepage partyHomepage,

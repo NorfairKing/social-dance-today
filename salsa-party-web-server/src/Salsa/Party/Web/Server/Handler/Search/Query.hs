@@ -30,7 +30,7 @@ countSearchResults = M.foldl (+) 0 . M.map length
 
 data Result
   = External (Entity ExternalEvent) (Entity Place) (Maybe CASKey)
-  | Internal (Entity Party) (Entity Place) (Maybe CASKey)
+  | Internal (Entity Organiser) (Entity Party) (Entity Place) (Maybe CASKey)
   deriving (Show, Eq)
 
 -- For a begin day end day (inclusive) and a given place, find all parties per
@@ -38,18 +38,19 @@ data Result
 runSearchQuery :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
 runSearchQuery SearchQuery {..} = do
   rawPartyResults <- E.select $
-    E.from $ \((party `E.InnerJoin` place)) -> do
+    E.from $ \((organiser `E.InnerJoin` party `E.InnerJoin` place)) -> do
+      E.on (organiser E.^. OrganiserId E.==. party E.^. PartyOrganiser)
       E.on (party E.^. PartyPlace E.==. place E.^. PlaceId)
       E.where_ $ dayLimit (party E.^. PartyDay) searchQueryBegin searchQueryMEnd
       distanceEstimationQuery searchQueryCoordinates place
-      pure (party, place)
+      pure (organiser, party, place)
 
   -- Post-process the distance before we fetch images so we don't fetch too many images.
   let partyResultsWithoutImages = postProcessParties searchQueryCoordinates rawPartyResults
   partyResultsWithImages <-
-    forM partyResultsWithoutImages $ \(partyEntity@(Entity partyId party), placeEntity) -> do
+    forM partyResultsWithoutImages $ \(organiserEntity, partyEntity@(Entity partyId party), placeEntity) -> do
       mKey <- getPosterForParty partyId
-      pure (partyDay party, (partyEntity, placeEntity, mKey))
+      pure (partyDay party, (organiserEntity, partyEntity, placeEntity, mKey))
 
   rawExternalEventResults <- E.select $
     E.from $ \(externalEvent `E.InnerJoin` place) -> do
@@ -150,18 +151,18 @@ roughMaxLonDistance = fixedToCoord $ 5 * realToFrac maximumDistance / 111_000
 
 postProcessParties ::
   Coordinates ->
-  [(Entity Party, Entity Place)] ->
-  [(Entity Party, Entity Place)]
+  [(Entity Organiser, Entity Party, Entity Place)] ->
+  [(Entity Organiser, Entity Party, Entity Place)]
 postProcessParties coordinates =
   mapMaybe $
-    \(party, place) -> do
+    \(organiser, party, place) -> do
       guard $
         coordinates `distanceTo` placeCoordinates (entityVal place)
           <= maximumDistance
-      pure (party, place)
+      pure (organiser, party, place)
 
-makeInternalResult :: (Entity Party, Entity Place, Maybe CASKey) -> Result
-makeInternalResult (party, place, mCasKey) = Internal party place mCasKey
+makeInternalResult :: (Entity Organiser, Entity Party, Entity Place, Maybe CASKey) -> Result
+makeInternalResult (organiser, party, place, mCasKey) = Internal organiser party place mCasKey
 
 postProcessExternalEvents ::
   Coordinates ->

@@ -23,24 +23,26 @@ spec = do
       forAllValid $ \organiser ->
         forAllValid $ \place ->
           forAllValid $ \party ->
-            runYesodClientM yc $ do
-              testDB $ do
-                organiserId <- DB.insert organiser
-                placeId <- DB.insert place
-                DB.insert_ $ party {partyOrganiser = organiserId, partyPlace = placeId}
-              request $ do
-                setUrl $ EventR $ partyUuid party
-                addRequestHeader ("Accept", "application/ld+json")
-              _ <- followRedirect
-              statusIs 200
-              mResp <- getResponse
-              case mResp of
-                Nothing -> liftIO $ expectationFailure "Should have had a response by now."
-                Just resp -> do
-                  let cts = responseBody resp
-                  liftIO $ case JSON.eitherDecode cts of
-                    Left err -> expectationFailure err
-                    Right ldEvent -> shouldBeValid (ldEvent :: LD.Event)
+            case partySlugRoute organiser party of
+              Nothing -> pure ()
+              Just route -> do
+                runYesodClientM yc $ do
+                  testDB $ do
+                    organiserId <- DB.insert organiser
+                    placeId <- DB.insert place
+                    DB.insert_ $ party {partyOrganiser = organiserId, partyPlace = placeId}
+                  request $ do
+                    setUrl route
+                    addRequestHeader ("Accept", "application/ld+json")
+                  statusIs 200
+                  mResp <- getResponse
+                  case mResp of
+                    Nothing -> liftIO $ expectationFailure "Should have had a response by now."
+                    Just resp -> do
+                      let cts = responseBody resp
+                      liftIO $ case JSON.eitherDecode cts of
+                        Left err -> expectationFailure err
+                        Right ldEvent -> shouldBeValid (ldEvent :: LD.Event)
 
   modifyMaxSuccess (`div` 20) $
     modifyMaxSize (* 10) $
