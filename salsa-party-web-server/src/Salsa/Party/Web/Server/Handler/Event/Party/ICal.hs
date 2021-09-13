@@ -16,14 +16,14 @@ import Network.URI
 import Salsa.Party.Web.Server.Handler.Import
 import qualified Text.ICalendar as ICal
 
-partyPageICal :: Entity Party -> Handler ICal.VCalendar
-partyPageICal (Entity _ party@Party {..}) = do
+partyPageICal :: Entity Organiser -> Entity Party -> Handler ICal.VCalendar
+partyPageICal (Entity _ organiser) (Entity _ party@Party {..}) = do
   place@Place {..} <- runDB $ get404 partyPlace
   renderUrl <- getUrlRender
-  pure $ partyCalendar renderUrl party place
+  pure $ partyCalendar renderUrl organiser party place
 
-partyCalendar :: (Route App -> Text) -> Party -> Place -> ICal.VCalendar
-partyCalendar renderUrl party@Party {..} place =
+partyCalendar :: (Route App -> Text) -> Organiser -> Party -> Place -> ICal.VCalendar
+partyCalendar renderUrl organiser party@Party {..} place =
   def
     { ICal.vcProdId =
         ICal.ProdId
@@ -33,15 +33,15 @@ partyCalendar renderUrl party@Party {..} place =
       ICal.vcEvents =
         M.singleton
           (LT.fromStrict $ uuidText partyUuid, Just dateTime)
-          (partyCalendarEvent renderUrl party place)
+          (partyCalendarEvent renderUrl organiser party place)
     }
   where
     dateTime = case partyStart of
       Nothing -> Left $ ICal.Date partyDay
       Just start -> Right $ ICal.FloatingDateTime (LocalTime partyDay start)
 
-partyCalendarEvent :: (Route App -> Text) -> Party -> Place -> ICal.VEvent
-partyCalendarEvent renderUrl Party {..} Place {..} =
+partyCalendarEvent :: (Route App -> Text) -> Organiser -> Party -> Place -> ICal.VEvent
+partyCalendarEvent renderUrl Organiser {..} Party {..} Place {..} =
   let Party _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
       noOther = def
    in ICal.VEvent

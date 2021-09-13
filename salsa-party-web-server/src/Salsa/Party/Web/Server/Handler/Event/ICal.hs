@@ -5,14 +5,15 @@ where
 
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
 import Salsa.Party.Web.Server.Handler.Event.Party.ICal
+import Salsa.Party.Web.Server.Handler.Event.Party.Query
 import Salsa.Party.Web.Server.Handler.Import
 import qualified Text.ICalendar as ICal
 
 getEventIcsR :: EventUUID -> Handler ICal.VCalendar
 getEventIcsR eventUuid = do
-  mParty <- runDB $ getBy $ UniquePartyUUID eventUuid
-  case mParty of
-    Just partyEntity -> partyPageICal partyEntity
+  mPartyTup <- runDB $ getPartyTupByUuid eventUuid
+  case mPartyTup of
+    Just (organiserEntity, partyEntity) -> partyPageICal organiserEntity partyEntity
     Nothing -> do
       mExternalEvent <- runDB $ getBy $ UniqueExternalEventUUID eventUuid
       case mExternalEvent of

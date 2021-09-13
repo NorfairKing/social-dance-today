@@ -25,3 +25,10 @@ getEventR eventUuid = do
       case mExternalEvent of
         Just externalEventEntity -> externalEventPage externalEventEntity
         Nothing -> notFound
+
+getPartySlugR :: OrganiserSlug -> EventSlug -> Day -> Handler TypedContent
+getPartySlugR organiserSlug_ partySlug_ day = do
+  mPartyTup <- runDB $ getPartyTupBySlug organiserSlug_ partySlug_ day
+  case mPartyTup of
+    Nothing -> notFound
+    Just partyTup -> partyPage partyTup

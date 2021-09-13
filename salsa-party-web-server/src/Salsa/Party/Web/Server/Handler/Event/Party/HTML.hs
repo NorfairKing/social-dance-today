@@ -18,10 +18,9 @@ import Salsa.Party.Web.Server.Handler.Event.Party.Description
 import Salsa.Party.Web.Server.Handler.Event.Party.LD
 import Salsa.Party.Web.Server.Handler.Import
 
-partyPageHtml :: Entity Party -> Handler Html
-partyPageHtml (Entity partyId party@Party {..}) = do
+partyPageHtml :: Entity Organiser -> Entity Party -> Handler Html
+partyPageHtml (Entity _ organiser@Organiser {..}) (Entity partyId party@Party {..}) = do
   place@Place {..} <- runDB $ get404 partyPlace
-  organiser@Organiser {..} <- runDB $ get404 partyOrganiser
   mSchedule <- runDB $ getScheduleForParty partyId
   mPosterKey <- runDB $ getPosterForParty partyId
   mGoogleMapsWidget <- makeGoogleMapsWidget partyUuid placeQuery

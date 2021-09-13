@@ -83,16 +83,28 @@ spec = do
       appSpec $
         describe "ICal" $ do
           it "always outputs a valid bytestring (without crashing)" $ \app ->
-            forAllValid $ \party ->
-              forAllValid $ \place ->
-                let urlRender :: Route App -> Text
-                    urlRender route = yesodRender app "https://social-dance.today" route []
+            forAllValid $ \organiser ->
+              forAllValid $ \party ->
+                forAllValid $ \place ->
+                  let urlRender :: Route App -> Text
+                      urlRender route = yesodRender app "https://social-dance.today" route []
 
-                    cal = partyCalendar urlRender party place
-                 in shouldBeValid $ LB.toStrict $ ICal.printICalendar def cal
+                      cal = partyCalendar urlRender organiser party place
+                   in shouldBeValid $ LB.toStrict $ ICal.printICalendar def cal
 
           it "outputs the same event calendar as before" $ \app ->
-            let exampleParty =
+            let exampleOrganiser =
+                  Organiser
+                    { organiserUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112,
+                      organiserUser = toSqlKey 0,
+                      organiserSlug = Just $ Slug "cs-syd",
+                      organiserName = "CS SYD",
+                      organiserHomepage = Just "https://cs-syd.eu",
+                      organiserCreated = UTCTime (fromGregorian 2021 06 19) 164155,
+                      organiserModified = Nothing
+                    }
+
+                exampleParty =
                   Party
                     { partyUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112,
                       partyOrganiser = toSqlKey 0,
@@ -119,5 +131,5 @@ spec = do
                 urlRender :: Route App -> Text
                 urlRender route = yesodRender app "https://social-dance.today" route []
 
-                cal = partyCalendar urlRender exampleParty examplePlace
+                cal = partyCalendar urlRender exampleOrganiser exampleParty examplePlace
              in pureGoldenByteStringFile "test_resources/ical/party.ics" $ LB.toStrict $ ICal.printICalendar def cal

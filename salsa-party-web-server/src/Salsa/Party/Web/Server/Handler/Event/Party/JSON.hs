@@ -24,14 +24,13 @@ import Salsa.Party.Web.Server.Handler.Import
 import Web.JSONLD (mField)
 import Yesod.Core.Types
 
-partyPageJSON :: Entity Party -> Handler (JSONResponse PartyExport)
-partyPageJSON = do fmap JSONResponse . exportParty
+partyPageJSON :: Entity Organiser -> Entity Party -> Handler (JSONResponse PartyExport)
+partyPageJSON organiserEntity partyEntity = JSONResponse <$> exportParty organiserEntity partyEntity
 
-exportParty :: Entity Party -> Handler PartyExport
-exportParty (Entity _ party) = do
+exportParty :: Entity Organiser -> Entity Party -> Handler PartyExport
+exportParty (Entity _ organiser) (Entity _ party) = do
   requireAdmin
   place <- runDB $ get404 $ partyPlace party
-  organiser <- runDB $ get404 $ partyOrganiser party
   user <- runDB $ get404 $ organiserUser organiser
   pure $ partyExport party place organiser user
 

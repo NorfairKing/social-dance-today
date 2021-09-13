@@ -8,15 +8,22 @@ import Data.Foldable
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.UUID.Typed as Typed
+import qualified Database.Esqueleto as E
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
 import Salsa.Party.Web.Server.Handler.Event.Party.JSON
 import Salsa.Party.Web.Server.Handler.Import
 
 getAdminExportDayR :: Day -> Handler TypedContent
 getAdminExportDayR day = do
-  parties <- runDB $ selectList [PartyDay ==. day] []
+  partyExports <- do
+    partyTups <- runDB $
+      E.select $
+        E.from $ \(organiser `E.InnerJoin` party) -> do
+          E.on $ party E.^. PartyOrganiser E.==. organiser E.^. OrganiserId
+          pure (organiser, party)
+    mapM (uncurry exportParty) partyTups
+
   externalEvents <- runDB $ selectList [ExternalEventDay ==. day] []
-  partyExports <- mapM exportParty parties
   externalEventExports <- mapM exportExternalEvent externalEvents
   let jsonEntry :: ToJSON a => FilePath -> a -> Zip.Entry
       jsonEntry fp a = Zip.toEntry fp 0 (JSON.encode a)
