@@ -51,13 +51,19 @@ data P -- Phantom type anyway
 
 type EventUUID = UUID P
 
+type EventSlug = Slug P
+
 data S -- Phantom type anyway
 
 type ScheduleUUID = UUID S
 
+type ScheduleSlug = Slug S
+
 data O -- Phantom type anyway
 
 type OrganiserUUID = UUID O
+
+type OrganiserSlug = Slug O
 
 data R -- Phantom type anyway
 

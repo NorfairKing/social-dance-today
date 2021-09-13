@@ -5,19 +5,13 @@
 
 module Salsa.Party.DB.Slug where
 
-import Control.Arrow (left)
 import Control.Monad
-import qualified Crypto.Hash.SHA256 as SHA256
 import Data.Aeson as JSON
-import Data.ByteString (ByteString)
-import qualified Data.ByteString.Base64 as Base64
-import qualified Data.ByteString.Lazy as LB
 import qualified Data.Char as Char
 import Data.Maybe
 import Data.Proxy
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
 import qualified Data.Text.ICU as ICU
 import Data.Validity
 import Data.Validity.Text ()
@@ -28,10 +22,10 @@ import Text.Read
 import Web.HttpApiData
 import Web.PathPieces
 
-newtype Slug = Slug {unSlug :: Text}
+newtype Slug a = Slug {unSlug :: Text}
   deriving (Eq, Ord, Generic)
 
-instance Validity Slug where
+instance Validity (Slug a) where
   validate s@Slug {..} =
     mconcat
       [ genericValidate s,
@@ -57,40 +51,40 @@ validateSlugChar c
         declare "The character is alphanumeric" $ Char.isAlphaNum c
       ]
 
-instance Show Slug where
+instance Show (Slug a) where
   show = T.unpack . unSlug
 
-instance Read Slug where
+instance Read (Slug a) where
   readPrec = do
     t <- readPrec
     case mkSlug t of
       Nothing -> fail "Couldn't make a slug"
       Just slug -> pure slug
 
-instance PathPiece Slug where
+instance PathPiece (Slug a) where
   toPathPiece = unSlug
   fromPathPiece = fmap Slug . fromPathPiece
 
-instance FromHttpApiData Slug where
+instance FromHttpApiData (Slug a) where
   parseUrlPiece = fmap Slug . parseUrlPiece
 
-instance ToHttpApiData Slug where
+instance ToHttpApiData (Slug a) where
   toUrlPiece = unSlug
 
-instance PersistField Slug where
+instance PersistField (Slug a) where
   toPersistValue = toPersistValue . unSlug
   fromPersistValue = fmap Slug . fromPersistValue
 
-instance PersistFieldSql Slug where
+instance PersistFieldSql (Slug a) where
   sqlType Proxy = sqlType (Proxy :: Proxy Text)
 
-instance ToJSON Slug where
+instance ToJSON (Slug a) where
   toJSON = toJSON . unSlug
 
-instance FromJSON Slug where
+instance FromJSON (Slug a) where
   parseJSON v = Slug <$> parseJSON v
 
-mkSlug :: Text -> Maybe Slug
+mkSlug :: Text -> Maybe (Slug a)
 mkSlug contents = do
   let unSlug =
         stripReplacements $
