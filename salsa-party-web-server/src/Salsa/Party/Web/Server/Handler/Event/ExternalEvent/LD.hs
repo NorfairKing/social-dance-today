@@ -19,7 +19,7 @@ externalEventPageLD (Entity externalEventId externalEvent@ExternalEvent {..}) = 
 
 externalEventToLDEvent :: (Route App -> Text) -> ExternalEvent -> Place -> Maybe CASKey -> LD.Event
 externalEventToLDEvent renderUrl ExternalEvent {..} Place {..} mPosterKey =
-  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
    in LD.Event
         { LD.eventName = externalEventTitle,
           LD.eventLocation =

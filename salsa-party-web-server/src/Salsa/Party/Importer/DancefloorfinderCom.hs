@@ -112,6 +112,7 @@ importEventSync = awaitForever $ \(request, Event {..}) -> do
       let title = T.strip eventTitle
       let externalEventKey = T.pack $ show (getUri request) <> formatTime defaultTimeLocale "%F" eventDay <> T.unpack title
       externalEventUuid <- nextRandomUUID
+      let externalEventSlug = Nothing
       let externalEventTitle = title
       let externalEventDescription = case eventDances of
             [] -> Nothing

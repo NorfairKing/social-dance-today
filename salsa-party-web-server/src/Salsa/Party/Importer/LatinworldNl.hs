@@ -102,6 +102,7 @@ importEventPage = awaitForever $ \(relativeUrl, request, response) -> do
       eventScraper = chroot "main" $
         chroot ("div" @: [hasClass "row"]) $ do
           externalEventUuid <- nextRandomUUID
+          let externalEventSlug = Nothing
           let externalEventKey = relativeUrl
 
           let decodeLenient = T.strip . TE.decodeUtf8With TE.lenientDecode . LB.toStrict

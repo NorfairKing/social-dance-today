@@ -84,6 +84,7 @@ importEventPage = awaitForever $ \(eventId, request, response) -> do
       eventScraper = chroot ("table" @: ["cellspacing" @= "5", "cellpadding" @= "0", "border" @= "0"]) $
         chroot ("table" @: ["cellspacing" @= "0", "cellpadding" @= "0", "border" @= "0"]) $ do
           externalEventUuid <- nextRandomUUID
+          let externalEventSlug = Nothing
           let externalEventKey = eventId
 
           rawHeader <- chroot ("td" @: ["valign" @= "top"]) $ text "th"

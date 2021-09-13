@@ -232,6 +232,8 @@ importItem = awaitForever $ \(Item {..}, mImageBlob) -> do
   let today = utctDay now
 
   externalEventUuid <- nextRandomUUID
+  let externalEventSlug = Nothing
+
   let externalEventKey = itemId
 
   let externalEventTitle = itemTitle

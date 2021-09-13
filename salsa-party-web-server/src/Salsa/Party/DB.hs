@@ -147,7 +147,7 @@ Party sql=party
     -- UUID, for external usage in a shared namespace with the ExternalEvent table
     uuid EventUUID
 
-    -- A party slug for nicer URLS
+    -- An event slug for nicer URLS, in a shared namespace with the ExternalEvent table
     slug EventSlug Maybe default=null
 
     organiser OrganiserId
@@ -263,6 +263,10 @@ ImporterMetadata sql=importer_metadata
 ExternalEvent sql=external_event
     -- UUID, for external usage in a shared namespace with the Party table
     uuid EventUUID
+
+    -- An event slug for nicer URLS, in a shared namespace with the ExternalEvent table
+    slug EventSlug Maybe default=null
+
     -- Unique key for party so that we don't duplicate parties
     -- and we don't update the wrong party when parties get updated
     key Text

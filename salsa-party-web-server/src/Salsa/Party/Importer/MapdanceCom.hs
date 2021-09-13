@@ -110,6 +110,7 @@ importFestivalPage = awaitForever $ \(request, response) -> do
   let scrapeExternalEventFromFestivalPage :: ScraperT LB.ByteString Import (ExternalEvent, Maybe URI)
       scrapeExternalEventFromFestivalPage = do
         externalEventUuid <- nextRandomUUID
+        let externalEventSlug = Nothing
         let externalEventKey =
               let uriText = T.pack $ show $ getUri request
                in case T.stripPrefix "https://www.danceplace.com/index/no/" uriText of

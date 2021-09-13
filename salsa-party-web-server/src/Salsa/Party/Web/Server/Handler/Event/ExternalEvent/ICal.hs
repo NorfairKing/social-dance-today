@@ -42,7 +42,7 @@ externalEventCalendar renderUrl externalEvent@ExternalEvent {..} place =
 
 externalEventCalendarEvent :: (Route App -> Text) -> ExternalEvent -> Place -> ICal.VEvent
 externalEventCalendarEvent renderUrl ExternalEvent {..} Place {..} =
-  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
       noOther = def
    in ICal.VEvent
         { ICal.veDTStamp =

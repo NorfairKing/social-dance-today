@@ -85,6 +85,8 @@ tribeCalendarJSONLDEvents = awaitForever $ \(request, response, event) -> do
   -- I'm not sure whether that's a mistake on their part or on ours, but it's definitely weird.
   let unescapeHtml = HTML.innerText . HTML.parseTags
   externalEventUuid <- nextRandomUUID
+  let externalEventSlug = Nothing
+
   -- This is not ideal, because the URL could change, in which case we'll
   -- duplicate the event, but we don't have anything better it seems.
   let externalEventKey =

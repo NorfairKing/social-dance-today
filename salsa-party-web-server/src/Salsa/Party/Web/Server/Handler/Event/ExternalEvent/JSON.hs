@@ -30,9 +30,10 @@ exportExternalEvent (Entity _ externalEvent) = do
 
 externalEventExport :: ExternalEvent -> Place -> ImporterMetadata -> ExternalEventExport
 externalEventExport ExternalEvent {..} place ImporterMetadata {..} =
-  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
       ImporterMetadata _ _ _ _ = undefined
       externalEventExportUuid = externalEventUuid
+      externalEventExportSlug = externalEventSlug
       externalEventExportKey = externalEventKey
       externalEventExportTitle = externalEventTitle
       externalEventExportDescription = externalEventDescription
@@ -50,12 +51,13 @@ externalEventExport ExternalEvent {..} place ImporterMetadata {..} =
    in ExternalEventExport {..}
 
 data ExternalEventExport = ExternalEventExport
-  { externalEventExportUuid :: EventUUID,
-    externalEventExportKey :: Text,
-    externalEventExportTitle :: Text,
+  { externalEventExportUuid :: !EventUUID,
+    externalEventExportSlug :: !(Maybe EventSlug),
+    externalEventExportKey :: !Text,
+    externalEventExportTitle :: !Text,
     externalEventExportDescription :: !(Maybe Text),
     externalEventExportOrganiser :: !(Maybe Text),
-    externalEventExportDay :: Day,
+    externalEventExportDay :: !Day,
     externalEventExportStart :: !(Maybe TimeOfDay),
     externalEventExportHomepage :: !(Maybe Text),
     externalEventExportPrice :: !(Maybe Text),
@@ -72,7 +74,7 @@ instance Validity ExternalEventExport
 
 instance ToJSON ExternalEventExport where
   toJSON ExternalEventExport {..} =
-    let ExternalEventExport _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+    let ExternalEventExport _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
      in object $
           concat
             [ [ "uuid" .= externalEventExportUuid,
@@ -85,6 +87,7 @@ instance ToJSON ExternalEventExport where
                 "importer" .= externalEventExportImporter,
                 "origin" .= externalEventExportOrigin
               ],
+              mField "slug" externalEventExportSlug,
               mField "organiser" externalEventExportOrganiser,
               mField "description" externalEventExportDescription,
               mField "homepage" externalEventExportHomepage,
@@ -96,6 +99,7 @@ instance ToJSON ExternalEventExport where
 instance FromJSON ExternalEventExport where
   parseJSON = withObject "ExternalEventExport" $ \o -> do
     externalEventExportUuid <- o .: "uuid"
+    externalEventExportSlug <- o .:? "slug"
     externalEventExportKey <- o .: "key"
     externalEventExportTitle <- o .: "title"
     externalEventExportDescription <- o .:? "description"
@@ -115,6 +119,7 @@ instance FromJSON ExternalEventExport where
 importExternalEventExport :: MonadIO m => ExternalEventExport -> SqlPersistT m (Entity ExternalEvent)
 importExternalEventExport ExternalEventExport {..} = do
   let externalEventUuid = externalEventExportUuid
+  let externalEventSlug = externalEventExportSlug
   let externalEventKey = externalEventExportKey
   let externalEventTitle = externalEventExportTitle
   let externalEventDescription = externalEventExportDescription

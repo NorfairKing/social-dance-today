@@ -136,6 +136,7 @@ parseEventFromPage request response = do
         externalEventImporter <- asks importEnvId
         let externalEventOrigin = T.pack $ show $ getUri request
         externalEventUuid <- nextRandomUUID
+        let externalEventSlug = Nothing
 
         mImageUri <- fmap (>>= parseURI . T.unpack) $ mutf8 $ optional $ attr "content" $ "meta" @: ["itemprop" @= "image"]
 

@@ -28,6 +28,7 @@ spec = do
     let exampleExternalEvent =
           ExternalEvent
             { externalEventUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112,
+              externalEventSlug = Just $ Slug "suavemente-cuban-party",
               externalEventKey = "suavemente-cuban-party-2021-07-16-kultur-bistro-bern",
               externalEventTitle = "Suavemente Cuban Party",
               externalEventDescription = Just "Cuban Salsa Party\r\n\r\n20:00 Door open\r\n20:30 Cuban Salsa Workshop\r\n21:30 Cuban Party\r\n23:30 Animation\r\n\n\nhttps://salsaluca.ch/index.php/events",
