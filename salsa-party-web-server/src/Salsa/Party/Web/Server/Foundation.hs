@@ -190,3 +190,11 @@ partySlugRoute Organiser {..} Party {..} = do
   organiserSlug_ <- organiserSlug
   partySlug_ <- partySlug
   pure $ PartySlugR organiserSlug_ partySlug_ partyDay
+
+externalEventRoute :: ExternalEvent -> Route App
+externalEventRoute externalEvent = fromMaybe (EventR (externalEventUuid externalEvent)) $ externalEventSlugRoute externalEvent
+
+externalEventSlugRoute :: ExternalEvent -> Maybe (Route App)
+externalEventSlugRoute ExternalEvent {..} = do
+  externalEventSlug_ <- externalEventSlug
+  pure $ ExternalEventSlugR externalEventSlug_ externalEventDay

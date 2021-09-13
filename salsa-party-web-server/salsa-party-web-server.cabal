@@ -83,6 +83,7 @@ library
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
+      Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Query
       Salsa.Party.Web.Server.Handler.Event.ICal
       Salsa.Party.Web.Server.Handler.Event.JSON
       Salsa.Party.Web.Server.Handler.Event.JSON.Place

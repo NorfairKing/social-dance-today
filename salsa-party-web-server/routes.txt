@@ -16,6 +16,7 @@
 /party/#EventUUID/export.json EventExportR GET
 
 !/party/#OrganiserSlug/#EventSlug/#Day PartySlugR GET
+!/party/#EventSlug/#Day ExternalEventSlugR GET
 
 /organiser/#OrganiserUUID OrganiserR GET
 /image/#CASKey ImageR GET

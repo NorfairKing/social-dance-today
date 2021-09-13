@@ -3,10 +3,12 @@ module Salsa.Party.Web.Server.Handler.Event
     getEventIcsR,
     getEventExportR,
     getPartySlugR,
+    getExternalEventSlugR,
   )
 where
 
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent
+import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Query
 import Salsa.Party.Web.Server.Handler.Event.ICal
 import Salsa.Party.Web.Server.Handler.Event.JSON
 import Salsa.Party.Web.Server.Handler.Event.Party
@@ -17,13 +19,15 @@ getEventR :: EventUUID -> Handler TypedContent
 getEventR eventUuid = do
   mPartyTup <- runDB $ getPartyTupByUuid eventUuid
   case mPartyTup of
-    Just partyTup@(Entity _ organiser, Entity _ party) -> case (,) <$> organiserSlug organiser <*> partySlug party of
+    Just partyTup@(Entity _ organiser, Entity _ party) -> case partySlugRoute organiser party of
       Nothing -> partyPage partyTup
-      Just (organiserSlug_, partySlug_) -> redirect $ PartySlugR organiserSlug_ partySlug_ (partyDay party)
+      Just route -> redirect route
     Nothing -> do
-      mExternalEvent <- runDB $ getBy $ UniqueExternalEventUUID eventUuid
-      case mExternalEvent of
-        Just externalEventEntity -> externalEventPage externalEventEntity
+      mExternalEventTup <- runDB $ getExternalEventTupByUuid eventUuid
+      case mExternalEventTup of
+        Just externalEventTup@(Entity _ externalEvent) -> case externalEventSlugRoute externalEvent of
+          Nothing -> externalEventPage externalEventTup
+          Just route -> redirect route
         Nothing -> notFound
 
 getPartySlugR :: OrganiserSlug -> EventSlug -> Day -> Handler TypedContent
@@ -32,3 +36,10 @@ getPartySlugR organiserSlug_ partySlug_ day = do
   case mPartyTup of
     Nothing -> notFound
     Just partyTup -> partyPage partyTup
+
+getExternalEventSlugR :: EventSlug -> Day -> Handler TypedContent
+getExternalEventSlugR externalEventSlug_ day = do
+  mExternalEventTup <- runDB $ getExternalEventTupBySlug externalEventSlug_ day
+  case mExternalEventTup of
+    Nothing -> notFound
+    Just externalEventTup -> externalEventPage externalEventTup
