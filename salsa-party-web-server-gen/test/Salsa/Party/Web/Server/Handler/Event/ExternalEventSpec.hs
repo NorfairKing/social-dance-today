@@ -9,11 +9,13 @@ spec :: Spec
 spec = do
   serverSpec $ do
     describe "EventR" $ do
-      it "Gets a 404 for a nonexistent external event" $ do
-        uuid <- nextRandomUUID
-        get $ EventR uuid
-        statusIs 404
-      it "Can get the party page for an existing external event" $ \yc ->
+      it "Gets a 404 for a nonexistent external event by uuid" $ \yc ->
+        forAllValid $ \uuid ->
+          runYesodClientM yc $ do
+            get $ EventR uuid
+            statusIs 404
+
+      it "Can get the party page for an existing external event by uuid" $ \yc ->
         forAllValid $ \place ->
           forAllValid $ \externalEvent ->
             runYesodClientM yc $ do
@@ -23,3 +25,23 @@ spec = do
               get $ EventR $ externalEventUuid externalEvent
               _ <- followRedirect
               statusIs 200
+
+      it "Gets a 404 for a nonexistent external event by slug" $ \yc ->
+        forAllValid $ \slug ->
+          forAllValid $ \day ->
+            runYesodClientM yc $ do
+              get $ ExternalEventSlugR slug day
+              statusIs 404
+
+      it "Can get the party page for an existing external event by slug" $ \yc ->
+        forAllValid $ \place ->
+          forAllValid $ \externalEvent ->
+            case externalEventSlugRoute externalEvent of
+              Nothing -> pure ()
+              Just route -> do
+                runYesodClientM yc $ do
+                  testDB $ do
+                    placeId <- DB.insert place
+                    DB.insert_ $ externalEvent {externalEventPlace = placeId}
+                  get route
+                  statusIs 200

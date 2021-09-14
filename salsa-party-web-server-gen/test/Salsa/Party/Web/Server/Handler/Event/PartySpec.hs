@@ -8,12 +8,12 @@ import Salsa.Party.Web.Server.Handler.TestImport
 spec :: Spec
 spec = serverSpec $ do
   describe "EventR" $ do
-    yit "GETs a 404 for a nonexistent party" $ do
-      uuid <- nextRandomUUID
-      get $ EventR uuid
-      statusIs 404
+    it "GETs a 404 for a nonexistent party by uuid" $ \yc ->
+      forAllValid $ \uuid -> runYesodClientM yc $ do
+        get $ EventR uuid
+        statusIs 404
 
-    it "Can get the party page for an existing party" $ \yc ->
+    it "Can get the party page for an existing party by uuid" $ \yc ->
       forAllValid $ \organiser ->
         forAllValid $ \place ->
           forAllValid $ \party ->
@@ -25,6 +25,14 @@ spec = serverSpec $ do
               get $ EventR $ partyUuid party
               _ <- followRedirect -- We may end up on a slug-based route, but that's fine.
               statusIs 200
+
+    it "GETs a 404 for a nonexistent party by slugs" $ \yc ->
+      forAllValid $ \organiserSlug_ ->
+        forAllValid $ \partySlug_ ->
+          forAllValid $ \day ->
+            runYesodClientM yc $ do
+              get $ PartySlugR organiserSlug_ partySlug_ day
+              statusIs 404
 
     it "Can get the party page for an existing party by slugs" $ \yc ->
       forAllValid $ \organiser ->
