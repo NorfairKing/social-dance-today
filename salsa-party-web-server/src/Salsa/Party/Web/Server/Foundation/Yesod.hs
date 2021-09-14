@@ -47,12 +47,26 @@ instance Yesod App where
   defaultLayout widget = do
     app <- getYesod
     messages <- getMessages
-    lang <- supportedLanguageAbbreviation <$> getFirstMatchingSupportedLanguage
+    currentLang <- supportedLanguageAbbreviation <$> getFirstMatchingSupportedLanguage
     let withAutoReload =
           if development
             then (<> autoReloadWidgetFor ReloadR)
             else id
+
     mCurrentRoute <- getCurrentRoute
+
+    req <- getRequest
+    let params = filter ((/= languageQueryParameter) . fst) (reqGetParams req)
+
+    mCanonicalRoute <- forM mCurrentRoute $ \currentRoute -> do
+      toTextUrl (currentRoute, params)
+
+    languageRoutes <- case mCurrentRoute of
+      Nothing -> pure []
+      Just currentRoute -> forM supportedLanguages $ \lang -> do
+        url <- toTextUrl (currentRoute, (languageQueryParameter, supportedLanguageAbbreviation lang) : params)
+        pure (lang, url)
+
     let withSentry =
           case appSentrySettings app of
             Nothing -> id
