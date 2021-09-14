@@ -1,15 +1,19 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Salsa.Party.Web.Server.Handler.Sitemap where
 
 import Conduit
 import Control.Monad
 import Control.Monad.Trans.Resource
+import qualified Data.Conduit as C
 import qualified Data.Conduit.Combinators as C
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Builder as TLB
+import qualified Database.Esqueleto as E
 import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Handler.Import
 import Text.Shakespeare.Text
@@ -20,7 +24,6 @@ getSitemapR = do
   today <- liftIO $ utctDay <$> getCurrentTime
   let yesterday = addDays (-1) today
   acqOrganisers <- runDB $ selectSourceRes [] [Asc OrganiserId]
-  acqParties <- runDB $ selectSourceRes [] [Asc PartyId]
   acqImages <- runDB $ selectSourceRes [] [Asc ImageId]
   acqExternalEvents <- runDB $ selectSourceRes [] [Asc ExternalEventId]
 
@@ -66,21 +69,27 @@ getSitemapR = do
               sitemapPriority = Just 0.5
             }
       )
-    dbAcq
-      acqParties
-      ( \(Entity _ Party {..}) ->
-          SitemapUrl
-            { sitemapLoc = EventR partyUuid,
-              sitemapLastMod = Just $ fromMaybe partyCreated partyModified,
-              sitemapChangeFreq = if partyDay >= yesterday then Nothing else Just Never,
-              sitemapPriority = Just $ if partyDay >= yesterday then 0.4 else 0.2
-            }
+    C.transPipe
+      runDB
+      ( E.selectSource $
+          E.from $ \(organiser `E.InnerJoin` party) -> do
+            E.on $ party E.^. PartyOrganiser E.==. organiser E.^. OrganiserId
+            pure (organiser, party)
       )
+      .| C.map
+        ( \(Entity _ organiser, Entity _ party@Party {..}) ->
+            SitemapUrl
+              { sitemapLoc = partyRoute organiser party,
+                sitemapLastMod = Just $ fromMaybe partyCreated partyModified,
+                sitemapChangeFreq = if partyDay >= yesterday then Nothing else Just Never,
+                sitemapPriority = Just $ if partyDay >= yesterday then 0.4 else 0.2
+              }
+        )
     dbAcq
       acqExternalEvents
-      ( \(Entity _ ExternalEvent {..}) ->
+      ( \(Entity _ externalEvent@ExternalEvent {..}) ->
           SitemapUrl
-            { sitemapLoc = EventR externalEventUuid,
+            { sitemapLoc = externalEventRoute externalEvent,
               sitemapLastMod = Just $ fromMaybe externalEventCreated externalEventModified,
               sitemapChangeFreq = if externalEventDay >= yesterday then Nothing else Just Never,
               sitemapPriority = Just $ if externalEventDay >= yesterday then 0.3 else 0.1
