@@ -84,7 +84,7 @@ setupOrganiserSlug (Entity organiserId Organiser {..}) = update organiserId [Org
 setUpPartySlugs :: MonadUnliftIO m => SqlPersistT m ()
 setUpPartySlugs = do
   -- Don't update slugs, otherwise urls might stop working behind organisers' backs.
-  ackPartySource <- selectSourceRes [] [] -- TODO put this back [PartySlug ==. Nothing] []
+  ackPartySource <- selectSourceRes [PartySlug ==. Nothing] []
   withAcquire ackPartySource $ \partySource ->
     runConduit $ partySource .| C.mapM_ setupPartySlug
 
@@ -94,7 +94,7 @@ setupPartySlug (Entity partyId Party {..}) = update partyId [PartySlug =. mkSlug
 setUpExternalEventSlugs :: MonadUnliftIO m => SqlPersistT m ()
 setUpExternalEventSlugs = do
   -- Don't update slugs, otherwise urls might stop working behind organisers' backs.
-  ackExternalEventSource <- selectSourceRes [] [] -- TODO put this back [ExternalEventSlug ==. Nothing] []
+  ackExternalEventSource <- selectSourceRes [ExternalEventSlug ==. Nothing] []
   withAcquire ackExternalEventSource $ \externalEventSource ->
     runConduit $ externalEventSource .| C.mapM_ setupExternalEventSlug
 
