@@ -3,7 +3,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Salsa.Party.Web.Server.Handler.Organiser where
+module Salsa.Party.Web.Server.Handler.Organiser (getOrganiserR, getOrganiserSlugR) where
 
 import qualified Data.Text.Encoding as TE
 import qualified Database.Esqueleto as E
@@ -14,18 +14,30 @@ getOrganiserR uuid = do
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUUID uuid
   case mOrganiser of
     Nothing -> notFound
-    Just (Entity organiserId organiser@Organiser {..}) -> do
-      now <- liftIO getCurrentTime
-      let today = utctDay now
-      parties <- runDB $ getUpcomingPartiesOfOrganiser organiserId
-      timeLocale <- getTimeLocale
-      prettyDayFormat <- getPrettyDayFormat
-      prettyDateTimeFormat <- getPrettyDateTimeFormat
-      withNavBar $ do
-        setTitleI $ MsgOrganiserTitle organiserName
-        setDescriptionI $ MsgOrganiserDescription organiserName
-        addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe organiserCreated organiserModified
-        $(widgetFile "organiser")
+    Just organiserEntity@(Entity _ organiser) -> case organiserSlug organiser of
+      Just slug -> redirect $ OrganiserSlugR slug
+      Nothing -> organiserPage organiserEntity
+
+getOrganiserSlugR :: OrganiserSlug -> Handler Html
+getOrganiserSlugR slug = do
+  mOrganiser <- runDB $ selectFirst [OrganiserSlug ==. Just slug] []
+  case mOrganiser of
+    Nothing -> notFound
+    Just organiserEntity -> organiserPage organiserEntity
+
+organiserPage :: Entity Organiser -> Handler Html
+organiserPage (Entity organiserId organiser@Organiser {..}) = do
+  now <- liftIO getCurrentTime
+  let today = utctDay now
+  parties <- runDB $ getUpcomingPartiesOfOrganiser organiserId
+  timeLocale <- getTimeLocale
+  prettyDayFormat <- getPrettyDayFormat
+  prettyDateTimeFormat <- getPrettyDateTimeFormat
+  withNavBar $ do
+    setTitleI $ MsgOrganiserTitle organiserName
+    setDescriptionI $ MsgOrganiserDescription organiserName
+    addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe organiserCreated organiserModified
+    $(widgetFile "organiser")
 
 getUpcomingPartiesOfOrganiser :: MonadIO m => OrganiserId -> SqlPersistT m [(Entity Party, Entity Place, Maybe CASKey)]
 getUpcomingPartiesOfOrganiser organiserId = do

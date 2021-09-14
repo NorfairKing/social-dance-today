@@ -19,6 +19,8 @@
 !/party/#EventSlug/#Day ExternalEventSlugR GET
 
 /organiser/#OrganiserUUID OrganiserR GET
+!/organiser/#OrganiserSlug OrganiserSlugR GET
+
 /image/#CASKey ImageR GET
 
 /unsub/reminder/#ReminderSecret UnsubReminderR GET

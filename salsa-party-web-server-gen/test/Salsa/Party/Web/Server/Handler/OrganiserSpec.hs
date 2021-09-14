@@ -19,4 +19,5 @@ spec = serverSpec $ do
         runYesodClientM yc $ do
           testDB $ DB.insert_ organiser
           get $ OrganiserR $ organiserUuid organiser
+          _ <- followRedirect
           statusIs 200
