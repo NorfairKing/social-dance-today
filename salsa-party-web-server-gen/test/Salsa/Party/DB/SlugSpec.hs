@@ -17,7 +17,7 @@ spec = do
         it "produces valid slugs" $
           producesValidsOnValids mkSlug
 
-        it "is idemptent" $
+        it "is idempotent" $
           forAllValid $ \text ->
             case mkSlug text of
               Nothing -> pure ()
@@ -26,11 +26,11 @@ spec = do
                 Just slug2 -> slug2 `shouldBe` slug1
 
         it "deals with these fancy diacritics" $
-          case mkSlug "áąä éęë íįï ǫóö úųü" of
+          case mkSlug "áąäÁĄÄ éęëÉĘË íįïÍĮÏ ǫóöǪÓÖ úųüÚŲÜ" of
             Nothing -> expectationFailure "Should have made a valid slug"
             Just s -> do
               shouldBeValid s
-              s `shouldBe` Slug "aaa-eee-iii-ooo-uuu"
+              s `shouldBe` Slug "aaaaaa-eeeeee-iiiiii-oooooo-uuuuuu"
 
         it "deals with these german letters" $
           case mkSlug "ß" of
@@ -51,4 +51,4 @@ spec = do
             Nothing -> expectationFailure "Should have made a valid slug"
             Just s -> do
               shouldBeValid s
-              s `shouldBe` Slug "noche-latına-salsa-on2-workshop-und-party-mit-dj-raffi"
+              s `shouldBe` Slug "noche-latina-salsa-on2-workshop-und-party-mit-dj-raffi"

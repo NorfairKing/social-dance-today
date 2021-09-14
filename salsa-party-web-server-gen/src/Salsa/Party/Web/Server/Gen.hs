@@ -10,7 +10,7 @@ import Data.Fixed
 import Data.GenValidity
 import Data.GenValidity.ByteString ()
 import Data.GenValidity.Persist ()
-import Data.GenValidity.Text ()
+import Data.GenValidity.Text
 import Data.GenValidity.Time ()
 import Data.GenValidity.UUID.Typed ()
 import Data.Password.Bcrypt
@@ -40,8 +40,10 @@ instance GenValid Textarea where
   shrinkValid = fmap Textarea . shrinkValid . unTextarea
 
 instance GenValid (Slug a) where
-  genValid = genValid `suchThatMap` mkSlug
-  shrinkValid = mapMaybe mkSlug . shrinkValid . unSlug
+  genValid =
+    let charGen = choose ('\0', '\127') `suchThat` (validationIsValid . validateSlugChar)
+     in (Slug <$> (genTextBy charGen `suchThat` (not . T.null))) `suchThat` isValid
+  shrinkValid = filter isValid . map Slug . shrinkValid . unSlug
 
 instance GenValid User where
   genValid = genValidStructurally

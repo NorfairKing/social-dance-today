@@ -12,12 +12,14 @@ import Data.Maybe
 import Data.Proxy
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import qualified Data.Text.ICU as ICU
 import Data.Validity
 import Data.Validity.Text ()
 import Database.Persist
 import Database.Persist.Sql
 import GHC.Generics (Generic)
+import qualified Network.HTTP.Types as HTTP
 import Text.Read
 import Web.HttpApiData
 import Web.PathPieces
@@ -37,7 +39,10 @@ instance Validity (Slug a) where
         declare "it doesn't have replacement characters at the start" $
           not $ T.singleton replacementChar `T.isPrefixOf` unSlug,
         declare "it doesn't have replacement characters at the end" $
-          not $ T.singleton replacementChar `T.isSuffixOf` unSlug
+          not $ T.singleton replacementChar `T.isSuffixOf` unSlug,
+        declare "it doesn't need url encoding" $
+          let encoded = TE.encodeUtf8 unSlug
+           in HTTP.urlEncode False encoded == encoded
       ]
 
 validateSlugChar :: Char -> Validation
@@ -48,7 +53,8 @@ validateSlugChar c
       [ declare "The character is printable" $ Char.isPrint c,
         declare "The character is not upper-case" $ not $ Char.isUpper c,
         declare "The character is not a space character" $ not $ Char.isSpace c,
-        declare "The character is alphanumeric" $ Char.isAlphaNum c
+        declare "The character is alphanumeric" $ Char.isAlphaNum c,
+        declare "The character is in Latin1" $ Char.isAscii c
       ]
 
 instance Show (Slug a) where
@@ -87,13 +93,14 @@ instance FromJSON (Slug a) where
 mkSlug :: Text -> Maybe (Slug a)
 mkSlug contents = do
   let unSlug =
-        stripReplacements $
-          T.pack $
-            deduplicateReplacements $
-              mapMaybe mkSlugChar $
-                T.unpack $
-                  ICU.toCaseFold True $
-                    ICU.normalize ICU.NFD contents
+        stripReplacements
+          . T.pack
+          . deduplicateReplacements
+          . mapMaybe mkSlugChar
+          . T.unpack
+          . ICU.toCaseFold False
+          . ICU.normalize ICU.NFD
+          $ contents
   guard $ not $ T.null unSlug
   pure Slug {..}
 
