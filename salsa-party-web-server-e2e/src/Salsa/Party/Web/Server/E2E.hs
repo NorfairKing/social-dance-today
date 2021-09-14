@@ -42,7 +42,8 @@ spec uri = do
             LinkCheck.setLogLevel = LevelWarn,
             LinkCheck.setFetchers = Nothing,
             LinkCheck.setExternal = False,
-            LinkCheck.setCheckFragments = False
+            LinkCheck.setCheckFragments = False,
+            LinkCheck.setMaxDepth = Just 4
           }
   sequential $
     it "passes seocheck" $ do
@@ -50,7 +51,8 @@ spec uri = do
         SeoCheck.Settings
           { SeoCheck.setUri = uri,
             SeoCheck.setLogLevel = LevelWarn,
-            SeoCheck.setFetchers = Nothing
+            SeoCheck.setFetchers = Nothing,
+            SeoCheck.setMaxDepth = Just 4
           }
   yesodE2ESpec uri $ do
     pure () :: YesodSpec (E2E App)

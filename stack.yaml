@@ -21,11 +21,11 @@ extra-deps:
   subdirs:
     - typed-uuid
 - github: NorfairKing/linkcheck
-  commit: 88a325e3a6c8610d1ca380457cd267d87ab2c0ab
+  commit: 04168bc98011cf5c9589bc3e94086d7e72f86981
   subdirs:
     - linkcheck
 - github: NorfairKing/seocheck
-  commit: f182ec4fb43d100530a4ca685b89670d15da2389
+  commit: 95548a33fd3afe9beadabedcf2278b936679e4c3
   subdirs:
     - seocheck
 - github: supki/envparse
