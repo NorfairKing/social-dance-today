@@ -32,7 +32,7 @@
   
     <p .content>
       <div .buttons>
-        <a #public-party .button href=@{EventR partyUuid}>
+        <a #public-party .button href=@{partyRoute organiser party}>
           _{MsgYourPartiesPublicPartyButton}
         <a #edit-party .button href=@{AccountR $ AccountPartyEditR partyUuid}>
           _{MsgYourPartiesEditPartyButton}

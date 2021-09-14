@@ -41,7 +41,7 @@ partyCalendar renderUrl organiser party@Party {..} place =
       Just start -> Right $ ICal.FloatingDateTime (LocalTime partyDay start)
 
 partyCalendarEvent :: (Route App -> Text) -> Organiser -> Party -> Place -> ICal.VEvent
-partyCalendarEvent renderUrl Organiser {..} Party {..} Place {..} =
+partyCalendarEvent renderUrl organiser@Organiser {..} party@Party {..} Place {..} =
   let Party _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
       noOther = def
    in ICal.VEvent
@@ -129,7 +129,7 @@ partyCalendarEvent renderUrl Organiser {..} Party {..} Place {..} =
                 },
           ICal.veTransp = ICal.Transparent {timeTransparencyOther = noOther},
           ICal.veUrl = do
-            uri <- parseURI $ T.unpack $ renderUrl $ EventR partyUuid
+            uri <- parseURI $ T.unpack $ renderUrl $ partyRoute organiser party
             pure $ ICal.URL {ICal.urlValue = uri, ICal.urlOther = noOther},
           ICal.veRecurId = Nothing,
           ICal.veRRule = S.empty,

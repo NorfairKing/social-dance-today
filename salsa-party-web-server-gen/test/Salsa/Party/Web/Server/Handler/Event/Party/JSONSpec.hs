@@ -71,54 +71,57 @@ spec = do
           forAllValid $ \party ->
             forAllValid $ \organiser ->
               forAllValid $ \user ->
-                runYesodClientM yc $
-                  withLoggedInAdmin $ do
-                    testDB $ do
-                      placeId <- DB.insert place
-                      userId <- DB.insert user
-                      organiserId <- DB.insert $ organiser {organiserUser = userId}
-                      DB.insert_ $ party {partyPlace = placeId, partyOrganiser = organiserId}
-                    request $ do
-                      setUrl $ EventR $ partyUuid party
-                      addRequestHeader ("Accept", typeJson)
-                    statusIs 200
-                    mResp <- getResponse
-                    case mResp of
-                      Nothing -> liftIO $ expectationFailure "Should have had a response by now."
-                      Just resp -> do
-                        let cts = responseBody resp
-                        case JSON.eitherDecode cts of
-                          Left err -> liftIO $ expectationFailure $ "Failed to parse JSON export:\n" <> err
-                          Right export -> do
-                            -- Clean database
-                            testDB $ do
-                              DB.deleteWhere ([] :: [DB.Filter Place])
-                              DB.deleteWhere ([] :: [DB.Filter Organiser])
-                              DB.deleteWhere ([] :: [DB.Filter User])
-                              DB.deleteWhere ([] :: [DB.Filter Party])
-                            -- Import the export
-                            testDB $ do
-                              Entity _ actualParty <- importPartyExport export
-                              liftIO $
-                                context (show cts) $
-                                  actualParty
-                                    { partyPlace = partyPlace party,
-                                      partyOrganiser = partyOrganiser party
-                                    }
-                                    `shouldBe` party
-                              mPlace <- DB.get $ partyPlace actualParty
-                              case mPlace of
-                                Nothing -> liftIO $ expectationFailure "Should have found the place too"
-                                Just actualPlace -> liftIO $ context (show cts) $ actualPlace `shouldBe` place
-                              mOrganiser <- DB.get $ partyOrganiser actualParty
-                              case mOrganiser of
-                                Nothing -> liftIO $ expectationFailure "Should have found the organiser too"
-                                Just actualOrganiser -> do
-                                  liftIO $ context (show cts) $ actualOrganiser {organiserUser = organiserUser organiser} `shouldBe` organiser
-                                  mUser <- DB.get $ organiserUser actualOrganiser
-                                  case mUser of
-                                    Nothing -> liftIO $ expectationFailure "Should have found the user too"
-                                    Just actualUser -> liftIO $ context (show cts) $ actualUser `shouldBe` user
+                case partySlugRoute organiser party of
+                  Nothing -> pure ()
+                  Just route ->
+                    runYesodClientM yc $
+                      withLoggedInAdmin $ do
+                        testDB $ do
+                          placeId <- DB.insert place
+                          userId <- DB.insert user
+                          organiserId <- DB.insert $ organiser {organiserUser = userId}
+                          DB.insert_ $ party {partyPlace = placeId, partyOrganiser = organiserId}
+                        request $ do
+                          setUrl route
+                          addRequestHeader ("Accept", typeJson)
+                        statusIs 200
+                        mResp <- getResponse
+                        case mResp of
+                          Nothing -> liftIO $ expectationFailure "Should have had a response by now."
+                          Just resp -> do
+                            let cts = responseBody resp
+                            case JSON.eitherDecode cts of
+                              Left err -> liftIO $ expectationFailure $ "Failed to parse JSON export:\n" <> err
+                              Right export -> do
+                                -- Clean database
+                                testDB $ do
+                                  DB.deleteWhere ([] :: [DB.Filter Place])
+                                  DB.deleteWhere ([] :: [DB.Filter Organiser])
+                                  DB.deleteWhere ([] :: [DB.Filter User])
+                                  DB.deleteWhere ([] :: [DB.Filter Party])
+                                -- Import the export
+                                testDB $ do
+                                  Entity _ actualParty <- importPartyExport export
+                                  liftIO $
+                                    context (show cts) $
+                                      actualParty
+                                        { partyPlace = partyPlace party,
+                                          partyOrganiser = partyOrganiser party
+                                        }
+                                        `shouldBe` party
+                                  mPlace <- DB.get $ partyPlace actualParty
+                                  case mPlace of
+                                    Nothing -> liftIO $ expectationFailure "Should have found the place too"
+                                    Just actualPlace -> liftIO $ context (show cts) $ actualPlace `shouldBe` place
+                                  mOrganiser <- DB.get $ partyOrganiser actualParty
+                                  case mOrganiser of
+                                    Nothing -> liftIO $ expectationFailure "Should have found the organiser too"
+                                    Just actualOrganiser -> do
+                                      liftIO $ context (show cts) $ actualOrganiser {organiserUser = organiserUser organiser} `shouldBe` organiser
+                                      mUser <- DB.get $ organiserUser actualOrganiser
+                                      case mUser of
+                                        Nothing -> liftIO $ expectationFailure "Should have found the user too"
+                                        Just actualUser -> liftIO $ context (show cts) $ actualUser `shouldBe` user
 
   dbSpec $ do
     describe "importPartyJSONExport" $ do

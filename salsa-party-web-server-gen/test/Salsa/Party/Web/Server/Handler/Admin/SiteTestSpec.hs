@@ -172,7 +172,7 @@ spec =
                     runNoLoggingT $
                       testJSONLD
                         (yesodClientManager yc)
-                        (urlRenderReal (EventR (externalEventUuid externalEvent)))
+                        (urlRenderReal (externalEventRoute externalEvent))
 
                 liftIO $ case jsonLDResults of
                   [JSONLD [ldEvent]] ->

@@ -41,10 +41,10 @@ partyPageHtml (Entity _ organiser@Organiser {..}) (Entity partyId party@Party {.
     let ldEvent = partyToLDEvent renderUrl party organiser place mPosterKey
     toWidgetHead $ toJSONLDData ldEvent
     addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified
-    let mAddToGoogleLink = addPartyToGoogleCalendarLink renderUrl party place
+    let mAddToGoogleLink = addPartyToGoogleCalendarLink renderUrl organiser party place
     $(widgetFile "party")
 
-addPartyToGoogleCalendarLink :: (Route App -> Text) -> Party -> Place -> Maybe URI
-addPartyToGoogleCalendarLink renderUrl Party {..} Place {..} =
+addPartyToGoogleCalendarLink :: (Route App -> Text) -> Organiser -> Party -> Place -> Maybe URI
+addPartyToGoogleCalendarLink renderUrl organiser party@Party {..} Place {..} =
   let Party _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
-   in addEventToGoogleCalendarLink (renderUrl (EventR partyUuid)) partyDay partyStart placeQuery partyTitle partyDescription
+   in addEventToGoogleCalendarLink (renderUrl (partyRoute organiser party)) partyDay partyStart placeQuery partyTitle partyDescription

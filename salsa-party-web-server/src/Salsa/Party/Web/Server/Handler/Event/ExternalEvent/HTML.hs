@@ -46,6 +46,6 @@ parseURILike :: String -> Maybe URI
 parseURILike url = parseAbsoluteURI url <|> parseAbsoluteURI ("https://" <> url)
 
 addExternalEventToGoogleCalendarLink :: (Route App -> Text) -> ExternalEvent -> Place -> Maybe URI
-addExternalEventToGoogleCalendarLink renderUrl ExternalEvent {..} Place {..} =
+addExternalEventToGoogleCalendarLink renderUrl externalEvent@ExternalEvent {..} Place {..} =
   let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
-   in addEventToGoogleCalendarLink (renderUrl (EventR externalEventUuid)) externalEventDay externalEventStart placeQuery externalEventTitle externalEventDescription
+   in addEventToGoogleCalendarLink (renderUrl (externalEventRoute externalEvent)) externalEventDay externalEventStart placeQuery externalEventTitle externalEventDescription
