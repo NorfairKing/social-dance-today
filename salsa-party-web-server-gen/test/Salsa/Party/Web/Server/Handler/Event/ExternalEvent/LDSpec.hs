@@ -2,19 +2,47 @@
 
 module Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LDSpec (spec) where
 
+import Data.Aeson as JSON
 import Data.Text (Text)
 import Data.Time
 import qualified Data.UUID as UUID
 import qualified Data.UUID.Typed as Typed
+import qualified Database.Persist as DB
 import Database.Persist.Sql
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
 import Salsa.Party.Web.Server.Handler.TestImport
 import Test.Syd.Aeson
+import qualified Web.JSONLD as LD
 import Yesod.Core
 
 spec :: Spec
-spec =
+spec = do
+  serverSpec $
+    describe "EventR" $
+      it "Can get the party page for an existing party in application/ld+json format" $ \yc ->
+        forAllValid $ \place ->
+          forAllValid $ \externalEvent ->
+            case externalEventSlugRoute externalEvent of
+              Nothing -> pure ()
+              Just route ->
+                runYesodClientM yc $ do
+                  testDB $ do
+                    placeId <- DB.insert place
+                    DB.insert_ $ externalEvent {externalEventPlace = placeId}
+                  request $ do
+                    setUrl route
+                    addRequestHeader ("Accept", "application/ld+json")
+                  statusIs 200
+                  mResp <- getResponse
+                  case mResp of
+                    Nothing -> liftIO $ expectationFailure "Should have had a response by now."
+                    Just resp -> do
+                      let cts = responseBody resp
+                      liftIO $ case JSON.eitherDecode cts of
+                        Left err -> expectationFailure err
+                        Right ldEvent -> shouldBeValid (ldEvent :: LD.Event)
+
   modifyMaxSuccess (`div` 20) $
     modifyMaxSize (* 10) $
       appSpec $ do

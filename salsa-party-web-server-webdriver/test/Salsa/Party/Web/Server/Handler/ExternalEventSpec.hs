@@ -25,7 +25,8 @@ spec = do
       let address = "Bürkliplatz, 8001 Zürich"
       posterFile <- readTestFile "test_resources/posters/bachata-community.jpg"
       mapFile <- readTestFile "test_resources/maps/bachata-community.jpg"
-      partyUuid_ <- driveDB $ do
+      let slug = Slug "bachata-community-zurich-mondays"
+      driveDB $ do
         let place =
               Place
                 { placeQuery = address,
@@ -46,7 +47,7 @@ spec = do
         let externalEvent =
               ExternalEvent
                 { externalEventUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112, -- Dummy
-                  externalEventSlug = Just $ Slug "bachata-community-zurich-mondays",
+                  externalEventSlug = Just slug,
                   externalEventKey = "dummy",
                   externalEventTitle = "Bachata Community Zürich Mondays 💃🕺",
                   externalEventDescription = Just "Bachata Community Zürich Bürkliplatz Montags 💃🕺\n🕢 19:30 - 20:30 Warmup & Workshop\n🕣 20:30 - 23:30 Party\n📌Bürkliplatz Musikpavillon\nhttps://maps.app.goo.gl/JoTu9pabbsrHWXcZ7\n\n👍Start with Warmup and Musicality support\n\nPopular Song Wishes for dancing Bachateras and Bachateros 😊🎵\n\nKommst du auch mit uns tanzen?🕺💃\n\nPrice: FREE (Freiwillig Twint oder Kässeli)",
@@ -71,11 +72,10 @@ spec = do
               externalEventPosterCreated = moment,
               externalEventPosterModified = Nothing
             }
-        pure $ externalEventUuid externalEvent
       -- Set the window size and orientation
       setWindowSize (width, height)
       -- Go to the party page
-      openRouteWithParams (EventR partyUuid_) [timeOverrideQueryParam moment]
+      openRouteWithParams (ExternalEventSlugR slug day) [timeOverrideQueryParam moment]
       png <- screenshot
       let fp = concat ["test_resources/external-event/", show width <> "x", show height, ".png"]
       pure $ pureGoldenScreenshot fp png
