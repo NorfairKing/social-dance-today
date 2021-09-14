@@ -23,7 +23,7 @@
 
         <h4 .title .is-6>
           <a
-            href=@{OrganiserR organiserUuid}
+            href=@{organiserRoute organiser}
             title=_{MsgPartyOrganiserTitle organiserName}
             rel="author">
             _{MsgPartyOrganiser organiserName}

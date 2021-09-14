@@ -68,7 +68,8 @@ organiserFormPage mResult = do
                     organiserModified = Nothing
                   }
               )
-              [ OrganiserName =. organiserFormName,
+              [ OrganiserSlug =. mkSlug organiserFormName,
+                OrganiserName =. organiserFormName,
                 OrganiserHomepage =. organiserFormHomepage,
                 OrganiserModified =. Just now
               ]

@@ -101,6 +101,7 @@ Organiser sql=organiser
     modified UTCTime Maybe default=NULL
 
     UniqueOrganiserUUID uuid !force
+    UniqueOrganiserSlug slug !force
     UniqueOrganiserUser user
 
     deriving Show

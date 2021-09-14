@@ -400,7 +400,10 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
           partyFieldUpdates =
             let EditScheduleForm _ _ _ _ _ _ _ = undefined
              in catMaybes
-                  [ whenChanged scheduleTitle editScheduleFormTitle PartyTitle,
+                  [ if scheduleTitle /= editScheduleFormTitle form
+                      then Just $ PartySlug =. mkSlug (editScheduleFormTitle form)
+                      else Nothing,
+                    whenChanged scheduleTitle editScheduleFormTitle PartyTitle,
                     whenChanged scheduleDescription (fmap unTextarea . editScheduleFormDescription) PartyDescription,
                     -- Purposely don't update the day so that schedulegoers can't have the rug pulled under them
                     whenChanged scheduleStart editScheduleFormStart PartyStart,
