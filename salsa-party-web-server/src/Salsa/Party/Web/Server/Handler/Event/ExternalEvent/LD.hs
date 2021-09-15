@@ -10,10 +10,8 @@ where
 import Salsa.Party.Web.Server.Handler.Import
 import qualified Web.JSONLD as LD
 
-externalEventPageLD :: Entity ExternalEvent -> Handler JSONLDData
-externalEventPageLD (Entity externalEventId externalEvent@ExternalEvent {..}) = do
-  place@Place {..} <- runDB $ get404 externalEventPlace
-  mPosterKey <- runDB $ getPosterForExternalEvent externalEventId
+externalEventPageLD :: Entity ExternalEvent -> Entity Place -> Maybe CASKey -> Handler JSONLDData
+externalEventPageLD (Entity _ externalEvent@ExternalEvent {..}) (Entity _ place@Place {..}) mPosterKey = do
   renderUrl <- getUrlRender
   pure $ toJSONLDData $ externalEventToLDEvent renderUrl externalEvent place mPosterKey
 

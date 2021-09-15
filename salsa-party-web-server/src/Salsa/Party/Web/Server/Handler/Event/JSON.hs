@@ -4,6 +4,7 @@ module Salsa.Party.Web.Server.Handler.Event.JSON
 where
 
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
+import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Query
 import Salsa.Party.Web.Server.Handler.Event.Party.JSON
 import Salsa.Party.Web.Server.Handler.Event.Party.Query
 import Salsa.Party.Web.Server.Handler.Import
@@ -14,7 +15,7 @@ getEventExportR eventUuid = do
   case mPartyTup of
     Just (organiserEntity, partyEntity) -> toTypedContent <$> partyPageJSON organiserEntity partyEntity
     Nothing -> do
-      mExternalEvent <- runDB $ getBy $ UniqueExternalEventUUID eventUuid
+      mExternalEvent <- runDB $ getExternalEventTupByUuid eventUuid
       case mExternalEvent of
-        Just externalEventEntity -> toTypedContent <$> externalEventPageJSON externalEventEntity
+        Just (externalEventEntity, placeEntity, _) -> toTypedContent <$> externalEventPageJSON externalEventEntity placeEntity
         Nothing -> notFound

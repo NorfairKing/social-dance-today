@@ -20,11 +20,19 @@ getAdminExportDayR day = do
       E.select $
         E.from $ \(organiser `E.InnerJoin` party) -> do
           E.on $ party E.^. PartyOrganiser E.==. organiser E.^. OrganiserId
+          E.where_ $ party E.^. PartyDay E.==. E.val day
           pure (organiser, party)
     mapM (uncurry exportParty) partyTups
 
-  externalEvents <- runDB $ selectList [ExternalEventDay ==. day] []
-  externalEventExports <- mapM exportExternalEvent externalEvents
+  externalEventExports <- do
+    externalEventTups <- runDB $
+      E.select $
+        E.from $ \(externalEvent `E.InnerJoin` place) -> do
+          E.on $ externalEvent E.^. ExternalEventPlace E.==. place E.^. PlaceId
+          E.where_ $ externalEvent E.^. ExternalEventDay E.==. E.val day
+          pure (externalEvent, place)
+    mapM (uncurry exportExternalEvent) externalEventTups
+
   let jsonEntry :: ToJSON a => FilePath -> a -> Zip.Entry
       jsonEntry fp a = Zip.toEntry fp 0 (JSON.encode a)
       uuidPath :: Typed.UUID a -> FilePath

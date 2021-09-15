@@ -16,9 +16,8 @@ import Network.URI
 import Salsa.Party.Web.Server.Handler.Import
 import qualified Text.ICalendar as ICal
 
-externalEventPageICal :: Entity ExternalEvent -> Handler ICal.VCalendar
-externalEventPageICal (Entity _ externalEvent) = do
-  place@Place {..} <- runDB $ get404 $ externalEventPlace externalEvent
+externalEventPageICal :: Entity ExternalEvent -> Entity Place -> Handler ICal.VCalendar
+externalEventPageICal (Entity _ externalEvent) (Entity _ place@Place {..}) = do
   renderUrl <- getUrlRender
   pure $ externalEventCalendar renderUrl externalEvent place
 

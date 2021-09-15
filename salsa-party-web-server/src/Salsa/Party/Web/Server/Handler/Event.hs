@@ -25,8 +25,8 @@ getEventR eventUuid = do
     Nothing -> do
       mExternalEventTup <- runDB $ getExternalEventTupByUuid eventUuid
       case mExternalEventTup of
-        Just externalEventTup@(Entity _ externalEvent) -> case externalEventSlugRoute externalEvent of
-          Nothing -> externalEventPage externalEventTup
+        Just (externalEventEntity@(Entity _ externalEvent), placeEntity, mCASKey) -> case externalEventSlugRoute externalEvent of
+          Nothing -> externalEventPage externalEventEntity placeEntity mCASKey
           Just route -> redirect route
         Nothing -> notFound
 
@@ -42,4 +42,4 @@ getExternalEventSlugR externalEventSlug_ day = do
   mExternalEventTup <- runDB $ getExternalEventTupBySlug externalEventSlug_ day
   case mExternalEventTup of
     Nothing -> notFound
-    Just externalEventTup -> externalEventPage externalEventTup
+    Just (externalEventEntity, placeEntity, mCASKey) -> externalEventPage externalEventEntity placeEntity mCASKey
