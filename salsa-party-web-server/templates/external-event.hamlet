@@ -44,8 +44,7 @@
                 title=_{MsgPartyHomepageTitle externalEventTitle}>
                 #{show homepage}
      
-        $maybe googleMapsWidget <- mGoogleMapsWidget
-          ^{googleMapsWidget}
+        ^{googleMapsWidget}
 
         <div .buttons>
           <a .button

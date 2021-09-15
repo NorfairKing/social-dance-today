@@ -4,7 +4,6 @@
 
 module Google.Maps where
 
-import Control.Monad
 import Data.ByteString (ByteString)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -51,8 +50,10 @@ mapsWidth = 640
 mapsHeight :: Int
 mapsHeight = 360
 
-makeGoogleMapsWidget :: EventUUID -> Text -> Handler (Maybe Widget)
+makeGoogleMapsWidget :: EventUUID -> Text -> Handler Widget
 makeGoogleMapsWidget eventUUID query = do
   mGoogleAPIKey <- getsYesod appGoogleAPIKey
-  forM mGoogleAPIKey $ \apiKey -> do
-    pure $(widgetFile "google-map")
+  let replaceScript = case mGoogleAPIKey of
+        Nothing -> mempty
+        Just apiKey -> $(widgetFile "google-map-replace")
+  pure $ $(widgetFile "google-map") <> replaceScript <> posterCSS

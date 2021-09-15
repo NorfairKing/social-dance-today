@@ -53,8 +53,7 @@
 
         
 
-        $maybe googleMapsWidget <- mGoogleMapsWidget
-          ^{googleMapsWidget}
+        ^{googleMapsWidget}
  
 
         <div .buttons .is-centered>

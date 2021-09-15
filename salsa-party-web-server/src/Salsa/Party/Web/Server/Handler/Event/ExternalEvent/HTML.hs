@@ -21,7 +21,7 @@ externalEventPageHtml :: Entity ExternalEvent -> Handler Html
 externalEventPageHtml (Entity externalEventId externalEvent@ExternalEvent {..}) = do
   place@Place {..} <- runDB $ get404 externalEventPlace
   mPosterKey <- runDB $ getPosterForExternalEvent externalEventId
-  mGoogleMapsWidget <- makeGoogleMapsWidget externalEventUuid placeQuery
+  googleMapsWidget <- makeGoogleMapsWidget externalEventUuid placeQuery
   now <- getCurrentTimeH
   let today = utctDay now
   renderUrl <- getUrlRender
