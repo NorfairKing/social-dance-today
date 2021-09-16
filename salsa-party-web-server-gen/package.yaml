@@ -69,6 +69,7 @@ tests:
     - bytestring
     - containers
     - data-default
+    - esqueleto
     - filepath
     - genvalidity
     - genvalidity-bytestring
@@ -109,4 +110,3 @@ tests:
     - yesod
     - yesod-auth
     - yesod-core
-    

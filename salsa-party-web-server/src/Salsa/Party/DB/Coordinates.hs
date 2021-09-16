@@ -264,7 +264,7 @@ distanceTo ::
   Coordinates ->
   Coordinates ->
   -- | In metres
-  Double
+  Word
 distanceTo co1 co2 =
   let toRadians = (* (pi / 180))
       lat1 = toRadians $ latitudeToFloat $ coordinatesLat co1 :: Double
@@ -278,4 +278,4 @@ distanceTo co1 co2 =
       under = sinSqLat + cos lat1 * cos lat2 * sinSqLon
       -- Average radius of earth:
       r = 6_371_000 -- m
-   in 2 * r * asin (sqrt under)
+   in round $ 2 * r * asin (sqrt under)

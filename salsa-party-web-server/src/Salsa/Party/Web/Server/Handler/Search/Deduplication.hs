@@ -181,7 +181,7 @@ placeSimilarity p1 p2 =
     [ ( 2,
         Factor "Distance" $
           distanceToSimilarity
-            (distanceTo (placeCoordinates p1) (placeCoordinates p2) / 100_000) -- in 100 kilometers
+            (fromIntegral (distanceTo (placeCoordinates p1) (placeCoordinates p2) `div` 100_000)) -- in 100 kilometers
       ),
       (1, Factor "Address" $ textSimilarity (placeQuery p1) (placeQuery p2))
     ]

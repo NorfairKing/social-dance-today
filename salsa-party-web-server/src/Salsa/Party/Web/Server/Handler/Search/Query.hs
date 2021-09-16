@@ -42,11 +42,11 @@ runSearchQuery SearchQuery {..} = do
       E.on (organiser E.^. OrganiserId E.==. party E.^. PartyOrganiser)
       E.on (party E.^. PartyPlace E.==. place E.^. PlaceId)
       E.where_ $ dayLimit (party E.^. PartyDay) searchQueryBegin searchQueryMEnd
-      distanceEstimationQuery searchQueryCoordinates place
+      distanceEstimationQuery defaultMaximumDistance searchQueryCoordinates place
       pure (organiser, party, place)
 
   -- Post-process the distance before we fetch images so we don't fetch too many images.
-  let partyResultsWithoutImages = postProcessParties searchQueryCoordinates rawPartyResults
+  let partyResultsWithoutImages = postProcessParties defaultMaximumDistance searchQueryCoordinates rawPartyResults
   partyResultsWithImages <-
     forM partyResultsWithoutImages $ \(organiserEntity, partyEntity@(Entity partyId party), placeEntity) -> do
       mKey <- getPosterForParty partyId
@@ -56,11 +56,11 @@ runSearchQuery SearchQuery {..} = do
     E.from $ \(externalEvent `E.InnerJoin` place) -> do
       E.on (externalEvent E.^. ExternalEventPlace E.==. place E.^. PlaceId)
       E.where_ $ dayLimit (externalEvent E.^. ExternalEventDay) searchQueryBegin searchQueryMEnd
-      distanceEstimationQuery searchQueryCoordinates place
+      distanceEstimationQuery defaultMaximumDistance searchQueryCoordinates place
       pure (externalEvent, place)
 
   -- TODO deduplicate external events before fetching posters
-  let externalEventResultsWithoutImages = postProcessExternalEvents searchQueryCoordinates rawExternalEventResults
+  let externalEventResultsWithoutImages = postProcessExternalEvents defaultMaximumDistance searchQueryCoordinates rawExternalEventResults
   externalEventResultsWithImages <-
     forM externalEventResultsWithoutImages $ \(externalEventEntity@(Entity externalEventId externalEvent), placeEntity) -> do
       mKey <- getPosterForExternalEvent externalEventId
@@ -94,14 +94,14 @@ dayLimit dayExp begin mEnd =
               E.val end
             )
 
-distanceEstimationQuery :: Coordinates -> E.SqlExpr (Entity Place) -> E.SqlQuery ()
-distanceEstimationQuery Coordinates {..} p = do
+distanceEstimationQuery :: Word -> Coordinates -> E.SqlExpr (Entity Place) -> E.SqlQuery ()
+distanceEstimationQuery maximumDistance Coordinates {..} p = do
   let lat = p E.^. PlaceLat
   let lon = p E.^. PlaceLon
   -- We want a very rough filter of parties by distance.
   -- What follows here is a rough estimate
-  latitudeBetweenQuery lat coordinatesLat
-  longitudeBetweenQuery lon coordinatesLon
+  latitudeBetweenQuery maximumDistance lat coordinatesLat
+  longitudeBetweenQuery maximumDistance lon coordinatesLon
 
   let latDiff = lat E.-. E.val coordinatesLat
   let lonDiff = lon E.-. E.val coordinatesLon
@@ -113,10 +113,10 @@ distanceEstimationQuery Coordinates {..} p = do
       distSquared = unsafeSqlBinOp " + " latDiffSquared lonDiffSquared
   E.orderBy [E.asc distSquared]
 
-latitudeBetweenQuery :: E.SqlExpr (E.Value Latitude) -> Latitude -> E.SqlQuery ()
-latitudeBetweenQuery latExpr coordinatesLat =
-  let mUpperBound = mkLatitude (unLatitude coordinatesLat + roughMaxLatDistance)
-      mLowerBound = mkLatitude (unLatitude coordinatesLat - roughMaxLatDistance)
+latitudeBetweenQuery :: Word -> E.SqlExpr (E.Value Latitude) -> Latitude -> E.SqlQuery ()
+latitudeBetweenQuery maximumDistance latExpr coordinatesLat =
+  let mUpperBound = mkLatitude (unLatitude coordinatesLat + roughMaxLatDistance maximumDistance)
+      mLowerBound = mkLatitude (unLatitude coordinatesLat - roughMaxLatDistance maximumDistance)
    in case (mLowerBound, mUpperBound) of
         -- Both the upper bound was too high AND the lower bound was too low, that means we want everything.
         (Nothing, Nothing) -> pure ()
@@ -127,10 +127,10 @@ latitudeBetweenQuery latExpr coordinatesLat =
         -- FIXME: This is wrong on the north pole.
         (Just lower, Nothing) -> E.where_ $ E.between latExpr (E.val lower, E.val maxBound)
 
-longitudeBetweenQuery :: E.SqlExpr (E.Value Longitude) -> Longitude -> E.SqlQuery ()
-longitudeBetweenQuery lonExpr coordinatesLon =
-  let mUpperBound = mkLongitude (unLongitude coordinatesLon + roughMaxLonDistance)
-      mLowerBound = mkLongitude (unLongitude coordinatesLon - roughMaxLonDistance)
+longitudeBetweenQuery :: Word -> E.SqlExpr (E.Value Longitude) -> Longitude -> E.SqlQuery ()
+longitudeBetweenQuery maximumDistance lonExpr coordinatesLon =
+  let mUpperBound = mkLongitude (unLongitude coordinatesLon + roughMaxLonDistance maximumDistance)
+      mLowerBound = mkLongitude (unLongitude coordinatesLon - roughMaxLonDistance maximumDistance)
    in case (mLowerBound, mUpperBound) of
         -- Both the upper bound was too high AND the lower bound was too low, that means we want everything.
         (Nothing, Nothing) -> pure ()
@@ -142,18 +142,19 @@ longitudeBetweenQuery lonExpr coordinatesLon =
         (Just lower, Nothing) -> E.where_ $ E.between lonExpr (E.val lower, E.val maxBound)
 
 -- One degree longitude is 111km
-roughMaxLatDistance :: Coord
-roughMaxLatDistance = fixedToCoord $ realToFrac maximumDistance / 111_000
+roughMaxLatDistance :: Word -> Coord
+roughMaxLatDistance maximumDistance = fixedToCoord $ fromIntegral maximumDistance / 111_000
 
 -- Five degrees longitude is 555km at the equator and about 100km in north svalbard
-roughMaxLonDistance :: Coord
-roughMaxLonDistance = fixedToCoord $ 5 * realToFrac maximumDistance / 111_000
+roughMaxLonDistance :: Word -> Coord
+roughMaxLonDistance maximumDistance = fixedToCoord $ 5 * fromIntegral maximumDistance / 111_000
 
 postProcessParties ::
+  Word ->
   Coordinates ->
   [(Entity Organiser, Entity Party, Entity Place)] ->
   [(Entity Organiser, Entity Party, Entity Place)]
-postProcessParties coordinates =
+postProcessParties maximumDistance coordinates =
   mapMaybe $
     \(organiser, party, place) -> do
       guard $
@@ -165,10 +166,11 @@ makeInternalResult :: (Entity Organiser, Entity Party, Entity Place, Maybe CASKe
 makeInternalResult (organiser, party, place, mCasKey) = Internal organiser party place mCasKey
 
 postProcessExternalEvents ::
+  Word ->
   Coordinates ->
   [(Entity ExternalEvent, Entity Place)] ->
   [(Entity ExternalEvent, Entity Place)]
-postProcessExternalEvents coordinates =
+postProcessExternalEvents maximumDistance coordinates =
   mapMaybe $
     \(externalEvent, place) -> do
       guard $
@@ -179,8 +181,8 @@ postProcessExternalEvents coordinates =
 makeExternalResult :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Result
 makeExternalResult (externalEvent, place, mCasKey) = External externalEvent place mCasKey
 
-maximumDistance :: Double
-maximumDistance = 50_000 -- 50 km
+defaultMaximumDistance :: Word
+defaultMaximumDistance = 50_000 -- 50 km
 
 makeGroupedByDay :: forall eTup. [(Day, eTup)] -> Map Day [eTup]
 makeGroupedByDay = foldr go M.empty -- This could be falter with a fold

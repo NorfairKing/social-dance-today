@@ -4,13 +4,48 @@
 module Salsa.Party.Web.Server.Handler.Search.QuerySpec (spec) where
 
 import qualified Data.Map as M
+import qualified Database.Esqueleto as E
 import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Handler.Search.Query
 import Salsa.Party.Web.Server.Handler.TestImport
+import Test.Syd.Persistent
 
 spec :: Spec
 spec = do
   dbSpec $ do
+    modifyMaxSize (* 10) $
+      modifyMaxSuccess (* 10) $
+        describe "distanceEstimationQuery" $ do
+          let helperQuery :: MonadIO m => Word -> Coordinates -> SqlPersistT m (Maybe (Entity Place))
+              helperQuery maximumDistance coordinates = selectOne $
+                E.from $ \place -> do
+                  distanceEstimationQuery maximumDistance coordinates place
+                  pure place
+          -- This _should_ not pass.
+          -- That's why it's an 'Estimation' query.
+          xit "only finds places that are close enough" $ \pool -> do
+            forAllValid $ \maximumDistance ->
+              forAllValid $ \coordinates ->
+                forAllValid $ \place -> runPersistentTest pool $ do
+                  DB.insert_ place
+                  mPlace <- helperQuery maximumDistance coordinates
+                  case mPlace of
+                    Nothing -> pure ()
+                    -- Found it, must have been close enough
+                    Just _ -> liftIO $ (coordinates `distanceTo` placeCoordinates place) `shouldSatisfy` (<= maximumDistance)
+
+          it "finds all places that are close enough" $ \pool -> do
+            forAllValid $ \maximumDistance ->
+              forAllValid $ \coordinates ->
+                forAllValid $ \place ->
+                  when ((coordinates `distanceTo` placeCoordinates place) <= maximumDistance) $
+                    runPersistentTest pool $ do
+                      DB.insert_ place
+                      mPlace <- helperQuery maximumDistance coordinates
+                      case mPlace of
+                        Nothing -> liftIO $ expectationFailure "Should have found something."
+                        Just _ -> pure ()
+
     describe "searchQuery" $ do
       it "runs without results, and returns a map with empty days (and not an empty map)" $ \pool ->
         forAllValid $ \begin ->

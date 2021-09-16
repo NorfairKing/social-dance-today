@@ -124,6 +124,7 @@ test-suite salsa-party-web-server-gen-test
     , bytestring
     , containers
     , data-default
+    , esqueleto
     , filepath
     , genvalidity
     , genvalidity-bytestring

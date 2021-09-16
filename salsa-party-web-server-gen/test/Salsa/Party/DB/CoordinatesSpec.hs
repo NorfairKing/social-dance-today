@@ -100,16 +100,17 @@ spec = do
       let zurichPrimeTower = Coordinates {coordinatesLat = Latitude 47.3861804, coordinatesLon = Longitude 8.5150251}
       let zurichBlatterWiese = Coordinates {coordinatesLat = Latitude 47.3547140, coordinatesLon = Longitude 8.5512022}
       let londonVictoria = Coordinates {coordinatesLat = Latitude 51.4952237, coordinatesLon = Longitude (-0.1438952)}
-      let shouldBeCloseTo :: Double -> Double -> IO ()
+      let shouldBeCloseTo :: Word -> Word -> IO ()
           shouldBeCloseTo x y =
-            let diff = abs (x - y)
+            let diff :: Int
+                diff = abs (fromIntegral x - fromIntegral y)
+                tollerance :: Int
                 tollerance = 1000 -- Within 1km is more than close enough.
-                p = printf "%9.2f"
                 ctx =
                   unlines
-                    [ "x:          " <> p x,
-                      "y:          " <> p y,
-                      "tollerance: " <> p tollerance
+                    [ "x:          " <> printf "%d" x,
+                      "y:          " <> printf "%d" y,
+                      "tollerance: " <> printf "%d" tollerance
                     ]
              in if diff < tollerance
                   then pure ()
