@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -7,10 +8,11 @@
 module Salsa.Party.Web.Server.Handler.Search.Query where
 
 import Control.Monad
+import Data.List
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
+import Data.Ord
 import qualified Database.Esqueleto as E
-import Database.Esqueleto.Internal.Internal (unsafeSqlBinOp)
 import Salsa.Party.DB.Coordinates
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Deduplication
@@ -73,12 +75,13 @@ runSearchQuery SearchQuery {..} = do
             makeGroupedByDay externalEventResultsWithImages
 
   pure $
-    M.filter (not . null) $
-      M.unionsWith
-        (++)
-        [ M.map (map makeInternalResult) internalResults,
-          M.map (map makeExternalResult) externalResults
-        ]
+    M.map (sortResults searchQueryCoordinates) $
+      M.filter (not . null) $
+        M.unionsWith
+          (++)
+          [ M.map (map makeInternalResult) internalResults,
+            M.map (map makeExternalResult) externalResults
+          ]
 
 dayLimit :: E.SqlExpr (E.Value Day) -> Day -> Maybe Day -> E.SqlExpr (E.Value Bool)
 dayLimit dayExp begin mEnd =
@@ -103,15 +106,19 @@ distanceEstimationQuery maximumDistance Coordinates {..} p = do
   latitudeBetweenQuery maximumDistance lat coordinatesLat
   longitudeBetweenQuery maximumDistance lon coordinatesLon
 
-  let latDiff = lat E.-. E.val coordinatesLat
-  let lonDiff = lon E.-. E.val coordinatesLon
-  let latDiffSquared = latDiff E.*. latDiff
-  let lonDiffSquared = lonDiff E.*. lonDiff
-  -- Luckily the square function is monotone so we don't need to sqrt here
-  -- We need to use 'unsafeSqlBinOp " + "' because the two values are of different types.
-  let distSquared :: E.SqlExpr (E.Value Coord)
-      distSquared = unsafeSqlBinOp " + " latDiffSquared lonDiffSquared
-  E.orderBy [E.asc distSquared]
+  -- We used to have the following sorting function to sort by distance here.
+  -- It turns out that we prefer to do this in Haskell, after deduplication, instead.
+  --
+  -- let latDiff = lat E.-. E.val coordinatesLat
+  -- let lonDiff = lon E.-. E.val coordinatesLon
+  -- let latDiffSquared = latDiff E.*. latDiff
+  -- let lonDiffSquared = lonDiff E.*. lonDiff
+  -- -- Luckily the square function is monotone so we don't need to sqrt here
+  -- -- We need to use 'unsafeSqlBinOp " + "' because the two values are of different types.
+  -- let distSquared :: E.SqlExpr (E.Value Coord)
+  --     distSquared = unsafeSqlBinOp " + " latDiffSquared lonDiffSquared
+  -- E.orderBy [E.asc distSquared]
+  pure ()
 
 latitudeBetweenQuery :: Word -> E.SqlExpr (E.Value Latitude) -> Latitude -> E.SqlQuery ()
 latitudeBetweenQuery maximumDistance latExpr coordinatesLat =
@@ -129,19 +136,49 @@ latitudeBetweenQuery maximumDistance latExpr coordinatesLat =
 
 longitudeBetweenQuery :: Word -> E.SqlExpr (E.Value Longitude) -> Longitude -> E.SqlQuery ()
 longitudeBetweenQuery maximumDistance lonExpr coordinatesLon =
-  let mUpperBound = mkLongitude (unLongitude coordinatesLon + roughMaxLonDistance maximumDistance)
-      mLowerBound = mkLongitude (unLongitude coordinatesLon - roughMaxLonDistance maximumDistance)
+  let westLimit = unLongitude coordinatesLon + roughMaxLonDistance maximumDistance
+      eastLimit = unLongitude coordinatesLon - roughMaxLonDistance maximumDistance
+      mUpperBound = mkLongitude westLimit
+      mLowerBound = mkLongitude eastLimit
    in case (mLowerBound, mUpperBound) of
         -- Both the upper bound was too high AND the lower bound was too low, that means we want everything.
         (Nothing, Nothing) -> pure ()
         -- Both upper bound and lower bound are within range, we need only one between
         (Just lower, Just upper) -> E.where_ $ E.between lonExpr (E.val lower, E.val upper)
-        -- FIXME: This will be wrong in west Canada
-        (Nothing, Just upper) -> E.where_ $ E.between lonExpr (E.val minBound, E.val upper)
-        -- FIXME: This will be wrong in east Russia
-        (Just lower, Nothing) -> E.where_ $ E.between lonExpr (E.val lower, E.val maxBound)
+        -- The lower bound didn't exist.
+        -- That means we're on the western boundary of the longitude wrap-around line.
+        -- We'll need an 'or' condition.
+        -- One that goes from the western boundary to the east,
+        -- and one that goes from the west to the eastern boundary.
+        (Nothing, Just upper) -> do
+          -- This is the eastern half of the condition.
+          let easternHalfCondition = E.between lonExpr (E.val minBound, E.val upper)
+          let diff = abs $ unLongitude minBound - westLimit
+          let mBound = mkLongitude (unLongitude maxBound - diff)
+          -- This is the western half of the condition.
+          let mWesternHalfCondition = (\bound -> E.between lonExpr (E.val bound, E.val maxBound)) <$> mBound
+          let condition = case mWesternHalfCondition of
+                Nothing -> easternHalfCondition
+                Just westernHalfCondition -> easternHalfCondition E.||. westernHalfCondition
+          E.where_ condition
+        -- The lower bound didn't exist.
+        -- That means we're on the eastern boundary of the longitude wrap-around line.
+        -- We'll need an 'or' condition.
+        -- One that goes from the west to the eastern boundary,
+        -- and one that goes from the western boundary to the east.
+        (Just lower, Nothing) -> do
+          -- This is the western half of the condition.
+          let westernHalfCondition = E.between lonExpr (E.val lower, E.val maxBound)
+          let diff = abs $ unLongitude maxBound - eastLimit
+          let mBound = mkLongitude (unLongitude minBound + diff)
+          -- This is the eastern half of the condition.
+          let mEasternHalfCondition = (\bound -> E.between lonExpr (E.val maxBound, E.val bound)) <$> mBound
+          let condition = case mEasternHalfCondition of
+                Nothing -> westernHalfCondition
+                Just easternHalfCondition -> easternHalfCondition E.||. westernHalfCondition
+          E.where_ condition
 
--- One degree longitude is 111km
+-- One degree latitude is 111km
 roughMaxLatDistance :: Word -> Coord
 roughMaxLatDistance maximumDistance = fixedToCoord $ fromIntegral maximumDistance / 111_000
 
@@ -155,12 +192,11 @@ postProcessParties ::
   [(Entity Organiser, Entity Party, Entity Place)] ->
   [(Entity Organiser, Entity Party, Entity Place)]
 postProcessParties maximumDistance coordinates =
-  mapMaybe $
-    \(organiser, party, place) -> do
-      guard $
-        coordinates `distanceTo` placeCoordinates (entityVal place)
-          <= maximumDistance
-      pure (organiser, party, place)
+  mapMaybe $ \(organiser, party, place) -> do
+    guard $
+      coordinates `distanceTo` placeCoordinates (entityVal place)
+        <= maximumDistance
+    pure (organiser, party, place)
 
 makeInternalResult :: (Entity Organiser, Entity Party, Entity Place, Maybe CASKey) -> Result
 makeInternalResult (organiser, party, place, mCasKey) = Internal organiser party place mCasKey
@@ -171,18 +207,38 @@ postProcessExternalEvents ::
   [(Entity ExternalEvent, Entity Place)] ->
   [(Entity ExternalEvent, Entity Place)]
 postProcessExternalEvents maximumDistance coordinates =
-  mapMaybe $
-    \(externalEvent, place) -> do
-      guard $
-        coordinates `distanceTo` placeCoordinates (entityVal place)
-          <= maximumDistance
-      pure (externalEvent, place)
+  mapMaybe $ \(externalEvent, place) -> do
+    guard $
+      coordinates `distanceTo` placeCoordinates (entityVal place)
+        <= maximumDistance
+    pure (externalEvent, place)
 
 makeExternalResult :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Result
 makeExternalResult (externalEvent, place, mCasKey) = External externalEvent place mCasKey
 
+sortResults :: Coordinates -> [Result] -> [Result]
+sortResults coordinates =
+  sortBy $
+    mconcat
+      [ comparing isInternal, -- Internal results always go first.
+        comparing distanceToResult -- Sort by distance next.
+      ]
+  where
+    isInternal = \case
+      Internal _ _ _ _ -> True
+      External _ _ _ -> False
+    distanceToResult = \case
+      External _ (Entity _ place) _ -> placeCoordinates place `distanceTo` coordinates
+      Internal _ _ (Entity _ place) _ -> placeCoordinates place `distanceTo` coordinates
+
 defaultMaximumDistance :: Word
 defaultMaximumDistance = 50_000 -- 50 km
+
+minimumMaximumDistance :: Word
+minimumMaximumDistance = 100 -- 100 m
+
+maximumMaximumDistance :: Word
+maximumMaximumDistance = 200_000 -- 200 km
 
 makeGroupedByDay :: forall eTup. [(Day, eTup)] -> Map Day [eTup]
 makeGroupedByDay = foldr go M.empty -- This could be falter with a fold

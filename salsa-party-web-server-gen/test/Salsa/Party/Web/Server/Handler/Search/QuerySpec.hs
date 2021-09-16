@@ -1,5 +1,7 @@
+{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Salsa.Party.Web.Server.Handler.Search.QuerySpec (spec) where
 
@@ -21,6 +23,46 @@ spec = do
                 E.from $ \place -> do
                   distanceEstimationQuery maximumDistance coordinates place
                   pure place
+
+          let findsCloseEnoughPlaceTest pool maximumDistance coordinates place =
+                runPersistentTest pool $ do
+                  liftIO $ shouldBeValid coordinates
+                  liftIO $ shouldBeValid place
+                  DB.insert_ place
+                  mPlace <- helperQuery maximumDistance coordinates
+                  case mPlace of
+                    Nothing ->
+                      liftIO $
+                        expectationFailure $
+                          unlines
+                            [ "Should have found place",
+                              ppShow place,
+                              "to be close (enough) to coordinates",
+                              ppShow coordinates
+                            ]
+                    Just _ -> pure ()
+
+          it "finds all places that are close enough" $ \pool -> do
+            forAll (choose (minimumMaximumDistance, maximumMaximumDistance)) $ \maximumDistance ->
+              forAllValid $ \coordinates ->
+                forAllValid $ \place ->
+                  when ((coordinates `distanceTo` placeCoordinates place) <= maximumDistance) $
+                    findsCloseEnoughPlaceTest pool maximumDistance coordinates place
+
+          it "works on the eastern boundary" $ \pool ->
+            findsCloseEnoughPlaceTest
+              pool
+              100_000
+              (Coordinates {coordinatesLat = Latitude 0, coordinatesLon = Longitude 179.99})
+              (Place {placeLat = Latitude 0, placeLon = Longitude (-179.99), placeQuery = "over the eastern border"})
+
+          it "works on the western boundary" $ \pool ->
+            findsCloseEnoughPlaceTest
+              pool
+              100_000
+              (Coordinates {coordinatesLat = Latitude 0, coordinatesLon = Longitude (-179.99)})
+              (Place {placeLat = Latitude 0, placeLon = Longitude 179.99, placeQuery = "over the western border"})
+
           -- This _should_ not pass.
           -- That's why it's an 'Estimation' query.
           xit "only finds places that are close enough" $ \pool -> do
@@ -33,18 +75,6 @@ spec = do
                     Nothing -> pure ()
                     -- Found it, must have been close enough
                     Just _ -> liftIO $ (coordinates `distanceTo` placeCoordinates place) `shouldSatisfy` (<= maximumDistance)
-
-          it "finds all places that are close enough" $ \pool -> do
-            forAllValid $ \maximumDistance ->
-              forAllValid $ \coordinates ->
-                forAllValid $ \place ->
-                  when ((coordinates `distanceTo` placeCoordinates place) <= maximumDistance) $
-                    runPersistentTest pool $ do
-                      DB.insert_ place
-                      mPlace <- helperQuery maximumDistance coordinates
-                      case mPlace of
-                        Nothing -> liftIO $ expectationFailure "Should have found something."
-                        Just _ -> pure ()
 
     describe "searchQuery" $ do
       it "runs without results, and returns a map with empty days (and not an empty map)" $ \pool ->
