@@ -153,7 +153,7 @@ longitudeBetweenQuery maximumDistance lonExpr coordinatesLon =
         (Nothing, Just upper) -> do
           -- This is the eastern half of the condition.
           let easternHalfCondition = E.between lonExpr (E.val minBound, E.val upper)
-          let diff = abs $ unLongitude minBound - westLimit
+          let diff = abs $ unLongitude minBound - eastLimit
           let mBound = mkLongitude (unLongitude maxBound - diff)
           -- This is the western half of the condition.
           let mWesternHalfCondition = (\bound -> E.between lonExpr (E.val bound, E.val maxBound)) <$> mBound
@@ -169,10 +169,10 @@ longitudeBetweenQuery maximumDistance lonExpr coordinatesLon =
         (Just lower, Nothing) -> do
           -- This is the western half of the condition.
           let westernHalfCondition = E.between lonExpr (E.val lower, E.val maxBound)
-          let diff = abs $ unLongitude maxBound - eastLimit
+          let diff = abs $ unLongitude maxBound - westLimit
           let mBound = mkLongitude (unLongitude minBound + diff)
           -- This is the eastern half of the condition.
-          let mEasternHalfCondition = (\bound -> E.between lonExpr (E.val maxBound, E.val bound)) <$> mBound
+          let mEasternHalfCondition = (\bound -> E.between lonExpr (E.val minBound, E.val bound)) <$> mBound
           let condition = case mEasternHalfCondition of
                 Nothing -> westernHalfCondition
                 Just easternHalfCondition -> easternHalfCondition E.||. westernHalfCondition
