@@ -26,11 +26,12 @@ spec = do
                 Just slug2 -> slug2 `shouldBe` slug1
 
         it "deals with these fancy diacritics" $
-          case mkSlug "áąäÁĄÄ éęëÉĘË íįïÍĮÏ ǫóöǪÓÖ úųüÚŲÜ" of
+          -- https://twitter.com/alittlelisper/status/1438411509328084994
+          case mkSlug "aăâáảàãạắẳằẵặấẩầẫậ-oóỏòõọôốổồỗộơóởờỡợ-uưúứủửùừũừụự-eêéếẻểèềẽễẹệ-iíỉìĩị" of
             Nothing -> expectationFailure "Should have made a valid slug"
             Just s -> do
               shouldBeValid s
-              s `shouldBe` Slug "aaaaaa-eeeeee-iiiiii-oooooo-uuuuuu"
+              s `shouldBe` Slug "aaaaaaaaaaaaaaaaaa-oooooooooooooooooo-uuuuuuuuuuuu-eeeeeeeeeeee-iiiiii"
 
         it "deals with these german letters" $
           case mkSlug "ß" of
