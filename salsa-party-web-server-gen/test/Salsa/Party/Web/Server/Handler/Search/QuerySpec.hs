@@ -8,6 +8,7 @@ module Salsa.Party.Web.Server.Handler.Search.QuerySpec (spec) where
 import qualified Data.Map as M
 import qualified Database.Esqueleto as E
 import qualified Database.Persist as DB
+import qualified Database.Persist.Sql as DB
 import Salsa.Party.Web.Server.Handler.Search.Query
 import Salsa.Party.Web.Server.Handler.TestImport
 import Test.Syd.Persistent
@@ -24,7 +25,8 @@ spec = do
                   distanceEstimationQuery maximumDistance coordinates place
                   pure place
 
-          let findsCloseEnoughPlaceTest pool maximumDistance coordinates place =
+          let findsCloseEnoughPlaceTest :: DB.ConnectionPool -> Word -> Coordinates -> Place -> IO ()
+              findsCloseEnoughPlaceTest pool maximumDistance coordinates place =
                 runPersistentTest pool $ do
                   liftIO $ shouldBeValid coordinates
                   liftIO $ shouldBeValid place
@@ -49,6 +51,13 @@ spec = do
                   when ((coordinates `distanceTo` placeCoordinates place) <= maximumDistance) $
                     findsCloseEnoughPlaceTest pool maximumDistance coordinates place
 
+          it "works in zurich with the distance great enough to find Geneva" $ \pool ->
+            findsCloseEnoughPlaceTest
+              pool
+              250_000 -- Distance is 222 km
+              (Coordinates {coordinatesLat = Latitude 0, coordinatesLon = Longitude 0})
+              (Place {placeLat = Latitude 2, placeLon = Longitude 0, placeQuery = "Somewhere else in the ocean"})
+
           it "works on the eastern boundary" $ \pool ->
             findsCloseEnoughPlaceTest
               pool
@@ -63,18 +72,38 @@ spec = do
               (Coordinates {coordinatesLat = Latitude 0, coordinatesLon = Longitude (-179.99)})
               (Place {placeLat = Latitude 0, placeLon = Longitude 179.99, placeQuery = "over the western border"})
 
-          -- This _should_ not pass.
-          -- That's why it's an 'Estimation' query.
-          xit "only finds places that are close enough" $ \pool -> do
-            forAllValid $ \maximumDistance ->
-              forAllValid $ \coordinates ->
-                forAllValid $ \place -> runPersistentTest pool $ do
+          let doesNotFindCloseEnoughPlaceTest :: DB.ConnectionPool -> Word -> Coordinates -> Place -> IO ()
+              doesNotFindCloseEnoughPlaceTest pool maximumDistance coordinates place =
+                runPersistentTest pool $ do
+                  liftIO $ shouldBeValid coordinates
+                  liftIO $ shouldBeValid place
                   DB.insert_ place
                   mPlace <- helperQuery maximumDistance coordinates
                   case mPlace of
                     Nothing -> pure ()
                     -- Found it, must have been close enough
-                    Just _ -> liftIO $ (coordinates `distanceTo` placeCoordinates place) `shouldSatisfy` (<= maximumDistance)
+                    Just placeEntity ->
+                      liftIO $
+                        expectationFailure $
+                          unlines
+                            [ "Should not have found the place, but found this:",
+                              ppShow (placeEntity :: Entity Place)
+                            ]
+
+          -- This _should_ not pass.
+          -- That's why it's an 'Estimation' query.
+          xit "only finds places that are close enough" $ \pool -> do
+            forAllValid $ \maximumDistance ->
+              forAllValid $ \coordinates ->
+                forAllValid $ \place ->
+                  doesNotFindCloseEnoughPlaceTest pool maximumDistance coordinates place
+
+          it "works in zurich with the distance small enough to not find Geneva" $ \pool ->
+            doesNotFindCloseEnoughPlaceTest
+              pool
+              100_000 -- Distance is 222 km
+              (Coordinates {coordinatesLat = Latitude 0, coordinatesLon = Longitude 0})
+              (Place {placeLat = Latitude 2, placeLon = Longitude 0, placeQuery = "Somewhere else in the ocean"})
 
     describe "searchQuery" $ do
       it "runs without results, and returns a map with empty days (and not an empty map)" $ \pool ->
