@@ -220,7 +220,7 @@ sortResults :: Coordinates -> [Result] -> [Result]
 sortResults coordinates =
   sortBy $
     mconcat
-      [ comparing isInternal, -- Internal results always go first.
+      [ comparing (Down . isInternal), -- Internal results always go first.
         comparing distanceToResult -- Sort by distance next.
       ]
   where
