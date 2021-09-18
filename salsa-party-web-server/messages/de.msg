@@ -14,7 +14,9 @@ AdvancedSearchTitle: TODO Advanced Search
 AdvancedSearchDescription: TODO Find exactly the social dance parties that you are looking for.
 AdvancedSearchFormLocationLabel: TODO Location
 AdvancedSearchFormDistanceLabel: TODO Distance
-AdvancedSearchFormSearch: TODO Search
+AdvancedSearchFormBeginLabel: Von
+AdvancedSearchFormEndLabel: Bis
+AdvancedSearchFormSubmit: Suchen
 
 # Locate me button 
 LocateMeLocation: Mein Standort
@@ -52,17 +54,23 @@ NavLogOut: Abmelden
 InvalidLatitude lat@String: Ungültiger Breitengrat: #{lat}
 InvalidLongitude lon@String: Ungültiger Längengrad: #{lon}
 DistanceTooGreat distance@String: TODO Distance too great: #{distance} km
+EndBeforeBegin: TODO The end date was before the begin date.
+EndTooFarAhead: TODO Search date range too big.
 AddressOrCoordinates: Geben Sie entweder eine Adresse oder Koordinate ein.
 
 # Search Results
 SearchTitleAroundYourLocationToday:  Social Dance Parties in deiner Umgebung heute
 SearchTitleAroundYourLocationOnDay day@String:  Social Dance Parties in der Nähe am #{day}
+SearchTitleAroundYourLocationFromTo begin@String end@String: TODO Social dance parties near your location between #{begin} and #{end}
 SearchTitleAroundAddressToday address@Text:  Social Dance Parties in der Nähe von #{address} heute
 SearchTitleAroundAddressOnDay address@Text day@String:  Social Dance Parties in der Nähe von #{address} am #{day}
+SearchTitleAroundAddressFromTo address@Text begin@String end@String: TODO Social dance parties near #{address} between #{begin} and #{end}
 SearchDescriptionAroundYourLocationToday:  Eine Liste von allen Social Dance Parties in deiner Umgebung heute
 SearchDescriptionAroundYourLocationOnDay day@String:  Eine Liste von allen Social Dance Parties in der Nähe am #{day}
+SearchDescriptionAroundYourLocationFromTo begin@String end@String: TODO A List of social dance parties near your location between #{begin} and #{end}
 SearchDescriptionAroundAddressToday address@Text:  Eine Liste von allen Social Dance Parties in der Nähe von #{address} today
 SearchDescriptionAroundAddressOnDay address@Text day@String:  Eine Liste von allen Social Dance Parties in der Nähe  von #{address} am #{day}
+SearchDescriptionAroundAddressFromTo address@Text begin@String end@String: TODO A List of social dance parties near #{address} between #{begin} and #{end}
 SearchPartiesAroundAddress address@Text: Social Dance Parties in der Nähe von #{address}
 SearchPartiesAroundYourLocation: Social Dance Parties in deiner Umgebung
 SearchNoParties: Es wurden keine Parties gefunden.

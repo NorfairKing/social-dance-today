@@ -319,12 +319,12 @@ searchParametersHtmlTitle SearchParameters {..} = do
     SearchCoordinates _ -> case searchParameterDate of
       SearchFromToday -> MsgSearchTitleAroundYourLocationToday
       SearchFromOn day -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
-      SearchFromTo day _ -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
+      SearchFromTo begin end -> MsgSearchTitleAroundYourLocationFromTo (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
       SearchExactlyOn day -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
     SearchAddress address -> case searchParameterDate of
       SearchFromToday -> MsgSearchTitleAroundAddressToday address
       SearchFromOn day -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
-      SearchFromTo day _ -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
+      SearchFromTo begin end -> MsgSearchTitleAroundAddressFromTo address (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
       SearchExactlyOn day -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
 
 searchParametersHtmlDescription :: SearchParameters -> WidgetFor App AppMessage
@@ -335,12 +335,12 @@ searchParametersHtmlDescription SearchParameters {..} = do
     SearchCoordinates _ -> case searchParameterDate of
       SearchFromToday -> MsgSearchDescriptionAroundYourLocationToday
       SearchFromOn day -> MsgSearchDescriptionAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
-      SearchFromTo day _ -> MsgSearchDescriptionAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
+      SearchFromTo begin end -> MsgSearchDescriptionAroundYourLocationFromTo (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
       SearchExactlyOn day -> MsgSearchDescriptionAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
     SearchAddress address -> case searchParameterDate of
       SearchFromToday -> MsgSearchDescriptionAroundAddressToday address
       SearchFromOn day -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
-      SearchFromTo day _ -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
+      SearchFromTo begin end -> MsgSearchDescriptionAroundAddressFromTo address (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
       SearchExactlyOn day -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
 
 searchParametersTitle :: SearchParameters -> AppMessage

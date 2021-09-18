@@ -14,7 +14,9 @@ AdvancedSearchTitle: Geavanceerd zoeken
 AdvancedSearchDescription: Vindt exact de feesten die u zoekt.
 AdvancedSearchFormLocationLabel: Locatie
 AdvancedSearchFormDistanceLabel: Afstand
-AdvancedSearchFormSearch: Zoeken
+AdvancedSearchFormBeginLabel: Van
+AdvancedSearchFormEndLabel: Tot
+AdvancedSearchFormSubmit: Zoeken
 
 # Locate me button
 LocateMeLocation: Mijn locatie
@@ -51,17 +53,23 @@ NavLogOut: Afmelden
 InvalidLatitude lat@String: Ongeldige breedtegraad: #{lat}
 InvalidLongitude lon@String: Ongeldige lengtegraad: #{lon}
 DistanceTooGreat distance@String: Afstand te groot: #{distance} km
+EndBeforeBegin: The einddatum lag vóór de begindatum.
+EndTooFarAhead: Het zoekdatumbereik was te groot.
 AddressOrCoordinates: Voer ofwel een adres, ofwel coördinaten in.
 
 # Search Results
 SearchTitleAroundYourLocationToday: Socialedansfeesten vandaag bij jou in de buurt
 SearchTitleAroundYourLocationOnDay day@String: Socialedansfeesten op #{day} bij jou in de buurt
+SearchTitleAroundYourLocationFromTo begin@String end@String: Socialedansfeesten tussen #{begin} en #{end} bij jou in de buurt
 SearchTitleAroundAddressToday address@Text: Socialedansfeesten vandaag in de buurt van #{address}
 SearchTitleAroundAddressOnDay address@Text day@String: Socialedansfeesten op #{day} in de buurt van #{address}
+SearchTitleAroundAddressFromTo address@Text begin@String end@String: Socialedansfeesten tussen #{begin} en #{end} bij in de buurt van #{address}
 SearchDescriptionAroundYourLocationToday: Een lijst van socialedansfeesten vandaag bij jou in de buurt
 SearchDescriptionAroundYourLocationOnDay day@String: Een lijst van socialedansfeesten op #{day} bij jou in de buurt
+SearchDescriptionAroundYourLocationFromTo begin@String end@String: Een lijst van socialedansfeesten tussen #{begin} en #{end} bij jou in de buurt
 SearchDescriptionAroundAddressToday address@Text: Een lijst van socialedansfeesten vandaag in de buurt van #{address}
 SearchDescriptionAroundAddressOnDay address@Text day@String: Een lijst van socialedansfeesten op #{day} in de buurt van #{address}
+SearchDescriptionAroundAddressFromTo address@Text begin@String end@String: Een lijst van socialedansfeesten tussen #{begin} en #{end} in de buurt van #{address}
 SearchPartiesAroundAddress address@Text: Feesten in de buurt van #{address}
 SearchPartiesAroundYourLocation: Feesten bij jou in de buurt
 SearchNoParties: Geen feesten gevonden voor deze dag.

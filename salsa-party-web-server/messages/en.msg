@@ -13,7 +13,7 @@ AdvancedSearchFormLocationLabel: Location
 AdvancedSearchFormDistanceLabel: Distance
 AdvancedSearchFormBeginLabel: From
 AdvancedSearchFormEndLabel: To
-AdvancedSearchFormSearch: Search
+AdvancedSearchFormSubmit: Search
 
 # Locate me button
 LocateMeLocation: My location
@@ -57,12 +57,16 @@ AddressOrCoordinates: You must supply either an address or coordinates.
 # Search Results
 SearchTitleAroundYourLocationToday: Social dance parties near your location today
 SearchTitleAroundYourLocationOnDay day@String: Social dance parties near your location on #{day}
+SearchTitleAroundYourLocationFromTo begin@String end@String: Social dance parties near your location between #{begin} and #{end}
 SearchTitleAroundAddressToday address@Text: Social dance parties near #{address} today
 SearchTitleAroundAddressOnDay address@Text day@String: Social dance parties near #{address} on #{day}
+SearchTitleAroundAddressFromTo address@Text begin@String end@String: Social dance parties near #{address} between #{begin} and #{end}
 SearchDescriptionAroundYourLocationToday: A List of social dance parties near your location oday
 SearchDescriptionAroundYourLocationOnDay day@String: A List of social dance parties near your location on #{day}
+SearchDescriptionAroundYourLocationFromTo begin@String end@String: A List of social dance parties near your location between #{begin} and #{end}
 SearchDescriptionAroundAddressToday address@Text: A List of social dance parties near #{address} today
 SearchDescriptionAroundAddressOnDay address@Text day@String: A List of social dance parties near #{address} on #{day}
+SearchDescriptionAroundAddressFromTo address@Text begin@String end@String: A List of social dance parties near #{address} between #{begin} and #{end}
 SearchPartiesAroundAddress address@Text: Social dance parties near #{address}
 SearchPartiesAroundYourLocation: Social dance parties near your location
 SearchNoParties: No parties found for this day.

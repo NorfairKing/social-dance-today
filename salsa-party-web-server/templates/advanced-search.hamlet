@@ -68,5 +68,5 @@
           <div .field>
             <div .control>
               <button #submit .button .is-dark type="submit">
-                _{MsgAdvancedSearchFormSearch}
+                _{MsgAdvancedSearchFormSubmit}
 
