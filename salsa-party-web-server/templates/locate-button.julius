@@ -28,8 +28,9 @@ function geoFindMe() {
   }
 
   if(!navigator.geolocation) {
-    status.textContent = #{messageRender MsgLocateMeNotSupported};
-    help.textContent = '';
+    // Geolocation not supported.
+    status.remove();
+    help.remove();
   } else {
     status.textContent = #{messageRender MsgLocateMeInProgress};
     help.textContent = '';

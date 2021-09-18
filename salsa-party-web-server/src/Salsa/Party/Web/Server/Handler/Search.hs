@@ -291,11 +291,9 @@ searchResultsPage searchParameters@SearchParameters {..} = do
     if noData
       then $(widgetFile "search-no-results")
       else do
-        let prevDate = navPrevSearchDate today
-        let nextDate = navNextSearchDate today
         let days = [begin .. end]
-        prevDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = prevDate}
-        nextDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = nextDate}
+        prevDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = navPrevSearchDate today searchParameterDate}
+        nextDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = navNextSearchDate today searchParameterDate}
         let pagination = $(widgetFile "search-pagination")
         $(widgetFile "search")
 

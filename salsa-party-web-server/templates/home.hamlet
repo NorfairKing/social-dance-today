@@ -12,7 +12,7 @@
           <div .field .has-text-centered>
             <div .control>
               <div .field .has-text-centered .has-addons .has-addons-centered>
-                <p .control>
+                <p .control .is-expanded>
                   <input .input
                     id=#{queryId}
                     type=text

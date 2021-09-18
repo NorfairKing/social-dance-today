@@ -18,7 +18,6 @@ AdvancedSearchFormSearch: Search
 # Locate me button
 LocateMeLocation: My location
 LocateMeUnable: Unable to retrieve your location.
-LocateMeNotSupported: Geolocation is not supported by your browser.
 LocateMeInProgress: Locating…
 LocateMeDone: Located
 LocateMeHelpBefore: Press the 'My location' button to use your current location.

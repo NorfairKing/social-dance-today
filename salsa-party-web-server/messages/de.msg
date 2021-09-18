@@ -19,7 +19,6 @@ AdvancedSearchFormSearch: TODO Search
 # Locate me button 
 LocateMeLocation: Mein Standort
 LocateMeUnable: Lokalisierung fehlgeschlagen.
-LocateMeNotSupported: Geolocation wird von Ihrem Browser nicht unterstützt.
 LocateMeInProgress: Lokalisieren…
 LocateMeDone: Lokalisiert
 LocateMeHelpBefore: Drücken Sie auf 'Mein standort', um parties in ihrer Umgebung zu finden.

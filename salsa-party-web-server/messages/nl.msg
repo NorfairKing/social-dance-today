@@ -19,7 +19,6 @@ AdvancedSearchFormSearch: Zoeken
 # Locate me button
 LocateMeLocation: Mijn locatie
 LocateMeUnable: Localiseren mislukt..
-LocateMeNotSupported: Geolocation wordt niet ondersteund door uw browser.
 LocateMeInProgress: Localiseren…
 LocateMeDone: Gelocaliseerd
 LocateMeHelpBefore: Druk op 'Mijn locatie' om uw huidige locatie te gebruiken.
