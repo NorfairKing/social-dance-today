@@ -46,6 +46,7 @@ import Salsa.Party.Web.Server.Handler.Account.Organiser
 import Salsa.Party.Web.Server.Handler.Account.Party
 import Salsa.Party.Web.Server.Handler.Account.Schedule
 import Salsa.Party.Web.Server.Handler.Auth.TestUtils
+import Salsa.Party.Web.Server.Handler.Search
 import Salsa.Party.Web.Server.TestUtils
 import System.Exit
 import System.Process.Typed
@@ -104,9 +105,7 @@ runWebdriverTestM env (WebdriverTestM func) = WD.runSession (webdriverTestEnvCon
     runReaderT func env
 
 openHome :: WebdriverTestM ()
-openHome = do
-  uri <- asks webdriverTestEnvURI
-  openPage (show uri)
+openHome = openRoute HomeR
 
 openRoute :: Route App -> WebdriverTestM ()
 openRoute route = openRouteWithParams route []
@@ -119,6 +118,18 @@ openRouteWithParams route extraParams = do
   let pathBS = encodePath pathPieces q
   let url = T.unpack $ TE.decodeUtf8 (LB.toStrict (BB.toLazyByteString pathBS)) -- Not safe, but it will fail during testing (if at all) so should be ok.
   openPage $ show uri <> url
+
+driveAdvancedSearch :: QueryForm -> WebdriverTestM ()
+driveAdvancedSearch QueryForm {..} = do
+  forM_ queryFormAddress $ \address -> findElem (ById "query") >>= sendKeys address
+  forM_ queryFormCoordinates $ \Coordinates {..} -> do
+    findElem (ById "latitudeInput") >>= sendKeys (T.pack $ show coordinatesLat)
+    findElem (ById "longitudeInput") >>= sendKeys (T.pack $ show coordinatesLon)
+  forM_ queryFormDistance $ \distance -> do
+    findElem (ById "max-distance") >>= sendKeys (T.pack $ show distance)
+  -- TODO begin day
+  -- TODO end day
+  findElem (ById "submit") >>= submit
 
 dummyUser :: TestUser
 dummyUser = TestUser {testUserEmail = dummyEmail, testUserPassword = dummyPassword}

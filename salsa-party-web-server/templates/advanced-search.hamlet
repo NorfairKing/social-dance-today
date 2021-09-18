@@ -34,7 +34,8 @@
             <div .control>
               <div .field .has-addons>
                 <p .control .is-expanded>
-                  <input .input #max-distance
+                  <input .input
+                    #max-distance
                     name="distance"
                     type="number"
                     min=#{minDistance}

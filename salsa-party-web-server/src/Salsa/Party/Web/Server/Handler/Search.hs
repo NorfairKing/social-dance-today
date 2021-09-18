@@ -30,12 +30,19 @@ getAdvancedSearchR = withNavBar $ do
   let queryId = "query"
   let statusId = "status"
   let helpId = "help"
-  let mToKm = (`div` 1000)
   let minDistance = mToKm minimumMaximumDistance
   let maxDistance = mToKm maximumMaximumDistance
   let defaultDistance = mToKm defaultMaximumDistance
   let stepDistance = mToKm maximumDistanceStep
+  setTitleI MsgAdvancedSearchTitle
+  setDescriptionI MsgAdvancedSearchDescription
   $(widgetFile "advanced-search") <> locateMeButton queryId statusId helpId
+
+mToKm :: Word -> Word
+mToKm = (`div` 1000)
+
+kmToM :: Word -> Word
+kmToM = (* 1000)
 
 data QueryForm = QueryForm
   { queryFormAddress :: Maybe Text,
@@ -103,7 +110,7 @@ queryFormToSearchParameters QueryForm {..} = do
         Nothing -> case queryFormBegin of
           Just day -> SearchFromOn day
           Nothing -> SearchFromToday
-  let searchParameterDistance = Just $ fromMaybe defaultMaximumDistance queryFormDistance
+  let searchParameterDistance = kmToM <$> queryFormDistance
   pure SearchParameters {..}
 
 getQueryR :: Handler Html
@@ -223,7 +230,7 @@ searchResultsPage searchParameters@SearchParameters {..} = do
           { searchQueryBegin = begin,
             searchQueryMEnd = Just end,
             searchQueryCoordinates = coordinates,
-            searchQueryDistance = searchParameterDistance
+            searchQueryDistance = Just $ fromMaybe defaultMaximumDistance searchParameterDistance
           }
 
   -- If no results were returned, check if there was any data at all
