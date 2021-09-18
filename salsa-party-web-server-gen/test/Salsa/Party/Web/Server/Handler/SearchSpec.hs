@@ -103,7 +103,7 @@ spec =
               statusIs 200
 
     describe "SearchDayR" $ do
-      it "Can GET a 200 place page for a place" $ \yc ->
+      it "Can GET a 200 place page for a place and begin date" $ \yc ->
         forAll (genValid `suchThat` (not . T.null)) $ \address ->
           forAllValid $ \day ->
             forAllValid $ \location ->
@@ -113,3 +113,16 @@ spec =
                   setMethod methodGet
                   setUrl $ SearchDayR address day
                 statusIs 200
+
+    describe "SearchDayR" $ do
+      it "Can GET a 200 place page for a place and begin+end date" $ \yc ->
+        forAll (genValid `suchThat` (not . T.null)) $ \address ->
+          forAllValid $ \begin ->
+            forAllValid $ \end ->
+              forAllValid $ \location ->
+                runYesodClientM yc $ do
+                  testDB $ insertPlace_ address location
+                  request $ do
+                    setMethod methodGet
+                    setUrl $ SearchFromToR address begin end
+                  statusIs 200

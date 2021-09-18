@@ -109,5 +109,6 @@
 /reload ReloadR GET
 
 -- These routes have to be at the end so that they can be a catch-all
+!/#Text/#Day/#Day SearchFromToR GET
 !/#Text/#Day SearchDayR GET
 !/#Text SearchR GET

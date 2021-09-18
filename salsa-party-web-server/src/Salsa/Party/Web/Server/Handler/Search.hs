@@ -150,8 +150,8 @@ getQueryR = do
         SearchAddress address -> case searchParameterDate of
           SearchFromToday -> redirect $ SearchR address
           SearchExactlyOn day -> redirect $ SearchDayR address day
+          SearchFromTo begin end -> redirect $ SearchFromToR address begin end
           SearchFromOn _ -> searchResultsPage searchParameters
-          SearchFromTo _ _ -> searchResultsPage searchParameters
 
 getSearchR :: Text -> Handler Html
 getSearchR query = do
@@ -168,6 +168,15 @@ getSearchDayR query day =
     SearchParameters
       { searchParameterLocation = SearchAddress query,
         searchParameterDate = SearchExactlyOn day,
+        searchParameterDistance = Nothing
+      }
+
+getSearchFromToR :: Text -> Day -> Day -> Handler Html
+getSearchFromToR query begin end =
+  searchResultsPage
+    SearchParameters
+      { searchParameterLocation = SearchAddress query,
+        searchParameterDate = SearchFromTo begin end,
         searchParameterDistance = Nothing
       }
 

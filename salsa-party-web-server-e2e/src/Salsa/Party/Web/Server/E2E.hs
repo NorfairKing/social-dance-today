@@ -60,21 +60,26 @@ spec uri = do
       it "HomeR" $ do
         get HomeR
         statusIs 200
+
       describe "Explore" $ do
         it "ExploreR" $ do
           get ExploreR
           statusIs 200
+
         forM_ locations $ \Location {..} ->
           describe (T.unpack (placeQuery locationPlace)) $
             it ("ExploreSkylineR " <> show (placeQuery locationPlace)) $ do
               get $ ExploreSkylineR (placeQuery locationPlace)
               statusIs 200
+
       it "SitemapR" $ do
         get SitemapR
         statusIs 200
+
       it "RobotsR" $ do
         get RobotsR
         statusIs 200
+
       describe "Search" $ do
         today <- liftIO $ utctDay <$> getCurrentTime
         forM_ locations $ \Location {..} ->
@@ -88,12 +93,19 @@ spec uri = do
               locationShouldBe $ SearchR $ placeQuery locationPlace
               _ <- followRedirect
               statusIs 200
+
             it "SearchR" $ do
               get $ SearchR (placeQuery locationPlace)
               statusIs 200
+
             it "SearchDayR" $ do
               get $ SearchDayR (placeQuery locationPlace) today
               statusIs 200
+
+            it "SearchFromToR" $ do
+              get $ SearchFromToR (placeQuery locationPlace) today (addDays 2 today)
+              statusIs 200
+
       doNotRandomiseExecutionOrder $
         sequential $ do
           let testUserEmailAddress = "test-user@example.com"
@@ -102,14 +114,18 @@ spec uri = do
             yit "can GET the registration page" $ do
               get $ AuthR registerR
               statusIs 200
+
             yit "can succesfully POST to the registration page" $ do
               testRegister testUserEmailAddress testUserPassphrase
+
           describe "LoginR" $ do
             yit "can GET the login page" $ do
               get $ AuthR LoginR
               statusIs 200
+
             yit "can POST the login page after registering" $ do
               testLogin testUserEmailAddress testUserPassphrase
+
           describe "AccountDeleteR" $
             yit "Can delete the test account" $ do
               testLogin testUserEmailAddress testUserPassphrase
