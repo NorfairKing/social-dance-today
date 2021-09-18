@@ -11,7 +11,6 @@ import qualified Data.Text.Encoding as TE
 import Network.HTTP.Types
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation
-import Salsa.Party.Web.Server.Widget
 import Yesod
 
 googleMapsStaticUrl :: Text -> Text -> Text

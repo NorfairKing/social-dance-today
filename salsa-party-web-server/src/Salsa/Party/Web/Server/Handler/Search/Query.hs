@@ -21,7 +21,7 @@ data SearchQuery = SearchQuery
   { searchQueryBegin :: !Day,
     searchQueryMEnd :: !(Maybe Day),
     searchQueryCoordinates :: !Coordinates,
-    searchQueryDistance :: Word
+    searchQueryDistance :: Maybe Word -- Nothing means unlimited distance.
   }
   deriving (Show, Eq, Generic)
 
@@ -45,11 +45,11 @@ runSearchQuery SearchQuery {..} = do
       E.on (organiser E.^. OrganiserId E.==. party E.^. PartyOrganiser)
       E.on (party E.^. PartyPlace E.==. place E.^. PlaceId)
       E.where_ $ dayLimit (party E.^. PartyDay) searchQueryBegin searchQueryMEnd
-      distanceEstimationQuery searchQueryDistance searchQueryCoordinates place
+      forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
       pure (organiser, party, place)
 
   -- Post-process the distance before we fetch images so we don't fetch too many images.
-  let partyResultsWithoutImages = postProcessParties searchQueryDistance searchQueryCoordinates rawPartyResults
+  let partyResultsWithoutImages = maybe rawPartyResults (\dist -> postProcessParties dist searchQueryCoordinates rawPartyResults) searchQueryDistance
   partyResultsWithImages <-
     forM partyResultsWithoutImages $ \(organiserEntity, partyEntity@(Entity partyId party), placeEntity) -> do
       mKey <- getPosterForParty partyId
@@ -59,11 +59,11 @@ runSearchQuery SearchQuery {..} = do
     E.from $ \(externalEvent `E.InnerJoin` place) -> do
       E.on (externalEvent E.^. ExternalEventPlace E.==. place E.^. PlaceId)
       E.where_ $ dayLimit (externalEvent E.^. ExternalEventDay) searchQueryBegin searchQueryMEnd
-      distanceEstimationQuery searchQueryDistance searchQueryCoordinates place
+      forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
       pure (externalEvent, place)
 
   -- TODO deduplicate external events before fetching posters
-  let externalEventResultsWithoutImages = postProcessExternalEvents searchQueryDistance searchQueryCoordinates rawExternalEventResults
+  let externalEventResultsWithoutImages = maybe rawExternalEventResults (\dist -> postProcessExternalEvents dist searchQueryCoordinates rawExternalEventResults) searchQueryDistance
   externalEventResultsWithImages <-
     forM externalEventResultsWithoutImages $ \(externalEventEntity@(Entity externalEventId externalEvent), placeEntity) -> do
       mKey <- getPosterForExternalEvent externalEventId
@@ -264,5 +264,6 @@ noDataQuery coordinates = do
       SearchQuery
         { searchQueryBegin = today,
           searchQueryMEnd = Nothing,
-          searchQueryCoordinates = coordinates
+          searchQueryCoordinates = coordinates,
+          searchQueryDistance = Nothing
         }

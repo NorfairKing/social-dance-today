@@ -8,6 +8,11 @@ import Salsa.Party.Web.Server.Handler.TestImport
 spec :: Spec
 spec =
   serverSpec $ do
+    describe "AdvancedSearchR" $ do
+      it "Can GET the advanced search page" $ do
+        get AdvancedSearchR
+        statusIs 200
+
     -- These tests are just for the form handling.
     -- They don't test search because there won't be results.
     describe "QueryR" $ do
@@ -24,8 +29,6 @@ spec =
                 setMethod methodGet
                 setUrl QueryR
                 addGetParam "address" query
-              statusIs 303
-              locationShouldBe $ SearchR query
               _ <- followRedirect
               statusIs 200
 
@@ -40,6 +43,7 @@ spec =
                   setUrl QueryR
                   addGetParam "address" query
                   addGetParam "begin" $ T.pack $ show (day :: Day)
+                _ <- followRedirect
                 statusIs 200
 
       it "Can GET a 200 query page for a nonempty query and exact day" $ \yc ->
@@ -53,8 +57,6 @@ spec =
                   setUrl QueryR
                   addGetParam "address" query
                   addGetParam "on" $ T.pack $ show (day :: Day)
-                statusIs 303
-                locationShouldBe $ SearchDayR query day
                 _ <- followRedirect
                 statusIs 200
 

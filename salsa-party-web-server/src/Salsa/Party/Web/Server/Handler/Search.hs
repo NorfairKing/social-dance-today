@@ -103,7 +103,7 @@ queryFormToSearchParameters QueryForm {..} = do
         Nothing -> case queryFormBegin of
           Just day -> SearchFromOn day
           Nothing -> SearchFromToday
-  let searchParameterDistance = queryFormDistance
+  let searchParameterDistance = Just $ fromMaybe defaultMaximumDistance queryFormDistance
   pure SearchParameters {..}
 
 getQueryR :: Handler Html
@@ -223,7 +223,7 @@ searchResultsPage searchParameters@SearchParameters {..} = do
           { searchQueryBegin = begin,
             searchQueryMEnd = Just end,
             searchQueryCoordinates = coordinates,
-            searchQueryDistance = fromMaybe defaultMaximumDistance searchParameterDistance
+            searchQueryDistance = searchParameterDistance
           }
 
   -- If no results were returned, check if there was any data at all

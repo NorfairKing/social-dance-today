@@ -43,7 +43,8 @@ explorePartiesAroundLocationQuery today coordinates =
       SearchQuery
         { searchQueryBegin = today,
           searchQueryMEnd = Nothing,
-          searchQueryCoordinates = coordinates
+          searchQueryCoordinates = coordinates,
+          searchQueryDistance = Just defaultMaximumDistance
         }
 
 getExploreSkylineR :: Text -> Handler TypedContent

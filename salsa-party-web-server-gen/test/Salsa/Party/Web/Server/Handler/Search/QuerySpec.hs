@@ -116,7 +116,8 @@ spec = do
                     SearchQuery
                       { searchQueryBegin = begin,
                         searchQueryMEnd = mEnd,
-                        searchQueryCoordinates = coordinates
+                        searchQueryCoordinates = coordinates,
+                        searchQueryDistance = Just defaultMaximumDistance
                       }
                 liftIO $ sr `shouldBe` M.empty
 
@@ -163,7 +164,8 @@ spec = do
                         SearchQuery
                           { searchQueryBegin = day,
                             searchQueryMEnd = Just day,
-                            searchQueryCoordinates = placeCoordinates queryPlace
+                            searchQueryCoordinates = placeCoordinates queryPlace,
+                            searchQueryDistance = Just defaultMaximumDistance
                           }
                     liftIO $
                       sr
@@ -218,7 +220,8 @@ spec = do
                         SearchQuery
                           { searchQueryBegin = day,
                             searchQueryMEnd = Just day,
-                            searchQueryCoordinates = placeCoordinates queryPlace
+                            searchQueryCoordinates = placeCoordinates queryPlace,
+                            searchQueryDistance = Just defaultMaximumDistance
                           }
                     liftIO $
                       sr
@@ -270,7 +273,8 @@ spec = do
                               SearchQuery
                                 { searchQueryBegin = day,
                                   searchQueryMEnd = Just day,
-                                  searchQueryCoordinates = placeCoordinates queryPlace
+                                  searchQueryCoordinates = placeCoordinates queryPlace,
+                                  searchQueryDistance = Just defaultMaximumDistance
                                 }
                           liftIO $
                             sr
@@ -392,7 +396,8 @@ spec = do
                                     SearchQuery
                                       { searchQueryBegin = day,
                                         searchQueryMEnd = Just day,
-                                        searchQueryCoordinates = placeCoordinates queryPlace
+                                        searchQueryCoordinates = placeCoordinates queryPlace,
+                                        searchQueryDistance = Just defaultMaximumDistance
                                       }
                                 liftIO $
                                   sr
