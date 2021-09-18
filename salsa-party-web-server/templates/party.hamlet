@@ -43,7 +43,7 @@
               _{MsgPartyPrice price}
       
         $maybe homepage <- partyHomepage
-          <div .content>
+          <div .content .description>
             <p>
               <a
                 href=#{homepage}

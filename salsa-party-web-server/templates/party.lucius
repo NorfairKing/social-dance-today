@@ -3,3 +3,6 @@
   max-height: 360px;
   object-fit: contain;
 }
+.description {
+  word-break: break-all;
+}

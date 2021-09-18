@@ -27,7 +27,7 @@
 
 
         $maybe description <- externalEventDescription
-          <div .content>
+          <div .content .description>
             <p>
               #{Textarea description}
 
