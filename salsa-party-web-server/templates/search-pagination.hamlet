@@ -1,5 +1,5 @@
 <nav .pagination role="navigation" aria-label="pagination">
-  <a .pagination-previous href=#{prevDayRoute}>
+  <a .pagination-previous rel="nofollow" href=#{prevDayRoute}>
     _{MsgSearchNavEarlier}
-  <a .pagination-next href=#{nextDayRoute}>
+  <a .pagination-next rel="nofollow" href=#{nextDayRoute}>
     _{MsgSearchNavLater}
