@@ -122,13 +122,20 @@ queryFormToSearchParameters QueryForm {..} = do
       Nothing -> case queryFormCoordinates of
         Just coordinates -> pure $ SearchCoordinates coordinates
         Nothing -> invalidArgsI [MsgAddressOrCoordinates]
-  let searchParameterDate = case queryFormOn of
-        Just day -> SearchExactlyOn day
-        Nothing -> case queryFormBegin of
-          Nothing -> SearchFromToday
-          Just begin -> case queryFormEnd of
-            Nothing -> SearchFromOn begin
-            Just end -> SearchFromTo begin end
+  searchParameterDate <- case queryFormOn of
+    Just day -> pure $ SearchExactlyOn day
+    Nothing -> case queryFormBegin of
+      Nothing -> pure SearchFromToday
+      Just begin -> case queryFormEnd of
+        Nothing -> pure $ SearchFromOn begin
+        Just end ->
+          let d = diffDays end begin
+           in if d < 0
+                then invalidArgsI [MsgEndBeforeBegin]
+                else
+                  if d > maximumDaysAhead
+                    then invalidArgsI [MsgEndTooFarAhead]
+                    else pure $ SearchFromTo begin end
   let searchParameterDistance = queryFormDistance
   pure SearchParameters {..}
 
@@ -339,3 +346,6 @@ searchParametersTitle SearchParameters {..} = case searchParameterLocation of
 
 defaultDaysAhead :: Integer
 defaultDaysAhead = 7
+
+maximumDaysAhead :: Integer
+maximumDaysAhead = 5 * defaultDaysAhead

@@ -51,6 +51,8 @@ NavLogOut: Log out
 InvalidLatitude lat@String: Invalid latitude: #{lat}
 InvalidLongitude lon@String: Invalid longitude: #{lon}
 DistanceTooGreat distance@String: Distance too great: #{distance} km
+EndBeforeBegin: The end date was before the begin date.
+EndTooFarAhead: Search date range too big.
 AddressOrCoordinates: You must supply either an address or coordinates.
 
 # Search Results
