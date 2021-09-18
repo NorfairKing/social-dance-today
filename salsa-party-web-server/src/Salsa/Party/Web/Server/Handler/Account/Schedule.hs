@@ -401,7 +401,7 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
             let EditScheduleForm _ _ _ _ _ _ _ = undefined
              in catMaybes
                   [ if scheduleTitle /= editScheduleFormTitle form
-                      then Just $ PartySlug =. mkSlug (editScheduleFormTitle form)
+                      then Just $ PartySlug =. makePartySlug (editScheduleFormTitle form)
                       else Nothing,
                     whenChanged scheduleTitle editScheduleFormTitle PartyTitle,
                     whenChanged scheduleDescription (fmap unTextarea . editScheduleFormDescription) PartyDescription,

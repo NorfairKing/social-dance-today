@@ -21,6 +21,7 @@ import Data.Yaml as Yaml
 import Database.Persist.Sql
 import GHC.Generics (Generic)
 import Salsa.Party.DB
+import Salsa.Party.Web.Server.Foundation
 import System.Exit
 import UnliftIO
 
@@ -79,7 +80,7 @@ setUpOrganiserSlugs = do
     runConduit $ organiserSource .| C.mapM_ setupOrganiserSlug
 
 setupOrganiserSlug :: MonadIO m => Entity Organiser -> SqlPersistT m ()
-setupOrganiserSlug (Entity organiserId Organiser {..}) = update organiserId [OrganiserSlug =. mkSlug organiserName]
+setupOrganiserSlug (Entity organiserId Organiser {..}) = update organiserId [OrganiserSlug =. makeOrganiserSlug organiserName]
 
 setUpPartySlugs :: MonadUnliftIO m => SqlPersistT m ()
 setUpPartySlugs = do
@@ -89,7 +90,7 @@ setUpPartySlugs = do
     runConduit $ partySource .| C.mapM_ setupPartySlug
 
 setupPartySlug :: MonadIO m => Entity Party -> SqlPersistT m ()
-setupPartySlug (Entity partyId Party {..}) = update partyId [PartySlug =. mkSlug partyTitle]
+setupPartySlug (Entity partyId Party {..}) = update partyId [PartySlug =. makePartySlug partyTitle]
 
 setUpExternalEventSlugs :: MonadUnliftIO m => SqlPersistT m ()
 setUpExternalEventSlugs = do
@@ -99,7 +100,7 @@ setUpExternalEventSlugs = do
     runConduit $ externalEventSource .| C.mapM_ setupExternalEventSlug
 
 setupExternalEventSlug :: MonadIO m => Entity ExternalEvent -> SqlPersistT m ()
-setupExternalEventSlug (Entity externalEventId ExternalEvent {..}) = update externalEventId [ExternalEventSlug =. mkSlug externalEventTitle]
+setupExternalEventSlug (Entity externalEventId ExternalEvent {..}) = update externalEventId [ExternalEventSlug =. makeExternalEventSlug externalEventTitle]
 
 {-# NOINLINE locations #-}
 locations :: [Location]

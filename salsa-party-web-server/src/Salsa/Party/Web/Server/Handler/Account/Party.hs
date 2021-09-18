@@ -111,7 +111,7 @@ addParty organiserId AddPartyForm {..} mFileInfo = do
       insert
         ( Party
             { partyUuid = uuid,
-              partySlug = mkSlug addPartyFormTitle,
+              partySlug = makePartySlug addPartyFormTitle,
               partyOrganiser = organiserId,
               partyTitle = addPartyFormTitle,
               partyDescription = normaliseNewlines . unTextarea <$> addPartyFormDescription,

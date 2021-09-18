@@ -81,7 +81,7 @@ scheduleToPartyOn :: EventUUID -> UTCTime -> Day -> Schedule -> Party
 scheduleToPartyOn uuid now day Schedule {..} =
   Party
     { partyUuid = uuid,
-      partySlug = mkSlug scheduleTitle,
+      partySlug = makePartySlug scheduleTitle,
       partyOrganiser = scheduleOrganiser,
       partyTitle = scheduleTitle,
       partyDescription = scheduleDescription,

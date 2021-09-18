@@ -61,14 +61,14 @@ organiserFormPage mResult = do
               ( Organiser
                   { organiserUuid = uuid,
                     organiserUser = userId,
-                    organiserSlug = mkSlug organiserFormName,
+                    organiserSlug = makeOrganiserSlug organiserFormName,
                     organiserName = organiserFormName,
                     organiserHomepage = organiserFormHomepage,
                     organiserCreated = now,
                     organiserModified = Nothing
                   }
               )
-              [ OrganiserSlug =. mkSlug organiserFormName,
+              [ OrganiserSlug =. makeOrganiserSlug organiserFormName,
                 OrganiserName =. organiserFormName,
                 OrganiserHomepage =. organiserFormHomepage,
                 OrganiserModified =. Just now
