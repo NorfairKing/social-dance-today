@@ -14,7 +14,7 @@
                   <input .input
                     id=#{queryId}
                     type=text
-                    name="address"
+                    name=#{addressParameter}
                     placeholder="Zürich"
                     required>
                 <p .control>
@@ -25,8 +25,8 @@
               id=#{helpId}>
               _{MsgLocateMeHelpBefore}
 
-          <input #latitudeInput type=hidden name="latitude">
-          <input #longitudeInput type=hidden name="longitude">
+          <input #latitudeInput type=hidden name=#{latitudeParameter}>
+          <input #longitudeInput type=hidden name=#{longitudeParameter}>
 
           <div .field>
             <label .label>
@@ -36,7 +36,7 @@
                 <p .control .is-expanded>
                   <input .input
                     #max-distance
-                    name="distance"
+                    name=#{distanceParameter}
                     type="number"
                     min=#{minDistance}
                     max=#{maxDistance}
@@ -46,6 +46,24 @@
                   <div .button .is-disabled #max-distance-value>
                     km
 
+          <div .field>
+            <label .label>
+              _{MsgAdvancedSearchFormBeginLabel}
+            <div .control>
+              <input .input
+                #begin
+                name=#{beginParameter}
+                type=date>
+
+          <div .field>
+            <label .label>
+              _{MsgAdvancedSearchFormEndLabel}
+            <div .control>
+              <input .input
+                #end
+                name=#{endParameter}
+                type=date>
+                
 
           <div .field>
             <div .control>

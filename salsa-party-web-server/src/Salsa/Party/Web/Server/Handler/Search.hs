@@ -45,11 +45,12 @@ kmToM :: Word -> Word
 kmToM = (* 1000)
 
 data QueryForm = QueryForm
-  { queryFormAddress :: Maybe Text,
-    queryFormCoordinates :: Maybe Coordinates,
-    queryFormBegin :: Maybe Day,
-    queryFormOn :: Maybe Day,
-    queryFormDistance :: Maybe Word
+  { queryFormAddress :: !(Maybe Text),
+    queryFormCoordinates :: !(Maybe Coordinates),
+    queryFormBegin :: !(Maybe Day),
+    queryFormEnd :: !(Maybe Day),
+    queryFormOn :: !(Maybe Day),
+    queryFormDistance :: !(Maybe Word)
   }
   deriving (Show, Eq, Generic)
 
@@ -62,11 +63,14 @@ latitudeParameter = "latitude"
 longitudeParameter :: Text
 longitudeParameter = "longitude"
 
-onParameter :: Text
-onParameter = "on"
-
 beginParameter :: Text
 beginParameter = "begin"
+
+endParameter :: Text
+endParameter = "end"
+
+onParameter :: Text
+onParameter = "on"
 
 distanceParameter :: Text
 distanceParameter = "distance"
@@ -80,6 +84,7 @@ queryForm =
             <*> iopt longitudeField longitudeParameter
         )
     <*> iopt dayField beginParameter
+    <*> iopt dayField endParameter
     <*> iopt dayField onParameter
     <*> iopt distanceField distanceParameter
 
@@ -120,8 +125,10 @@ queryFormToSearchParameters QueryForm {..} = do
   let searchParameterDate = case queryFormOn of
         Just day -> SearchExactlyOn day
         Nothing -> case queryFormBegin of
-          Just day -> SearchFromOn day
           Nothing -> SearchFromToday
+          Just begin -> case queryFormEnd of
+            Nothing -> SearchFromOn begin
+            Just end -> SearchFromTo begin end
   let searchParameterDistance = queryFormDistance
   pure SearchParameters {..}
 
@@ -135,8 +142,9 @@ getQueryR = do
         SearchCoordinates _ -> searchResultsPage searchParameters
         SearchAddress address -> case searchParameterDate of
           SearchFromToday -> redirect $ SearchR address
-          SearchFromOn _ -> searchResultsPage searchParameters
           SearchExactlyOn day -> redirect $ SearchDayR address day
+          SearchFromOn _ -> searchResultsPage searchParameters
+          SearchFromTo _ _ -> searchResultsPage searchParameters
 
 getSearchR :: Text -> Handler Html
 getSearchR query = do
@@ -177,7 +185,7 @@ searchParameterParameters SearchParameters {..} =
   concat
     [ searchParameterLocationParameters searchParameterLocation,
       searchParameterDateParameters searchParameterDate,
-      [(distanceParameter, T.pack $ show dist) | dist <- maybeToList searchParameterDistance]
+      [(distanceParameter, T.pack $ show $ mToKm dist) | dist <- maybeToList searchParameterDistance]
     ]
 
 data SearchLocation
@@ -205,6 +213,8 @@ data SearchDate
     SearchFromToday
   | -- | From this day until defaultDaysAhead days ahead
     SearchFromOn !Day
+  | -- | Between these two days
+    SearchFromTo !Day !Day
   | -- | Exactly on this day, no days ahead
     SearchExactlyOn !Day
   deriving (Show, Eq, Generic)
@@ -212,8 +222,12 @@ data SearchDate
 searchParameterDateParameters :: SearchDate -> [(Text, Text)]
 searchParameterDateParameters = \case
   SearchFromToday -> []
-  SearchFromOn day -> [(beginParameter, T.pack $ formatTime defaultTimeLocale "%F" day)]
   SearchExactlyOn day -> [(onParameter, T.pack $ formatTime defaultTimeLocale "%F" day)]
+  SearchFromOn day -> [(beginParameter, T.pack $ formatTime defaultTimeLocale "%F" day)]
+  SearchFromTo begin end ->
+    [ (beginParameter, T.pack $ formatTime defaultTimeLocale "%F" begin),
+      (endParameter, T.pack $ formatTime defaultTimeLocale "%F" end)
+    ]
 
 searchResultsPage :: SearchParameters -> Handler Html
 searchResultsPage searchParameters@SearchParameters {..} = do
@@ -223,12 +237,14 @@ searchResultsPage searchParameters@SearchParameters {..} = do
   let begin = case searchParameterDate of
         SearchFromToday -> today
         SearchFromOn day -> day
+        SearchFromTo day _ -> day
         SearchExactlyOn day -> day
 
   -- Resolve end day
   let end = case searchParameterDate of
         SearchFromToday -> addDays (defaultDaysAhead -1) today
         SearchFromOn day -> addDays (defaultDaysAhead -1) day
+        SearchFromTo _ day -> day
         SearchExactlyOn day -> day
 
   -- Resolve coordinates
@@ -271,10 +287,12 @@ searchResultsPage searchParameters@SearchParameters {..} = do
         let prevDate = case searchParameterDate of
               SearchFromToday -> SearchFromOn $ addDays (negate defaultDaysAhead) today
               SearchFromOn day -> SearchFromOn $ addDays (negate defaultDaysAhead) day
+              SearchFromTo b e -> SearchFromTo (addDays (diffDays b e) b) (addDays (-1) b)
               SearchExactlyOn day -> SearchExactlyOn $ addDays (-1) day
         let nextDate = case searchParameterDate of
               SearchFromToday -> SearchFromOn $ addDays defaultDaysAhead today
               SearchFromOn day -> SearchFromOn $ addDays defaultDaysAhead day
+              SearchFromTo b e -> SearchFromTo (addDays 1 e) (addDays (diffDays e b) e)
               SearchExactlyOn day -> SearchExactlyOn $ addDays 1 day
         let days = [begin .. end]
         prevDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = prevDate}
@@ -290,10 +308,12 @@ searchParametersHtmlTitle SearchParameters {..} = do
     SearchCoordinates _ -> case searchParameterDate of
       SearchFromToday -> MsgSearchTitleAroundYourLocationToday
       SearchFromOn day -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
+      SearchFromTo day _ -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
       SearchExactlyOn day -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
     SearchAddress address -> case searchParameterDate of
       SearchFromToday -> MsgSearchTitleAroundAddressToday address
       SearchFromOn day -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
+      SearchFromTo day _ -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
       SearchExactlyOn day -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
 
 searchParametersHtmlDescription :: SearchParameters -> WidgetFor App AppMessage
@@ -304,10 +324,12 @@ searchParametersHtmlDescription SearchParameters {..} = do
     SearchCoordinates _ -> case searchParameterDate of
       SearchFromToday -> MsgSearchDescriptionAroundYourLocationToday
       SearchFromOn day -> MsgSearchDescriptionAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
+      SearchFromTo day _ -> MsgSearchDescriptionAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
       SearchExactlyOn day -> MsgSearchDescriptionAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
     SearchAddress address -> case searchParameterDate of
       SearchFromToday -> MsgSearchDescriptionAroundAddressToday address
       SearchFromOn day -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
+      SearchFromTo day _ -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
       SearchExactlyOn day -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
 
 searchParametersTitle :: SearchParameters -> AppMessage

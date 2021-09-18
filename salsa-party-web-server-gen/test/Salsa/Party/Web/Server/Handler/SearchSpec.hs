@@ -13,6 +13,7 @@ query =
     { queryFormAddress = Nothing,
       queryFormCoordinates = Nothing,
       queryFormBegin = Nothing,
+      queryFormEnd = Nothing,
       queryFormOn = Nothing,
       queryFormDistance = Nothing
     }
@@ -26,6 +27,7 @@ queryFormRequestBuilder QueryForm {..} = do
     addGetParam latitudeParameter $ T.pack $ show coordinatesLat
     addGetParam longitudeParameter $ T.pack $ show coordinatesLon
   forM_ queryFormBegin $ \begin -> addGetParam beginParameter $ T.pack $ formatTime defaultTimeLocale "%F" begin
+  forM_ queryFormEnd $ \end -> addGetParam endParameter $ T.pack $ formatTime defaultTimeLocale "%F" end
   forM_ queryFormOn $ \on -> addGetParam onParameter $ T.pack $ formatTime defaultTimeLocale "%F" on
   forM_ queryFormDistance $ \distance -> addGetParam distanceParameter $ T.pack $ show distance
 

@@ -127,8 +127,10 @@ driveAdvancedSearch QueryForm {..} = do
     findElem (ById "longitudeInput") >>= sendKeys (T.pack $ show coordinatesLon)
   forM_ queryFormDistance $ \distance -> do
     findElem (ById "max-distance") >>= sendKeys (T.pack $ show distance)
-  -- TODO begin day
-  -- TODO end day
+  forM_ queryFormBegin $ \begin ->
+    findElem (ByName "begin") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%m%d%Y" begin))
+  forM_ queryFormEnd $ \end ->
+    findElem (ByName "end") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%m%d%Y" end))
   findElem (ById "submit") >>= submit
 
 dummyUser :: TestUser

@@ -11,6 +11,8 @@ AdvancedSearchTitle: Advanced Search
 AdvancedSearchDescription: Find exactly the social dance parties that you are looking for.
 AdvancedSearchFormLocationLabel: Location
 AdvancedSearchFormDistanceLabel: Distance
+AdvancedSearchFormBeginLabel: From
+AdvancedSearchFormEndLabel: To
 AdvancedSearchFormSearch: Search
 
 # Locate me button

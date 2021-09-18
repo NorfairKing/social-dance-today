@@ -27,7 +27,8 @@ spec = do
         QueryForm
           { queryFormAddress = Just $ placeQuery locationPlace,
             queryFormCoordinates = Nothing,
-            queryFormBegin = Nothing,
+            queryFormBegin = Just $ fromGregorian 2021 09 18,
+            queryFormEnd = Just $ fromGregorian 2021 09 21,
             queryFormOn = Nothing,
             queryFormDistance = Just 20
           }
