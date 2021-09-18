@@ -12,14 +12,18 @@
               <div .field .has-addons>
                 <p .control .is-expanded>
                   <input .input
-                    #query
+                    id=#{queryId}
                     type=text
                     name="address"
                     placeholder="Zürich"
                     required>
                 <p .control>
-                  <div .button #find-me>
+                  <div .button
+                    id=#{statusId}>
                     _{MsgHomeFormLocation}
+            <p .help
+              id=#{helpId}>
+              _{MsgLocateMeHelpBefore}
 
           <input #latitudeInput type=hidden name="latitude">
           <input #longitudeInput type=hidden name="longitude">
@@ -48,5 +52,3 @@
               <button #submit .button .is-dark type="submit">
                 _{MsgAdvancedSearchFormSearch}
 
-          <div .field>
-            <div .help #help>

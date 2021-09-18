@@ -13,15 +13,17 @@ import Salsa.Party.Web.Server.Handler.Import
 import Web.JSONLD as LD
 
 getHomeR :: Handler Html
-getHomeR = do
-  messageRender <- getMessageRender
+getHomeR =
   withNavBar $ do
     setTitle $ toHtml siteTitle
     setDescriptionI $ MsgHomeDescription siteTitle
     renderUrl <- getUrlRender
     toWidgetHead $ toJSONLDData $ socialDanceWebSite renderUrl
     toWidgetHead $ toJSONLDData $ socialDanceOrganisation renderUrl
-    $(widgetFile "home")
+    let queryId = "query"
+    let statusId = "status"
+    let helpId = "help"
+    $(widgetFile "home") <> locateMeButton queryId statusId helpId
 
 socialDanceWebSite :: (Route App -> Text) -> LD.WebSite
 socialDanceWebSite renderUrl =

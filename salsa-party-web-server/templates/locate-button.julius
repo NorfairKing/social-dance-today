@@ -1,7 +1,7 @@
 function geoFindMe() {
-
-  const address = document.querySelector('#query');
-  const status = document.querySelector('#find-me');
+  const address = document.getElementById(#{queryId});
+  const status = document.getElementById(#{statusId});
+  const help = document.getElementById(#{helpId});
 
 
   function success(position) {
@@ -17,26 +17,29 @@ function geoFindMe() {
     document.querySelector('#query').required = false;
     document.querySelector('#latitudeInput').value = latitude;
     document.querySelector('#longitudeInput').value = longitude;
-    document.querySelector('#help').innerText = #{messageRender MsgHomeFormHelp};
+    help.textContent = #{messageRender MsgLocateMeHelpAfter};
   }
 
   function error(err) {
     console.log(err)
     status.textContent = #{messageRender MsgHomeFormLocationUnable};
+    help.textContent = '';
     status.classList.add("is-danger");
   }
 
   if(!navigator.geolocation) {
     status.textContent = #{messageRender MsgHomeFormLocationNotSupported};
+    help.textContent = '';
   } else {
     status.textContent = #{messageRender MsgHomeFormLocationInProgress};
+    help.textContent = '';
     navigator.geolocation.getCurrentPosition(success, error);
   }
 
 }
 
 if (document) {
-  document.querySelector('#find-me').addEventListener('click', geoFindMe);
+  document.getElementById(#{statusId}).addEventListener('click', geoFindMe);
 
   if (document.addEventListener) {
     document.addEventListener("DOMContentLoaded", function() {

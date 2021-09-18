@@ -3,6 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -10,6 +11,7 @@ module Salsa.Party.Web.Server.Foundation
   ( module Salsa.Party.Web.Server.Foundation,
     module Salsa.Party.Web.Server.Foundation.NavBar,
     module Salsa.Party.Web.Server.Foundation.Auth,
+    module Salsa.Party.Web.Server.Widget,
     module Salsa.Party.Web.Server.Foundation.I18N,
     module Salsa.Party.Web.Server.Foundation.Yesod,
     module Salsa.Party.Web.Server.Foundation.App,
@@ -39,6 +41,7 @@ import Salsa.Party.Web.Server.Foundation.I18N
 import Salsa.Party.Web.Server.Foundation.NavBar
 import Salsa.Party.Web.Server.Foundation.Yesod
 import Salsa.Party.Web.Server.Static
+import Salsa.Party.Web.Server.Widget
 import Text.Blaze.Html5 ((!))
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
@@ -216,3 +219,8 @@ externalEventSlugRoute ExternalEvent {..} = do
 
 makeExternalEventSlug :: EventUUID -> Text -> Maybe EventSlug
 makeExternalEventSlug uuid title = mkSlug $ T.pack $ T.unpack title <> [replacementChar] <> take 2 (uuidString uuid)
+
+locateMeButton :: RenderMessage App AppMessage => Text -> Text -> Text -> WidgetFor App ()
+locateMeButton queryId statusId helpId = do
+  messageRender <- getMessageRender
+  $(widgetFile "locate-button")

@@ -26,7 +26,11 @@ import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Query
 
 getAdvancedSearchR :: Handler Html
-getAdvancedSearchR = withNavBar $(widgetFile "advanced-search")
+getAdvancedSearchR = withNavBar $ do
+  let queryId = "query"
+  let statusId = "status"
+  let helpId = "help"
+  $(widgetFile "advanced-search") <> locateMeButton queryId statusId helpId
 
 data QueryForm = QueryForm
   { queryFormAddress :: Maybe Text,

@@ -14,13 +14,14 @@
               <div .field .has-text-centered .has-addons .has-addons-centered>
                 <p .control>
                   <input .input
-                    #query
+                    id=#{queryId}
                     type=text
                     name="address"
                     placeholder="Zürich"
                     required>
                 <p .control>
-                  <div .button #find-me>
+                  <div .button
+                    id=#{statusId}>
                     _{MsgHomeFormLocation}
 
           <input #latitudeInput type=hidden name="latitude">
@@ -34,7 +35,10 @@
                 Advanced
 
           <div .field .has-text-centered>
-            <div .help #help>
+            <div .help
+              id=#{helpId}>
+              _{MsgLocateMeHelpBefore}
+
 
 <section .section>
   <div .columns .is-centered>

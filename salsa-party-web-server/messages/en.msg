@@ -14,8 +14,13 @@ HomeFormHelp: Press the search button to find parties around your current locati
 
 # Advanced search
 AdvancedSearchFormLocationLabel: Location
+AdvancedSearchFormLocatedHelp: You have been located. Your location will be used for the search unless you fill in another location above.
 AdvancedSearchFormDistanceLabel: Distance
 AdvancedSearchFormSearch: Search
+
+# Locate me button
+LocateMeHelpBefore: Press the 'My location' button to use your current location.
+LocateMeHelpAfter: Your current location will be used for the search unless you fill in another location above.
 
 # Explore
 ExploreTitle: Explore the world of social dance!
