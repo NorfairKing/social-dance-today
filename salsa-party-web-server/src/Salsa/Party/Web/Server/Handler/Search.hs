@@ -300,6 +300,14 @@ searchResultsPage searchParameters@SearchParameters {..} = do
     if noData
       then $(widgetFile "search-no-results")
       else do
+        let robotsTags =
+              catMaybes
+                [ Just "noarchive",
+                  case searchParameterDate of
+                    SearchFromToday -> Nothing -- Stays good
+                    _ -> Just $ T.pack $ "unavailable_after: " <> formatTime defaultTimeLocale "%F" (addDays daysToKeepParties end)
+                ]
+        toWidgetHead [hamlet|<meta property="robots" content=#{T.intercalate ", " robotsTags}>|]
         let days = [begin .. end]
         prevDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = navPrevSearchDate today searchParameterDate}
         nextDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = navNextSearchDate today searchParameterDate}
@@ -362,3 +370,6 @@ defaultDaysAhead = 7
 
 maximumDaysAhead :: Integer
 maximumDaysAhead = 5 * defaultDaysAhead
+
+daysToKeepParties :: Integer
+daysToKeepParties = 60
