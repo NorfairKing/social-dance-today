@@ -81,7 +81,7 @@ queryForm =
         )
     <*> iopt dayField beginParameter
     <*> iopt dayField onParameter
-    <*> iopt intField distanceParameter
+    <*> iopt distanceField distanceParameter
 
 latitudeField :: Field Handler Latitude
 latitudeField =
@@ -97,6 +97,18 @@ longitudeField =
     (realToFrac . unLongitude)
     doubleField
 
+distanceField :: Field Handler Word
+distanceField =
+  checkM
+    ( \d ->
+        pure $
+          let ms = kmToM d
+           in if ms > maximumMaximumDistance
+                then Left (MsgDistanceTooGreat (show d))
+                else Right ms
+    )
+    intField
+
 queryFormToSearchParameters :: QueryForm -> Handler SearchParameters
 queryFormToSearchParameters QueryForm {..} = do
   searchParameterLocation <-
@@ -110,7 +122,7 @@ queryFormToSearchParameters QueryForm {..} = do
         Nothing -> case queryFormBegin of
           Just day -> SearchFromOn day
           Nothing -> SearchFromToday
-  let searchParameterDistance = kmToM <$> queryFormDistance
+  let searchParameterDistance = queryFormDistance
   pure SearchParameters {..}
 
 getQueryR :: Handler Html

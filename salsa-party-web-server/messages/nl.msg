@@ -51,6 +51,7 @@ NavLogOut: Afmelden
 # Form messages
 InvalidLatitude lat@String: Ongeldige breedtegraad: #{lat}
 InvalidLongitude lon@String: Ongeldige lengtegraad: #{lon}
+DistanceTooGreat distance@String: Afstand te groot: #{distance} km
 AddressOrCoordinates: Voer ofwel een adres, ofwel coördinaten in.
 
 # Search Results

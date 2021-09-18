@@ -48,6 +48,7 @@ NavLogOut: Log out
 # Form messages
 InvalidLatitude lat@String: Invalid latitude: #{lat}
 InvalidLongitude lon@String: Invalid longitude: #{lon}
+DistanceTooGreat distance@String: Distance too great: #{distance} km
 AddressOrCoordinates: You must supply either an address or coordinates.
 
 # Search Results
