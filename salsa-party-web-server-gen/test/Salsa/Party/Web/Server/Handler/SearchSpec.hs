@@ -1,9 +1,36 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Salsa.Party.Web.Server.Handler.SearchSpec (spec) where
 
 import qualified Data.Text as T
+import Salsa.Party.Web.Server.Handler.Search
 import Salsa.Party.Web.Server.Handler.TestImport
+
+query :: QueryForm
+query =
+  QueryForm
+    { queryFormAddress = Nothing,
+      queryFormCoordinates = Nothing,
+      queryFormBegin = Nothing,
+      queryFormOn = Nothing,
+      queryFormDistance = Nothing
+    }
+
+queryFormRequestBuilder :: QueryForm -> RequestBuilder App ()
+queryFormRequestBuilder QueryForm {..} = do
+  setMethod methodGet
+  setUrl QueryR
+  forM_ queryFormAddress $ \address -> addGetParam addressParameter address
+  forM_ queryFormCoordinates $ \Coordinates {..} -> do
+    addGetParam latitudeParameter $ T.pack $ show coordinatesLat
+    addGetParam longitudeParameter $ T.pack $ show coordinatesLon
+  forM_ queryFormBegin $ \begin -> addGetParam beginParameter $ T.pack $ formatTime defaultTimeLocale "%F" begin
+  forM_ queryFormOn $ \on -> addGetParam onParameter $ T.pack $ formatTime defaultTimeLocale "%F" on
+  forM_ queryFormDistance $ \distance -> addGetParam distanceParameter $ T.pack $ show distance
+
+doSearch :: QueryForm -> YesodClientM App ()
+doSearch = request . queryFormRequestBuilder
 
 spec :: Spec
 spec =
@@ -20,77 +47,67 @@ spec =
         get QueryR
         statusIs 400
 
-      it "Can GET a 200 query page for a nonempty query" $ \yc ->
-        forAll (genValid `suchThat` (not . T.null)) $ \query ->
+      it "Can GET a 200 query page for a nonempty address" $ \yc ->
+        forAll (genValid `suchThat` (not . T.null)) $ \address ->
           forAllValid $ \coordinates ->
             runYesodClientM yc $ do
-              testDB $ insertPlace_ query coordinates
-              request $ do
-                setMethod methodGet
-                setUrl QueryR
-                addGetParam "address" query
+              testDB $ insertPlace_ address coordinates
+              doSearch $ query {queryFormAddress = Just address}
               _ <- followRedirect
               statusIs 200
 
-      it "Can GET a 200 query page for a nonempty query and begin day" $ \yc ->
-        forAll (genValid `suchThat` (not . T.null)) $ \query ->
+      it "Can GET a 200 query page for a nonempty address and begin day" $ \yc ->
+        forAll (genValid `suchThat` (not . T.null)) $ \address ->
           forAllValid $ \day ->
             forAllValid $ \coordinates ->
               runYesodClientM yc $ do
-                testDB $ insertPlace_ query coordinates
-                request $ do
-                  setMethod methodGet
-                  setUrl QueryR
-                  addGetParam "address" query
-                  addGetParam "begin" $ T.pack $ show (day :: Day)
+                testDB $ insertPlace_ address coordinates
+                doSearch $ query {queryFormAddress = Just address, queryFormBegin = day}
                 _ <- followRedirect
                 statusIs 200
 
       it "Can GET a 200 query page for a nonempty query and exact day" $ \yc ->
-        forAll (genValid `suchThat` (not . T.null)) $ \query ->
+        forAll (genValid `suchThat` (not . T.null)) $ \address ->
           forAllValid $ \day ->
             forAllValid $ \coordinates ->
               runYesodClientM yc $ do
-                testDB $ insertPlace_ query coordinates
-                request $ do
-                  setMethod methodGet
-                  setUrl QueryR
-                  addGetParam "address" query
-                  addGetParam "on" $ T.pack $ show (day :: Day)
+                testDB $ insertPlace_ address coordinates
+                doSearch $ query {queryFormAddress = Just address, queryFormOn = day}
                 _ <- followRedirect
                 statusIs 200
 
       it "Can GET a 200 query page by coordinates" $ \yc ->
         forAllValid $ \coordinates ->
           runYesodClientM yc $ do
-            request $ do
-              setMethod methodGet
-              setUrl QueryR
-              addGetParam "latitude" $ T.pack $ show $ coordinatesLat coordinates
-              addGetParam "longitude" $ T.pack $ show $ coordinatesLon coordinates
+            doSearch $ query {queryFormCoordinates = Just coordinates}
             statusIs 200
 
       it "Can GET a 200 query page by coordinates and day" $ \yc ->
         forAllValid $ \coordinates ->
           forAllValid $ \day ->
             runYesodClientM yc $ do
-              request $ do
-                setMethod methodGet
-                setUrl QueryR
-                addGetParam "latitude" $ T.pack $ show $ coordinatesLat coordinates
-                addGetParam "longitude" $ T.pack $ show $ coordinatesLon coordinates
-                addGetParam "day" $ T.pack $ show (day :: Day)
+              doSearch $ query {queryFormCoordinates = Just coordinates, queryFormBegin = day}
               statusIs 200
 
     describe "SearchR" $ do
       it "Can GET a 200 place page for a place" $ \yc ->
-        forAll (genValid `suchThat` (not . T.null)) $ \query ->
-          forAllValid $ \mDay ->
+        forAll (genValid `suchThat` (not . T.null)) $ \address ->
+          forAllValid $ \location ->
+            runYesodClientM yc $ do
+              testDB $ insertPlace_ address location
+              request $ do
+                setMethod methodGet
+                setUrl $ SearchR address
+              statusIs 200
+
+    describe "SearchDayR" $ do
+      it "Can GET a 200 place page for a place" $ \yc ->
+        forAll (genValid `suchThat` (not . T.null)) $ \address ->
+          forAllValid $ \day ->
             forAllValid $ \location ->
               runYesodClientM yc $ do
-                testDB $ insertPlace_ query location
+                testDB $ insertPlace_ address location
                 request $ do
                   setMethod methodGet
-                  setUrl $ SearchR query
-                  forM_ (mDay :: Maybe Day) $ \day -> addGetParam "day" $ T.pack $ formatTime defaultTimeLocale "%F" day
+                  setUrl $ SearchDayR address day
                 statusIs 200
