@@ -17,6 +17,7 @@ import Data.Aeson.Types as JSON
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
+import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
@@ -263,30 +264,20 @@ importExternalEventAnd externalEvent@ExternalEvent {..} func = do
       logInfoN $ T.pack $ unwords ["Importing never-before-seen event from", T.unpack externalEventOrigin]
       importDB (insert externalEvent) >>= func
     Just (Entity externalEventId oldExternalEvent) -> do
-      if externalEvent `hasChangedComparedTo` oldExternalEvent
-        then do
+      case externalEvent `changesComparedTo` oldExternalEvent of
+        Nothing -> do
+          logInfoN $ T.pack $ unwords ["Not re-importing known event, because it was not changed, from", T.unpack externalEventOrigin]
+          pure ()
+        Just updates -> do
           logInfoN $ T.pack $ unwords ["Importing known-but-changed event from", T.unpack externalEventOrigin]
           importDB $
             void $
               update
                 externalEventId
-                [ ExternalEventTitle =. externalEventTitle,
-                  ExternalEventDescription =. externalEventDescription,
-                  ExternalEventOrganiser =. externalEventOrganiser,
-                  ExternalEventDay =. externalEventDay,
-                  ExternalEventStart =. externalEventStart,
-                  ExternalEventHomepage =. externalEventHomepage,
-                  ExternalEventPrice =. externalEventPrice,
-                  ExternalEventCancelled =. externalEventCancelled,
-                  ExternalEventModified =. Just now,
-                  ExternalEventPlace =. externalEventPlace,
-                  ExternalEventOrigin =. externalEventOrigin,
-                  ExternalEventImporter =. importerId
-                ]
+                ( (ExternalEventModified =. Just now) :
+                  NE.toList updates
+                )
           func externalEventId
-        else do
-          logInfoN $ T.pack $ unwords ["Not re-importing known event, because it was not changed, from", T.unpack externalEventOrigin]
-          pure ()
 
 jsonRequestConduit :: FromJSON a => ConduitT HTTP.Request a Import ()
 jsonRequestConduit = C.map ((,) ()) .| jsonRequestConduitWith .| C.map snd

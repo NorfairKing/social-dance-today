@@ -24,7 +24,11 @@ module Salsa.Party.DB
   )
 where
 
+import Control.Monad
 import Data.ByteString (ByteString)
+import Data.List.NonEmpty (NonEmpty)
+import qualified Data.List.NonEmpty as NE
+import Data.Maybe
 import Data.Password.Bcrypt
 import Data.Text (Text)
 import Data.Time
@@ -33,6 +37,7 @@ import Data.Validity
 import Data.Validity.Persist ()
 import Data.Validity.Text ()
 import Data.Validity.Time ()
+import Database.Persist
 import Database.Persist.Sql
 import Database.Persist.TH
 import GHC.Generics (Generic)
@@ -277,7 +282,7 @@ ExternalEvent sql=external_event
     -- and we don't update the wrong party when parties get updated
     key Text
 
-    -- Make sure to change 'hasChangedComparedTo' below if you change any of these fields
+    -- Make sure to change 'changesComparedTo' below if you change any of these fields
     title Text
     description Text Maybe
     organiser Text Maybe
@@ -357,19 +362,24 @@ instance Validity SchedulePoster
 
 instance Validity StaticMap
 
-hasChangedComparedTo :: ExternalEvent -> ExternalEvent -> Bool
-hasChangedComparedTo ee1 ee2 =
+changesComparedTo :: ExternalEvent -> ExternalEvent -> Maybe (NonEmpty (Update ExternalEvent))
+changesComparedTo ee1 ee2 =
   let changed :: Eq a => (ExternalEvent -> a) -> Bool
       changed func = func ee1 /= func ee2
-   in or
-        [ changed externalEventTitle,
-          changed externalEventDescription,
-          changed externalEventOrganiser,
-          changed externalEventDay,
-          changed externalEventStart,
-          changed externalEventHomepage,
-          changed externalEventPrice,
-          changed externalEventCancelled,
-          changed externalEventPlace,
-          changed externalEventImporter
-        ]
+      updateWhenChanged :: (Eq a, PersistField a) => EntityField ExternalEvent a -> (ExternalEvent -> a) -> Maybe (Update ExternalEvent)
+      updateWhenChanged field func = do
+        guard $ changed func
+        pure $ field =. func ee1
+   in NE.nonEmpty $
+        catMaybes
+          [ updateWhenChanged ExternalEventTitle externalEventTitle,
+            updateWhenChanged ExternalEventDescription externalEventDescription,
+            updateWhenChanged ExternalEventOrganiser externalEventOrganiser,
+            updateWhenChanged ExternalEventDay externalEventDay,
+            updateWhenChanged ExternalEventStart externalEventStart,
+            updateWhenChanged ExternalEventHomepage externalEventHomepage,
+            updateWhenChanged ExternalEventPrice externalEventPrice,
+            updateWhenChanged ExternalEventCancelled externalEventCancelled,
+            updateWhenChanged ExternalEventPlace externalEventPlace,
+            updateWhenChanged ExternalEventImporter externalEventImporter
+          ]
