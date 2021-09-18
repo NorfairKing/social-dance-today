@@ -20,7 +20,7 @@
                 <p .control>
                   <div .button
                     id=#{statusId}>
-                    _{MsgHomeFormLocation}
+                    _{MsgLocateMeLocation}
             <p .help
               id=#{helpId}>
               _{MsgLocateMeHelpBefore}

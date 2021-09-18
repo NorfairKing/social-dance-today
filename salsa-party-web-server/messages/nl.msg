@@ -7,13 +7,15 @@ Logo title@Text: #{title} Logo
 # Home Page
 HomeDescription title@Text: #{title}: Waar kan ik gaan dansen? Vind vandaag sociale dans feesten. Ongeacht of u zoekt naar Salsa, Bachata, Kizomba, Mambo, Cha-Cha-Cha, Tango, Zouk, Swing, Lindy Hop, of nog een andere dans, u vindt het hier.
 HomeSubtitleQuestion: Waar kan ik gaan dansen?
-HomeFormLocation: Mijn locatie
-HomeFormLocationUnable: Localiseren mislukt..
-HomeFormLocationNotSupported: Geolocation wordt niet ondersteund door uw browser.
-HomeFormLocationInProgress: Localiseren…
-HomeFormLocationDone: Gelocaliseerd
 HomeFormSearch: Zoeken
 HomeFormHelp: Druk op 'Zoeken' om feesten te vinden nabij uw huidige locatie.
+
+# Locate me button
+LocateMeLocation: Mijn locatie
+LocateMeUnable: Localiseren mislukt..
+LocateMeNotSupported: Geolocation wordt niet ondersteund door uw browser.
+LocateMeInProgress: Localiseren…
+LocateMeDone: Gelocaliseerd
 
 # Explore
 ExploreTitle: Ontdek de wereld van de sociale dans!

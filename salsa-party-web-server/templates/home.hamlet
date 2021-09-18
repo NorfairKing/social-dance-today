@@ -22,7 +22,7 @@
                 <p .control>
                   <div .button
                     id=#{statusId}>
-                    _{MsgHomeFormLocation}
+                    _{MsgLocateMeLocation}
 
           <input #latitudeInput type=hidden name="latitude">
           <input #longitudeInput type=hidden name="longitude">

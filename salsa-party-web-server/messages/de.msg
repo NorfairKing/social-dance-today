@@ -7,14 +7,16 @@ Logo title@Text: #{title} Logo
 # Home Page
 HomeDescription title@Text: #{title}: Wo kann ich tanzen gehen? Finde heute Social Dance Partys. Egal ob du nach Salsa, Bachata, Kizomba, Mambo, Cha-Cha-Cha, Tango, Zouk, Swng, Kindy Hop oder einen anderen Tanz suchst, du findest sie hier.
 HomeSubtitleQuestion: Wo kann ich tanzen gehen?
-HomeFormLocation: Mein Standort
-HomeFormLocationUnable: Lokalisierung fehlgeschlagen.
-HomeFormLocationNotSupported: Geolocation wird von Ihrem Browser nicht unterstützt.
-HomeFormLocationInProgress: Lokalisieren…
-HomeFormLocationDone: Lokalisiert
 HomeFormSearch: Suche
 HomeFormHelp: Drücken Sie die Suchtaste, um parties in ihrer Umgebung zu finden.
 
+# Locate me button 
+LocateMeLocation: Mein Standort
+LocateMeUnable: Lokalisierung fehlgeschlagen.
+LocateMeNotSupported: Geolocation wird von Ihrem Browser nicht unterstützt.
+LocateMeInProgress: Lokalisieren…
+LocateMeDone: Lokalisiert
+ 
 # Explore
 ExploreTitle: Erkunde die Welt des Sozial Dance!
 ExploreDescription: Social Dance gibt es auf der ganzen Welt, finde heraus, wohin du gehen kannst!

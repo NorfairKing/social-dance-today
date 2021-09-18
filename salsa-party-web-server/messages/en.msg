@@ -4,11 +4,6 @@ Logo title@Text: #{title} Logo
 # Home Page
 HomeDescription title@Text: #{title}: Where can I dance? Find social dance parties today, whether you are looking for Salsa, Bachata, Kizomba, Mambo, Cha-Cha-Cha, Tango, Zouk, Swing, Lindy Hop, or another dance, you can find it here.
 HomeSubtitleQuestion: Where can I dance?
-HomeFormLocation: My location
-HomeFormLocationUnable: Unable to retrieve your location.
-HomeFormLocationNotSupported: Geolocation is not supported by your browser.
-HomeFormLocationInProgress: Locating…
-HomeFormLocationDone: Located
 HomeFormSearch: Search
 HomeFormHelp: Press the search button to find parties around your current location.
 
@@ -19,6 +14,11 @@ AdvancedSearchFormDistanceLabel: Distance
 AdvancedSearchFormSearch: Search
 
 # Locate me button
+LocateMeLocation: My location
+LocateMeUnable: Unable to retrieve your location.
+LocateMeNotSupported: Geolocation is not supported by your browser.
+LocateMeInProgress: Locating…
+LocateMeDone: Located
 LocateMeHelpBefore: Press the 'My location' button to use your current location.
 LocateMeHelpAfter: Your current location will be used for the search unless you fill in another location above.
 
