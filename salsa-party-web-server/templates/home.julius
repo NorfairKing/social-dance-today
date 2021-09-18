@@ -1,6 +1,6 @@
 function geoFindMe() {
 
-  const address = document.querySelector('#queryInput');
+  const address = document.querySelector('#query');
   const status = document.querySelector('#find-me');
 
 
