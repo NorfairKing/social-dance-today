@@ -291,21 +291,27 @@ searchResultsPage searchParameters@SearchParameters {..} = do
     if noData
       then $(widgetFile "search-no-results")
       else do
-        let prevDate = case searchParameterDate of
-              SearchFromToday -> SearchFromOn $ addDays (negate defaultDaysAhead) today
-              SearchFromOn day -> SearchFromOn $ addDays (negate defaultDaysAhead) day
-              SearchFromTo b e -> SearchFromTo (addDays (diffDays b e) b) (addDays (-1) b)
-              SearchExactlyOn day -> SearchExactlyOn $ addDays (-1) day
-        let nextDate = case searchParameterDate of
-              SearchFromToday -> SearchFromOn $ addDays defaultDaysAhead today
-              SearchFromOn day -> SearchFromOn $ addDays defaultDaysAhead day
-              SearchFromTo b e -> SearchFromTo (addDays 1 e) (addDays (diffDays e b) e)
-              SearchExactlyOn day -> SearchExactlyOn $ addDays 1 day
+        let prevDate = navPrevSearchDate today
+        let nextDate = navNextSearchDate today
         let days = [begin .. end]
         prevDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = prevDate}
         nextDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = nextDate}
         let pagination = $(widgetFile "search-pagination")
         $(widgetFile "search")
+
+navPrevSearchDate :: Day -> SearchDate -> SearchDate
+navPrevSearchDate today = \case
+  SearchFromToday -> SearchFromOn $ addDays (negate defaultDaysAhead) today
+  SearchFromOn day -> SearchFromOn $ addDays (negate defaultDaysAhead) day
+  SearchFromTo b e -> SearchFromTo (addDays (diffDays b e) b) (addDays (-1) b)
+  SearchExactlyOn day -> SearchExactlyOn $ addDays (-1) day
+
+navNextSearchDate :: Day -> SearchDate -> SearchDate
+navNextSearchDate today = \case
+  SearchFromToday -> SearchFromOn $ addDays defaultDaysAhead today
+  SearchFromOn day -> SearchFromOn $ addDays defaultDaysAhead day
+  SearchFromTo b e -> SearchFromTo (addDays 1 e) (addDays (diffDays e b) e)
+  SearchExactlyOn day -> SearchExactlyOn $ addDays 1 day
 
 searchParametersHtmlTitle :: SearchParameters -> WidgetFor App AppMessage
 searchParametersHtmlTitle SearchParameters {..} = do
