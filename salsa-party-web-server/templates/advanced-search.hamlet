@@ -36,15 +36,14 @@
                 <p .control .is-expanded>
                   <input .input #max-distance
                     name="distance"
-                    type="range"
-                    min=#{minimumMaximumDistance}
-                    max=#{maximumMaximumDistance}
-                    value=#{defaultMaximumDistance}
-                    step=#{maximumDistanceStep}
-                    oninput="updateMaximumDistanceValue()">
+                    type="number"
+                    min=#{minDistance}
+                    max=#{maxDistance}
+                    value=#{defaultDistance}
+                    step=#{stepDistance}>
                 <p .control>
                   <div .button .is-disabled #max-distance-value>
-                    #{defaultMaximumDistance}
+                    km
 
 
           <div .field>

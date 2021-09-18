@@ -30,6 +30,11 @@ getAdvancedSearchR = withNavBar $ do
   let queryId = "query"
   let statusId = "status"
   let helpId = "help"
+  let mToKm = (`div` 1000)
+  let minDistance = mToKm minimumMaximumDistance
+  let maxDistance = mToKm maximumMaximumDistance
+  let defaultDistance = mToKm defaultMaximumDistance
+  let stepDistance = mToKm maximumDistanceStep
   $(widgetFile "advanced-search") <> locateMeButton queryId statusId helpId
 
 data QueryForm = QueryForm
