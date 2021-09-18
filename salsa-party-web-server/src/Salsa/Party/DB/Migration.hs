@@ -100,7 +100,8 @@ setUpExternalEventSlugs = do
     runConduit $ externalEventSource .| C.mapM_ setupExternalEventSlug
 
 setupExternalEventSlug :: MonadIO m => Entity ExternalEvent -> SqlPersistT m ()
-setupExternalEventSlug (Entity externalEventId ExternalEvent {..}) = update externalEventId [ExternalEventSlug =. makeExternalEventSlug externalEventTitle]
+setupExternalEventSlug (Entity externalEventId ExternalEvent {..}) =
+  update externalEventId [ExternalEventSlug =. makeExternalEventSlug externalEventUuid externalEventTitle]
 
 {-# NOINLINE locations #-}
 locations :: [Location]

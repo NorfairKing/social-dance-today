@@ -24,6 +24,7 @@ import qualified Data.ByteString.Lazy as LB
 import Data.Default
 import Data.Maybe
 import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Validity
 import Data.Validity.Text ()
@@ -213,5 +214,5 @@ externalEventSlugRoute ExternalEvent {..} = do
   externalEventSlug_ <- externalEventSlug
   pure $ ExternalEventSlugR externalEventSlug_ externalEventDay
 
-makeExternalEventSlug :: Text -> Maybe EventSlug
-makeExternalEventSlug = mkSlug
+makeExternalEventSlug :: EventUUID -> Text -> Maybe EventSlug
+makeExternalEventSlug uuid title = mkSlug $ T.pack $ T.unpack title <> [replacementChar] <> take 2 (uuidString uuid)
