@@ -25,11 +25,15 @@ import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Query
 
+getAdvancedSearchR :: Handler Html
+getAdvancedSearchR = withNavBar $(widgetFile "advanced-search")
+
 data QueryForm = QueryForm
   { queryFormAddress :: Maybe Text,
     queryFormCoordinates :: Maybe Coordinates,
     queryFormBegin :: Maybe Day,
-    queryFormOn :: Maybe Day
+    queryFormOn :: Maybe Day,
+    queryFormDistance :: Maybe Word
   }
   deriving (Show, Eq, Generic)
 
@@ -48,6 +52,9 @@ onParameter = "on"
 beginParameter :: Text
 beginParameter = "begin"
 
+distanceParameter :: Text
+distanceParameter = "distance"
+
 queryForm :: FormInput Handler QueryForm
 queryForm =
   QueryForm
@@ -58,6 +65,7 @@ queryForm =
         )
     <*> iopt dayField beginParameter
     <*> iopt dayField onParameter
+    <*> iopt intField distanceParameter
 
 latitudeField :: Field Handler Latitude
 latitudeField =
@@ -86,24 +94,29 @@ queryFormToSearchParameters QueryForm {..} = do
         Nothing -> case queryFormBegin of
           Just day -> SearchFromOn day
           Nothing -> SearchFromToday
+  let searchParameterDistance = queryFormDistance
   pure SearchParameters {..}
 
 getQueryR :: Handler Html
 getQueryR = do
   searchParameters@SearchParameters {..} <- runInputGet queryForm >>= queryFormToSearchParameters
-  case searchParameterLocation of
-    SearchCoordinates _ -> searchResultsPage searchParameters
-    SearchAddress address -> case searchParameterDate of
-      SearchFromToday -> redirect $ SearchR address
-      SearchFromOn _ -> searchResultsPage searchParameters
-      SearchExactlyOn day -> redirect $ SearchDayR address day
+  case searchParameterDistance of
+    Just _ -> searchResultsPage searchParameters
+    Nothing ->
+      case searchParameterLocation of
+        SearchCoordinates _ -> searchResultsPage searchParameters
+        SearchAddress address -> case searchParameterDate of
+          SearchFromToday -> redirect $ SearchR address
+          SearchFromOn _ -> searchResultsPage searchParameters
+          SearchExactlyOn day -> redirect $ SearchDayR address day
 
 getSearchR :: Text -> Handler Html
 getSearchR query = do
   searchResultsPage
     SearchParameters
       { searchParameterLocation = SearchAddress query,
-        searchParameterDate = SearchFromToday
+        searchParameterDate = SearchFromToday,
+        searchParameterDistance = Nothing
       }
 
 getSearchDayR :: Text -> Day -> Handler Html
@@ -111,7 +124,8 @@ getSearchDayR query day =
   searchResultsPage
     SearchParameters
       { searchParameterLocation = SearchAddress query,
-        searchParameterDate = SearchExactlyOn day
+        searchParameterDate = SearchExactlyOn day,
+        searchParameterDistance = Nothing
       }
 
 searchParametersQueryRoute :: (MonadHandler m, HandlerSite m ~ App) => SearchParameters -> m Text
@@ -125,7 +139,8 @@ searchParametersQueryRoute searchParameters = do
 -- For example, the 'SearchBegin' parameter could be computed ahead of time, but then we would not be able to compute a nice title and description
 data SearchParameters = SearchParameters
   { searchParameterLocation :: !SearchLocation,
-    searchParameterDate :: !SearchDate
+    searchParameterDate :: !SearchDate,
+    searchParameterDistance :: !(Maybe Word)
   }
   deriving (Show, Eq, Generic)
 
@@ -133,7 +148,8 @@ searchParameterParameters :: SearchParameters -> [(Text, Text)]
 searchParameterParameters SearchParameters {..} =
   concat
     [ searchParameterLocationParameters searchParameterLocation,
-      searchParameterDateParameters searchParameterDate
+      searchParameterDateParameters searchParameterDate,
+      [(distanceParameter, T.pack $ show dist) | dist <- maybeToList searchParameterDistance]
     ]
 
 data SearchLocation
@@ -197,7 +213,8 @@ searchResultsPage searchParameters@SearchParameters {..} = do
         SearchQuery
           { searchQueryBegin = begin,
             searchQueryMEnd = Just end,
-            searchQueryCoordinates = coordinates
+            searchQueryCoordinates = coordinates,
+            searchQueryDistance = fromMaybe defaultMaximumDistance searchParameterDistance
           }
 
   -- If no results were returned, check if there was any data at all

@@ -1,0 +1,15 @@
+function updateMaximumDistanceValue () {
+  let value = document.getElementById('max-distance').value;
+  console.log(value);
+  document.getElementById('max-distance-value').innerHTML = (value / 1000) + ' km'; 
+}
+
+if (document) {
+  if (document.addEventListener) {
+    document.addEventListener("DOMContentLoaded", function() {
+      updateMaximumDistanceValue();
+    })
+  }
+}
+
+

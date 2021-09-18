@@ -12,6 +12,11 @@ HomeFormLocationDone: Located
 HomeFormSearch: Search
 HomeFormHelp: Press the search button to find parties around your current location.
 
+# Advanced search
+AdvancedSearchFormLocationLabel: Location
+AdvancedSearchFormDistanceLabel: Distance
+AdvancedSearchFormSearch: Search
+
 # Explore
 ExploreTitle: Explore the world of social dance!
 ExploreDescription: Social dance exists all over the world, find out where to go!

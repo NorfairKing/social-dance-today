@@ -20,7 +20,8 @@ import Salsa.Party.Web.Server.Handler.Search.Deduplication
 data SearchQuery = SearchQuery
   { searchQueryBegin :: !Day,
     searchQueryMEnd :: !(Maybe Day),
-    searchQueryCoordinates :: !Coordinates
+    searchQueryCoordinates :: !Coordinates,
+    searchQueryDistance :: Word
   }
   deriving (Show, Eq, Generic)
 
@@ -44,11 +45,11 @@ runSearchQuery SearchQuery {..} = do
       E.on (organiser E.^. OrganiserId E.==. party E.^. PartyOrganiser)
       E.on (party E.^. PartyPlace E.==. place E.^. PlaceId)
       E.where_ $ dayLimit (party E.^. PartyDay) searchQueryBegin searchQueryMEnd
-      distanceEstimationQuery defaultMaximumDistance searchQueryCoordinates place
+      distanceEstimationQuery searchQueryDistance searchQueryCoordinates place
       pure (organiser, party, place)
 
   -- Post-process the distance before we fetch images so we don't fetch too many images.
-  let partyResultsWithoutImages = postProcessParties defaultMaximumDistance searchQueryCoordinates rawPartyResults
+  let partyResultsWithoutImages = postProcessParties searchQueryDistance searchQueryCoordinates rawPartyResults
   partyResultsWithImages <-
     forM partyResultsWithoutImages $ \(organiserEntity, partyEntity@(Entity partyId party), placeEntity) -> do
       mKey <- getPosterForParty partyId
@@ -58,11 +59,11 @@ runSearchQuery SearchQuery {..} = do
     E.from $ \(externalEvent `E.InnerJoin` place) -> do
       E.on (externalEvent E.^. ExternalEventPlace E.==. place E.^. PlaceId)
       E.where_ $ dayLimit (externalEvent E.^. ExternalEventDay) searchQueryBegin searchQueryMEnd
-      distanceEstimationQuery defaultMaximumDistance searchQueryCoordinates place
+      distanceEstimationQuery searchQueryDistance searchQueryCoordinates place
       pure (externalEvent, place)
 
   -- TODO deduplicate external events before fetching posters
-  let externalEventResultsWithoutImages = postProcessExternalEvents defaultMaximumDistance searchQueryCoordinates rawExternalEventResults
+  let externalEventResultsWithoutImages = postProcessExternalEvents searchQueryDistance searchQueryCoordinates rawExternalEventResults
   externalEventResultsWithImages <-
     forM externalEventResultsWithoutImages $ \(externalEventEntity@(Entity externalEventId externalEvent), placeEntity) -> do
       mKey <- getPosterForExternalEvent externalEventId
@@ -234,8 +235,11 @@ sortResults coordinates =
 defaultMaximumDistance :: Word
 defaultMaximumDistance = 50_000 -- 50 km
 
+maximumDistanceStep :: Word
+maximumDistanceStep = 1_000
+
 minimumMaximumDistance :: Word
-minimumMaximumDistance = 100 -- 100 m
+minimumMaximumDistance = maximumDistanceStep -- 1 km
 
 maximumMaximumDistance :: Word
 maximumMaximumDistance = 200_000 -- 200 km

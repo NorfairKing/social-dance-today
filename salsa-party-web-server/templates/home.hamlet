@@ -30,6 +30,8 @@
             <div .control>
               <button #submit .button .is-dark type="submit">
                 _{MsgHomeFormSearch}
+              <a .button .is-text href=@{AdvancedSearchR}>
+                Advanced
 
           <div .field .has-text-centered>
             <div .help #help>

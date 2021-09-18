@@ -1,0 +1,52 @@
+<section .section .is-large>
+  <div .container>
+    <div .columns .is-centered>
+      <div .column .is-8-tablet .is-7-desktop .is-6-widescreen>
+        <form
+          method=get
+          action=@{QueryR}>
+          <div .field>
+            <label .label>
+              _{MsgAdvancedSearchFormLocationLabel}
+            <div .control>
+              <div .field .has-addons>
+                <p .control .is-expanded>
+                  <input .input
+                    #query
+                    type=text
+                    name="address"
+                    placeholder="Zürich"
+                    required>
+                <p .control>
+                  <div .button #find-me>
+                    _{MsgHomeFormLocation}
+
+          <input #latitudeInput type=hidden name="latitude">
+          <input #longitudeInput type=hidden name="longitude">
+
+          <div .field>
+            <label .label>
+              _{MsgAdvancedSearchFormDistanceLabel}
+            <div .control>
+              <div .field .has-addons>
+                <p .control .is-expanded>
+                  <input .input #max-distance
+                    name="distance"
+                    type="range"
+                    min=#{minimumMaximumDistance}
+                    max=#{maximumMaximumDistance}
+                    value=#{defaultMaximumDistance}
+                    step=#{maximumDistanceStep}
+                    oninput="updateMaximumDistanceValue()">
+                <p .control>
+                  <div .button .is-disabled #max-distance-value>
+                    #{defaultMaximumDistance}
+
+
+          <div .field>
+            <div .control>
+              <button #submit .button .is-dark type="submit">
+                _{MsgAdvancedSearchFormSearch}
+
+          <div .field>
+            <div .help #help>

@@ -1,5 +1,7 @@
 / HomeR GET
 
+/advanced-search AdvancedSearchR GET
+
 /explore ExploreR GET
 /explore/#Text/skyline.jpg ExploreSkylineR GET
 
