@@ -42,7 +42,7 @@
                     type="number"
                     min=#{minDistance}
                     max=#{maxDistance}
-                    value=#{defaultDistance}
+                    placeholder=#{defaultDistance}
                     step=#{stepDistance}>
                 <p .control>
                   <div .button .is-disabled #max-distance-value>
