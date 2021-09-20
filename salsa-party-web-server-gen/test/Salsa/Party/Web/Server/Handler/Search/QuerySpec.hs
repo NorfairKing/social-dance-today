@@ -112,7 +112,7 @@ spec = do
             forAllValid $ \coordinates ->
               flip runSqlPool pool $ do
                 sr <-
-                  runSearchQuery @IO
+                  runSearchQueryForResults @IO
                     SearchQuery
                       { searchQueryBegin = begin,
                         searchQueryMEnd = mEnd,
@@ -160,7 +160,7 @@ spec = do
                             }
                     DB.insert_ party3
                     sr <-
-                      runSearchQuery @IO
+                      runSearchQueryForResults @IO
                         SearchQuery
                           { searchQueryBegin = day,
                             searchQueryMEnd = Just day,
@@ -216,7 +216,7 @@ spec = do
                             }
                     DB.insert_ party3
                     sr <-
-                      runSearchQuery @IO
+                      runSearchQueryForResults @IO
                         SearchQuery
                           { searchQueryBegin = day,
                             searchQueryMEnd = Just day,
@@ -269,7 +269,7 @@ spec = do
                           image2Id <- DB.insert image2Prototype
                           DB.insert_ partyPoster2Prototype {partyPosterParty = party2Id, partyPosterImage = image2Id}
                           sr <-
-                            runSearchQuery @IO
+                            runSearchQueryForResults @IO
                               SearchQuery
                                 { searchQueryBegin = day,
                                   searchQueryMEnd = Just day,
@@ -392,7 +392,7 @@ spec = do
                                         }
                                 DB.insert_ externalEvent4
                                 sr <-
-                                  runSearchQuery @IO
+                                  runSearchQueryForResults @IO
                                     SearchQuery
                                       { searchQueryBegin = day,
                                         searchQueryMEnd = Just day,

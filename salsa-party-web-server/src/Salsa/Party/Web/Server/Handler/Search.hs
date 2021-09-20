@@ -267,7 +267,7 @@ searchResultsPage searchParameters@SearchParameters {..} = do
   coordinates <- resolveSearchLocation searchParameterLocation
 
   -- Do the actual search
-  searchResults <-
+  searchResult <-
     runDB $
       runSearchQuery
         SearchQuery
@@ -276,12 +276,6 @@ searchResultsPage searchParameters@SearchParameters {..} = do
             searchQueryCoordinates = coordinates,
             searchQueryDistance = Just $ fromMaybe defaultMaximumDistance searchParameterDistance
           }
-
-  -- If no results were returned, check if there was any data at all
-  noData <-
-    if nullSearchResults searchResults
-      then runDB $ noDataQuery coordinates
-      else pure False
 
   withNavBar $ do
     searchParametersHtmlTitle searchParameters >>= setTitleI
@@ -297,9 +291,9 @@ searchResultsPage searchParameters@SearchParameters {..} = do
                 #{formatTime timeLocale prettyDayFormat day}
                 (_{autoDayMsg today day})
           |]
-    if noData
-      then $(widgetFile "search-no-results")
-      else do
+    case searchResult of
+      NoDataYet -> $(widgetFile "search-no-results")
+      ResultsFound searchResults -> do
         let robotsTags =
               catMaybes
                 [ Just "noarchive",

@@ -39,7 +39,7 @@ minimumUpcomingParties = 10
 explorePartiesAroundLocationQuery :: MonadIO m => Day -> Coordinates -> SqlPersistT m Int
 explorePartiesAroundLocationQuery today coordinates =
   countSearchResults
-    <$> runSearchQuery
+    <$> runSearchQueryForResults
       SearchQuery
         { searchQueryBegin = today,
           searchQueryMEnd = Nothing,

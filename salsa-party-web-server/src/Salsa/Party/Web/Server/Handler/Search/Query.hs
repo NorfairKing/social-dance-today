@@ -31,15 +31,31 @@ nullSearchResults = (== 0) . countSearchResults -- Not the same as M.null!
 countSearchResults :: Map Day [Result] -> Int
 countSearchResults = M.foldl (+) 0 . M.map length
 
+data SearchResult
+  = ResultsFound !(Map Day [Result])
+  | NoDataYet
+
 data Result
   = External (Entity ExternalEvent) (Entity Place) (Maybe CASKey)
   | Internal (Entity Organiser) (Entity Party) (Entity Place) (Maybe CASKey)
   deriving (Show, Eq)
 
+runSearchQuery :: MonadIO m => SearchQuery -> SqlPersistT m SearchResult
+runSearchQuery searchQuery = do
+  results <- runSearchQueryForResults searchQuery
+  if nullSearchResults results
+    then do
+      noDataYet <- noDataQuery (searchQueryCoordinates searchQuery)
+      pure $
+        if noDataYet
+          then NoDataYet
+          else ResultsFound results
+    else pure $ ResultsFound results
+
 -- For a begin day end day (inclusive) and a given place, find all parties per
 -- day sorted by distance, and with external parties at the end in any case.
-runSearchQuery :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
-runSearchQuery SearchQuery {..} = do
+runSearchQueryForResults :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
+runSearchQueryForResults SearchQuery {..} = do
   rawPartyResults <- E.select $
     E.from $ \((organiser `E.InnerJoin` party `E.InnerJoin` place)) -> do
       E.on (organiser E.^. OrganiserId E.==. party E.^. PartyOrganiser)
@@ -260,7 +276,7 @@ noDataQuery :: MonadIO m => Coordinates -> SqlPersistT m Bool -- True means no d
 noDataQuery coordinates = do
   today <- liftIO $ utctDay <$> getCurrentTime
   nullSearchResults
-    <$> runSearchQuery
+    <$> runSearchQueryForResults
       SearchQuery
         { searchQueryBegin = today,
           searchQueryMEnd = Nothing,
