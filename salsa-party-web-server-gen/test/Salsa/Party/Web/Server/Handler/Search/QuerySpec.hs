@@ -355,7 +355,7 @@ spec = do
                                           externalEventStart = Nothing,
                                           externalEventHomepage = Nothing,
                                           externalEventPrice = Nothing,
-                                          externalEventCancelled = False
+                                          externalEventCancelled = Just False
                                         }
                                 externalEvent1Id <- DB.insert externalEvent1
                                 let externalEvent2 =
@@ -374,7 +374,7 @@ spec = do
                                           externalEventDescription = Nothing,
                                           externalEventOrganiser = Nothing,
                                           externalEventHomepage = Nothing,
-                                          externalEventCancelled = False
+                                          externalEventCancelled = Just False
                                         }
                                 DB.insert_ externalEvent3
                                 -- A duplicate of external event 1, not supposed to be shown
@@ -388,7 +388,7 @@ spec = do
                                           externalEventStart = Nothing,
                                           externalEventHomepage = Nothing,
                                           externalEventPrice = Nothing,
-                                          externalEventCancelled = False
+                                          externalEventCancelled = Just False
                                         }
                                 DB.insert_ externalEvent4
                                 sr <-
