@@ -50,10 +50,12 @@ externalEventToLDEvent renderUrl ExternalEvent {..} Place {..} mPosterKey =
           LD.eventEndDate = Nothing,
           LD.eventAttendanceMode = Just LD.OfflineEventAttendanceMode,
           LD.eventStatus =
-            Just $
-              if externalEventCancelled
-                then LD.EventCancelled
-                else LD.EventScheduled,
+            ( \c ->
+                if c
+                  then LD.EventCancelled
+                  else LD.EventScheduled
+            )
+              <$> externalEventCancelled,
           LD.eventImages = [LD.EventImageURL (renderUrl (ImageR posterKey)) | posterKey <- maybeToList mPosterKey],
           LD.eventOrganizer = case externalEventOrganiser of
             Nothing -> Nothing

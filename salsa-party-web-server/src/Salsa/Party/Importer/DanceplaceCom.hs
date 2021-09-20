@@ -129,7 +129,7 @@ parseEventFromPage request response = do
         let externalEventPrice = Nothing
 
         -- We can't accurately parse the cancelled state because the pages list PostPoned even when the events are not.
-        let externalEventCancelled = False
+        let externalEventCancelled = Nothing
 
         let externalEventCreated = now
         let externalEventModified = Nothing

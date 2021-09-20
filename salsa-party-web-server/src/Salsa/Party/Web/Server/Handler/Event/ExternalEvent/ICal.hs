@@ -114,10 +114,12 @@ externalEventCalendarEvent renderUrl externalEvent@ExternalEvent {..} Place {..}
           ICal.vePriority = def,
           ICal.veSeq = def,
           ICal.veStatus =
-            Just $
-              if externalEventCancelled
-                then ICal.CancelledEvent {eventStatusOther = noOther}
-                else ICal.ConfirmedEvent {eventStatusOther = noOther},
+            ( \c ->
+                if c
+                  then ICal.CancelledEvent {eventStatusOther = noOther}
+                  else ICal.ConfirmedEvent {eventStatusOther = noOther}
+            )
+              <$> externalEventCancelled,
           ICal.veSummary =
             Just $
               ICal.Summary

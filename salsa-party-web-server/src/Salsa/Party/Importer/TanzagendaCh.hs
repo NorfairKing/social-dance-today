@@ -119,7 +119,7 @@ parseEventPage = awaitForever $ \(key, request, response) -> do
               pure $ T.unlines sentences
 
           let externalEventOrganiser = Nothing -- Not on the page
-          let externalEventCancelled = False -- Not on the page, I think
+          let externalEventCancelled = Nothing -- Not on the page, I think
           externalEventHomepage <- optional $
             chroot ("li" @: [hasClass "nav-item"]) $ do
               ref <- attr "href" ("a" @: [hasClass "nav-social"])

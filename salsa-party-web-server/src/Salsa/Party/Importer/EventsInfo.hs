@@ -197,7 +197,7 @@ eventDetailsSink = awaitForever $ \(identifier, EventDetails {..}) -> do
               ]
         )
           <$> eventDetailsPrice
-  let externalEventCancelled = eventDetailsCancelled
+  let externalEventCancelled = Just eventDetailsCancelled
   now <- liftIO getCurrentTime
   let externalEventCreated = now
   let externalEventModified = Nothing

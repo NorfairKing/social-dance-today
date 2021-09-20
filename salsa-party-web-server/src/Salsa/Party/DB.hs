@@ -290,7 +290,7 @@ ExternalEvent sql=external_event
     start TimeOfDay Maybe
     homepage Text Maybe
     price Text Maybe default=NULL
-    cancelled Bool default=0 -- False
+    cancelled Bool Maybe default=NULL -- Nothing means we don't know.
 
     -- For diagnostics
     created UTCTime

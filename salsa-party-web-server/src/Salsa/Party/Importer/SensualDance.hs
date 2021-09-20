@@ -249,7 +249,7 @@ importItem = awaitForever $ \(Item {..}, mImageBlob) -> do
              in if tod /= midnight then Just tod else Nothing
       let externalEventHomepage = itemWebsite
       let externalEventPrice = Nothing
-      let externalEventCancelled = False
+      let externalEventCancelled = Nothing
       case M.lookup itemRegion regionMap of
         Nothing -> logDebugN $ "Could not categorise region: " <> itemRegion
         Just address -> do

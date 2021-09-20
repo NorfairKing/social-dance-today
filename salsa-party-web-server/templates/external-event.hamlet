@@ -3,10 +3,7 @@
     <div .columns .is-centered>
       <div .column .is-8-tablet .is-7-desktop .is-6-widescreen>
         <h1 .title .is-3>
-          $if externalEventCancelled
-            _{MsgPartyTitleCancelled externalEventTitle}
-          $else
-            _{MsgPartyTitleScheduled externalEventTitle}
+          _{externalEventTitleMessage externalEvent}
 
         <h2 .title .is-4>
           _{MsgPartyAddress placeQuery}

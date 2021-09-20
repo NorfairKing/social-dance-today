@@ -28,10 +28,7 @@ $forall day <- days
 
                         <div .card-content>
                           <h2 .title .is-4>
-                            $if partyCancelled party
-                              _{MsgPartyTitleCancelled (partyTitle party)}
-                            $else
-                              _{MsgPartyTitleScheduled (partyTitle party)}
+                            _{partyTitleMessage party}
                           <h3 .subtitle .is-5>
                             #{placeQuery p}
 
@@ -47,10 +44,7 @@ $forall day <- days
                               alt=_{MsgSearchPosterAlt (externalEventTitle externalEvent) (formatTime timeLocale prettyDayFormat $ externalEventDay externalEvent)}>
                         <div .card-content>
                           <h2 .title .is-4>
-                            $if externalEventCancelled externalEvent
-                              _{MsgPartyTitleCancelled (externalEventTitle externalEvent)}
-                            $else
-                              _{MsgPartyTitleScheduled (externalEventTitle externalEvent)}
+                            _{externalEventTitleMessage externalEvent}
                           <h3 .subtitle .is-5>
                             #{placeQuery p}
       $nothing

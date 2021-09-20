@@ -28,10 +28,7 @@
         $forall Entity _ externalEvent <- paginatedElements paginated
           <tr>
             <td>
-              $if externalEventCancelled externalEvent
-                _{MsgPartyTitleCancelled (externalEventTitle externalEvent)}
-              $else
-                _{MsgPartyTitleScheduled (externalEventTitle externalEvent)}
+              _{externalEventTitleMessage externalEvent}
             <td>
               ^{formatAdminTime $ externalEventCreated externalEvent}
             <td>

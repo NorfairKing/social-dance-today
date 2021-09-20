@@ -224,3 +224,14 @@ locateMeButton :: RenderMessage App AppMessage => Text -> Text -> Text -> Widget
 locateMeButton queryId statusId helpId = do
   messageRender <- getMessageRender
   $(widgetFile "locate-button")
+
+partyTitleMessage :: Party -> AppMessage
+partyTitleMessage party =
+  if partyCancelled party
+    then MsgPartyTitleCancelled (partyTitle party)
+    else MsgPartyTitleScheduled (partyTitle party)
+
+externalEventTitleMessage :: ExternalEvent -> AppMessage
+externalEventTitleMessage externalEvent = case externalEventCancelled externalEvent of
+  Just True -> MsgPartyTitleCancelled (externalEventTitle externalEvent)
+  _ -> MsgPartyTitleScheduled (externalEventTitle externalEvent)

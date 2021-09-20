@@ -178,13 +178,13 @@ importEventPage = awaitForever $ \(relativeUrl, request, response) -> do
               mPrice <- optional $ T.strip . decodeLenient <$> cell 7
               pure (mStart, mPrice)
 
-          cancelled <- fmap (fromMaybe False) $
+          externalEventCancelled <-
             optional $ do
               t <- text ("font" @: ["color" @= "red"])
               pure $ "geannuleerd" `T.isInfixOf` decodeLenient t
 
           let externalEventDescription = Nothing
-          let externalEventCancelled = cancelled
+
           let externalEventCreated = now
           let externalEventModified = Nothing
           externalEventImporter <- asks importEnvId

@@ -132,7 +132,7 @@ importEventPage = awaitForever $ \(eventId, request, response) -> do
 
               let externalEventHomepage = listToMaybe $ mapMaybe (T.stripPrefix "URL: ") textLines
               let externalEventPrice = listToMaybe $ mapMaybe (T.stripPrefix "Entrance €: ") textLines
-              let externalEventCancelled = False
+              let externalEventCancelled = Nothing
 
               app <- asks importEnvApp
               mPlaceEntity <- lift $ runReaderT (lookupPlaceRaw address) app

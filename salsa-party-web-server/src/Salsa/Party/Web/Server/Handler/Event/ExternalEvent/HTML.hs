@@ -29,10 +29,7 @@ externalEventPageHtml (Entity _ externalEvent@ExternalEvent {..}) (Entity _ plac
   prettyTimeFormat <- getPrettyTimeFormat
   messageRender <- getMessageRender
   withNavBar $ do
-    setTitleI $
-      if externalEventCancelled
-        then MsgPartyTitleCancelled externalEventTitle
-        else MsgPartyTitleScheduled externalEventTitle
+    setTitleI $ externalEventTitleMessage externalEvent
     setDescription $ externalEventHtmlDescription messageRender timeLocale prettyDayFormat prettyTimeFormat externalEvent place
     toWidgetHead $ toJSONLDData $ externalEventToLDEvent renderUrl externalEvent place mPosterKey
     addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe externalEventCreated externalEventModified

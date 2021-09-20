@@ -60,7 +60,7 @@ data ExternalEventExport = ExternalEventExport
     externalEventExportStart :: !(Maybe TimeOfDay),
     externalEventExportHomepage :: !(Maybe Text),
     externalEventExportPrice :: !(Maybe Text),
-    externalEventExportCancelled :: !Bool,
+    externalEventExportCancelled :: !(Maybe Bool),
     externalEventExportCreated :: !UTCTime,
     externalEventExportModified :: !(Maybe UTCTime),
     externalEventExportPlace :: !PlaceExport,
@@ -80,13 +80,13 @@ instance ToJSON ExternalEventExport where
                 "key" .= externalEventExportKey,
                 "title" .= externalEventExportTitle,
                 "day" .= externalEventExportDay,
-                "cancelled" .= externalEventExportCancelled,
                 "created" .= externalEventExportCreated,
                 "place" .= externalEventExportPlace,
                 "importer" .= externalEventExportImporter,
                 "origin" .= externalEventExportOrigin
               ],
               mField "slug" externalEventExportSlug,
+              mField "cancelled" externalEventExportCancelled,
               mField "organiser" externalEventExportOrganiser,
               mField "description" externalEventExportDescription,
               mField "homepage" externalEventExportHomepage,
@@ -107,7 +107,7 @@ instance FromJSON ExternalEventExport where
     externalEventExportStart <- o .:? "start"
     externalEventExportHomepage <- o .:? "homepage"
     externalEventExportPrice <- o .:? "price"
-    externalEventExportCancelled <- o .:? "cancelled" .!= False
+    externalEventExportCancelled <- o .:? "cancelled"
     externalEventExportCreated <- o .: "created"
     externalEventExportModified <- o .:? "modified"
     externalEventExportPlace <- o .: "place"

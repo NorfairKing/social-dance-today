@@ -135,11 +135,11 @@ similarityScoreExternalToExternal (Entity _ externalEvent1, Entity _ place1, _) 
    in Terms "External to external" $
         concat
           [ [ (1, placeSimilarity place1 place2),
-              (3, Factor "Title" $ simVia titleSimilarity externalEventTitle),
+              (3, Factor "Title" $ simVia titleSimilarity externalEventTitle)
               -- Don't consider the day because we only look at events on the same day anyway
               -- (1, Factor "Day" $ simVia daySimilarity externalEventDay),
-              (0.1, Factor "Cancelled" $ simVia boolSimilarity externalEventCancelled)
             ],
+            mSim 0.1 "Cancelled" boolSimilarity externalEventCancelled,
             mSimFunc 3 descriptionSimilarity externalEventDescription,
             mSim 0.5 "Price" priceSimilarity externalEventPrice,
             mSim 1 "Homepage" homepageSimilarity externalEventHomepage,
@@ -162,13 +162,13 @@ similarityScoreExternalToInternal (Entity _ externalEvent, Entity _ place1, _) (
    in Terms "External to internal" $
         concat
           [ [ (1, placeSimilarity place1 place2),
-              (3, Factor "Title" $ sim titleSimilarity externalEventTitle partyTitle),
+              (3, Factor "Title" $ sim titleSimilarity externalEventTitle partyTitle)
               -- Don't consider the day because we only look at events on the same day anyway
               -- (1, Factor "Day" $ sim daySimilarity externalEventDay partyDay),
-              (0.1, Factor "Cancelled" $ sim boolSimilarity externalEventCancelled partyCancelled)
             ],
             [(1, Factor "Organiser" $ textSimilarity externalOrganiser (organiserName organiser)) | externalOrganiser <- maybeToList $ externalEventOrganiser externalEvent],
             mSimFunc 3 descriptionSimilarity externalEventDescription partyDescription,
+            mSim 0.1 "Cancelled" boolSimilarity externalEventCancelled (Just . partyCancelled),
             mSim 0.5 "Price" priceSimilarity externalEventPrice partyPrice,
             mSim 1 "Homepage" homepageSimilarity externalEventHomepage partyHomepage,
             mSim 0.25 "Start" timeSimilarity externalEventStart partyStart

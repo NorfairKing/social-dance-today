@@ -26,9 +26,7 @@
         $forall Entity _ party <- paginatedElements paginated
           <tr>
             <td>
-              $if partyCancelled party
-                CANCELLED: 
-              #{partyTitle party}
+              _{partyTitleMessage party}
             <td>
               ^{formatAdminDay $ partyDay party}
             <td>

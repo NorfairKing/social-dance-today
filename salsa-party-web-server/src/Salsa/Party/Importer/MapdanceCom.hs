@@ -144,14 +144,13 @@ importFestivalPage = awaitForever $ \(request, response) -> do
         let externalEventHomepage = Nothing
         let externalEventPrice = Nothing
 
-        mCancelled <- optional $ do
+        externalEventCancelled <- optional $ do
           rawEventStatus <- attr "content" $ "meta" @: ["itemprop" @= "eventStatus"]
           pure $ case rawEventStatus of
             "https://schema.org/EventScheduled" -> False
             "https://schema.org/EventPostponed" -> True
             "https://schema.org/EventCancelled" -> True
             _ -> False
-        let externalEventCancelled = fromMaybe False mCancelled
 
         address <- chroot ("div" @: ["itemprop" @= "location"]) $ do
           name <- text $ "div" @: ["itemprop" @= "name"]
