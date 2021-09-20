@@ -1,7 +1,7 @@
 { envname
 , sources ? import ./sources.nix
 , salsaPkgs ? import ./pkgs.nix { inherit sources; }
-, salsaPartyPackages ? salsaPkgs.salsaPartyPackages
+, salsaPartyRelease ? salsaPkgs.salsaPartyRelease
 }:
 { lib, pkgs, config, ... }:
 with lib;
@@ -219,7 +219,7 @@ in
               ''
                 mkdir -p "${web-server-working-dir}"
                 cd ${web-server-working-dir};
-                ${salsaPartyPackages.salsa-party-web-server}/bin/salsa-party-web-server
+                ${salsaPartyRelease}/bin/salsa-party-web-server
               '';
             serviceConfig =
               {

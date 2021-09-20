@@ -6,7 +6,7 @@ let
     envname = "production";
     inherit sources;
     salsaPkgs = pkgs;
-    salsaPartyPackages = pkgs.salsaPartyPackages;
+    salsaPartyRelease = pkgs.salsaPartyRelease;
   };
   port = 8001;
 in
