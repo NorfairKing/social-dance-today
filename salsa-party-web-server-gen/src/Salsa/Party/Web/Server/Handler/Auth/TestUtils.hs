@@ -27,7 +27,7 @@ import Test.Syd.Yesod
 import Yesod.Auth
 
 data TestUser = TestUser
-  { testUserEmail :: Text,
+  { testUserEmail :: EmailAddress,
     testUserPassword :: Text
   }
   deriving (Show, Eq, Generic)

@@ -69,7 +69,7 @@ serverSetupFunc man = do
         appGoogleSearchConsoleVerification = Nothing
       }
 
-adminEmail :: Text
+adminEmail :: EmailAddress
 adminEmail = "admin@example.com"
 
 type DBSpec = SpecWith DB.ConnectionPool

@@ -39,6 +39,10 @@ instance GenValid Textarea where
   genValid = Textarea <$> genValid
   shrinkValid = fmap Textarea . shrinkValid . unTextarea
 
+instance GenValid EmailAddress where
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+
 instance GenValid (Slug a) where
   genValid =
     let charGen = choose ('\0', '\127') `suchThat` (validationIsValid . validateSlugChar)
@@ -181,7 +185,7 @@ instance GenValid SimilarityFormula where
           ]
 
 -- This isn't very general, but that's probably fine.
-genValidEmailAddress :: Gen Text
+genValidEmailAddress :: Gen EmailAddress
 genValidEmailAddress = do
   userLen <- upTo 10
   user <- replicateM (max 1 userLen) $ choose ('a', 'z')
@@ -189,7 +193,7 @@ genValidEmailAddress = do
   domain <- replicateM (max 1 domainLen) $ choose ('a', 'z')
   tldLen <- upTo 10
   tld <- replicateM (max 1 tldLen) $ choose ('a', 'z')
-  pure $ T.pack $ concat [user, "@", domain, ".", tld]
+  pure $ EmailAddress $ T.pack $ concat [user, "@", domain, ".", tld]
 
 genValidPassword :: Gen Text
 genValidPassword = genValid `suchThat` (not . T.null)
