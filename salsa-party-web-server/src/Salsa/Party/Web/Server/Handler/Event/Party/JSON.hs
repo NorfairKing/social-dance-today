@@ -35,7 +35,7 @@ exportParty (Entity _ organiser) (Entity _ party) = do
   pure $ partyExport party place organiser user
 
 data UserExport = UserExport
-  { userExportEmailAddress :: !Text,
+  { userExportEmailAddress :: !EmailAddress,
     userExportPassphraseHash :: !(PasswordHash Bcrypt),
     userExportVerificationKey :: !(Maybe Text),
     userExportCreated :: !UTCTime

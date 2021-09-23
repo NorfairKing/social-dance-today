@@ -129,7 +129,7 @@ instance YesodAuth App where
   logoutDest _ = HomeR
   authenticate Creds {..} =
     let byEmail = do
-          mUser <- liftHandler $ runDB $ getBy (UniqueUserEmailAddress credsIdent)
+          mUser <- liftHandler $ runDB $ getBy (UniqueUserEmailAddress (EmailAddress credsIdent))
           pure $ case mUser of
             Nothing -> UserError $ IdentifierNotFound credsIdent
             Just (Entity userId _) -> Authenticated userId

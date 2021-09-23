@@ -48,12 +48,9 @@ data OrganiserReminderDecision
   | OrganiserNotFound !OrganiserId
   | PartyOrganisedTooRecently !Day -- The scheduled day of the most recent party
   | UserNotFound !UserId
-  | UserEmailNotVerified !UserId !Text
+  | UserEmailNotVerified !UserId !EmailAddress
   | UserTooNew !UserId !UTCTime
-  | ShouldSendReminder
-      !OrganiserReminderId
-      !Text -- Email Address
-      !ReminderSecret
+  | ShouldSendReminder !OrganiserReminderId !EmailAddress !ReminderSecret
   deriving (Show, Eq)
 
 -- Check whether to send an organiser reminder, return the email address to send it to if we should.
@@ -194,11 +191,11 @@ reminderDecisionSink = awaitForever $ \case
         organiserReminderId
         [OrganiserReminderLast =. Just now]
 
-sendOrganiserReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => Text -> ReminderSecret -> m ()
+sendOrganiserReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => EmailAddress -> ReminderSecret -> m ()
 sendOrganiserReminder emailAddress secret = do
   mSendAddress <- asks appSendAddress
   forM_ mSendAddress $ \sendAddress -> do
-    logInfoN $ "Sending reminder email to address: " <> emailAddress
+    logInfoN $ T.pack $ "Sending reminder email to address: " <> show emailAddress
 
     let subject = SES.content "Reminder to submit your parties to social dance today"
 
@@ -217,14 +214,20 @@ sendOrganiserReminder emailAddress secret = do
 
     let destination =
           SES.destination
-            & SES.dToAddresses .~ [emailAddress]
+            & SES.dToAddresses .~ [emailAddressText emailAddress]
     let request = SES.sendEmail sendAddress destination message
 
     response <- runAWS $ AWS.send request
 
     case (^. SES.sersResponseStatus) <$> response of
-      Right 200 -> logInfoN $ "Succesfully send organiser reminder email to address: " <> emailAddress
-      _ -> logErrorN $ T.unlines ["Failed to send organiser reminder email to address: " <> emailAddress, T.pack (ppShow response)]
+      Right 200 -> logInfoN $ T.pack $ "Succesfully send organiser reminder email to address: " <> show emailAddress
+      _ ->
+        logErrorN $
+          T.pack $
+            unlines
+              [ "Failed to send organiser reminder email to address: " <> show emailAddress,
+                ppShow response
+              ]
 
 organiserReminderTextContent :: (Route App -> [(Text, Text)] -> Text) -> ReminderSecret -> Text
 organiserReminderTextContent urlRender secret = LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/organiser-reminder.txt") urlRender

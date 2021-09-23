@@ -132,7 +132,7 @@
             <p .heading>
               User
             <a .is-link href=@{AdminR $ AdminUserR latestUserId}>
-              #{userEmailAddress latestUser}
+              #{emailAddressText $ userEmailAddress latestUser}
 
       $maybe Entity _ latestOrganiser <- mLatestOrganiser
         <div .level-item .has-text-centered>

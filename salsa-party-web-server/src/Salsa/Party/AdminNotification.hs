@@ -16,6 +16,7 @@ import qualified Data.Text.Lazy.Builder as LTB
 import Lens.Micro
 import qualified Network.AWS as AWS
 import qualified Network.AWS.SES as SES
+import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet
@@ -32,7 +33,7 @@ sendAdminNotification notificationContents = do
     forM_ mAdminEmailAddress $ \adminEmailAddress ->
       if shouldSendEmail
         then do
-          logInfoN $ "Sending Admin Notification email to address: " <> adminEmailAddress
+          logInfoN $ T.pack $ "Sending Admin Notification email to address: " <> show adminEmailAddress
 
           let subject = SES.content "Admin Notification"
 
@@ -52,11 +53,17 @@ sendAdminNotification notificationContents = do
 
           let destination =
                 SES.destination
-                  & SES.dToAddresses .~ [adminEmailAddress]
+                  & SES.dToAddresses .~ [emailAddressText adminEmailAddress]
           let request = SES.sendEmail sendAddress destination message
 
           response <- runAWS $ AWS.send request
           case (^. SES.sersResponseStatus) <$> response of
-            Right 200 -> logInfoN $ "Succesfully send admin notification email to address: " <> adminEmailAddress
-            _ -> logErrorN $ T.unlines ["Failed to send admin notification email to address: " <> adminEmailAddress, T.pack (ppShow response)]
-        else logInfoN $ "Not sending admin notification email (because sendEmail is turned of), to address: " <> adminEmailAddress
+            Right 200 -> logInfoN $ T.pack $ "Succesfully send admin notification email to address: " <> show adminEmailAddress
+            _ ->
+              logErrorN $
+                T.pack $
+                  unlines
+                    [ "Failed to send admin notification email to address: " <> show adminEmailAddress,
+                      ppShow response
+                    ]
+        else logInfoN $ T.pack $ "Not sending admin notification email (because sendEmail is turned of), to address: " <> show adminEmailAddress

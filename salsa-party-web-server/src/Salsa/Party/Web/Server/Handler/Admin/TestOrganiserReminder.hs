@@ -8,6 +8,7 @@ where
 
 import Control.Monad.Logger
 import Control.Monad.Reader
+import qualified Data.Text as T
 import Salsa.Party.Looper.OrganiserReminder
 import Salsa.Party.Web.Server.Handler.Import
 
@@ -24,7 +25,7 @@ postAdminTestOrganiserReminderR = do
         Just (Entity _ OrganiserReminder {..}) -> do
           mAdminEmailAddress <- getsYesod appAdmin
           forM_ mAdminEmailAddress $ \adminEmailAddress -> do
-            logDebugN $ "Sending test organiser reminder to admin: " <> adminEmailAddress
+            logDebugN $ T.pack $ "Sending test organiser reminder to admin: " <> show adminEmailAddress
             app <- getYesod
             runReaderT (sendOrganiserReminder adminEmailAddress organiserReminderSecret) app
           redirect $ AdminR AdminPanelR

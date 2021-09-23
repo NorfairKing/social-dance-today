@@ -8,6 +8,7 @@ import Data.Validity.Time ()
 import Database.Persist.Sql
 import Network.HTTP.Client as HTTP
 import Path
+import Salsa.Party.DB
 import Salsa.Party.OptParse
 import Yesod.EmbeddedStatic (EmbeddedStatic)
 
@@ -20,7 +21,7 @@ data App = App
     appSessionKeyFile :: !(Path Abs File),
     appSendEmails :: !Bool,
     appSendAddress :: !(Maybe Text),
-    appAdmin :: !(Maybe Text),
+    appAdmin :: !(Maybe EmailAddress),
     appOSMRateLimiter :: !(Maybe TokenLimiter), -- Nothing means disabled.
     appSentrySettings :: !(Maybe SentrySettings), -- Nothing means disabled.
     appGoogleAPIKey :: !(Maybe Text), -- Nothing means disabled.

@@ -3,6 +3,7 @@
 module Salsa.Party.Web.Server.Foundation.Auth.Routes where
 
 import Data.Text (Text)
+import Salsa.Party.DB
 import Yesod
 import Yesod.Auth
 
@@ -15,8 +16,14 @@ registerR = PluginR salsaAuthPluginName ["register"]
 resendVerificationEmailR :: Route Auth
 resendVerificationEmailR = PluginR salsaAuthPluginName ["resend-verification-email"]
 
-verifyR :: Text -> Text -> Route Auth
-verifyR userEmailAddress verificationKey = PluginR salsaAuthPluginName ["verify", userEmailAddress, verificationKey]
+verifyR :: EmailAddress -> Text -> Route Auth
+verifyR emailAddress verificationKey =
+  PluginR
+    salsaAuthPluginName
+    [ "verify",
+      emailAddressText emailAddress,
+      verificationKey
+    ]
 
 loginR :: Route Auth
 loginR = PluginR salsaAuthPluginName ["login"]

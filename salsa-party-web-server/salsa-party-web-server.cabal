@@ -20,6 +20,7 @@ library
       Salsa.Party.DB
       Salsa.Party.DB.CASKey
       Salsa.Party.DB.Coordinates
+      Salsa.Party.DB.EmailAddress
       Salsa.Party.DB.Migration
       Salsa.Party.DB.Password
       Salsa.Party.DB.Recurrence

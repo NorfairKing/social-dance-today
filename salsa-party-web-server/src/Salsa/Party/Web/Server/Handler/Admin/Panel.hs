@@ -79,8 +79,14 @@ getAdminUserR userId = do
 postAdminUserImpersonateR :: UserId -> Handler Html
 postAdminUserImpersonateR userId = do
   User {..} <- runDB $ get404 userId
-  setCreds False Creds {credsPlugin = "impersonation", credsIdent = userEmailAddress, credsExtra = []}
-  addMessage "is-success" $ "You are now impersonating user " <> toHtml userEmailAddress
+  setCreds
+    False
+    Creds
+      { credsPlugin = "impersonation",
+        credsIdent = emailAddressText userEmailAddress,
+        credsExtra = []
+      }
+  addMessage "is-success" $ "You are now impersonating the user with email address" <> toHtml (show userEmailAddress)
   redirect $ AccountR AccountOverviewR
 
 getAdminOrganisersR :: Handler Html

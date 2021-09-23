@@ -20,6 +20,7 @@ import Options.Applicative as OptParse
 import qualified Options.Applicative.Help as OptParse (string)
 import Path
 import Path.IO
+import Salsa.Party.DB
 import YamlParse.Applicative as YamlParse
 
 getSettings :: IO Settings
@@ -36,7 +37,7 @@ data Settings = Settings
     settingDbFile :: !(Path Abs File),
     settingSendEmails :: !Bool,
     settingSendAddress :: !(Maybe Text),
-    settingAdmin :: !(Maybe Text),
+    settingAdmin :: !(Maybe EmailAddress),
     settingEnableOSMGeocoding :: !Bool,
     settingEnableGoogleGeocoding :: !Bool,
     settingGoogleAPIKey :: !(Maybe Text),
@@ -125,7 +126,7 @@ data Configuration = Configuration
     confDbFile :: !(Maybe FilePath),
     confSendEmails :: !(Maybe Bool),
     confSendAddress :: !(Maybe Text),
-    confAdmin :: !(Maybe Text),
+    confAdmin :: !(Maybe EmailAddress),
     confEnableOSMGeocoding :: !(Maybe Bool),
     confEnableGoogleGeocoding :: !(Maybe Bool),
     confSentryConfiguration :: !(Maybe SentryConfiguration),
@@ -221,7 +222,7 @@ data Environment = Environment
     envDbFile :: !(Maybe FilePath),
     envSendEmails :: !(Maybe Bool),
     envSendAddress :: !(Maybe Text),
-    envAdmin :: !(Maybe Text),
+    envAdmin :: !(Maybe EmailAddress),
     envEnableOSMGeocoding :: !(Maybe Bool),
     envEnableGoogleGeocoding :: !(Maybe Bool),
     envSentryEnvironment :: !SentryEnvironment,
@@ -331,7 +332,7 @@ data Flags = Flags
     flagDbFile :: !(Maybe FilePath),
     flagSendEmails :: !(Maybe Bool),
     flagSendAddress :: !(Maybe Text),
-    flagAdmin :: !(Maybe Text),
+    flagAdmin :: !(Maybe EmailAddress),
     flagEnableOSMGeocoding :: !(Maybe Bool),
     flagEnableGoogleGeocoding :: !(Maybe Bool),
     flagSentryFlags :: !SentryFlags,

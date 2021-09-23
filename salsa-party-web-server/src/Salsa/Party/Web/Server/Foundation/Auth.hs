@@ -72,7 +72,7 @@ salsaAuthPlugin = AuthPlugin salsaAuthPluginName dispatch salsaLoginHandler
     dispatch "POST" ["register"] = postRegisterR
     dispatch "POST" ["login"] = postLoginR
     dispatch "POST" ["resend-verification-email"] = postResendVerificationEmailR
-    dispatch "GET" ["verify", userEmailAddress, verificationKey] = getVerifyR userEmailAddress verificationKey >>= sendResponse
+    dispatch "GET" ["verify", userEmailAddress, verificationKey] = getVerifyR (EmailAddress userEmailAddress) verificationKey >>= sendResponse
     dispatch _ _ = notFound
 
 getRegisterR ::
@@ -93,7 +93,7 @@ getRegisterR = do
       $(widgetFile "auth/register")
 
 data RegisterForm = RegisterForm
-  { registerFormEmailAddress :: Text,
+  { registerFormEmailAddress :: EmailAddress,
     registerFormPassphrase :: Password,
     registerFormConfirmPassphrase :: Password
   }
@@ -106,7 +106,7 @@ registerForm ::
   FormInput m RegisterForm
 registerForm =
   RegisterForm
-    <$> ireq emailField "email-address"
+    <$> (EmailAddress <$> ireq emailField "email-address")
     <*> (mkPassword <$> ireq passwordField "passphrase")
     <*> (mkPassword <$> ireq passwordField "passphrase-confirm")
 
@@ -141,7 +141,12 @@ postRegisterR = liftHandler $ do
                   userCreated = now
                 }
           sendVerificationEmail registerFormEmailAddress verificationKey
-          setCredsRedirect Creds {credsPlugin = salsaAuthPluginName, credsIdent = registerFormEmailAddress, credsExtra = []}
+          setCredsRedirect
+            Creds
+              { credsPlugin = salsaAuthPluginName,
+                credsIdent = emailAddressText registerFormEmailAddress,
+                credsExtra = []
+              }
         else do
           addMessageI "is-danger" PassMismatch
           redirect $ AuthR registerR
@@ -158,7 +163,7 @@ salsaLoginHandler _toParentRoute = do
   $(widgetFile "auth/login")
 
 data LoginForm = LoginForm
-  { loginFormEmailAddress :: Text,
+  { loginFormEmailAddress :: EmailAddress,
     loginFormPassphrase :: Password
   }
   deriving (Show, Generic)
@@ -170,7 +175,7 @@ loginForm ::
   FormInput m LoginForm
 loginForm =
   LoginForm
-    <$> ireq emailField "email-address"
+    <$> (EmailAddress <$> ireq emailField "email-address")
     <*> (mkPassword <$> ireq passwordField "passphrase")
 
 postLoginR ::
@@ -189,7 +194,13 @@ postLoginR = do
     Nothing -> loginFail
     Just (Entity _ User {..}) ->
       case checkPassword loginFormPassphrase userPassphraseHash of
-        PasswordCheckSuccess -> setCredsRedirect Creds {credsPlugin = salsaAuthPluginName, credsIdent = loginFormEmailAddress, credsExtra = []}
+        PasswordCheckSuccess ->
+          setCredsRedirect
+            Creds
+              { credsPlugin = salsaAuthPluginName,
+                credsIdent = emailAddressText loginFormEmailAddress,
+                credsExtra = []
+              }
         PasswordCheckFail -> loginFail
 
 postResendVerificationEmailR ::
@@ -214,7 +225,7 @@ sendVerificationEmail ::
     YesodAuth app,
     RenderMessage app AppMessage
   ) =>
-  Text ->
+  EmailAddress ->
   Text ->
   HandlerFor app ()
 sendVerificationEmail userEmailAddress verificationKey = do
@@ -223,7 +234,7 @@ sendVerificationEmail userEmailAddress verificationKey = do
   forM_ mSendAddress $ \sendAddress ->
     if shouldSendEmail
       then do
-        logInfoN $ "Sending verification email to address: " <> userEmailAddress
+        logInfoN $ T.pack $ "Sending verification email to address: " <> show userEmailAddress
 
         urlRender <- getUrlRenderParams
         messageRender <- getMessageRender
@@ -243,18 +254,23 @@ sendVerificationEmail userEmailAddress verificationKey = do
 
         let destination =
               SES.destination
-                & SES.dToAddresses .~ [userEmailAddress]
+                & SES.dToAddresses .~ [emailAddressText userEmailAddress]
         let request = SES.sendEmail sendAddress destination message
 
         response <- runAWS $ AWS.send request
         case (^. SES.sersResponseStatus) <$> response of
           Right 200 -> do
-            logInfoN $ "Succesfully send verification email to address: " <> userEmailAddress
-            addMessageI "is-success" (ConfirmationEmailSent userEmailAddress)
+            logInfoN $ T.pack $ "Succesfully send verification email to address: " <> show userEmailAddress
+            addMessageI "is-success" (ConfirmationEmailSent $ emailAddressText userEmailAddress)
           _ -> do
-            logErrorN $ T.unlines ["Failed to send verification email to address: " <> userEmailAddress, T.pack (ppShow response)]
+            logErrorN $
+              T.pack $
+                unlines
+                  [ "Failed to send verification email to address: " <> show userEmailAddress,
+                    ppShow response
+                  ]
             addMessageI "is-danger" MsgVerificationEmailFailure
-      else logInfoN $ "Not sending verification email (because sendEmail is turned of), to address: " <> userEmailAddress
+      else logInfoN $ T.pack $ "Not sending verification email (because sendEmail is turned of), to address: " <> show userEmailAddress
 
 runAWS ::
   ( MonadUnliftIO m,
@@ -301,7 +317,7 @@ getVerifyR ::
     PersistUniqueRead (YesodPersistBackend app),
     PersistStoreWrite (YesodPersistBackend app)
   ) =>
-  Text ->
+  EmailAddress ->
   Text ->
   AuthHandler app Html
 getVerifyR emailAddress verificationKey = liftHandler $ do

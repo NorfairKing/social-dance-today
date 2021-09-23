@@ -3,7 +3,7 @@
     <h1 .title .is-3>
       _{MsgAccountOverviewTitle}
     <p .content>
-      _{MsgAccountEmailAddress userEmailAddress}
+      _{MsgAccountEmailAddress $ emailAddressText userEmailAddress}
 
     <div .buttons>
       <a #account-organiser .button href=@{AccountR AccountOrganiserR}>
