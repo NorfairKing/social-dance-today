@@ -27,6 +27,7 @@ import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LTB
 import Data.Time
+import Data.Validity
 import Database.Persist
 import Database.Persist.Sql
 import GHC.Generics (Generic)
@@ -254,30 +255,33 @@ importExternalEvent externalEvent = importExternalEventAnd externalEvent $ \_ ->
 importExternalEventAnd :: ExternalEvent -> (ExternalEventId -> Import ()) -> Import ()
 importExternalEventAnd externalEvent@ExternalEvent {..} func = do
   logDebugN $ T.pack $ "Importing external event:\n" <> ppShow externalEvent
-  now <- liftIO getCurrentTime
-  importerId <- asks importEnvId
-  mExternalEvent <- importDB $ do
-    update importerId [ImporterMetadataLastRunImported +=. Just 1]
-    getBy (UniqueExternalEventKey importerId externalEventKey)
-  case mExternalEvent of
-    Nothing -> do
-      logInfoN $ T.pack $ unwords ["Importing never-before-seen event from", T.unpack externalEventOrigin]
-      importDB (insert externalEvent) >>= func
-    Just (Entity externalEventId oldExternalEvent) -> do
-      case externalEvent `changesComparedTo` oldExternalEvent of
+  case prettyValidate externalEvent of
+    Left err -> logWarnN $ T.pack $ unlines ["Not importing invalid event:", err, ppShow externalEvent]
+    Right _ -> do
+      now <- liftIO getCurrentTime
+      importerId <- asks importEnvId
+      mExternalEvent <- importDB $ do
+        update importerId [ImporterMetadataLastRunImported +=. Just 1]
+        getBy (UniqueExternalEventKey importerId externalEventKey)
+      case mExternalEvent of
         Nothing -> do
-          logInfoN $ T.pack $ unwords ["Not re-importing known event, because it was not changed, from", T.unpack externalEventOrigin]
-          pure ()
-        Just updates -> do
-          logInfoN $ T.pack $ unwords ["Importing known-but-changed event from", T.unpack externalEventOrigin]
-          importDB $
-            void $
-              update
-                externalEventId
-                ( (ExternalEventModified =. Just now) :
-                  NE.toList updates
-                )
-          func externalEventId
+          logInfoN $ T.pack $ unwords ["Importing never-before-seen event from", T.unpack externalEventOrigin]
+          importDB (insert externalEvent) >>= func
+        Just (Entity externalEventId oldExternalEvent) -> do
+          case externalEvent `changesComparedTo` oldExternalEvent of
+            Nothing -> do
+              logInfoN $ T.pack $ unwords ["Not re-importing known event, because it was not changed, from", T.unpack externalEventOrigin]
+              pure ()
+            Just updates -> do
+              logInfoN $ T.pack $ unwords ["Importing known-but-changed event from", T.unpack externalEventOrigin]
+              importDB $
+                void $
+                  update
+                    externalEventId
+                    ( (ExternalEventModified =. Just now) :
+                      NE.toList updates
+                    )
+              func externalEventId
 
 jsonRequestConduit :: FromJSON a => ConduitT HTTP.Request a Import ()
 jsonRequestConduit = C.map ((,) ()) .| jsonRequestConduitWith .| C.map snd
