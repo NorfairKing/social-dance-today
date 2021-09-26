@@ -67,7 +67,7 @@ testRegisterUser TestUser {..} = do
   testRegister testUserEmail testUserPassword
 
 testRegister ::
-  Text -> Text -> YesodExample App (Entity User)
+  EmailAddress -> Text -> YesodExample App (Entity User)
 testRegister emailAddress passphrase = do
   get $ AuthR registerR
   statusIs 200
@@ -75,7 +75,7 @@ testRegister emailAddress passphrase = do
     setMethod methodPost
     setUrl $ AuthR registerR
     addToken
-    addPostParam "email-address" emailAddress
+    addPostParam "email-address" $ emailAddressText emailAddress
     addPostParam "passphrase" passphrase
     addPostParam "passphrase-confirm" passphrase
   statusIs 303
@@ -103,7 +103,7 @@ testUserMatches TestUser {..} (Entity _ User {..}) = do
 testLoginUser :: TestUser -> YesodExample App ()
 testLoginUser TestUser {..} = testLogin testUserEmail testUserPassword
 
-testLogin :: Text -> Text -> YesodExample App ()
+testLogin :: EmailAddress -> Text -> YesodExample App ()
 testLogin emailAddress passphrase = do
   get $ AuthR LoginR
   statusIs 200
@@ -111,7 +111,7 @@ testLogin emailAddress passphrase = do
     setMethod methodPost
     setUrl $ AuthR loginR
     addToken
-    addPostParam "email-address" emailAddress
+    addPostParam "email-address" $ emailAddressText emailAddress
     addPostParam "passphrase" passphrase
   statusIs 303
   locationShouldBe $ AccountR AccountOverviewR

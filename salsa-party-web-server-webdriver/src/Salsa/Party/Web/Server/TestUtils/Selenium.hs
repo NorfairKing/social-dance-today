@@ -136,7 +136,7 @@ driveAdvancedSearch QueryForm {..} = do
 dummyUser :: TestUser
 dummyUser = TestUser {testUserEmail = dummyEmail, testUserPassword = dummyPassword}
 
-dummyEmail :: Text
+dummyEmail :: EmailAddress
 dummyEmail = "dummy@example.com"
 
 dummyPassword :: Text
@@ -145,7 +145,7 @@ dummyPassword = "dummy"
 driveRegister :: TestUser -> WebdriverTestM (Entity User)
 driveRegister TestUser {..} = do
   findElem (ById "nav-register") >>= click
-  findElem (ByName "email-address") >>= sendKeys testUserEmail
+  findElem (ByName "email-address") >>= sendKeys (emailAddressText testUserEmail)
   findElem (ByName "passphrase") >>= sendKeys testUserPassword
   findElem (ByName "passphrase-confirm") >>= sendKeys testUserPassword
   findElem (ById "submit") >>= submit
@@ -157,7 +157,7 @@ driveRegister TestUser {..} = do
 driveLogin :: TestUser -> WebdriverTestM ()
 driveLogin TestUser {..} = do
   findElem (ById "nav-login") >>= click
-  findElem (ByName "email-address") >>= sendKeys testUserEmail
+  findElem (ByName "email-address") >>= sendKeys (emailAddressText testUserEmail)
   findElem (ByName "passphrase") >>= sendKeys testUserPassword
   findElem (ById "submit") >>= submit
 
@@ -171,6 +171,7 @@ driveDeleteAccount = do
   findElem (ById "delete-account") >>= click
   acceptAlert
   -- Wait for refresh
+  -- TODO do this via route
   waitUntil 5 $ void $ findElem (ById "query")
 
 dummyOrganiserForm :: OrganiserForm

@@ -26,7 +26,7 @@ spec =
             request $ do
               setMethod methodPost
               setUrl $ AuthR registerR
-              addPostParam "email-address" emailAddress
+              addPostParam "email-address" $ emailAddressText emailAddress
               addPostParam "passphrase" "example1"
               addPostParam "passphrase-confirm" "example2"
             statusIs 303
@@ -57,7 +57,7 @@ spec =
               setMethod methodPost
               setUrl $ AuthR loginR
               addToken
-              addPostParam "email-address" emailAddress
+              addPostParam "email-address" $ emailAddressText emailAddress
               addPostParam "passphrase" "example2"
             statusIs 303
             locationShouldBe $ AuthR LoginR
@@ -73,7 +73,7 @@ spec =
               setMethod methodPost
               setUrl $ AuthR loginR
               addToken
-              addPostParam "email-address" emailAddress
+              addPostParam "email-address" $ emailAddressText emailAddress
               addPostParam "passphrase" "example"
             statusIs 303
             locationShouldBe $ AuthR LoginR
