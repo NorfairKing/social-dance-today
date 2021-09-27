@@ -25,7 +25,7 @@ extra-deps:
   subdirs:
     - linkcheck
 - github: NorfairKing/seocheck
-  commit: 95548a33fd3afe9beadabedcf2278b936679e4c3
+  commit: 499d88b40243b06cad216a492deca782738fa0b3
   subdirs:
     - seocheck
 - github: supki/envparse
