@@ -14,7 +14,7 @@ spec = serverSpec $ do
       statusIs 200
 
     it "GETs a 200, even with a bunch of content" $ \yc ->
-      forAll (genValid `suchThat` (distinct . map organiserUser) `suchThat` (distinct . map organiserUuid)) $ \organisers ->
+      forAll (genValid `suchThat` (distinct . map organiserUser) `suchThat` (distinct . map organiserUuid) `suchThat` (distinct . map organiserSlug)) $ \organisers ->
         forAll (genValid `suchThat` (distinct . map partyUuid)) $ \parties ->
           forAll (genValid `suchThat` (distinct . map (\ExternalEvent {..} -> (externalEventImporter, externalEventKey))) `suchThat` (distinct . map externalEventUuid)) $ \externalEvents ->
             forAll (genValid `suchThat` (distinct . map imageKey)) $ \images ->

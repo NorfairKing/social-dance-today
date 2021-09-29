@@ -69,6 +69,8 @@ instance Validity AddScheduleForm where
     mconcat
       [ genericValidate pf,
         declare "The title is nonempty" $ not $ T.null addScheduleFormTitle,
+        declare "The title is normalised" $ normaliseTitle addScheduleFormTitle == addScheduleFormTitle,
+        declare "The description is normalised" $ normaliseDescriptionTextarea addScheduleFormDescription == addScheduleFormDescription,
         declare "The address is nonempty" $ not $ T.null addScheduleFormAddress,
         declare "The homepage is nonempty" $ maybe True (not . T.null) addScheduleFormHomepage,
         declare "The price is nonempty" $ maybe True (not . T.null) addScheduleFormPrice
@@ -77,10 +79,10 @@ instance Validity AddScheduleForm where
 addScheduleForm :: FormInput Handler AddScheduleForm
 addScheduleForm =
   AddScheduleForm
-    <$> ireq textField "title"
+    <$> (normaliseTitle <$> ireq textField "title")
     <*> recurrenceForm
     <*> ireq textField "address"
-    <*> iopt textareaField "description"
+    <*> (normaliseDescriptionTextarea <$> iopt textareaField "description")
     <*> iopt timeField "start"
     -- We don't use urlField here because we store the urls as text anyway.
     -- The html still contains type="url" so invaild urls will have been submitted on purpose.
@@ -168,7 +170,7 @@ addSchedule organiserId AddScheduleForm {..} mFileInfo = do
             scheduleOrganiser = organiserId,
             scheduleRecurrence = addScheduleFormRecurrence,
             scheduleTitle = addScheduleFormTitle,
-            scheduleDescription = normaliseNewlines . unTextarea <$> addScheduleFormDescription,
+            scheduleDescription = unTextarea <$> addScheduleFormDescription,
             scheduleStart = addScheduleFormStart,
             scheduleHomepage = addScheduleFormHomepage,
             schedulePrice = addScheduleFormPrice,

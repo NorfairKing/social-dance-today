@@ -26,13 +26,14 @@ instance Validity OrganiserForm where
     mconcat
       [ genericValidate ogf,
         declare "The display name is not empty" $ not $ T.null organiserFormName,
+        declare "The display name is normalised" $ normaliseOrganiserName organiserFormName == organiserFormName,
         declare "The homepage is nonempty" $ maybe True (not . T.null) organiserFormHomepage
       ]
 
 organiserForm :: FormInput Handler OrganiserForm
 organiserForm =
   OrganiserForm
-    <$> ireq textField "name"
+    <$> (normaliseOrganiserName <$> ireq textField "name")
     <*> iopt textField "homepage"
     <*> ireq checkBoxField "reminder-consent"
 

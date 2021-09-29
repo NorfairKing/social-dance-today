@@ -193,6 +193,7 @@ library
     , yesod-auth
     , yesod-autoreload
     , yesod-core
+    , yesod-form
     , yesod-sitemap
     , yesod-static
     , yesod-static-remote

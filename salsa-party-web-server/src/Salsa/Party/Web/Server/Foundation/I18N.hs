@@ -291,9 +291,6 @@ abbreviateTo maxLen t =
 htmlDescriptionMaxLength :: Int
 htmlDescriptionMaxLength = 160
 
-normaliseNewlines :: Text -> Text
-normaliseNewlines = T.replace "\r\n" "\n"
-
 currentTimeOverrideParam :: Text
 currentTimeOverrideParam = "CURRENT_TIME_OVERRIDE"
 

@@ -4,7 +4,9 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -32,6 +34,7 @@ import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Password.Bcrypt
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Time
 import Data.UUID.Typed
 import Data.Validity
@@ -50,6 +53,7 @@ import Salsa.Party.DB.Recurrence
 import Salsa.Party.DB.Slug
 import Salsa.Party.DB.URI ()
 import Salsa.Party.DB.UUID ()
+import Yesod
 
 -- We use new phantom types instead of the ones belowe because of a circular
 -- dependency of definition created by TH.
@@ -346,7 +350,13 @@ instance Validity OrganiserReminder
 
 instance Validity PartyPoster
 
-instance Validity Party
+instance Validity Party where
+  validate party@Party {..} =
+    mconcat
+      [ genericValidate party,
+        declare "The title is normalised" $ normaliseTitle partyTitle == partyTitle,
+        declare "The description is normalised" $ normaliseDescription partyDescription == partyDescription
+      ]
 
 instance Validity ExternalEvent
 
@@ -385,3 +395,22 @@ changesComparedTo ee1 ee2 =
             updateWhenChanged ExternalEventPlace externalEventPlace,
             updateWhenChanged ExternalEventImporter externalEventImporter
           ]
+
+normaliseTitle :: Text -> Text
+normaliseTitle = normaliseNewlines . T.strip
+
+normaliseOrganiserName :: Text -> Text
+normaliseOrganiserName = normaliseNewlines . T.strip
+
+normaliseDescriptionTextarea :: Maybe Textarea -> Maybe Textarea
+normaliseDescriptionTextarea = fmap Textarea . normaliseDescription . fmap unTextarea
+
+normaliseDescription :: Maybe Text -> Maybe Text
+normaliseDescription mta = do
+  ta <- mta
+  let normalised = normaliseNewlines $ T.strip ta
+  guard $ not $ T.null normalised
+  pure ta
+
+normaliseNewlines :: Text -> Text
+normaliseNewlines = T.replace "\r\n" "\n"

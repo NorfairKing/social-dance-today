@@ -48,6 +48,8 @@ instance Validity AddPartyForm where
     mconcat
       [ genericValidate pf,
         declare "The title is nonempty" $ not $ T.null addPartyFormTitle,
+        declare "The title is normalised" $ normaliseTitle addPartyFormTitle == addPartyFormTitle,
+        declare "The description is normalised" $ normaliseDescriptionTextarea addPartyFormDescription == addPartyFormDescription,
         declare "The address is nonempty" $ not $ T.null addPartyFormAddress,
         declare "The homepage is nonempty" $ maybe True (not . T.null) addPartyFormHomepage,
         declare "The price is nonempty" $ maybe True (not . T.null) addPartyFormPrice
@@ -56,7 +58,7 @@ instance Validity AddPartyForm where
 addPartyForm :: FormInput Handler AddPartyForm
 addPartyForm =
   AddPartyForm
-    <$> ireq textField "title"
+    <$> (T.strip <$> ireq textField "title")
     <*> ireq dayField "day"
     <*> ireq textField "address"
     <*> iopt textareaField "description"
@@ -114,7 +116,7 @@ addParty organiserId AddPartyForm {..} mFileInfo = do
               partySlug = makePartySlug addPartyFormTitle,
               partyOrganiser = organiserId,
               partyTitle = addPartyFormTitle,
-              partyDescription = normaliseNewlines . unTextarea <$> addPartyFormDescription,
+              partyDescription = unTextarea <$> addPartyFormDescription,
               partyDay = addPartyFormDay,
               partyStart = addPartyFormStart,
               partyHomepage = addPartyFormHomepage,
