@@ -203,9 +203,17 @@ genPlaceAroundLocation :: Place -> Gen Place
 genPlaceAroundLocation locationPlace = genPlaceAround (placeCoordinates locationPlace)
 
 genPlaceAround :: Coordinates -> Gen Place
-genPlaceAround Coordinates {..} =
+genPlaceAround coordinates = do
+  Coordinates {..} <- genCoordinatesAround coordinates
+  placeQuery <- genValid
+  let placeLat = coordinatesLat
+  let placeLon = coordinatesLon
+  pure Place {..}
+
+genCoordinatesAround :: Coordinates -> Gen Coordinates
+genCoordinatesAround Coordinates {..} =
   let Latitude latCoord = coordinatesLat
       Longitude lonCoord = coordinatesLon
-   in Place <$> genValid
-        <*> (((+) latCoord <$> sized (pure . fixedToCoord . MkFixed . fromIntegral . (* 100))) `suchThatMap` mkLatitude)
+   in Coordinates
+        <$> (((+) latCoord <$> sized (pure . fixedToCoord . MkFixed . fromIntegral . (* 100))) `suchThatMap` mkLatitude)
         <*> (((+) lonCoord <$> sized (pure . fixedToCoord . MkFixed . fromIntegral . (* 100))) `suchThatMap` mkLongitude)

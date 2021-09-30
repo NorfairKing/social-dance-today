@@ -34,10 +34,10 @@ runGen (MkGen func) = func qcGen 30
   where
     qcGen = mkQCGen 42
 
-setupSearchData :: ConnectionPool -> IO SearchQuery
+setupSearchData :: ConnectionPool -> IO [SearchQuery]
 setupSearchData = runSqlPool setupSearchDataQuery
 
-setupSearchDataQuery :: SqlPersistT IO SearchQuery
+setupSearchDataQuery :: SqlPersistT IO [SearchQuery]
 setupSearchDataQuery = do
   let places = runGen $
         genUniques placeQuery 10000 $ do
@@ -56,10 +56,16 @@ setupSearchDataQuery = do
     uuid <- nextRandomUUID
     insert $ externalEventPrototype {externalEventUuid = uuid}
 
+  pure $ runGen $ replicateM 100 genQuery
+
+genQuery :: Gen SearchQuery
+genQuery = do
   -- Make a query
-  let day = runGen genDay
-  let coordinates = runGen $ placeCoordinates . locationPlace <$> elements locations
-  let distance = runGen $ choose (minimumMaximumDistance, maximumMaximumDistance)
+  day <- genDay
+  coordinates <- do
+    location <- elements locations
+    genCoordinatesAround (placeCoordinates (locationPlace location))
+  distance <- choose (minimumMaximumDistance, maximumMaximumDistance)
   pure
     SearchQuery
       { searchQueryBegin = day,
@@ -109,9 +115,8 @@ genUniques func n gen = go [] n
 genDay :: Gen Day
 genDay = fromGregorian 2021 <$> choose (1, 12) <*> choose (1, 31)
 
-doSearchAtBenchmark :: ConnectionPool -> SearchQuery -> Benchmark
+doSearchAtBenchmark :: ConnectionPool -> [SearchQuery] -> Benchmark
 doSearchAtBenchmark pool query = bench "search" $ whnfIO $ doSearchAt pool query
 
--- TODO use multiple search queries
-doSearchAt :: ConnectionPool -> SearchQuery -> IO SearchResult
-doSearchAt pool query = runSqlPool (runSearchQuery query) pool
+doSearchAt :: ConnectionPool -> [SearchQuery] -> IO [SearchResult]
+doSearchAt pool queries = runSqlPool (mapM runSearchQuery queries) pool
