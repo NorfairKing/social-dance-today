@@ -192,7 +192,7 @@ searchParametersQueryRoute searchParameters = do
 data SearchParameters = SearchParameters
   { searchParameterLocation :: !SearchLocation,
     searchParameterDate :: !SearchDate,
-    searchParameterDistance :: !(Maybe Word)
+    searchParameterDistance :: !(Maybe Word) -- Nothing means unspecified
   }
   deriving (Show, Eq, Generic)
 
@@ -266,16 +266,17 @@ searchResultsPage searchParameters@SearchParameters {..} = do
   -- Resolve coordinates
   coordinates <- resolveSearchLocation searchParameterLocation
 
-  -- Do the actual search
-  searchResult <-
-    runDB $
-      runSearchQuery
+  -- Build the query
+  let query =
         SearchQuery
           { searchQueryBegin = begin,
             searchQueryMEnd = Just end,
             searchQueryCoordinates = coordinates,
             searchQueryDistance = Just $ fromMaybe defaultMaximumDistance searchParameterDistance
           }
+
+  -- Do the actual search
+  searchResult <- runDB $ runSearchQuery query
 
   withNavBar $ do
     searchParametersHtmlTitle searchParameters >>= setTitleI

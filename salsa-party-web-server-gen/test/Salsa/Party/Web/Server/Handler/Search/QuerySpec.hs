@@ -121,6 +121,33 @@ spec = do
                       }
                 liftIO $ sr `shouldBe` M.empty
 
+      it "can figure out that we don't have data about this area, even we have data about other areas" $ \pool ->
+        forAllValid $ \day ->
+          forAllValid $ \organiser ->
+            forAllValid $ \party1Prototype ->
+              flip runSqlPool pool $ do
+                let queryPlace = Place {placeQuery = "Search Place", placeLat = Latitude 0, placeLon = Longitude 0}
+                _ <- DB.insert queryPlace
+                let place1 = Place {placeQuery = "Place 1", placeLat = Latitude 45, placeLon = Longitude 0.05}
+                place1Id <- DB.insert place1
+                organiserId <- DB.insert organiser
+                let party1 =
+                      party1Prototype
+                        { partyOrganiser = organiserId,
+                          partyDay = day,
+                          partyPlace = place1Id
+                        }
+                DB.insert_ party1
+                sr <-
+                  runSearchQuery @IO
+                    SearchQuery
+                      { searchQueryBegin = day,
+                        searchQueryMEnd = Just day,
+                        searchQueryCoordinates = placeCoordinates queryPlace,
+                        searchQueryDistance = Just defaultMaximumDistance
+                      }
+                liftIO $ sr `shouldBe` NoDataYet
+
       it "runs correctly with these three parties where one is on a different day" $ \pool ->
         forAllValid $ \organiser ->
           forAllValid $ \party1Prototype ->

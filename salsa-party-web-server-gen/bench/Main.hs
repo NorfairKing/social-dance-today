@@ -40,7 +40,7 @@ setupSearchData = runSqlPool setupSearchDataQuery
 setupSearchDataQuery :: SqlPersistT IO [SearchQuery]
 setupSearchDataQuery = do
   let places = runGen $
-        genUniques placeQuery 10000 $ do
+        genUniques placeQuery 5000 $ do
           location <- elements locations
           genPlaceAroundLocation (locationPlace location)
   placeIds <- insertMany places
@@ -62,6 +62,7 @@ genQuery :: Gen SearchQuery
 genQuery = do
   -- Make a query
   day <- genDay
+  daysAhead <- choose (0, 30)
   coordinates <- do
     location <- elements locations
     genCoordinatesAround (placeCoordinates (locationPlace location))
@@ -69,7 +70,7 @@ genQuery = do
   pure
     SearchQuery
       { searchQueryBegin = day,
-        searchQueryMEnd = Just $ addDays 5 day,
+        searchQueryMEnd = Just $ addDays daysAhead day,
         searchQueryCoordinates = coordinates,
         searchQueryDistance = Just distance
       }

@@ -3,7 +3,6 @@
 
 module Salsa.Party.Web.Server.Handler.ExploreSpec (spec) where
 
-import Data.Fixed
 import qualified Database.Persist as DB
 import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Handler.TestImport

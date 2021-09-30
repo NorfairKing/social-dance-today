@@ -20,7 +20,7 @@ import Salsa.Party.Web.Server.Handler.Search.Deduplication
 
 data SearchQuery = SearchQuery
   { searchQueryBegin :: !Day,
-    searchQueryMEnd :: !(Maybe Day),
+    searchQueryMEnd :: !(Maybe Day), -- Nothing means no end.
     searchQueryCoordinates :: !Coordinates,
     searchQueryDistance :: Maybe Word -- Nothing means unlimited distance.
   }
@@ -37,6 +37,7 @@ countSearchResults = M.foldl (+) 0 . M.map length
 data SearchResult
   = ResultsFound !(Map Day [Result])
   | NoDataYet
+  deriving (Show, Eq)
 
 data Result
   = External (Entity ExternalEvent) (Entity Place) (Maybe CASKey)
@@ -44,15 +45,17 @@ data Result
   deriving (Show, Eq)
 
 runSearchQuery :: MonadIO m => SearchQuery -> SqlPersistT m SearchResult
-runSearchQuery searchQuery = do
+runSearchQuery searchQuery@SearchQuery {..} = do
   results <- runSearchQueryForResults searchQuery
   if nullSearchResults results
-    then do
-      noDataYet <- noDataQuery (searchQueryCoordinates searchQuery)
-      pure $
-        if noDataYet
-          then NoDataYet
-          else ResultsFound results
+    then case searchQueryDistance of
+      Nothing -> pure $ ResultsFound results
+      Just maximumDistance -> do
+        noDataYet <- noDataQuery searchQueryCoordinates maximumDistance
+        pure $
+          if noDataYet
+            then NoDataYet
+            else ResultsFound results
     else pure $ ResultsFound results
 
 -- For a begin day end day (inclusive) and a given place, find all parties per
@@ -81,14 +84,16 @@ runSearchQueryForResults SearchQuery {..} = do
       forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
       pure (externalEvent, place)
 
-  -- TODO deduplicate external events before fetching posters
+  -- Post-process the distance before we fetch images so we don't fetch too many images.
   let externalEventResultsWithoutImages = maybe rawExternalEventResults (\dist -> postProcessExternalEvents dist searchQueryCoordinates rawExternalEventResults) searchQueryDistance
+
   externalEventResultsWithImages <-
     forM externalEventResultsWithoutImages $ \(externalEventEntity@(Entity externalEventId externalEvent), placeEntity) -> do
       mKey <- getPosterForExternalEvent externalEventId
       pure (externalEventDay externalEvent, (externalEventEntity, placeEntity, mKey))
 
   let internalResults = makeGroupedByDay partyResultsWithImages
+      -- TODO deduplicate external events before fetching posters
       externalResults =
         deduplicateExternalEvents internalResults $
           deduplicateExternalEventsExternally $
@@ -106,7 +111,7 @@ runSearchQueryForResults SearchQuery {..} = do
 dayLimit :: E.SqlExpr (E.Value Day) -> Day -> Maybe Day -> E.SqlExpr (E.Value Bool)
 dayLimit dayExp begin mEnd =
   case mEnd of
-    Nothing -> E.val begin E.<=. dayExp
+    Nothing -> dayExp E.>=. E.val begin
     Just end ->
       if begin == end
         then dayExp E.==. E.val begin
@@ -213,9 +218,7 @@ postProcessParties ::
   [(Entity Organiser, Entity Party, Entity Place)]
 postProcessParties maximumDistance coordinates =
   mapMaybe $ \(organiser, party, place) -> do
-    guard $
-      coordinates `distanceTo` placeCoordinates (entityVal place)
-        <= maximumDistance
+    guard $ coordinates `distanceTo` placeCoordinates (entityVal place) <= maximumDistance
     pure (organiser, party, place)
 
 makeInternalResult :: (Entity Organiser, Entity Party, Entity Place, Maybe CASKey) -> Result
@@ -228,9 +231,7 @@ postProcessExternalEvents ::
   [(Entity ExternalEvent, Entity Place)]
 postProcessExternalEvents maximumDistance coordinates =
   mapMaybe $ \(externalEvent, place) -> do
-    guard $
-      coordinates `distanceTo` placeCoordinates (entityVal place)
-        <= maximumDistance
+    guard $ coordinates `distanceTo` placeCoordinates (entityVal place) <= maximumDistance
     pure (externalEvent, place)
 
 makeExternalResult :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Result
@@ -275,8 +276,8 @@ makeGroupedByDay = foldr go M.empty -- This could be falter with a fold
 
 -- TODO this can be optimised
 -- We can probably use a count query, and there's definitely no need to fetch the posters for example
-noDataQuery :: MonadIO m => Coordinates -> SqlPersistT m Bool -- True means no data
-noDataQuery coordinates = do
+noDataQuery :: MonadIO m => Coordinates -> Word -> SqlPersistT m Bool -- True means no data
+noDataQuery coordinates maximumDistance = do
   today <- liftIO $ utctDay <$> getCurrentTime
   nullSearchResults
     <$> runSearchQueryForResults
@@ -284,5 +285,5 @@ noDataQuery coordinates = do
         { searchQueryBegin = today,
           searchQueryMEnd = Nothing,
           searchQueryCoordinates = coordinates,
-          searchQueryDistance = Nothing
+          searchQueryDistance = Just maximumDistance
         }
