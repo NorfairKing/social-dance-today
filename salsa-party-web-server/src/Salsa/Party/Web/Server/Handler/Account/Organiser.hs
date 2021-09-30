@@ -33,7 +33,7 @@ instance Validity OrganiserForm where
 organiserForm :: FormInput Handler OrganiserForm
 organiserForm =
   OrganiserForm
-    <$> (normaliseOrganiserName <$> ireq textField "name")
+    <$> ireq organiserNameField "name"
     <*> iopt textField "homepage"
     <*> ireq checkBoxField "reminder-consent"
 

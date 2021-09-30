@@ -3,6 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -235,3 +236,29 @@ externalEventTitleMessage :: ExternalEvent -> AppMessage
 externalEventTitleMessage externalEvent = case externalEventCancelled externalEvent of
   Just True -> MsgPartyTitleCancelled (externalEventTitle externalEvent)
   _ -> MsgPartyTitleScheduled (externalEventTitle externalEvent)
+
+organiserNameField :: forall m. (Monad m, RenderMessage (HandlerSite m) FormMessage) => Field m Text
+organiserNameField =
+  checkM
+    ( pure
+        . (Right :: Text -> Either FormMessage Text)
+        . normaliseOrganiserName
+    )
+    textField
+
+titleField :: forall m. (Monad m, RenderMessage (HandlerSite m) FormMessage) => Field m Text
+titleField =
+  checkM
+    ( pure
+        . (Right :: Text -> Either FormMessage Text)
+        . normaliseTitle
+    )
+    textField
+
+descriptionField :: forall m. (Monad m, RenderMessage (HandlerSite m) FormMessage) => Field m Textarea
+descriptionField =
+  checkM
+    ( pure . (Right :: Textarea -> Either FormMessage Textarea)
+        . normaliseDescriptionTextarea
+    )
+    textareaField

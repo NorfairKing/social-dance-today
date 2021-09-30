@@ -49,7 +49,7 @@ instance Validity AddPartyForm where
       [ genericValidate pf,
         declare "The title is nonempty" $ not $ T.null addPartyFormTitle,
         declare "The title is normalised" $ normaliseTitle addPartyFormTitle == addPartyFormTitle,
-        declare "The description is normalised" $ normaliseDescriptionTextarea addPartyFormDescription == addPartyFormDescription,
+        declare "The description is normalised" $ normaliseMDescriptionTextarea addPartyFormDescription == addPartyFormDescription,
         declare "The address is nonempty" $ not $ T.null addPartyFormAddress,
         declare "The homepage is nonempty" $ maybe True (not . T.null) addPartyFormHomepage,
         declare "The price is nonempty" $ maybe True (not . T.null) addPartyFormPrice
@@ -58,10 +58,10 @@ instance Validity AddPartyForm where
 addPartyForm :: FormInput Handler AddPartyForm
 addPartyForm =
   AddPartyForm
-    <$> (normaliseTitle <$> ireq textField "title")
+    <$> ireq titleField "title"
     <*> ireq dayField "day"
     <*> ireq textField "address"
-    <*> (normaliseDescriptionTextarea <$> iopt textareaField "description")
+    <*> iopt descriptionField "description"
     <*> iopt timeField "start"
     -- We don't use urlField here because we store the urls as text anyway.
     -- The html still contains type="url" so invaild urls will have been submitted on purpose.

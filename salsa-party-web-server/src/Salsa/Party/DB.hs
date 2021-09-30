@@ -355,7 +355,7 @@ instance Validity Party where
     mconcat
       [ genericValidate party,
         declare "The title is normalised" $ normaliseTitle partyTitle == partyTitle,
-        declare "The description is normalised" $ normaliseDescription partyDescription == partyDescription
+        declare "The description is normalised" $ normaliseMDescription partyDescription == partyDescription
       ]
 
 instance Validity ExternalEvent
@@ -397,20 +397,26 @@ changesComparedTo ee1 ee2 =
           ]
 
 normaliseTitle :: Text -> Text
-normaliseTitle = normaliseNewlines . T.strip
+normaliseTitle = T.strip
 
 normaliseOrganiserName :: Text -> Text
-normaliseOrganiserName = normaliseNewlines . T.strip
+normaliseOrganiserName = T.strip
 
-normaliseDescriptionTextarea :: Maybe Textarea -> Maybe Textarea
-normaliseDescriptionTextarea = fmap Textarea . normaliseDescription . fmap unTextarea
+normaliseMDescriptionTextarea :: Maybe Textarea -> Maybe Textarea
+normaliseMDescriptionTextarea = fmap Textarea . normaliseMDescription . fmap unTextarea
 
-normaliseDescription :: Maybe Text -> Maybe Text
-normaliseDescription mta = do
-  ta <- mta
-  let normalised = normaliseNewlines $ T.strip ta
-  guard $ not $ T.null normalised
-  pure ta
+normaliseMDescription :: Maybe Text -> Maybe Text
+normaliseMDescription md = do
+  d <- md
+  let normalised = normaliseDescription d
+  guard $ not $ T.null normalised -- Remove empty descriptions
+  pure normalised
+
+normaliseDescriptionTextarea :: Textarea -> Textarea
+normaliseDescriptionTextarea = Textarea . normaliseDescription . unTextarea
+
+normaliseDescription :: Text -> Text
+normaliseDescription = normaliseNewlines . T.strip
 
 normaliseNewlines :: Text -> Text
 normaliseNewlines = T.replace "\r\n" "\n"

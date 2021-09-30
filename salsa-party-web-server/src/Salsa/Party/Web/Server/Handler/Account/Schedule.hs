@@ -70,7 +70,7 @@ instance Validity AddScheduleForm where
       [ genericValidate pf,
         declare "The title is nonempty" $ not $ T.null addScheduleFormTitle,
         declare "The title is normalised" $ normaliseTitle addScheduleFormTitle == addScheduleFormTitle,
-        declare "The description is normalised" $ normaliseDescriptionTextarea addScheduleFormDescription == addScheduleFormDescription,
+        declare "The description is normalised" $ normaliseMDescriptionTextarea addScheduleFormDescription == addScheduleFormDescription,
         declare "The address is nonempty" $ not $ T.null addScheduleFormAddress,
         declare "The homepage is nonempty" $ maybe True (not . T.null) addScheduleFormHomepage,
         declare "The price is nonempty" $ maybe True (not . T.null) addScheduleFormPrice
@@ -79,10 +79,10 @@ instance Validity AddScheduleForm where
 addScheduleForm :: FormInput Handler AddScheduleForm
 addScheduleForm =
   AddScheduleForm
-    <$> (normaliseTitle <$> ireq textField "title")
+    <$> ireq titleField "title"
     <*> recurrenceForm
     <*> ireq textField "address"
-    <*> (normaliseDescriptionTextarea <$> iopt textareaField "description")
+    <*> iopt descriptionField "description"
     <*> iopt timeField "start"
     -- We don't use urlField here because we store the urls as text anyway.
     -- The html still contains type="url" so invaild urls will have been submitted on purpose.
