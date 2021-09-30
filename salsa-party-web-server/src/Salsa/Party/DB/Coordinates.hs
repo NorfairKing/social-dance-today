@@ -46,6 +46,7 @@ module Salsa.Party.DB.Coordinates
 where
 
 import Control.Arrow (left)
+import Control.DeepSeq
 import Data.Aeson as JSON
 import Data.Fixed
 import Data.Int
@@ -82,6 +83,8 @@ newtype Coord = Coord {unCoord :: Int64}
   deriving (Eq, Ord, Generic)
 
 instance Validity Coord
+
+instance NFData Coord
 
 instance Show Coord where
   show = show . coordToFixed
@@ -148,6 +151,8 @@ instance Validity Latitude where
         declare ("Is 90 or less: " <> show unLatitude) $ lat <= maxBound
       ]
 
+instance NFData Latitude
+
 instance Show Latitude where
   show = show . unLatitude
 
@@ -204,6 +209,8 @@ instance Validity Longitude where
         declare ("Is 180 or less: " <> show unLongitude) $ lon <= maxBound
       ]
 
+instance NFData Longitude
+
 instance Show Longitude where
   show = show . unLongitude
 
@@ -241,6 +248,8 @@ data Coordinates = Coordinates
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity Coordinates
+
+instance NFData Coordinates
 
 instance PathPiece Coordinates where
   toPathPiece :: Coordinates -> Text

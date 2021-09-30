@@ -61,14 +61,3 @@ instance Show (Hidden a) where
 
 combineQueryGens :: MonadIO m => Gen [SqlPersistT m a] -> Gen (SqlPersistT m ())
 combineQueryGens = fmap sequence_
-
-genPlaceAroundLocation :: Place -> Gen Place
-genPlaceAroundLocation locationPlace = genPlaceAround (placeCoordinates locationPlace)
-
-genPlaceAround :: Coordinates -> Gen Place
-genPlaceAround Coordinates {..} =
-  let Latitude latCoord = coordinatesLat
-      Longitude lonCoord = coordinatesLon
-   in Place <$> genValid
-        <*> (((+) latCoord <$> sized (pure . fixedToCoord . MkFixed . fromIntegral)) `suchThatMap` mkLatitude)
-        <*> (((+) lonCoord <$> sized (pure . fixedToCoord . MkFixed . fromIntegral)) `suchThatMap` mkLongitude)

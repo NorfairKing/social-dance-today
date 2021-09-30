@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NumericUnderscores #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Salsa.Party.Web.Server.Gen where
@@ -197,3 +198,14 @@ genValidEmailAddress = do
 
 genValidPassword :: Gen Text
 genValidPassword = genValid `suchThat` (not . T.null)
+
+genPlaceAroundLocation :: Place -> Gen Place
+genPlaceAroundLocation locationPlace = genPlaceAround (placeCoordinates locationPlace)
+
+genPlaceAround :: Coordinates -> Gen Place
+genPlaceAround Coordinates {..} =
+  let Latitude latCoord = coordinatesLat
+      Longitude lonCoord = coordinatesLon
+   in Place <$> genValid
+        <*> (((+) latCoord <$> sized (pure . fixedToCoord . MkFixed . fromIntegral . (* 100))) `suchThatMap` mkLatitude)
+        <*> (((+) lonCoord <$> sized (pure . fixedToCoord . MkFixed . fromIntegral . (* 100))) `suchThatMap` mkLongitude)

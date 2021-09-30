@@ -14,6 +14,7 @@ library:
   - bytestring
   - containers
   - data-default
+  - deepseq
   - filepath
   - genvalidity
   - genvalidity-bytestring
@@ -51,6 +52,24 @@ library:
   - yesod
   - yesod-auth
   - yesod-core
+
+
+benchmarks:
+  smos-api-bench:
+    main: Main.hs
+    source-dirs: bench/
+    ghc-options:
+    - -Wall
+    dependencies:
+    - QuickCheck
+    - criterion
+    - genvalidity
+    - genvalidity-criterion
+    - persistent
+    - salsa-party-web-server
+    - salsa-party-web-server-gen
+    - sydtest
+    - time
 
 tests:
   salsa-party-web-server-gen-test:

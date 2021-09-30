@@ -7,6 +7,7 @@
 
 module Salsa.Party.Web.Server.Handler.Search.Query where
 
+import Control.DeepSeq
 import Control.Monad
 import Data.List
 import Data.Map.Strict (Map)
@@ -24,6 +25,8 @@ data SearchQuery = SearchQuery
     searchQueryDistance :: Maybe Word -- Nothing means unlimited distance.
   }
   deriving (Show, Eq, Generic)
+
+instance NFData SearchQuery
 
 nullSearchResults :: Map Day [Result] -> Bool
 nullSearchResults = (== 0) . countSearchResults -- Not the same as M.null!

@@ -134,6 +134,7 @@ library
     , containers
     , cryptohash-sha256
     , data-default
+    , deepseq
     , edit-distance
     , envparse
     , esqueleto
