@@ -48,11 +48,12 @@ setupSearchDataQuery = do
   let (partyPrototypes, externalEventPrototypes) = runGen $ genPrototypes placeIds
 
   -- Set up parties
-  partyIds <- forM partyPrototypes $ \partyPrototype -> do
+  forM_ partyPrototypes $ \partyPrototype -> do
     uuid <- nextRandomUUID
     insert $ partyPrototype {partyUuid = uuid}
+
   -- Set up external events
-  externalEventIds <- forM externalEventPrototypes $ \externalEventPrototype -> do
+  forM_ externalEventPrototypes $ \externalEventPrototype -> do
     uuid <- nextRandomUUID
     insert $ externalEventPrototype {externalEventUuid = uuid}
 
