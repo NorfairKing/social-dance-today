@@ -58,10 +58,10 @@ instance Validity AddPartyForm where
 addPartyForm :: FormInput Handler AddPartyForm
 addPartyForm =
   AddPartyForm
-    <$> (T.strip <$> ireq textField "title")
+    <$> (normaliseTitle <$> ireq textField "title")
     <*> ireq dayField "day"
     <*> ireq textField "address"
-    <*> iopt textareaField "description"
+    <*> (normaliseDescriptionTextarea <$> iopt textareaField "description")
     <*> iopt timeField "start"
     -- We don't use urlField here because we store the urls as text anyway.
     -- The html still contains type="url" so invaild urls will have been submitted on purpose.
