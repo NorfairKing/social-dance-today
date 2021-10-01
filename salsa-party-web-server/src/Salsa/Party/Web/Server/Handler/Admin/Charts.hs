@@ -17,6 +17,7 @@ import qualified Data.Conduit.Combinators as C
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import Data.Word
+import Safe
 import Salsa.Party.Web.Server.Handler.Import
 import Text.Julius
 import Text.Printf
@@ -55,7 +56,7 @@ getAdminChartsR = do
   externalEventsPerDayMap <- makePerDayCountMap acqExternalEventsSource $ externalEventDay . entityVal
   let eventsPerDayMap = M.unionWith (+) partiesPerDayMap externalEventsPerDayMap
 
-  let minDay = minimum $ map fst $ mapMaybe M.lookupMin [dayCountMapOfExternalEvents, dayCountMapOfParties]
+  let minDay = fromMaybe today $ minimumMay $ map fst $ mapMaybe M.lookupMin [dayCountMapOfExternalEvents, dayCountMapOfParties]
       curDay = today
       maxDay = addDays 30 today
 

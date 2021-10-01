@@ -40,7 +40,7 @@ partyPageHtml (Entity _ organiser@Organiser {..}) (Entity partyId party@Party {.
     setDescription $ partyHtmlDescription messageRender timeLocale prettyDayFormat prettyTimeFormat party organiser place
     let ldEvent = partyToLDEvent renderUrl party organiser place mPosterKey
     toWidgetHead $ toJSONLDData ldEvent
-    addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified
+    addHeader "Last-Modified" $ TE.decodeLatin1 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified
     let mAddToGoogleLink = addPartyToGoogleCalendarLink renderUrl organiser party place
     $(widgetFile "party")
 

@@ -36,7 +36,7 @@ organiserPage (Entity organiserId organiser@Organiser {..}) = do
   withNavBar $ do
     setTitleI $ MsgOrganiserTitle organiserName
     setDescriptionI $ MsgOrganiserDescription organiserName
-    addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe organiserCreated organiserModified
+    addHeader "Last-Modified" $ TE.decodeLatin1 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe organiserCreated organiserModified
     $(widgetFile "organiser")
 
 getUpcomingPartiesOfOrganiser :: MonadIO m => OrganiserId -> SqlPersistT m [(Entity Party, Entity Place, Maybe CASKey)]

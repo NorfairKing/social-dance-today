@@ -116,8 +116,9 @@ openRouteWithParams route extraParams = do
   let (pathPieces, queryParams) = Yesod.renderRoute route
   let q = queryTextToQuery $ map (second Just) (queryParams <> extraParams)
   let pathBS = encodePath pathPieces q
-  let url = T.unpack $ TE.decodeUtf8 (LB.toStrict (BB.toLazyByteString pathBS)) -- Not safe, but it will fail during testing (if at all) so should be ok.
-  openPage $ show uri <> url
+  case TE.decodeUtf8' (LB.toStrict (BB.toLazyByteString pathBS)) of
+    Left err -> liftIO $ die $ show err
+    Right t -> openPage $ show uri <> T.unpack t
 
 driveAdvancedSearch :: QueryForm -> WebdriverTestM ()
 driveAdvancedSearch QueryForm {..} = do
@@ -541,7 +542,7 @@ screenSizes =
   ]
 
 timeOverrideQueryParam :: UTCTime -> (Text, Text)
-timeOverrideQueryParam moment = (currentTimeOverrideParam, TE.decodeUtf8 $ LB.toStrict $ JSON.encode moment)
+timeOverrideQueryParam moment = (currentTimeOverrideParam, TE.decodeLatin1 $ LB.toStrict $ JSON.encode moment)
 
 data Screenshot = Screenshot
   { screenshotFile :: !(Path Abs File),

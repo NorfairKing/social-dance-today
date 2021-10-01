@@ -12,6 +12,7 @@ import Data.Ord
 import qualified Data.Text as T
 import Path
 import Path.IO
+import Safe
 import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Query
@@ -61,9 +62,9 @@ getExploreSkylineR locationName = do
       exists <- liftIO $ doesFileExist filepath
       if exists
         then sendFile "image/jpeg" $ fromAbsFile filepath
-        else
-          let stockImage = stockSkylineImages !! (abs (hash filepath) `mod` length stockSkylineImages)
-           in sendImageOrNotFound $ locationsDir </> stockImage
+        else case stockSkylineImages `atMay` (abs (hash filepath) `mod` length stockSkylineImages) of
+          Nothing -> notFound
+          Just stockImage -> sendImageOrNotFound $ locationsDir </> stockImage
 
 stockSkylineImages :: [Path Rel File]
 stockSkylineImages =

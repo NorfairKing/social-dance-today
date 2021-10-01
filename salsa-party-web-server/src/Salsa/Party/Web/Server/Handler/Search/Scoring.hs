@@ -3,12 +3,15 @@
 module Salsa.Party.Web.Server.Handler.Search.Scoring where
 
 import Data.Char as Char
+import Data.Foldable
 import qualified Data.Text as T
 import Salsa.Party.Web.Server.Handler.Import
 
 scoreExternalEventTrip :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Double
 scoreExternalEventTrip (Entity _ externalEvent, Entity _ place, mPoster) =
-  sum
+  foldl'
+    (+)
+    0
     [ scoreExternalEvent externalEvent,
       2 * scorePlace place,
       scoreMPoster mPoster
@@ -16,7 +19,9 @@ scoreExternalEventTrip (Entity _ externalEvent, Entity _ place, mPoster) =
 
 scoreExternalEvent :: ExternalEvent -> Double
 scoreExternalEvent ExternalEvent {..} =
-  sum
+  foldl'
+    (+)
+    0
     [ (* 5) $ min 10 $ scoreText externalEventTitle,
       min 50 $ scoreMaybe scoreText externalEventDescription,
       (* 2) $ min 10 $ scoreMaybe scoreText externalEventOrganiser,

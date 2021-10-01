@@ -91,7 +91,7 @@ spec =
                           ctx =
                             unlines
                               [ "Encoded JSON:",
-                                T.unpack $ TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty expectedLDEvent
+                                T.unpack $ TE.decodeLatin1 $ LB.toStrict $ JSON.encodePretty expectedLDEvent
                               ]
                        in context ctx $ ldEvent `shouldBe` expectedLDEvent
                     _ -> expectationFailure $ ppShow jsonLDResults
@@ -144,7 +144,7 @@ spec =
                           ctx =
                             unlines
                               [ "Encoded JSON:",
-                                T.unpack $ TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty expectedLDEvent
+                                T.unpack $ TE.decodeLatin1 $ LB.toStrict $ JSON.encodePretty expectedLDEvent
                               ]
                        in context ctx $ ldEvent `shouldBe` expectedLDEvent
                     _ -> expectationFailure $ ppShow jsonLDResults
@@ -180,7 +180,7 @@ spec =
                         ctx =
                           unlines
                             [ "Encoded JSON:",
-                              T.unpack $ TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty expectedLDEvent
+                              T.unpack $ TE.decodeLatin1 $ LB.toStrict $ JSON.encodePretty expectedLDEvent
                             ]
                      in context ctx $ ldEvent `shouldBe` expectedLDEvent
                   _ -> expectationFailure $ ppShow jsonLDResults

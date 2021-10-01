@@ -7,9 +7,10 @@
 module Salsa.Party.DBSpec (spec) where
 
 import Control.Monad
+import qualified Data.ByteString as SB
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
+import qualified Data.Text.Encoding as TE
 import Database.Persist
 import Database.Persist.Sql
 import Salsa.Party.DB
@@ -76,18 +77,22 @@ automaticMigrationsSucceedsSpec currentMigration = do
             runSqlPool (renderStatements <$> runMigrationQuiet currentMigration) pool
 
         it "Can automatically migrate from the previous database schema" $ do
-          let unrenderStatements = filter (not . T.null . T.strip) . T.splitOn "\n"
-          statements <- liftIO $ unrenderStatements <$> T.readFile migrationFile
-          -- Set up the database with the old migrations
-          forM_ statements $ \statement ->
-            rawExecute statement [] :: SqlPersistM ()
-          -- Try to run the current migrations
-          errOrStatements <-
-            (Right <$> runMigrationQuiet currentMigration)
-              `catch` (\e -> pure $ Left (e :: PersistException)) ::
-              SqlPersistM (Either PersistException [Text])
-          case errOrStatements of
-            Right _ -> pure ()
-            Left err -> liftIO $ case err of
-              PersistError t -> expectationFailure $ T.unpack t
-              _ -> expectationFailure $ ppShow err
+          contents <- liftIO $ SB.readFile migrationFile
+          case TE.decodeUtf8' contents of
+            Left err -> liftIO $ expectationFailure $ show err
+            Right textContents -> do
+              let unrenderStatements = filter (not . T.null . T.strip) . T.splitOn "\n"
+              let statements = unrenderStatements textContents
+              -- Set up the database with the old migrations
+              forM_ statements $ \statement ->
+                rawExecute statement [] :: SqlPersistM ()
+              -- Try to run the current migrations
+              errOrStatements <-
+                (Right <$> runMigrationQuiet currentMigration)
+                  `catch` (\e -> pure $ Left (e :: PersistException)) ::
+                  SqlPersistM (Either PersistException [Text])
+              case errOrStatements of
+                Right _ -> pure ()
+                Left err -> liftIO $ case err of
+                  PersistError t -> expectationFailure $ T.unpack t
+                  _ -> expectationFailure $ ppShow err

@@ -68,7 +68,7 @@ instance FromJSON CASKey where
       Left err -> fail err
 
 renderCASKey :: CASKey -> Text
-renderCASKey = TE.decodeUtf8 . Base64.encode . unCASKey
+renderCASKey = TE.decodeLatin1 . Base64.encode . unCASKey
 
 parseCASKey :: Text -> Either String CASKey
 parseCASKey t = CASKey <$> Base64.decode (TE.encodeUtf8 t)

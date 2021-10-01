@@ -85,41 +85,6 @@ deduplicateExternalEvents internals externals = M.differenceWith go externals in
 externalEventIsSimilarEnoughToParty :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> (Entity Organiser, Entity Party, Entity Place, Maybe CASKey) -> Bool
 externalEventIsSimilarEnoughToParty tup tup2 = similarEnough 0.8 $ computeSimilarityFormula $ similarityScoreExternalToInternal tup tup2
 
--- If the description is close enough, then we say to deduplicate the events.
--- This works because organisers often copy-paste event descriptions.
-descriptionCloseEnoughTo :: Maybe Text -> Maybe Text -> Bool
-descriptionCloseEnoughTo = mCloseEnoughTo 9
-
-mCloseEnoughTo :: Int -> Maybe Text -> Maybe Text -> Bool
-mCloseEnoughTo ratio mt1 mt2 = case (,) <$> mt1 <*> mt2 of
-  Nothing -> False -- Don't take any chances. If either is nothing then we say no.
-  Just (t1, t2) -> closeEnoughTo ratio t1 t2
-
--- If they're happening at the same-ish address, it's also probably the same event.
-placeCloseEnoughTo :: Text -> Text -> Bool
-placeCloseEnoughTo = closeEnoughTo 11
-
--- If the title of two events are the same (modulo whitespace), it's also probably the same event.
--- We rely on the assumption that different events will want to differentiate themselves from eachother
-titleCloseEnoughTo :: Text -> Text -> Bool
-titleCloseEnoughTo = closeEnoughTo 11
-
-closeEnoughTo :: Int -> Text -> Text -> Bool
-closeEnoughTo ratio t1 t2 =
-  let normalise =
-        filter (not . Char.isSymbol)
-          . filter (not . Char.isSpace)
-          . filter Char.isPrint
-          . T.unpack
-          . T.toCaseFold
-          . T.strip
-      t1' = normalise t1
-      t2' = normalise t2
-      d = levenshteinDistance defaultEditCosts t1' t2'
-      totalLength = length t1' + length t2'
-   in -- For every _this many_ characters in the total length, the 'duplicate' can be one off.
-      ratio * d < totalLength
-
 similarityScoreExternalToExternal ::
   (Entity ExternalEvent, Entity Place, Maybe CASKey) ->
   (Entity ExternalEvent, Entity Place, Maybe CASKey) ->
@@ -244,8 +209,8 @@ cosineSimilarity = go `on` (filter (not . T.null) . map T.strip . T.words)
     go words1 words2 =
       let countMap1 = countMap words1
           countMap2 = countMap words2
-          dotProduct = fromIntegral $ sum $ M.intersectionWith (*) countMap1 countMap2
-          norm v = sqrt $ sum $ map ((** 2) . fromIntegral) $ toList v
+          dotProduct = fromIntegral $ foldl' (+) 0 $ M.intersectionWith (*) countMap1 countMap2
+          norm v = sqrt $ foldl' (+) 0 $ map ((** 2) . fromIntegral) $ toList v
        in Similarity $ dotProduct / (norm countMap1 * norm countMap2)
 
 countMap :: [Text] -> Map Text Word
@@ -299,11 +264,11 @@ sumSimilarities :: [(Double, Similarity)] -> Similarity
 sumSimilarities = \case
   [] -> Similarity 1
   terms ->
-    let total = sum $ map fst terms
+    let total = foldl' (+) 0 $ map fst terms
      in Similarity $
           if total <= 0
             then 0
-            else sum $ map (\(d, Similarity s) -> (d * s) / total) terms
+            else foldl' (+) 0 $ map (\(d, Similarity s) -> (d * s) / total) terms
 
 -- 0 means not similar at all
 -- 1 means exactly equal.

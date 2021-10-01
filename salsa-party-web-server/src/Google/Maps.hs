@@ -26,7 +26,7 @@ googleMapsStaticUrl apiKey query =
             ("markers", Just $ TE.encodeUtf8 query),
             ("zoom", Just zoomLevel)
           ]
-   in staticAPIUrl <> TE.decodeUtf8 googleMapsEmbedQuery
+   in staticAPIUrl <> TE.decodeLatin1 googleMapsEmbedQuery
 
 googleMapsEmbedUrl :: Text -> Text -> Text
 googleMapsEmbedUrl apiKey query =
@@ -38,7 +38,7 @@ googleMapsEmbedUrl apiKey query =
             ("q", Just $ TE.encodeUtf8 query),
             ("zoom", Just zoomLevel)
           ]
-   in embedAPIUrl <> TE.decodeUtf8 googleMapsEmbedQuery
+   in embedAPIUrl <> TE.decodeLatin1 googleMapsEmbedQuery
 
 zoomLevel :: ByteString
 zoomLevel = "13"

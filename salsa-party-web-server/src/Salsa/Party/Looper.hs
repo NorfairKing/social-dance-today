@@ -47,7 +47,7 @@ runLoopers settings@Settings {..} app = do
                         -- Re-throw AsyncException, otherwise execution will not terminate on SIGINT (ctrl-c).
                         Handler (\e -> throwIO (e :: AsyncException)),
                         -- Catch all the rest as a string
-                        Handler (\e -> return $ Left (e :: SomeException))
+                        Handler (\e -> pure $ Left (e :: SomeException))
                       ]
         end <- liftIO getMonotonicTimeNSec
         case errOrUnit of

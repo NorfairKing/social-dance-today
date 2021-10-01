@@ -32,7 +32,7 @@ externalEventPageHtml (Entity _ externalEvent@ExternalEvent {..}) (Entity _ plac
     setTitleI $ externalEventTitleMessage externalEvent
     setDescription $ externalEventHtmlDescription messageRender timeLocale prettyDayFormat prettyTimeFormat externalEvent place
     toWidgetHead $ toJSONLDData $ externalEventToLDEvent renderUrl externalEvent place mPosterKey
-    addHeader "Last-Modified" $ TE.decodeUtf8 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe externalEventCreated externalEventModified
+    addHeader "Last-Modified" $ TE.decodeLatin1 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe externalEventCreated externalEventModified
     let mAddToGoogleLink = addExternalEventToGoogleCalendarLink renderUrl externalEvent place
     let mHomepageLink = externalEventHomepage >>= (parseURILike . T.unpack)
     $(widgetFile "external-event")

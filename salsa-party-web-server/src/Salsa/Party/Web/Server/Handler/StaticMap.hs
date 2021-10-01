@@ -87,7 +87,15 @@ loadMapImage query = do
       req <- parseRequest (T.unpack uri)
       errOrResp <- httpLbsWithRetry req man
       case errOrResp of
-        Left err -> error (show err)
+        Left err -> do
+          logErrorN $
+            T.pack $
+              unlines
+                [ "Failed to fetch the static map from the gogogle maps api",
+                  ppShow err,
+                  ppShow req
+                ]
+          notFound
         Right response -> do
           let imageType = "image/jpeg"
               imageBlob = LB.toStrict $ responseBody response
