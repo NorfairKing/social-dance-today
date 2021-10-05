@@ -93,9 +93,9 @@ getRegisterR = do
       $(widgetFile "auth/register")
 
 data RegisterForm = RegisterForm
-  { registerFormEmailAddress :: EmailAddress,
-    registerFormPassphrase :: Password,
-    registerFormConfirmPassphrase :: Password
+  { registerFormEmailAddress :: !EmailAddress,
+    registerFormPassphrase :: !Password,
+    registerFormConfirmPassphrase :: !Password
   }
   deriving (Show, Generic)
 
@@ -163,8 +163,8 @@ salsaLoginHandler _toParentRoute = do
   $(widgetFile "auth/login")
 
 data LoginForm = LoginForm
-  { loginFormEmailAddress :: EmailAddress,
-    loginFormPassphrase :: Password
+  { loginFormEmailAddress :: !EmailAddress,
+    loginFormPassphrase :: !Password
   }
   deriving (Show, Generic)
 
