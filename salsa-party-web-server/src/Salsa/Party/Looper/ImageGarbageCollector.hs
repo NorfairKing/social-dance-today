@@ -7,7 +7,7 @@ import Salsa.Party.Looper.Import
 
 runImageGarbageCollector :: App -> LoggingT IO ()
 runImageGarbageCollector App {..} = do
-  let runDBHere func = runSqlPool func appConnectionPool
+  let runDBHere func = runSqlPool (retryOnBusy func) appConnectionPool
   acqKeysSource <- runDBHere $ selectKeysRes [] [Asc ImageId]
   withAcquire acqKeysSource $ \keysSource ->
     runConduit $ keysSource .| C.mapM_ (runDBHere . garbageCollectImage)

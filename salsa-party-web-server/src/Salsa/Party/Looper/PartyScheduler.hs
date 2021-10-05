@@ -18,7 +18,7 @@ import Salsa.Party.Looper.Import
 runPartyScheduler :: (MonadUnliftIO m, MonadLogger m, MonadReader App m) => m ()
 runPartyScheduler = do
   pool <- asks appConnectionPool
-  let runDBHere func = runSqlPool func pool
+  let runDBHere func = runSqlPool (retryOnBusy func) pool
   acqOrganiserReminderSource <- runDBHere $ selectSourceRes [] []
   withAcquire acqOrganiserReminderSource $ \scheduleSource -> do
     runConduit $
@@ -60,7 +60,7 @@ handleScheduleDecision = \case
   NextDayTooFarAhead -> logDebugN "Not scheduling any parties because the next day would be too far ahead."
   ScheduleAParty (Entity scheduleId_ schedule) nextDays mImageId -> do
     pool <- asks appConnectionPool
-    let runDBHere func = runSqlPool func pool
+    let runDBHere func = runSqlPool (retryOnBusy func) pool
     now <- liftIO getCurrentTime
     runDBHere $
       forM_ nextDays $ \nextDay -> do

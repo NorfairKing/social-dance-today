@@ -30,6 +30,7 @@ import Data.Time
 import Data.Validity
 import Database.Persist
 import Database.Persist.Sql
+import Database.Persist.Sqlite
 import GHC.Generics (Generic)
 import Looper
 import Network.HTTP.Client as HTTP
@@ -66,7 +67,7 @@ data Importer = Importer
 runImporterWithDoubleCheck :: NominalDiffTime -> App -> LooperSettings -> Importer -> LoggingT IO ()
 runImporterWithDoubleCheck importerInterval app LooperSettings {..} importer = addImporterNameToLog (importerName importer) $ do
   let runDBHere :: SqlPersistT (LoggingT IO) a -> LoggingT IO a
-      runDBHere = flip runSqlPool (appConnectionPool app)
+      runDBHere = flip runSqlPool (appConnectionPool app) . retryOnBusy
 
   logInfoN "Checking whether to run"
   now <- liftIO getCurrentTime
@@ -113,7 +114,7 @@ runImporterWithDoubleCheck importerInterval app LooperSettings {..} importer = a
 runImporter :: App -> Importer -> LoggingT IO ()
 runImporter a Importer {..} = do
   let runDBHere :: SqlPersistT (LoggingT IO) a -> LoggingT IO a
-      runDBHere = flip runSqlPool (appConnectionPool a)
+      runDBHere = flip runSqlPool (appConnectionPool a) . retryOnBusy
 
   begin <- liftIO getCurrentTime
   Entity importerId _ <-
@@ -224,7 +225,7 @@ importDB :: SqlPersistT (LoggingT IO) a -> Import a
 importDB func = do
   pool <- asks $ appConnectionPool . importEnvApp
   logFunc <- askLoggerIO
-  liftIO $ runLoggingT (runSqlPool func pool) logFunc
+  liftIO $ runLoggingT (runSqlPool (retryOnBusy func) pool) logFunc
 
 importExternalEventWithMImage :: (ExternalEvent, Maybe URI) -> Import ()
 importExternalEventWithMImage (externalEvent, mImageURI) =

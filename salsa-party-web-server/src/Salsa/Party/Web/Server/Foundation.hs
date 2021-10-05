@@ -35,6 +35,7 @@ import Data.Validity.Time ()
 import qualified Database.Esqueleto as E
 import qualified Database.Esqueleto.Internal.Sql as E
 import Database.Persist.Sql
+import Database.Persist.Sqlite
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation.App
 import Salsa.Party.Web.Server.Foundation.Auth
@@ -146,7 +147,7 @@ appDB :: (MonadReader App m, MonadLoggerIO m) => SqlPersistT (LoggingT IO) a -> 
 appDB func = do
   pool <- asks appConnectionPool
   logFunc <- askLoggerIO
-  liftIO $ runLoggingT (runSqlPool func pool) logFunc
+  liftIO $ runLoggingT (runSqlPool (retryOnBusy func) pool) logFunc
 
 newtype JSONLDData = JSONLDData {unJSONLDData :: Value}
 

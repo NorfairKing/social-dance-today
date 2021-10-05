@@ -24,6 +24,7 @@ import Control.Monad
 import Data.Maybe
 import Data.Text (Text)
 import Database.Persist.Sql
+import Database.Persist.Sqlite
 import Path
 import Salsa.Party.DB
 import Salsa.Party.OptParse
@@ -154,4 +155,4 @@ instance YesodPersist App where
   type YesodPersistBackend App = SqlBackend
   runDB func = do
     pool <- getsYesod appConnectionPool
-    runSqlPool func pool
+    runSqlPool (retryOnBusy func) pool

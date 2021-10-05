@@ -34,7 +34,7 @@ import Yesod
 runOrganiserReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => m ()
 runOrganiserReminder = do
   pool <- asks appConnectionPool
-  let runDBHere func = runSqlPool func pool
+  let runDBHere func = runSqlPool (retryOnBusy func) pool
   acqOrganiserReminderSource <- runDBHere $ selectSourceRes [OrganiserReminderConsent ==. True] []
   withAcquire acqOrganiserReminderSource $ \organiserReminderSource -> do
     runConduit $
@@ -185,7 +185,7 @@ reminderDecisionSink = awaitForever $ \case
       then sendOrganiserReminder emailAddress secret
       else logDebugN "Not sending reminder email because sendEmails is off."
     pool <- asks appConnectionPool
-    let runDBHere func = runSqlPool func pool
+    let runDBHere func = runSqlPool (retryOnBusy func) pool
     runDBHere $
       update
         organiserReminderId

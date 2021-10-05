@@ -18,6 +18,7 @@ import Data.Time
 import Database.Persist.Sql (SqlPersistT)
 import qualified Database.Persist.Sql as DB
 import Database.Persist.Sqlite (fkEnabled, mkSqliteConnectionInfo, walEnabled, withSqlitePoolInfo)
+import qualified Database.Persist.Sqlite as DB
 import GHC.Generics (Generic)
 import Lens.Micro
 import Network.HTTP.Client as HTTP
@@ -131,7 +132,7 @@ addRecurrenceParams = \case
     addPostParam "recurrence-type" "weekly"
     addPostParam "recurrence-day-of-week" $ T.pack $ show dow
 
-testDB :: DB.SqlPersistT IO a -> YesodClientM App a
+testDB :: DB.SqlPersistT (NoLoggingT IO) a -> YesodClientM App a
 testDB func = do
   pool <- asks $ appConnectionPool . yesodClientSite
-  liftIO $ runSqlPool func pool
+  liftIO $ runNoLoggingT $ runSqlPool (DB.retryOnBusy func) pool
