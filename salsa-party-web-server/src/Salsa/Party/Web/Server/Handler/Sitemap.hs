@@ -23,9 +23,10 @@ getSitemapR :: Handler TypedContent
 getSitemapR = do
   today <- liftIO $ utctDay <$> getCurrentTime
   let yesterday = addDays (-1) today
+  let earliestDayToShow = addDays (-30) today
   acqOrganisers <- runDB $ selectSourceRes [] [Asc OrganiserId]
   acqImages <- runDB $ selectSourceRes [] [Asc ImageId]
-  acqExternalEvents <- runDB $ selectSourceRes [] [Asc ExternalEventId]
+  acqExternalEvents <- runDB $ selectSourceRes [ExternalEventDay >=. earliestDayToShow] [Asc ExternalEventId]
 
   sitemap $ do
     yield
@@ -74,6 +75,7 @@ getSitemapR = do
       ( E.selectSource $
           E.from $ \(organiser `E.InnerJoin` party) -> do
             E.on $ party E.^. PartyOrganiser E.==. organiser E.^. OrganiserId
+            E.where_ $ party E.^. PartyDay E.>=. E.val earliestDayToShow
             pure (organiser, party)
       )
       .| C.map
