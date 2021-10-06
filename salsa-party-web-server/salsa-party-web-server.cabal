@@ -17,6 +17,7 @@ library
       Network.HTTP.Client.Retry
       OpenStreetMaps.Geocoding
       Salsa.Party.AdminNotification
+      Salsa.Party.AWS
       Salsa.Party.DB
       Salsa.Party.DB.CASKey
       Salsa.Party.DB.Coordinates
@@ -27,6 +28,7 @@ library
       Salsa.Party.DB.Slug
       Salsa.Party.DB.URI
       Salsa.Party.DB.UUID
+      Salsa.Party.Email
       Salsa.Party.Importer
       Salsa.Party.Importer.DancefloorfinderCom
       Salsa.Party.Importer.DanceplaceCom

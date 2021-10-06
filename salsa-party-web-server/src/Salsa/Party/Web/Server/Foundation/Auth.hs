@@ -23,7 +23,6 @@ where
 import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
-import Control.Retry
 import Data.Function
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -35,10 +34,9 @@ import Data.Validity.Time ()
 import Database.Persist.Sql
 import GHC.Generics (Generic)
 import Lens.Micro
-import qualified Network.AWS as AWS
 import qualified Network.AWS.SES as SES
-import Network.HTTP.Client.Retry
 import Salsa.Party.DB
+import Salsa.Party.Email
 import Salsa.Party.Web.Server.Foundation.App
 import Salsa.Party.Web.Server.Foundation.Auth.Routes
 import Salsa.Party.Web.Server.Foundation.I18N.Messages
@@ -49,7 +47,6 @@ import System.Random
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet
 import Text.Shakespeare.Text
-import Text.Show.Pretty (ppShow)
 import Yesod
 import Yesod.Auth
 import Yesod.Auth.Message
@@ -229,85 +226,37 @@ sendVerificationEmail ::
   Text ->
   HandlerFor app ()
 sendVerificationEmail userEmailAddress verificationKey = do
-  shouldSendEmail <- getsYesod appSendEmails
-  mSendAddress <- getsYesod appSendAddress
-  forM_ mSendAddress $ \sendAddress ->
-    if shouldSendEmail
-      then do
-        logInfoN $ T.pack $ "Sending verification email to address: " <> show userEmailAddress
+  logInfoN $ T.pack $ unwords ["Sending verification email to address:", show userEmailAddress]
 
-        urlRender <- getUrlRenderParams
-        messageRender <- getMessageRender
+  urlRender <- getUrlRenderParams
+  messageRender <- getMessageRender
 
-        let subject = SES.content $ messageRender $ MsgVerificationEmailSubject siteTitle
+  let subject = SES.content $ messageRender $ MsgVerificationEmailSubject siteTitle
 
-        let textBody = SES.content $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/auth/email/verification-email.txt") urlRender
+  let textBody = SES.content $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/auth/email/verification-email.txt") urlRender
 
-        let htmlBody = SES.content $ LT.toStrict $ renderHtml $ $(ihamletFile "templates/auth/email/verification-email.hamlet") (toHtml . messageRender) urlRender
+  let htmlBody = SES.content $ LT.toStrict $ renderHtml $ $(ihamletFile "templates/auth/email/verification-email.hamlet") (toHtml . messageRender) urlRender
 
-        let body =
-              SES.body
-                & SES.bText ?~ textBody
-                & SES.bHTML ?~ htmlBody
+  let body =
+        SES.body
+          & SES.bText ?~ textBody
+          & SES.bHTML ?~ htmlBody
 
-        let message = SES.message subject body
+  let message = SES.message subject body
 
-        let destination =
-              SES.destination
-                & SES.dToAddresses .~ [emailAddressText userEmailAddress]
-        let request = SES.sendEmail sendAddress destination message
-
-        response <- runAWS $ AWS.send request
-        case (^. SES.sersResponseStatus) <$> response of
-          Right 200 -> do
-            logInfoN $ T.pack $ "Succesfully send verification email to address: " <> show userEmailAddress
-            addMessageI "is-success" (ConfirmationEmailSent $ emailAddressText userEmailAddress)
-          _ -> do
-            logErrorN $
-              T.pack $
-                unlines
-                  [ "Failed to send verification email to address: " <> show userEmailAddress,
-                    ppShow response
-                  ]
-            addMessageI "is-danger" MsgVerificationEmailFailure
-      else logInfoN $ T.pack $ "Not sending verification email (because sendEmail is turned of), to address: " <> show userEmailAddress
-
-runAWS ::
-  ( MonadUnliftIO m,
-    MonadLoggerIO m
-  ) =>
-  AWS.AWS a ->
-  m (Either AWS.Error a)
-runAWS func = do
-  logger <- mkAwsLogger
-  awsEnv <- liftIO $ AWS.newEnv AWS.Discover
-  let ourAwsEnv =
-        awsEnv
-          & AWS.envRegion .~ AWS.Ireland
-          & AWS.envLogger .~ logger
-
-  let awsRetryPolicy = httpRetryPolicy
-  let shouldRetry = \case
-        Left awsError -> case awsError of
-          AWS.TransportError exception -> shouldRetryHttpException exception
-          AWS.SerializeError _ -> pure False
-          AWS.ServiceError se -> pure $ shouldRetryStatusCode $ AWS._serviceStatus se
-        Right _ -> pure False -- Didn't even fail.
-  let tryOnce = AWS.runResourceT $ AWS.runAWS ourAwsEnv $ AWS.trying AWS._Error func
-
-  retrying awsRetryPolicy (\_ -> shouldRetry) (\_ -> tryOnce)
-
-mkAwsLogger :: MonadLoggerIO m => m AWS.Logger
-mkAwsLogger = do
-  logFunc <- askLoggerIO
-  let logger awsLevel builder =
-        let ourLevel = case awsLevel of
-              AWS.Info -> LevelInfo
-              AWS.Error -> LevelError
-              AWS.Debug -> LevelDebug
-              AWS.Trace -> LevelDebug
-         in logFunc defaultLoc "aws-client" ourLevel $ toLogStr builder
-  pure logger
+  let destination =
+        SES.destination
+          & SES.dToAddresses .~ [emailAddressText userEmailAddress]
+  app <- getYesod
+  sendEmailResult <- sendEmail app destination message
+  case sendEmailResult of
+    ErrorWhileSendingEmail _ -> do
+      addMessageI "is-danger" MsgVerificationEmailFailure
+      logErrorN $ T.pack $ unwords ["Failed to send verification email to address:", show userEmailAddress]
+    EmailSentSuccesfully -> do
+      addMessageI "is-success" (ConfirmationEmailSent $ emailAddressText userEmailAddress)
+      logInfoN $ T.pack $ unwords ["Succesfully send verification email to address:", show userEmailAddress]
+    NoEmailSent -> pure ()
 
 getVerifyR ::
   ( app ~ App,
