@@ -58,7 +58,7 @@ findDel predicate = go
         pure (f, a : rest)
 
 externalEventIsSimilarEnoughTo :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Bool
-externalEventIsSimilarEnoughTo trip1 trip2 = similarEnough 0.745 $ computeSimilarityFormula $ similarityScoreExternalToExternal trip1 trip2
+externalEventIsSimilarEnoughTo trip1 trip2 = similarEnough 0.748 $ computeSimilarityFormula $ similarityScoreExternalToExternal trip1 trip2
 
 -- | Find external events that look like internal events, and delete them from the external events list.
 --
