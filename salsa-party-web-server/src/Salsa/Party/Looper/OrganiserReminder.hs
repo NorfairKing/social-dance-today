@@ -22,8 +22,8 @@ import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LTB
 import Lens.Micro
-import qualified Network.AWS as AWS
 import qualified Network.AWS.SES as SES
+import Salsa.Party.Email
 import Salsa.Party.Looper.Import
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet
@@ -193,41 +193,32 @@ reminderDecisionSink = awaitForever $ \case
 
 sendOrganiserReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => EmailAddress -> ReminderSecret -> m ()
 sendOrganiserReminder emailAddress secret = do
-  mSendAddress <- asks appSendAddress
-  forM_ mSendAddress $ \sendAddress -> do
-    logInfoN $ T.pack $ "Sending reminder email to address: " <> show emailAddress
+  logInfoN $ T.pack $ unwords ["Sending reminder email to address:", show emailAddress]
 
-    let subject = SES.content "Reminder to submit your parties to social dance today"
+  let subject = SES.content "Reminder to submit your parties to social dance today"
 
-    app <- ask
-    let urlRender = yesodRender app (fromMaybe "" $ appRoot app)
+  app <- ask
+  let urlRender = yesodRender app (fromMaybe "" $ appRoot app)
 
-    let textBody = SES.content $ organiserReminderTextContent urlRender secret
-    let htmlBody = SES.content $ organiserReminderHtmlContent urlRender secret
+  let textBody = SES.content $ organiserReminderTextContent urlRender secret
+  let htmlBody = SES.content $ organiserReminderHtmlContent urlRender secret
 
-    let body =
-          SES.body
-            & SES.bText ?~ textBody
-            & SES.bHTML ?~ htmlBody
+  let body =
+        SES.body
+          & SES.bText ?~ textBody
+          & SES.bHTML ?~ htmlBody
 
-    let message = SES.message subject body
+  let message = SES.message subject body
 
-    let destination =
-          SES.destination
-            & SES.dToAddresses .~ [emailAddressText emailAddress]
-    let request = SES.sendEmail sendAddress destination message
+  let destination =
+        SES.destination
+          & SES.dToAddresses .~ [emailAddressText emailAddress]
 
-    response <- runAWS $ AWS.send request
-
-    case (^. SES.sersResponseStatus) <$> response of
-      Right 200 -> logInfoN $ T.pack $ "Succesfully send organiser reminder email to address: " <> show emailAddress
-      _ ->
-        logErrorN $
-          T.pack $
-            unlines
-              [ "Failed to send organiser reminder email to address: " <> show emailAddress,
-                ppShow response
-              ]
+  sendEmailResult <- sendEmail app destination message
+  case sendEmailResult of
+    NoEmailSent -> pure ()
+    EmailSentSuccesfully -> logInfoN $ T.pack $ unwords ["Succesfully send organiser reminder email to address:", show emailAddress]
+    ErrorWhileSendingEmail _ -> logErrorN $ T.pack $ unwords ["Failed to send organiser reminder email to address:", show emailAddress]
 
 organiserReminderTextContent :: (Route App -> [(Text, Text)] -> Text) -> ReminderSecret -> Text
 organiserReminderTextContent urlRender secret = LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/organiser-reminder.txt") urlRender
