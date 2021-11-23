@@ -5,15 +5,26 @@
 Logo title@Text: #{title} Logo
 
 # Home Page
-HomeDescription title@Text: TODO #{title}: Where can I dance? Find social dance parties today, whether you are looking for Salsa, Bachata, Kizomba, Mambo, Cha-Cha-Cha, Tango, Zouk, Swing, Lindy Hop, or another dance, you can find it here.
-HomeSubtitleQuestion: Où puis-je danser?
-HomeFormLocation: Mon lieu
-HomeFormLocationUnable: Impossible de trouver votre lieu
-HomeFormLocationNotSupported: Votre géolocation n’est pas soutenue par votre navigateur
-HomeFormLocationInProgress: Localisation…
-HomeFormLocationDone: Localisé
+HomeDescription title@Text: #{title}: Où puis-j’aller danser? Trouvez des soirées de danse aujourd'hui. Si vous cherchez à danser la Salsa, Bachata, Kizomba, Mambo, Cha-Cha-Cha, Tango, Zouk, Swing, Lindy Hop ou une autre danse, vous la trouverez ici.
+HomeSubtitleQuestion: Où puis-j'aller danser?
 HomeFormSearch: Recherche
-HomeFormHelp: Appuyez sur le bouton chercher pour trouver des soirées dans les environs de votre endroit actuel.
+
+# Advanced search
+AdvancedSearchTitle: Recherche appprofondie
+AdvancedSearchDescription: Trouvez les soirées de danse que vous cherchez.
+AdvancedSearchFormLocationLabel: Lieu
+AdvancedSearchFormDistanceLabel: Distance
+AdvancedSearchFormBeginLabel: Du
+AdvancedSearchFormEndLabel: Au
+AdvancedSearchFormSubmit: Cherchez
+
+# Locate me button
+LocateMeLocation: Mon lieu
+LocateMeUnable: Impossible de trouver votre lieu
+LocateMeInProgress: Recherche en cours...
+LocateMeDone: Lieu trouvé
+LocateMeHelpBefore: Appuyez sur la touche "mon lieu" pour utiliser votre lieu actuel.
+LocateMeHelpAfter: Votre lieu actuel sera utilisé pour la recherche à moins que vous introduisez un autre lieu ci-dessus.
 
 # Explore
 ExploreTitle: Explorez le monde de la danse sociale!
@@ -23,12 +34,12 @@ ExploreUpcomingParties number@String: #{number} prochaines soirées
 ExploreSkylineAlt location@Text: Night-time skyline de #{location}
 
 ## Footer
-FooterGeocodingAttribution: [Geocoding by OpenStreetMaps Nominatim]
+FooterGeocodingAttribution: Geocoding by OpenStreetMaps Nominatim
 FooterOpenstreetmapCopyright: © OpenStreetMap contributeurs
 
 # Navbar
 NavFind: Trouvez une soirée
-NavSubmitParty: TODO
+NavSubmitParty: Ajoutez votre soirée de danse
 NavAccount: Compte
 NavOrganiser: Profil d’organisateur
 NavParties: Mes soirées
@@ -39,57 +50,64 @@ NavLogIn: Login
 NavLogOut: Logout
 
 # Form messages
-InvalidLatitude lat@String: TODO Invalid latitude: #{lat}
-InvalidLongitude lon@String: TODO Invalid longitude: #{lon}
+InvalidLatitude lat@String: Latitude invalide: #{lat}
+InvalidLongitude lon@String: Longitude invalide: #{lon}
+DistanceTooGreat distance@String: Distance trop élevée: #{distance} km
+EndBeforeBegin: La date ultérieure est avant la date de début.
+EndTooFarAhead: Search date range too big. Recherche période trop longue.
+AddressOrCoordinates: Vous devez introduire une période ou des coordonnées.
 
 # Search Results
-SearchTitleAroundYourLocationToday: Soirées de danse près de votre endroit aujourd’hui
+SearchTitleAroundYourLocationToday: Soirées de danse près de votre lieu aujourd’hui
 SearchTitleAroundYourLocationOnDay day@String: Soirées de danse près de votre lieu le #{day}
+SearchTitleAroundYourLocationFromTo begin@String end@String: Soirées de danse près de votre lieu à partir de #{begin} jusqu'à #{end}
 SearchTitleAroundAddressToday address@Text: Soirées de danse près de #{address} aujourd’hui
 SearchTitleAroundAddressOnDay address@Text day@String: Soirées de danse près de #{address} le #{day}
+SearchTitleAroundAddressFromTo address@Text begin@String end@String: Soirées de danse près de #{address} entre #{begin} et #{end}
 SearchDescriptionAroundYourLocationToday: Une liste de soirées de danse près de chez vous
 SearchDescriptionAroundYourLocationOnDay day@String: Une liste de soirées de danse près de votre lieu le #{day}
+SearchDescriptionAroundYourLocationFromTo begin@String end@String: Une liste de soirées de danse près de votre lieu entre #{begin} et #{end}
 SearchDescriptionAroundAddressToday address@Text: Une liste de soirées de danse près de #{address}
 SearchDescriptionAroundAddressOnDay address@Text day@String: Une liste de soirées de danse près #{address} le #{day}
+SearchDescriptionAroundAddressFromTo address@Text begin@String end@String: Une liste de soirées de danse près de #{address} entre #{begin} et #{end}
 SearchPartiesAroundAddress address@Text: Soirées de danse près de #{address}
 SearchPartiesAroundYourLocation: Soirée de danse près de votre lieu
 SearchNoParties: Pas de soirées de danse pour cette date.
 SearchPosterAlt title@Text day@String: Affiche pour #{title} le #{day}
 SearchNoResults: Nous n’avons pas d’information concernant cette region en ce moment.
-SearchNoResultsHelp: Nous avons besoin de votre aide pour rassembler des informations pour cette région. Contactez les organisateurs de cette soirée et informez-lez de cette page. Si vous organisez des soirées dans cette région, inscrivez-vous et publiez vos soirées ici.  
+SearchNoResultsHelp: Nous avons besoin de votre aide pour rassembler des informations pour cette région. Contactez les organisateurs de cette soirée et informez-lez de cette page. Si vous organisez des soirées dans cette région, inscrivez-vous et publiez vos soirées ici.
 
 SearchNavEarlier: Ultérieurement
 SearchNavLater: Plus tard
 
 # Party Page
 PartyTitleScheduled title@Text: #{title}
-PartyTitleCancelled title@Text: ANNULEE: #{title}
+PartyTitleCancelled title@Text: SUPPRIMÉE: #{title}
 PartyDescription description@Text: #{description}
-PartyWithoutDescription: Soirée sans description
 
 PartyAddress address@Text: Adresse: #{address}
 PartyOrganiser name@Text: Organisateur: #{name}
-PartyOrganiserTitle organiserName@Text: TODO #{organiserName}
+PartyOrganiserTitle organiserName@Text: Nom organisateur: #{organiserName}
 PartyPrice price@Text: Prix: #{price}
 PartyHomepage: Site internet
-PartyHomepageTitle partyTitle@Text: TODO Homepage of #{partyTitle}
+PartyHomepageTitle partyTitle@Text: Page d’accueil de #{partyTitle}
 PartyDownloadCalendarEvent: Téléchargez calendrier des évènements
-PartyDownloadCalendarEventTitle partyTitle@Text: TODO Download Calendar Event for #{partyTitle}
+PartyDownloadCalendarEventTitle partyTitle@Text: Télécharger le calendrier d’évènements de #{partyTitle}
 PartyAddToGoogleCalendar: Ajoutez au Calendrier Google
-PartyAddToGoogleCalendarTitle partyTitle@Text: TODO Add #{partyTitle} to Google Calendar
+PartyAddToGoogleCalendarTitle partyTitle@Text: Ajoutez #{partyTitle} au calendrier Google
 
-PartyDescriptionDay day@String: TODO on #{day}
-PartyDescriptionDateTime day@String start@String: TODO on #{day} at #{start}
-PartyDescriptionOrganiser name@Text: TODO by #{name}
-PartyDescriptionAddress address@Text: TODO address: TODO #{address}
+PartyDescriptionDay day@String: le #{day}
+PartyDescriptionDateTime day@String start@String: le #{day} à #{start}
+PartyDescriptionOrganiser name@Text: par #{name}
+PartyDescriptionAddress address@Text: adresse: #{address}
 
-ExternalEventCaution: Information trouvée en cherchant sur le web, traitez cette information avec prudence. 
+ExternalEventCaution: Information trouvée en cherchant sur le web, traitez cette information avec prudence.
 
 # Organiser Page
-OrganiserTitle name@Text: Profil de l’organisateure: #{name}
-OrganiserHomepage: TODO Homepage
-OrganiserHomepageTitle name@Text: TODO Homepage of #{name}
-OrganiserDescription name@Text: Le profil de l’organisateur #{name} et une liste de leur prochaines soirées
+OrganiserTitle name@Text: Profil de l’organisateur: #{name}
+OrganiserHomepage: Page d’accueil
+OrganiserHomepageTitle name@Text: Page d’accueil de #(nom)
+OrganiserDescription name@Text: Le profil de l’organisateur #{name} et une liste de leures prochaines soirées
 OrganiserName name@Text: Organisateur: #{name}
 OrganiserUpcomingParties: Prochaines soirées
 OrganiserNoUpcomingParties: Pas de prochaines soirées
@@ -97,22 +115,22 @@ OrganiserNoUpcomingParties: Pas de prochaines soirées
 # Poster
 PosterAltFull title@Text day@String organiser@Text: Affiche pour #{title} le #{day} par #{organiser}
 PosterAltTitle title@Text day@String: Affiche pour #{title} le #{day}
-PosterAltSchedule title@Text recurrenceDescription@Text organiser@Text: TODO Poster for #{title}, #{recurrenceDescription} by #{organiser}
+PosterAltSchedule title@Text recurrenceDescription@Text organiser@Text: Affiche pour #(titre) par #(organisateur)
 
 # Registration
-RegistrationTitle: Salsa Parties Today: S'enregistrer
-RegistrationDescription: Créer un compte à Salsa Parties Today.
+RegistrationTitle: S'enregistrer
+RegistrationDescription: Créer un compte.
 RegistrationEmailAddressLabel: Adresse Email
 RegistrationPassphraseLabel: Mot de passe
 RegistrationConfirmPassphraseLabel: Confirmer mot de passe
 RegistrationSignUpButton: Inscrivez-vous
 RegistrationLogInButton: Se connecter
-RegistrationErrorAccountAlreadyExists: Un compte avec cet identifiant existe déjà
+RegistrationErrorAccountAlreadyExists: Un compte avec cet identifiant existe déjà.
 
 # Login
 LoginTitle: Login
 LoginDescription: Login avec votre compte
-LoginEmailAddressLabel: Adresse Email
+LoginEmailAddressLabel: Adresse email
 LoginPassphraseLabel: Mot de passe
 LoginLogInButton: Login
 LoginSignUpButton: Inscrivez-vous
@@ -125,57 +143,56 @@ VerificationEmailHtmlCTA: Vérifiez votre adresse email en cliquant sur le lien 
 VerificationEmailButton: Vérifiez email
 VerificationEmailInvitation: On espère vous voir bientôt.
 VerificationEmailExplanation title@Text: Vous recevez cet email parce que vous avez essayé de vous inscrire à #{title}.
-
 VerificationEmailFailure: L’envoi du mail de vérification a été refusé.
 VerificationErrorAlreadyVerified: Ce compte a déjà été vérifié.
 
 # Account Page
-AccountOverviewTitle: Account Compte
-AccountEmailAddress emailAddress@Text: Adresse Email: #{emailAddress} 
-AccountVerificationTitle: Vérification Compte
+AccountOverviewTitle: Compte
+AccountEmailAddress emailAddress@Text: Adresse Email: #{emailAddress}
+AccountVerificationTitle: Vérification compte
 AccountVerificationWarning: Votre compte n’a pas encore été vérifié. Vous ne pouvez pas encore soumettre des soirées.
 AccountVerificationCheckEmail: Vérifiez svp si vous avez reçu dans votre boîte de réception l’email de vérification.
 AccountVerificationCheckEmailDisclaimer: Si votre email de verification n’est pas encore arrivé, vérifiéz svp votre fichier spam. Nous faisons de notre mieux pour éviter que les emails arrivent dans le dossier spam mais pafois nous échouons. Si vous n’avez toujours pas reçu le mail de vérification, contactez svp les administrateurs du site.
 AccountVerificationResendButton: Renvoyez email de vérification
 AccountDangerZoneTitle: Zone Danger
 AccountDeleteButton: Supprimez compte
-AccountDeleteWarning: Etes-vous sûr vouloir annuler votre compte? Il ne sera pas possible de le défaire.
+AccountDeleteWarning: Etes-vous sûr vouloir supprimer votre compte? Il ne sera pas possible de le défaire.
 
 # Organiser Profile
 OrganiserProfileTitle: Profil de l’organisateur
 OrganiserDisplayNameLabel: Affichage Nom
-OrganiserHomepageLabel: TODO Homepage
-OrganiserConsentReminderLabel: TODO I want to be reminded to submit parties.
-OrganiserConsentReminderHelp: TODO We will send no more than one reminder email per week. You can turn this off at any time.
+OrganiserHomepageLabel: Page d’accueil
+OrganiserConsentReminderLabel: Je veux recevoir des rappels pour introduire des soirées sociales.
+OrganiserConsentReminderHelp: Nous ne vous enverrons pas plus qu’un email de rappel par semaine. Vous pouvez supprimer les rappels à tout moment.
 OrganiserSubmitButton: Soumettre
-OrganiserViewPublicProfileButton: Voir le Profil Public
-OrganiserSaveSuccess: TODO Succesfully saved organiser profile
+OrganiserViewPublicProfileButton: Voir le profil public
+OrganiserSaveSuccess: Le profil de l’organisateur a été sauvegardé avec succès.
 
 # Submit
-SubmitTitle: TODO Add your party
-SubmitSingleParty: TODO Single party
-SubmitRecurringParty: TODO Recurring party
-SubmitSinglePartyExplanation1: TODO A single party happens only once, on a given date.
-SubmitSinglePartyExplanation2: TODO You can still edit, cancel or delete the party later.
-SubmitRecurringPartyExplanation1: TODO A recurring party happens multiple times, for example every friday.
-SubmitRecurringPartyExplanation2: TODO When you schedule a recurring party, the site generates parties into the future.
-SubmitRecurringPartyExplanation3: TODO If you edit a schedule, all future parties generated by it will be edited automatically.
-SubmitRecurringPartyExplanation4: TODO If you delete a schedule, all future parties in the schedule will be marked as cancelled, and no future ones will be generated.
+SubmitTitle: Ajoutez votre soirée de danse
+SubmitSingleParty: Fête non récurrente
+SubmitRecurringParty: Fête périodique
+SubmitSinglePartyExplanation1: Une fête non récurrente n’aura lieu qu’une fois à une date précise.
+SubmitSinglePartyExplanation2: Vous pouvez toujours éditer ou supprimer la fête plus tard.
+SubmitRecurringPartyExplanation1: Une fête récurrente aura lieu plusieurs fois, par exemple chaque vendredi.
+SubmitRecurringPartyExplanation2: Si vous planifiez une fête récurrente, le site génère des fêtes à l’avenir.
+SubmitRecurringPartyExplanation3: Si vous éditez un schéma, toutes les fêtes générées seront éditez automatiquement.
+SubmitRecurringPartyExplanation4: Si vous supprimez un schéma, toutes les fêtes à l’avenir dans ce schéma seront marquées comme annulées. Les fêtes à l’avenir ne seront plus générées.
 
 # Your parties
 YourPartiesTitle: Vos Soirées
-YourPartiesPartiesSubtitle: TODO Parties
-YourPartiesSchedulesSubtitle: TODO Recurring parties
+YourPartiesPartiesSubtitle: Fêtes
+YourPartiesSchedulesSubtitle: Fêtes récurrentes
 YourPartiesSubmitButton: Soumettez Soirée
-YourPartiesNoParties: Vous n’avez pas encore envoyé/soumis des soirées.
-YourPartiesEditPartyButton: TODO Edit
-YourPartiesEditScheduleButton: TODO Edit
+YourPartiesNoParties: Vous n’avez pas encore soumis des soirées.
+YourPartiesEditPartyButton: Editez
+YourPartiesEditScheduleButton: Editez
 YourPartiesPublicPartyButton: Profil soirée publique
 YourPartiesDuplicatePartyButton: Dupliquez
-YourPartiesCancelPartyButton: Annuler
+YourPartiesCancelPartyButton: Supprimer
 YourPartiesUnCancelPartyButton: Non-annulation
-YourPartiesDeletePartyWarning: Etes-vous sûr vouloir annuler cette soirée. Ceci ne peut pas être défait.
-YourPartiesDeletePartyButton: Annuler
+YourPartiesDeletePartyWarning: Etes-vous sûr vouloir supprimer cette soirée. Ceci ne peut pas être défait.
+YourPartiesDeletePartyButton: Supprimer
 
 # Party form
 PartyFormTitleLabel: Titre
@@ -183,7 +200,7 @@ PartyFormDayLabel: Jour
 PartyFormAddressLabel: Adresse
 PartyFormDescriptionLabel: Description
 PartyFormStartLabel: Début
-PartyFormHomepageLabel: Site web
+PartyFormHomepageLabel: Site internet
 PartyFormPriceLabel: Prix
 PartyFormPriceHelp: N’oubliez pas d’écrire GRATUIT si la participation à votre soirée est gratuite.
 PartyFormPosterLabel: Affiche
@@ -192,21 +209,21 @@ PartyFormPosterNoPoster: Pas d’affiche sélectionnée
 PartyFormBackButton: Retour
 
 # Submit Party 
-SubmitPartyTitle: Inscrivez Soirée
+SubmitPartyTitle: Inscrivez soirée
 SubmitPartyButton: Inscrivez
 SubmitPartySuccess: Vous avez inscrit avec succès la soirée
-SubmitPartyErrorUnverified: Votre compte sera vérifié avant que vous pouvez inscrire des soirées.
-SubmitPartyErrorNoOrganiser: TODO You must set up an organiser profile in the account overview before you can submit a party.
+SubmitPartyErrorUnverified: Votre compte devra être vérifié avant que vous pouvez inscrire des soirées.
+SubmitPartyErrorNoOrganiser: Vous devez crééer un profile d’organisateur dans l’aperçu du compte avant de pouvoir soumettre une soirée de danse.
 
 # View Party
-AccountPartyErrorNotYourParty: TODO This is not your party to view.
+AccountPartyErrorNotYourParty: Ceci n’est pas votre soirée à revoir.
 
 # Edit Party
-EditPartyTitle: Soumettre Soirée
+EditPartyTitle: Soumettre soirée
 EditPartyButton: Soumettre
 EditPartySuccess: Publication de la soirée réussie
 EditPartyPublicPartyProfile: Profil soirée publique
-EditPartyDayHelp: Vous ne pouvez plus modifier le jour de la soirée. Si vous vouliez modifier, vous pouvez annuler cette soirée et/ou organiser une autre soirée, ou copier cette soirée et la réorganiser.
+EditPartyDayHelp: Vous ne pouvez plus modifier le jour de la soirée. Si vous vouliez modifier, vous pouvez supprimer cette soirée et/ou organiser une autre soirée, ou copier cette soirée et la réorganiser.
 EditPartyErrorNotYourParty: Ceci n’est pas votre soirée à éditer.
 
 # Duplicate Party
@@ -214,67 +231,66 @@ DuplicatePartyTitle: Soumettre soirée
 DuplicatePartyButton: Soumettre
 
 # Cancel party
-CancelPartyErrorNotYourParty: Ceci n’est pas votre soirée à annuler.
+CancelPartyErrorNotYourParty: Ceci n’est pas votre soirée à supprimer.
 
 # Un-Cancel party
-UnCancelPartyErrorNotYourParty: Ceci n’est pas votre soirée à ne pas annuler.
+UnCancelPartyErrorNotYourParty: Ceci n’est pas votre soirée à ne pas supprimer.
 
 # Delete party
-DeletePartyErrorNotYourParty: Ceci n’est pas votre soirée à annuler.
+DeletePartyErrorNotYourParty: Ceci n’est pas votre soirée à supprimer.
 
 # Schedule Form
-ScheduleFormTitleLabel: TODO Title
-ScheduleFormRecurrenceLabel: TODO Recurrence
-ScheduleFormAddressLabel: TODO Address
-ScheduleFormDescriptionLabel: TODO Description
-ScheduleFormStartLabel: TODO Start
-ScheduleFormHomepageLabel: TODO Website
-ScheduleFormPriceLabel: TODO Price
-ScheduleFormPriceHelp: TODO Make sure to write FREE if the party is free.
-ScheduleFormPosterLabel: TODO Poster
-ScheduleFormPosterChooseInstruction: TODO Choose a poster image
-ScheduleFormPosterNoPoster: TODO No poster selected
-ScheduleFormBackButton: TODO Back
+ScheduleFormTitleLabel: Titre
+ScheduleFormRecurrenceLabel: Récurrence
+ScheduleFormAddressLabel: Adresse
+ScheduleFormDescriptionLabel: Description
+ScheduleFormStartLabel: Début
+ScheduleFormHomepageLabel: Site web
+ScheduleFormPriceLabel: Prix
+ScheduleFormPriceHelp: N’oubliez pas d’indiquer GRATUIT si la soirée est sans prix d’entrée.
+ScheduleFormPosterLabel: Affiche
+ScheduleFormPosterChooseInstruction: Choisissez une image pour l’affiche
+ScheduleFormPosterNoPoster: Pas d’affiche sélectionnée
+ScheduleFormBackButton: Retour
 
 ## Recurrence
-RecurrenceWeeklyType: TODO Weekly
-RecurrenceWeeklyDescription weekday@String: TODO Every week on #{weekday}
+RecurrenceWeeklyType: Hebdomadaire
+RecurrenceWeeklyDescription weekday@String: Chaque semaine le #{weekday}
 
 # Submit Schedule
-SubmitScheduleTitle: TODO Submit Schedule
-SubmitScheduleButton: TODO Submit
-SubmitScheduleSuccess: TODO Succesfully submitted recurring party
-SubmitScheduleErrorUnverified: TODO Your account needs to verified before you can submit parties.
-SubmitScheduleErrorNoOrganiser: TODO You must set up an organiser profile in the account overview before you can submit a party.
+SubmitScheduleTitle: Choissisez l’horaire/le calendrier
+SubmitScheduleButton: Soumettez
+SubmitScheduleSuccess: Vous avez introduit avec succès les fêtes récurrentes
+SubmitScheduleErrorUnverified: Votre compte doit être vérifié avant que vous ne puissiez introdure des fêtes.
+SubmitScheduleErrorNoOrganiser: Vous devez créer un profile d’organisateur dans l’aperçu du compte avant de pouvoir soumettre une fête.
 
 # View Schedule
-AccountScheduleParties: TODO Scheduled parties
+AccountScheduleParties: Fêtes planifiées
 
 # Edit Schedule
-EditScheduleTitle: TODO Edit Schedule
-EditScheduleButton: TODO Save
-EditScheduleSuccess: TODO Succesfully edited recurring party
-EditScheduleErrorNotYourSchedule: TODO This is not your party to edit.
+EditScheduleTitle: Editez un calendrier
+EditScheduleButton: Sauvegardez
+EditScheduleSuccess: Vous avez éditez avec succès les fêtes récurrentes.
+EditScheduleErrorNotYourSchedule: Ceci n’est pas votre fête à éditer.
 
 # Your schedules
-YourSchedulesTitle: TODO Your party schedules
-YourSchedulesSubmitButton: TODO Submit a party schedule
-YourSchedulesNoSchedules: TODO You have not submitted any party schedules yet.
-YourSchedulesEditScheduleButton: TODO Edit
-YourSchedulesDeleteScheduleWarning: TODO Are you sure you want to delete this party schedule? This cannot be undone. Note that parties that have already been scheduled will not be deleted.
-YourSchedulesDeleteScheduleButton: TODO Delete
-ScheduleTitle title@Text: TODO #{title}
+YourSchedulesTitle: Le calendrier de vos fêtes
+YourSchedulesSubmitButton: Soumettez un programme de fête
+YourSchedulesNoSchedules: Vous n’avez pas encore soumis un programme de fête.
+YourSchedulesEditScheduleButton: Editez
+YourSchedulesDeleteScheduleWarning: Etez-vous sûr vouloir supprimer cette fête programmée? Ceci ne peut être défait. Notez que les fêtes déjà programmées ne seront pas supprimées.
+YourSchedulesDeleteScheduleButton: Supprimez
+ScheduleTitle title@Text: #{title}
 
 # Delete schedule
-DeleteScheduleErrorNotYourSchedule: TODO This is not your party schedule to delete.
-
+DeleteScheduleErrorNotYourSchedule: Ceci n’est pas votre fête à supprimer.
 
 # Unsubscribe Reminder
-UnsubReminderTitle: TODO Unsubscribed from reminder emails
-UnsubReminderDescription: TODO You have succesfully unsubscribed from reminder emails and revoked consent to receive any further reminder emails.
+UnsubReminderTitle: Désinscription de rappels d'emails.
+UnsubReminderDescription: Vous vous êtes désinscrit à recevoir des emails de rappel avec succès et vous avez indiqué ne plus vouloir recevoir des emails à l’avenir.
 
 # Google Maps
-GoogleMapAlt location@Text: TODO Map of the area around #{location}
+GoogleMapAlt location@Text: Carte des environs #{location}
 
 # Pagination
 PaginationPrevious: Page Précédente
