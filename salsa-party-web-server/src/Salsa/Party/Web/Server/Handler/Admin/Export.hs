@@ -8,7 +8,7 @@ import Data.Foldable
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.UUID.Typed as Typed
-import qualified Database.Esqueleto as E
+import qualified Database.Esqueleto.Legacy as E
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
 import Salsa.Party.Web.Server.Handler.Event.Party.JSON
 import Salsa.Party.Web.Server.Handler.Import

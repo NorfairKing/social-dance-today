@@ -15,7 +15,7 @@ where
 import qualified Data.Conduit.Combinators as C
 import Salsa.Party.Looper.Import
 
-runPartyScheduler :: (MonadUnliftIO m, MonadLogger m, MonadReader App m) => m ()
+runPartyScheduler :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => m ()
 runPartyScheduler = do
   pool <- asks appConnectionPool
   let runDBHere func = runSqlPool (retryOnBusy func) pool
@@ -55,7 +55,7 @@ makeScheduleDecision scheduleEntity@(Entity scheduleId_ Schedule {..}) = do
 daysToScheduleAhead :: Integer
 daysToScheduleAhead = 45
 
-handleScheduleDecision :: (MonadUnliftIO m, MonadLogger m, MonadReader App m) => ScheduleDecision -> m ()
+handleScheduleDecision :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => ScheduleDecision -> m ()
 handleScheduleDecision = \case
   NextDayTooFarAhead -> logDebugN "Not scheduling any parties because the next day would be too far ahead."
   ScheduleAParty (Entity scheduleId_ schedule) nextDays mImageId -> do

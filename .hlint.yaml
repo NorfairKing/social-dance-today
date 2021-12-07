@@ -124,7 +124,11 @@
   - {name: System.IO.appendFile, within: []}
 
  
-  - {name: Data.Text.Encoding.decodeUtf8, within: []} # Throws on invalid UTF8
+  # Throws on invalid UTF8
+  - name: Data.Text.Encoding.decodeUtf8
+    within:
+      - Salsa.Party.OptParse
+
   
   - {name: fromJust, within: []} # Partial
 

@@ -59,8 +59,8 @@ getExploreSkylineR locationName = do
       neverExpires
       let filepath = locationsDir </> relFile
       logDebugN $ T.pack $ unwords ["Skyline file for location", show locationName <> ":", fromAbsFile filepath]
-      exists <- liftIO $ doesFileExist filepath
-      if exists
+      fileExists <- liftIO $ doesFileExist filepath
+      if fileExists
         then sendFile "image/jpeg" $ fromAbsFile filepath
         else case stockSkylineImages `atMay` (abs (hash filepath) `mod` length stockSkylineImages) of
           Nothing -> notFound
@@ -75,7 +75,7 @@ stockSkylineImages =
 
 sendImageOrNotFound :: Path Abs File -> Handler TypedContent
 sendImageOrNotFound filepath = do
-  exists <- liftIO $ doesFileExist filepath
-  if exists
+  imageExists <- liftIO $ doesFileExist filepath
+  if imageExists
     then sendFile "image/jpeg" $ fromAbsFile filepath
     else notFound

@@ -15,7 +15,7 @@ spec = do
     modifyMaxSuccess (* 10) $
       describe "mkSlug" $ do
         it "produces valid slugs" $
-          producesValidsOnValids mkSlug
+          producesValid mkSlug
 
         it "is idempotent" $
           forAllValid $ \text ->

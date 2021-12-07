@@ -18,7 +18,7 @@ postAdminTestOrganiserReminderR = do
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
   case mOrganiser of
     Nothing -> invalidArgs ["Admin has no organiser profile."]
-    Just (Entity organiserId Organiser {..}) -> do
+    Just (Entity organiserId _) -> do
       mOrganiserReminder <- runDB $ getBy $ UniqueOrganiserReminderOrganiser organiserId
       case mOrganiserReminder of
         Nothing -> invalidArgs ["Admin has not consented to organiser reminders."]

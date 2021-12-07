@@ -25,7 +25,7 @@ spec = do
     genValidSpec @Similarity
     genValidSpec @SimilarityFormula
     describe "computeSimilarityFormula" $
-      it "produces valid similarities" $ producesValidsOnValids computeSimilarityFormula
+      it "produces valid similarities" $ producesValid computeSimilarityFormula
     describe "sumSimilarities" $ do
       it "says 0 for this formula" $ sumSimilarities [(0.0, Similarity 1)] `shouldBe` Similarity 0
     describe "placeSimilarity" $ similarityFormulaFunctionSpec placeSimilarity

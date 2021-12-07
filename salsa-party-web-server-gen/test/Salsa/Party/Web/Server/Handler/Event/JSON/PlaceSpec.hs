@@ -10,7 +10,7 @@ import Test.Syd.Persistent
 spec :: Spec
 spec = do
   genValidSpec @PlaceExport
-  jsonSpecOnValid @PlaceExport
+  jsonSpec @PlaceExport
   modifyMaxSize (* 10) $
     dbSpec $ do
       describe "importPlaceExport" $ do

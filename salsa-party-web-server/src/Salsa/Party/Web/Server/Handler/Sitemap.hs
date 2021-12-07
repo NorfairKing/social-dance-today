@@ -13,7 +13,7 @@ import qualified Data.Conduit as C
 import qualified Data.Conduit.Combinators as C
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Builder as TLB
-import qualified Database.Esqueleto as E
+import qualified Database.Esqueleto.Legacy as E
 import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Handler.Import
 import Text.Shakespeare.Text

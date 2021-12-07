@@ -31,6 +31,7 @@ import Data.Time
 import Database.Persist (Entity (..))
 import qualified Database.Persist as DB
 import qualified Database.Persist.Sql as DB
+import GHC.Stack
 import Network.HTTP.Client as HTTP
 import qualified Network.HTTP.Types as HTTP
 import Network.Socket
@@ -54,10 +55,12 @@ import Test.Syd
 import Test.Syd.Path
 import Test.Syd.Process.Typed
 import Test.Syd.Yesod
-import Test.WebDriver as WD
-import Test.WebDriver.Class as WD
+import Test.WebDriver as WD hiding (setWindowSize)
+import Test.WebDriver.Class (WebDriver (..))
+import qualified Test.WebDriver.Commands.Internal as WD
 import Test.WebDriver.Commands.Wait as WD
-import Test.WebDriver.Session as WD
+import qualified Test.WebDriver.JSON as WD
+import Test.WebDriver.Session (WDSessionState (..))
 import qualified Yesod
 
 newtype WebdriverTestM a = WebdriverTestM
@@ -79,11 +82,11 @@ data WebdriverTestEnv = WebdriverTestEnv
     webdriverTestEnvApp :: !App
   }
 
-instance WD.WDSessionState WebdriverTestM where
+instance WDSessionState WebdriverTestM where
   getSession = WebdriverTestM getSession
   putSession = WebdriverTestM . putSession
 
-instance WD.WebDriver WebdriverTestM where
+instance WebDriver WebdriverTestM where
   doCommand m p a = WebdriverTestM $ doCommand m p a
 
 instance IsTest (WebdriverTestM ()) where
@@ -601,3 +604,11 @@ pureGoldenScreenshot fp contents =
                     "actual: " <> fromAbsFile actualPath
                   ]
     }
+
+-- We have to override this because it returns something.
+-- So we remove the 'noReturn'.
+setWindowSize :: (HasCallStack, WebDriver wd) => (Word, Word) -> wd ()
+setWindowSize (w, h) =
+  WD.ignoreReturn $
+    WD.doWinCommand methodPost currentWindow "/size" $
+      object ["width" .= w, "height" .= h]

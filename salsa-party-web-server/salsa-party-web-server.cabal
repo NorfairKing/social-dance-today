@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.34.5.
 --
 -- see: https://github.com/sol/hpack
 
@@ -127,6 +127,8 @@ library
     , aeson-pretty
     , amazonka
     , amazonka-ses
+    , autodocodec
+    , autodocodec-yaml
     , base >=4.7 && <5
     , base64-bytestring
     , blaze-html
@@ -191,7 +193,6 @@ library
     , webdriver
     , xml-conduit
     , yaml
-    , yamlparse-applicative
     , yesod
     , yesod-auth
     , yesod-autoreload

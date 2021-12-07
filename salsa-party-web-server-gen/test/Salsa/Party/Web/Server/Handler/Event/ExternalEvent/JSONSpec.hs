@@ -16,7 +16,7 @@ import Yesod.Core
 spec :: Spec
 spec = do
   genValidSpec @ExternalEventExport
-  jsonSpecOnValid @ExternalEventExport
+  jsonSpec @ExternalEventExport
 
   it "always outputs a valid export" $
     forAllValid $ \externalEvent ->

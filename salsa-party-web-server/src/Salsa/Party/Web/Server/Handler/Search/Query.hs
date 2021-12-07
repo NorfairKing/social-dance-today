@@ -13,7 +13,7 @@ import Data.List
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import Data.Ord
-import qualified Database.Esqueleto as E
+import qualified Database.Esqueleto.Legacy as E
 import Salsa.Party.DB.Coordinates
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Deduplication

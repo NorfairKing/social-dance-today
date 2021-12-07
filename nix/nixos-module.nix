@@ -34,8 +34,8 @@ in
                     };
                   log-level = mkOption {
                     type = types.str;
-                    example = "LevelDebug";
-                    default = "LevelWarn";
+                    example = "Debug";
+                    default = "Warn";
                     description = "The log level to use";
                   };
                   hosts = mkOption {

@@ -29,7 +29,6 @@ in
               "--ghc-options=-Widentities"
               "--ghc-options=-Wredundant-constraints"
               "--ghc-options=-Wcpp-undef"
-              "--ghc-options=-Wcompat"
               "--ghc-options=-Werror"
             ];
             doBenchmark = true;
@@ -138,6 +137,7 @@ in
                 in
                 final.salsaPartyPackages // {
                   envparse = envparsePkg;
+                  # base64-bytestring = self.callHackage "base64-bytestring" "1.0.0.3" { };
                   yesod-autoreload = self.callCabal2nix "yesod-autoreload" sources.yesod-autoreload { };
                   # Tests access the internet
                   yesod-static-remote = dontCheck (self.callCabal2nix "yesod-static-remote" sources.yesod-static-remote { });
@@ -147,12 +147,7 @@ in
                       rev = "336f8bb6d1281c7a11e9b11da9bc1a86b5d89057";
                     })
                     { };
-                  iCalendar = self.callCabal2nix "iCalendar"
-                    (builtins.fetchGit {
-                      url = "https://github.com/NorfairKing/iCalendar";
-                      rev = "d8acdad06988e527debef034458ddc74715f77ce";
-                    })
-                    { };
+                  iCalendar = self.callCabal2nix "iCalendar" sources.iCalendar { };
                 }
             );
       }

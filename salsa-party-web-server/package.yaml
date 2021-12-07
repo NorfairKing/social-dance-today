@@ -14,6 +14,8 @@ library:
   - aeson-pretty
   - amazonka
   - amazonka-ses
+  - autodocodec
+  - autodocodec-yaml
   - base64-bytestring
   - blaze-html
   - bytestring
@@ -77,7 +79,6 @@ library:
   - webdriver
   - xml-conduit
   - yaml
-  - yamlparse-applicative
   - yesod
   - yesod-auth
   - yesod-autoreload

@@ -4,7 +4,6 @@
 module Salsa.Party.Web.Server.Handler.Event.Party.JSONSpec (spec) where
 
 import Data.Aeson as JSON
-import Data.Password
 import qualified Data.UUID as UUID
 import qualified Data.UUID.Typed as Typed
 import qualified Database.Persist as DB
@@ -17,7 +16,7 @@ import Yesod.Core
 spec :: Spec
 spec = do
   genValidSpec @PartyExport
-  jsonSpecOnValid @PartyExport
+  jsonSpec @PartyExport
 
   serverSpec $ do
     describe "EventExportR" $ do

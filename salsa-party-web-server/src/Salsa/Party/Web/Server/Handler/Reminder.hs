@@ -11,7 +11,7 @@ getUnsubReminderR secret = do
   mOrganiserReminder <- runDB $ getBy $ UniqueOrganiserReminderSecret secret
   case mOrganiserReminder of
     Nothing -> notFound
-    Just (Entity organiserReminderId OrganiserReminder {..}) -> do
+    Just (Entity organiserReminderId _) -> do
       runDB $ do
         update organiserReminderId [OrganiserReminderConsent =. False]
       withNavBar $ do

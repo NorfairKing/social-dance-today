@@ -18,19 +18,19 @@ spec :: Spec
 spec = do
   describe "Coord" $ do
     genValidSpec @Coord
-    eqSpecOnValid @Coord
-    ordSpecOnValid @Coord
-    showReadSpecOnValid @Coord
-    persistSpecOnValid @Coord
-    jsonSpecOnValid @Coord
+    eqSpec @Coord
+    ordSpec @Coord
+    showReadSpec @Coord
+    persistSpec @Coord
+    jsonSpec @Coord
 
   describe "Latitude" $ do
     genValidSpec @Latitude
-    eqSpecOnValid @Latitude
-    ordSpecOnValid @Latitude
-    showReadSpecOnValid @Latitude
-    persistSpecOnValid @Latitude
-    jsonSpecOnValid @Latitude
+    eqSpec @Latitude
+    ordSpec @Latitude
+    showReadSpec @Latitude
+    persistSpec @Latitude
+    jsonSpec @Latitude
 
     describe "mkLatitude" $ do
       it "works with this example" $ do
@@ -50,15 +50,15 @@ spec = do
       it "works with this example" $ do
         mkLatitude 300 `shouldBe` Nothing
 
-      it "produces valid latitudes" $ producesValidsOnValids mkLatitude
+      it "produces valid latitudes" $ producesValid mkLatitude
 
   describe "Longitude" $ do
     genValidSpec @Longitude
-    eqSpecOnValid @Longitude
-    ordSpecOnValid @Longitude
-    showReadSpecOnValid @Longitude
-    persistSpecOnValid @Longitude
-    jsonSpecOnValid @Longitude
+    eqSpec @Longitude
+    ordSpec @Longitude
+    showReadSpec @Longitude
+    persistSpec @Longitude
+    jsonSpec @Longitude
 
     describe "mkLongitude" $ do
       it "works with this example" $ do
@@ -82,7 +82,7 @@ spec = do
       it "works with this example" $ do
         mkLongitude 410 `shouldBe` Nothing
 
-      it "produces valid longitudes" $ producesValidsOnValids mkLongitude
+      it "produces valid longitudes" $ producesValid mkLongitude
 
   describe "Coordinates" $ do
     describe "PathPiece" $ do

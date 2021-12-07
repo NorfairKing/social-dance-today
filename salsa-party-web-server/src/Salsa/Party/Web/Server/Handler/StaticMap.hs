@@ -10,7 +10,7 @@ import Control.Monad.Logger
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Text as T
 import Data.Time
-import qualified Database.Esqueleto as E
+import qualified Database.Esqueleto.Legacy as E
 import Google.Maps
 import Network.HTTP.Client
 import Network.HTTP.Client.Retry
@@ -48,7 +48,7 @@ getEventMapR eventUUID = do
     Right (Entity _ externalEvent) -> pure $ externalEventPlace externalEvent
   mImageKey <- runDB $
     fmap (fmap E.unValue) $
-      selectOne $
+      E.selectOne $
         E.from $ \(staticMap `E.InnerJoin` image) -> do
           E.on (staticMap E.^. StaticMapImage E.==. image E.^. ImageId)
           E.where_ (staticMap E.^. StaticMapPlace E.==. E.val placeId)

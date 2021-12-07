@@ -1,18 +1,21 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeApplications #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Salsa.Party.OptParse where
 
-import Control.Applicative
+import Autodocodec
+import Autodocodec.Yaml
 import Control.Monad.Logger
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Time
-import Data.Yaml
 import qualified Env
 import GHC.Generics (Generic)
 import Looper
@@ -21,7 +24,6 @@ import qualified Options.Applicative.Help as OptParse (string)
 import Path
 import Path.IO
 import Salsa.Party.DB
-import YamlParse.Applicative as YamlParse
 
 getSettings :: IO Settings
 getSettings = do
@@ -150,40 +152,37 @@ data Configuration = Configuration
   }
   deriving (Show, Eq, Generic)
 
-instance FromJSON Configuration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Configuration where
-  yamlSchema =
-    objectParser "Configuration" $
+instance HasCodec Configuration where
+  codec =
+    object "Configuration" $
       Configuration
-        <$> optionalField "host" "The host, example: salsa-party.cs-syd.eu"
-        <*> optionalField "port" "Port"
-        <*> optionalFieldWith "log-level" "Minimal severity for log messages" viaRead
-        <*> optionalField "database" "The path to the database file"
-        <*> optionalField "send-emails" "Whether to send emails and require email verification"
-        <*> optionalField "send-address" "The email address to send emails from"
-        <*> optionalField "admin" "The email address of the admin user"
-        <*> optionalField "enable-osm-geocoding" "Enable OpenStreetMaps Geocoding"
-        <*> optionalField "enable-google-geocoding" "Enable Google Geocoding"
-        <*> optionalField "sentry" "Sentry configuration"
-        <*> optionalField "google-api-key" "Google API key"
-        <*> optionalField "google-analytics-tracking" "Google analytics tracking code"
-        <*> optionalField "google-search-console-verification" "Google search console html element verification code"
-        <*> optionalField "organiser-reminder" "The organiser reminder looper"
-        <*> optionalField "image-garbage-collector" "The image garbage collector looper"
-        <*> optionalField "party-scheduler" "The party scheduler looper"
-        <*> optionalField "importer-interval" "The default interval for importers"
-        <*> optionalField "events-info-importer" "The events.info import looper"
-        <*> optionalField "golatindance-com-importer" "The golatindance.com import looper"
-        <*> optionalField "danceplace-com-importer" "The danceplace.com import looper"
-        <*> optionalField "mapdance-com-importer" "The mapdance.com import looper"
-        <*> optionalField "salsachicago-com-importer" "The salsachicago.com import looper"
-        <*> optionalField "dancefloorfinder-com-importer" "The dancefloorfinder.com import looper"
-        <*> optionalField "sensual-dance-importer" "The sensual.dance import looper"
-        <*> optionalField "salsa-be-importer" "The salsa.be import looper"
-        <*> optionalField "latinworld-nl-importer" "The latinworld.nl import looper"
-        <*> optionalField "tanzagenda-ch-importer" "The tanzagenda.ch import looper"
+        <$> optionalFieldOrNull "host" "The host, example: salsa-party.cs-syd.eu" .= confHost
+        <*> optionalFieldOrNull "port" "Port" .= confPort
+        <*> optionalFieldOrNull "log-level" "Minimal severity for log messages" .= confLogLevel
+        <*> optionalFieldOrNull "database" "The path to the database file" .= confDbFile
+        <*> optionalFieldOrNull "send-emails" "Whether to send emails and require email verification" .= confSendEmails
+        <*> optionalFieldOrNull "send-address" "The email address to send emails from" .= confSendAddress
+        <*> optionalFieldOrNull "admin" "The email address of the admin user" .= confAdmin
+        <*> optionalFieldOrNull "enable-osm-geocoding" "Enable OpenStreetMaps Geocoding" .= confEnableOSMGeocoding
+        <*> optionalFieldOrNull "enable-google-geocoding" "Enable Google Geocoding" .= confEnableGoogleGeocoding
+        <*> optionalFieldOrNull "sentry" "Sentry configuration" .= confSentryConfiguration
+        <*> optionalFieldOrNull "google-api-key" "Google API key" .= confGoogleAPIKey
+        <*> optionalFieldOrNull "google-analytics-tracking" "Google analytics tracking code" .= confGoogleAnalyticsTracking
+        <*> optionalFieldOrNull "google-search-console-verification" "Google search console html element verification code" .= confGoogleSearchConsoleVerification
+        <*> optionalFieldOrNull "organiser-reminder" "The organiser reminder looper" .= confOrganiserReminderLooperConfiguration
+        <*> optionalFieldOrNull "image-garbage-collector" "The image garbage collector looper" .= confImageGarbageCollectorLooperConfiguration
+        <*> optionalFieldOrNull "party-scheduler" "The party scheduler looper" .= confPartySchedulerLooperConfiguration
+        <*> optionalFieldOrNull "importer-interval" "The default interval for importers" .= confImporterInterval
+        <*> optionalFieldOrNull "events-info-importer" "The events.info import looper" .= confEventsInfoImportLooperConfiguration
+        <*> optionalFieldOrNull "golatindance-com-importer" "The golatindance.com import looper" .= confGolatindanceComImportLooperConfiguration
+        <*> optionalFieldOrNull "danceplace-com-importer" "The danceplace.com import looper" .= confDanceplaceComImportLooperConfiguration
+        <*> optionalFieldOrNull "mapdance-com-importer" "The mapdance.com import looper" .= confMapdanceComImportLooperConfiguration
+        <*> optionalFieldOrNull "salsachicago-com-importer" "The salsachicago.com import looper" .= confSalsachicagoComImportLooperConfiguration
+        <*> optionalFieldOrNull "dancefloorfinder-com-importer" "The dancefloorfinder.com import looper" .= confDancefloorfinderComImportLooperConfiguration
+        <*> optionalFieldOrNull "sensual-dance-importer" "The sensual.dance import looper" .= confSensualDanceImportLooperConfiguration
+        <*> optionalFieldOrNull "salsa-be-importer" "The salsa.be import looper" .= confSalsaBeImportLooperConfiguration
+        <*> optionalFieldOrNull "latinworld-nl-importer" "The latinworld.nl import looper" .= confLatinworldNlImportLooperConfiguration
+        <*> optionalFieldOrNull "tanzagenda-ch-importer" "The tanzagenda.ch import looper" .= confTanzagendaChImportLooperConfiguration
 
 data SentryConfiguration = SentryConfiguration
   { sentryConfDSN :: !(Maybe Text),
@@ -191,28 +190,23 @@ data SentryConfiguration = SentryConfiguration
   }
   deriving (Show, Eq, Generic)
 
-instance FromJSON SentryConfiguration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema SentryConfiguration where
-  yamlSchema =
-    objectParser "SentryConfiguration" $
+instance HasCodec SentryConfiguration where
+  codec =
+    object "SentryConfiguration" $
       SentryConfiguration
-        <$> optionalField "dsn" "Sentry Data Source Name"
-        <*> optionalField "release" "Sentry Release"
+        <$> optionalField "dsn" "Sentry Data Source Name" .= sentryConfDSN
+        <*> optionalField "release" "Sentry Release" .= sentryConfRelease
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} =
   case flagConfigFile <|> envConfigFile of
-    Nothing -> defaultConfigFile >>= YamlParse.readConfigFile
+    Nothing -> defaultConfigFile >>= readYamlConfigFile
     Just cf -> do
       afp <- resolveFile' cf
-      YamlParse.readConfigFile afp
+      readYamlConfigFile afp
 
 defaultConfigFile :: IO (Path Abs File)
-defaultConfigFile = do
-  xdgConfigDir <- getXdgDir XdgConfig (Just [reldir|optparse-template|])
-  resolveFile xdgConfigDir "config.yaml"
+defaultConfigFile = resolveFile' "config.yaml"
 
 data Environment = Environment
   { envConfigFile :: !(Maybe FilePath),
@@ -321,7 +315,7 @@ flagsParser =
         [ Env.helpDoc environmentParser,
           "",
           "Configuration file format:",
-          T.unpack (YamlParse.prettyColourisedSchemaDoc @Configuration)
+          T.unpack (TE.decodeUtf8 (renderColouredSchemaViaCodec @Configuration))
         ]
 
 data Flags = Flags
@@ -551,3 +545,12 @@ parseSentryFlags =
               ]
           )
       )
+
+instance HasCodec LogLevel where
+  codec =
+    stringConstCodec
+      [ (LevelDebug, "Debug"),
+        (LevelInfo, "Info"),
+        (LevelWarn, "Warn"),
+        (LevelError, "Error")
+      ]

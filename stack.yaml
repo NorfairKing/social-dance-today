@@ -1,4 +1,4 @@
-resolver: lts-16.12
+resolver: lts-18.16
 packages:
 - salsa-party-web-server
 - salsa-party-web-server-gen
@@ -7,18 +7,19 @@ packages:
 
 # Extra GHC options
 ghc-options:
-  "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat
+  "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef
 
 extra-deps:
 - github: NorfairKing/token-limiter-concurrent
   commit: 336f8bb6d1281c7a11e9b11da9bc1a86b5d89057
 - github: NorfairKing/looper
-  commit: b7eae09b1bee5250eef5d31e4d1dba33d90bc0fc
+  commit: e01054970b47d9eaab8b9314a1400c231ac4a960
   subdirs:
     - looper
 - github: NorfairKing/typed-uuid
-  commit: ec82b82a545d06094ac355bd65a03f25f86c0a48
+  commit: 00fbc7e0380ab2ff72e8fd02323e76f13b7d5b59
   subdirs:
+    - genvalidity-typed-uuid
     - typed-uuid
 - github: NorfairKing/linkcheck
   commit: 04168bc98011cf5c9589bc3e94086d7e72f86981
@@ -30,32 +31,57 @@ extra-deps:
     - seocheck
 - github: supki/envparse
   commit: de5944fb09e9d941fafa35c0f05446af348e7b4d
-- yamlparse-applicative-0.1.0.2@sha256:bda91f2818c1b5b124963931cb7f9a4e5758d026c09713e9ae2234534062747d,2133
 - github: NorfairKing/yesod-autoreload
   commit: 7135e864c0d4a48efeae473ee2761f5168946e58
 - github: NorfairKing/validity
-  commit: 549f92de456dd7fbf21b84f2f6fdca9a3c6506d9
+  commit: 466bb2f140e62cae0d4fe3770681c3d74e99cf40
   subdirs:
     - genvalidity
+    - genvalidity-aeson
+    - genvalidity-bytestring
     - genvalidity-containers
+    - genvalidity-criterion
+    - genvalidity-hspec
+    - genvalidity-hspec-aeson
+    - genvalidity-hspec-binary
+    - genvalidity-hspec-cereal
+    - genvalidity-hspec-hashable
+    - genvalidity-hspec-optics
+    - genvalidity-hspec-persistent
+    - genvalidity-path
     - genvalidity-persistent
+    - genvalidity-property
+    - genvalidity-scientific
     - genvalidity-sydtest
     - genvalidity-sydtest-aeson
+    - genvalidity-sydtest-hashable
+    - genvalidity-sydtest-lens
     - genvalidity-sydtest-persistent
     - genvalidity-text
     - genvalidity-time
+    - genvalidity-unordered-containers
+    - genvalidity-uuid
+    - genvalidity-vector
     - validity
+    - validity-aeson
+    - validity-bytestring
     - validity-containers
+    - validity-path
     - validity-persistent
+    - validity-primitive
+    - validity-scientific
     - validity-text
     - validity-time
+    - validity-unordered-containers
+    - validity-uuid
+    - validity-vector
 - github: NorfairKing/safe-coloured-text
-  commit: 7f157485e55528648a95edf3508a122b2e55779e
+  commit: f30fe0e4d2a0fa036967ffe17538b60e5f9861f5
   subdirs:
     - safe-coloured-text
     - safe-coloured-text-terminfo
 - github: NorfairKing/sydtest
-  commit: a230bf791b0bced918092bbc9c3b54608b2a3a48
+  commit: 5b0eee208753e3554d9b158a6e48b1760514aed0
   subdirs:
     - sydtest
     - sydtest-aeson
@@ -68,13 +94,24 @@ extra-deps:
     - sydtest-yesod
 - github: NorfairKing/yesod-static-remote
   commit: ed6bf8ef434d49b160429028613a1f6882fccfdf
-- mime-0.4.0.2@sha256:208947d9d1a19d08850be67ecb28c6e776db697f3bba05bd9d682e51a59f241f,983
 
 - github: NorfairKing/iCalendar
-  commit: d8acdad06988e527debef034458ddc74715f77ce
-# https://github.com/commercialhaskell/stackage/blob/766f6f990d85b0b996659a40f54fb73e5545a569/build-constraints.yaml#L1823
-- unliftio-core-0.1.2.0
+  commit: e08c16dceaab4d15b0f00860512018bc64791f07
+
+- github: NorfairKing/autodocodec
+  commit: f0cb2ead0985b4394db0627e6befd7ce23c54c22
+  subdirs:
+    - autodocodec
+    - autodocodec-schema
+    - autodocodec-yaml
+- github: NorfairKing/pretty-relative-time
+  commit: a634358ff274380a12360f7814c3aea46ea35b1b
+
+
+- mime-0.4.0.2@sha256:208947d9d1a19d08850be67ecb28c6e776db697f3bba05bd9d682e51a59f241f,983
 - amazonka-1.6.1
+- unliftio-core-0.1.2.0@sha256:b0a7652ffce2284a6cebe05c99eb60573a8fb6631163f34b0b30a80b4a78cb23,1081
+
 
 nix:
   shell-file: shell.nix

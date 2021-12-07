@@ -9,7 +9,7 @@ import Data.List
 import Data.Maybe
 import Data.Ord
 import Data.Time
-import qualified Database.Esqueleto as E
+import qualified Database.Esqueleto.Legacy as E
 import Database.Persist
 import Database.Persist.Sql
 import Salsa.Party.DB
@@ -34,7 +34,7 @@ getExternalEventTupBySlug externalEventSlug_ day = do
 
 getExternalEventTupByUuid :: MonadIO m => EventUUID -> SqlPersistT m (Maybe (Entity ExternalEvent, Entity Place, Maybe CASKey))
 getExternalEventTupByUuid eventUuid = do
-  mTup <- selectOne $
+  mTup <- E.selectOne $
     E.from $ \(externalEvent `E.InnerJoin` place) -> do
       E.on (externalEvent E.^. ExternalEventPlace E.==. place E.^. PlaceId)
       E.where_ $ externalEvent E.^. ExternalEventUuid E.==. E.val eventUuid

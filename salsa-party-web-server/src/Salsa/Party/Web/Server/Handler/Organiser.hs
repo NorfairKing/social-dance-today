@@ -6,7 +6,7 @@
 module Salsa.Party.Web.Server.Handler.Organiser (getOrganiserR, getOrganiserSlugR) where
 
 import qualified Data.Text.Encoding as TE
-import qualified Database.Esqueleto as E
+import qualified Database.Esqueleto.Legacy as E
 import Salsa.Party.Web.Server.Handler.Import
 
 getOrganiserR :: OrganiserUUID -> Handler Html

@@ -13,37 +13,37 @@ import Web.JSONLD.Gen ()
 spec :: Spec
 spec = do
   genValidSpec @Event
-  jsonSpecOnValid @Event
+  jsonSpec @Event
   genValidSpec @EventLocation
-  jsonSpecOnValid @EventLocation
+  jsonSpec @EventLocation
   genValidSpec @Place
-  jsonSpecOnValid @Place
+  jsonSpec @Place
   genValidSpec @PlaceAddress
-  jsonSpecOnValid @PlaceAddress
+  jsonSpec @PlaceAddress
   genValidSpec @PostalAddress
-  jsonSpecOnValid @PostalAddress
+  jsonSpec @PostalAddress
   genValidSpec @PlaceGeo
-  jsonSpecOnValid @PlaceGeo
+  jsonSpec @PlaceGeo
   genValidSpec @GeoCoordinates
-  jsonSpecOnValid @GeoCoordinates
+  jsonSpec @GeoCoordinates
   genValidSpec @EventStartDate
-  jsonSpecOnValid @EventStartDate
+  jsonSpec @EventStartDate
   genValidSpec @EventEndDate
-  jsonSpecOnValid @EventEndDate
+  jsonSpec @EventEndDate
   genValidSpec @Date
-  jsonSpecOnValid @Date
+  jsonSpec @Date
   genValidSpec @DateTime
-  jsonSpecOnValid @DateTime
+  jsonSpec @DateTime
   genValidSpec @EventAttendanceMode
-  jsonSpecOnValid @EventAttendanceMode
+  jsonSpec @EventAttendanceMode
   genValidSpec @EventStatus
-  jsonSpecOnValid @EventStatus
+  jsonSpec @EventStatus
   genValidSpec @EventImage
-  jsonSpecOnValid @EventImage
+  jsonSpec @EventImage
   genValidSpec @EventOrganizer
-  jsonSpecOnValid @EventOrganizer
+  jsonSpec @EventOrganizer
   genValidSpec @Organization
-  jsonSpecOnValid @Organization
+  jsonSpec @Organization
   scenarioDirRecur "test_resources/ld/events" $ \fp ->
     it "can be parsed as a JSONLD event" $ do
       contents <- LB.readFile fp

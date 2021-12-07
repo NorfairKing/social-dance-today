@@ -32,8 +32,7 @@ import qualified Data.Text.Encoding as TE
 import Data.Validity
 import Data.Validity.Text ()
 import Data.Validity.Time ()
-import qualified Database.Esqueleto as E
-import qualified Database.Esqueleto.Internal.Sql as E
+import qualified Database.Esqueleto.Legacy as E
 import Database.Persist.Sql
 import Database.Persist.Sqlite
 import Salsa.Party.DB
@@ -83,7 +82,7 @@ insertPlace address Coordinates {..} =
 getPosterForParty :: MonadIO m => PartyId -> SqlPersistT m (Maybe CASKey)
 getPosterForParty partyId =
   fmap (fmap E.unValue) $
-    selectOne $
+    E.selectOne $
       E.from $ \(partyPoster `E.InnerJoin` image) -> do
         E.on (partyPoster E.^. PartyPosterImage E.==. image E.^. ImageId)
         E.where_ (partyPoster E.^. PartyPosterParty E.==. E.val partyId)
@@ -92,7 +91,7 @@ getPosterForParty partyId =
 getPosterForSchedule :: MonadIO m => ScheduleId -> SqlPersistT m (Maybe CASKey)
 getPosterForSchedule scheduleId =
   fmap (fmap E.unValue) $
-    selectOne $
+    E.selectOne $
       E.from $ \(schedulePoster `E.InnerJoin` image) -> do
         E.on (schedulePoster E.^. SchedulePosterImage E.==. image E.^. ImageId)
         E.where_ (schedulePoster E.^. SchedulePosterSchedule E.==. E.val scheduleId)
@@ -108,15 +107,11 @@ getPosterForExternalEvent externalEventId = do
   pure $ E.unValue <$> listToMaybe keys
 
 getScheduleForParty :: MonadIO m => PartyId -> SqlPersistT m (Maybe (Entity Schedule))
-getScheduleForParty partyId = selectOne $
+getScheduleForParty partyId = E.selectOne $
   E.from $ \(partySchedule `E.InnerJoin` schedule) -> do
     E.on (partySchedule E.^. SchedulePartySchedule E.==. schedule E.^. ScheduleId)
     E.where_ (partySchedule E.^. SchedulePartyParty E.==. E.val partyId)
     pure schedule
-
--- In esqueleto 3.5.1.0, so we can remove it when we get there.
-selectOne :: (E.SqlSelect a r, MonadIO m) => E.SqlQuery a -> SqlReadT m (Maybe r)
-selectOne q = fmap listToMaybe $ E.select $ E.limit 1 >> q
 
 deleteUserCompletely :: MonadIO m => UserId -> SqlPersistT m ()
 deleteUserCompletely userId = do

@@ -30,22 +30,22 @@ spec = do
   automaticMigrationsSucceedsSpec automaticMigrations
 
   dbSpec $ do
-    persistEntitySpecOnValid @User
-    persistEntitySpecOnValid @Organiser
-    persistEntitySpecOnValid @OrganiserReminder
-    persistEntitySpecOnValid @Place
-    persistEntitySpecOnValid @Party
-    persistEntitySpecOnValid @PartyPoster
-    persistEntitySpecOnValid @Image
-    persistEntitySpecOnValid @Schedule
-    persistEntitySpecOnValid @SchedulePoster
-    persistEntitySpecOnValid @ScheduleParty
-    persistEntitySpecOnValid @ImporterMetadata
-    persistEntitySpecOnValid @ExternalEvent
-    persistEntitySpecOnValid @ExternalEventPoster
-    persistEntitySpecOnValid @StaticMap
+    persistEntitySpec @User
+    persistEntitySpec @Organiser
+    persistEntitySpec @OrganiserReminder
+    persistEntitySpec @Place
+    persistEntitySpec @Party
+    persistEntitySpec @PartyPoster
+    persistEntitySpec @Image
+    persistEntitySpec @Schedule
+    persistEntitySpec @SchedulePoster
+    persistEntitySpec @ScheduleParty
+    persistEntitySpec @ImporterMetadata
+    persistEntitySpec @ExternalEvent
+    persistEntitySpec @ExternalEventPoster
+    persistEntitySpec @StaticMap
 
-persistEntitySpecOnValid ::
+persistEntitySpec ::
   forall a outers.
   ( Show a,
     Eq a,
@@ -55,7 +55,7 @@ persistEntitySpecOnValid ::
     PersistEntityBackend a ~ SqlBackend
   ) =>
   TestDef outers ConnectionPool
-persistEntitySpecOnValid = describe ("Persistent " <> nameOf @a) $
+persistEntitySpec = describe ("Persistent " <> nameOf @a) $
   it "roundtrips through the database" $ \pool ->
     forAllValid $ \(a :: a) -> runPersistentTest pool $ do
       aId <- insert a

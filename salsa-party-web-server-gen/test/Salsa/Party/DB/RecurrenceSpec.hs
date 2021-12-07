@@ -15,8 +15,8 @@ import Test.Syd.Validity.Persist
 
 spec :: Spec
 spec = do
-  jsonSpecOnValid @Recurrence
-  persistSpecOnValid @Recurrence
+  jsonSpec @Recurrence
+  persistSpec @Recurrence
   it "Outputs WeeklyRecurrence the same as before" $
     pureGoldenJSONValueFile "test_resources/recurrence/weekly.json" $ WeeklyRecurrence Friday
   describe "nextOccurrences" $ do

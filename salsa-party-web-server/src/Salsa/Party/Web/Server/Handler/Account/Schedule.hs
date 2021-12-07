@@ -23,7 +23,7 @@ where
 import Control.Monad
 import Control.Monad.Reader
 import qualified Data.Text as T
-import qualified Database.Esqueleto as E
+import qualified Database.Esqueleto.Legacy as E
 import Salsa.Party.Looper.PartyScheduler
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
@@ -31,7 +31,7 @@ import Salsa.Party.Web.Server.Poster
 
 getAccountScheduleR :: ScheduleUUID -> Handler Html
 getAccountScheduleR scheduleUuid_ = do
-  Entity userId User {..} <- requireAuth
+  userId <- requireAuthId
   mOrganiser <- runDB $ getBy $ UniqueOrganiserUser userId
 
   case mOrganiser of

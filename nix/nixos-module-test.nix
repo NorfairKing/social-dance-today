@@ -24,7 +24,7 @@ pkgs.nixosTest (
           web-server = {
             enable = true;
             inherit port;
-            log-level = "LevelDebug";
+            log-level = "Debug";
             enable-osm-geocoding = false;
             enable-google-geocoding = false;
             organiser-reminder.enable = false;

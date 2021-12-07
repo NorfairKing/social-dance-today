@@ -65,7 +65,7 @@ data Importer = Importer
 --  * We try to fetch events at least a month in advance
 --  * There should be at least once day in a month where we don't deploy twice a day.
 runImporterWithDoubleCheck :: NominalDiffTime -> App -> LooperSettings -> Importer -> LoggingT IO ()
-runImporterWithDoubleCheck importerInterval app LooperSettings {..} importer = addImporterNameToLog (importerName importer) $ do
+runImporterWithDoubleCheck importerInterval app _ importer = addImporterNameToLog (importerName importer) $ do
   let runDBHere :: SqlPersistT (LoggingT IO) a -> LoggingT IO a
       runDBHere = flip runSqlPool (appConnectionPool app) . retryOnBusy
 

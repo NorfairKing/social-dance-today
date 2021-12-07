@@ -6,7 +6,7 @@
 module Salsa.Party.Web.Server.Handler.Search.QuerySpec (spec) where
 
 import qualified Data.Map as M
-import qualified Database.Esqueleto as E
+import qualified Database.Esqueleto.Legacy as E
 import qualified Database.Persist as DB
 import qualified Database.Persist.Sql as DB
 import Salsa.Party.Web.Server.Handler.Search.Query
@@ -20,7 +20,7 @@ spec = do
       modifyMaxSuccess (* 10) $
         describe "distanceEstimationQuery" $ do
           let helperQuery :: MonadIO m => Word -> Coordinates -> SqlPersistT m (Maybe (Entity Place))
-              helperQuery maximumDistance coordinates = selectOne $
+              helperQuery maximumDistance coordinates = E.selectOne $
                 E.from $ \place -> do
                   distanceEstimationQuery maximumDistance coordinates place
                   pure place

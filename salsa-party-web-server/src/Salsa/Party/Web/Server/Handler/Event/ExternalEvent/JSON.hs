@@ -22,7 +22,7 @@ externalEventPageJSON :: Entity ExternalEvent -> Entity Place -> Handler (JSONRe
 externalEventPageJSON externalEventEntity placeEntity = JSONResponse <$> exportExternalEvent externalEventEntity placeEntity
 
 exportExternalEvent :: Entity ExternalEvent -> Entity Place -> Handler ExternalEventExport
-exportExternalEvent (Entity _ externalEvent) (Entity _ place@Place {..}) = do
+exportExternalEvent (Entity _ externalEvent) (Entity _ place) = do
   requireAdmin
   importerMetadata <- runDB $ get404 $ externalEventImporter externalEvent
   pure $ externalEventExport externalEvent place importerMetadata

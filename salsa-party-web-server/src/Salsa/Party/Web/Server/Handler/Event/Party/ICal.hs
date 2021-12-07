@@ -18,7 +18,7 @@ import qualified Text.ICalendar as ICal
 
 partyPageICal :: Entity Organiser -> Entity Party -> Handler ICal.VCalendar
 partyPageICal (Entity _ organiser) (Entity _ party@Party {..}) = do
-  place@Place {..} <- runDB $ get404 partyPlace
+  place <- runDB $ get404 partyPlace
   renderUrl <- getUrlRender
   pure $ partyCalendar renderUrl organiser party place
 
@@ -41,7 +41,7 @@ partyCalendar renderUrl organiser party@Party {..} place =
       Just start -> Right $ ICal.FloatingDateTime (LocalTime partyDay start)
 
 partyCalendarEvent :: (Route App -> Text) -> Organiser -> Party -> Place -> ICal.VEvent
-partyCalendarEvent renderUrl organiser@Organiser {..} party@Party {..} Place {..} =
+partyCalendarEvent renderUrl organiser party@Party {..} Place {..} =
   let Party _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
       noOther = def
    in ICal.VEvent
@@ -129,8 +129,9 @@ partyCalendarEvent renderUrl organiser@Organiser {..} party@Party {..} Place {..
                 },
           ICal.veTransp = ICal.Transparent {timeTransparencyOther = noOther},
           ICal.veUrl = do
+            -- We go through uri to make sure it's a valid uri.
             uri <- parseURI $ T.unpack $ renderUrl $ partyRoute organiser party
-            pure $ ICal.URL {ICal.urlValue = uri, ICal.urlOther = noOther},
+            pure $ ICal.URL {ICal.urlValue = LT.fromStrict $ T.pack $ show uri, ICal.urlOther = noOther},
           ICal.veRecurId = Nothing,
           ICal.veRRule = S.empty,
           ICal.veDTEndDuration = Nothing,

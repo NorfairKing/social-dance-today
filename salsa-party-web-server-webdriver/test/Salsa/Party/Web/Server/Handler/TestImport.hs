@@ -15,6 +15,6 @@ import Salsa.Party.Web.Server.TestUtils.Selenium as X
 import Test.QuickCheck as X
 import Test.Syd as X hiding (Selector)
 import Test.Syd.Validity as X hiding (Location)
-import Test.WebDriver as X
+import Test.WebDriver as X hiding (setWindowSize)
 import Text.Show.Pretty as X
 import Yesod as X (Textarea (..))
