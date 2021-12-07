@@ -10,43 +10,16 @@
 --
 -- All good so far, except the data is not machine readable.
 --
--- The robots.txt contains a line that mentions a sitemap which is a text file.
 --
--- > https://www.danceplace.com/robots.txt:
+-- The robots.txt page is outdated as of 2022.
 --
--- > User-Agent: *
--- > Allow: /
--- >
--- > Sitemap: https://www.danceplace.com/assets/site-map-31-07-20.txt
---
--- Not sure whether that's allowed but that text file contains all links to all events.
---
--- The text file contains an index of everything on the site, including events.
--- * Urls like this:
---   https://www.danceplace.com/index/no/12/Flying+Dog-Waterloo_+ON-Canada-Place+to+social+dance+Salsa
---   Which are weird, events from 60 years ago?!
---
--- * Urls that end in +school, which look like schools.
---   https://www.danceplace.com/index/no/626/Air+De+Tango+-Montreal_+QC-Canada-Tango+Dance+school
---
--- * Urls that end in +event, which look like events:
---   https://www.danceplace.com/index/no/8177/BachataStars+Poland-2020-Warsaw-Poland-Bachata+Dance+event
---   The event urls also always seem to contain the year that they're in.
---
--- The event pages are not machine readible, but there are some nice benefits anyway.
---
--- * the title has a <span itemprop="name">
--- * the description has a <meta itemprop="description">
--- * The start as <meta itemprop="startDate" content="2021-03-05T00:00">
--- * The end date as <meta itemprop="endDate" content="2021-03-07T00:00">
+-- This page contains a table of the events that we want:
+-- https://www.danceplace.com/events/in/2022/
 module Salsa.Party.Importer.DanceplaceCom (danceplaceComImporter) where
 
 import Conduit
 import Control.Applicative
-import qualified Data.ByteString as SB
-import qualified Data.ByteString.Char8 as SB8
 import qualified Data.ByteString.Lazy as LB
-import qualified Data.ByteString.Lazy.Char8 as LB8
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
 import qualified Data.Text as T
@@ -69,31 +42,27 @@ func = do
   now <- liftIO getCurrentTime
   let (currentYear, _, _) = toGregorian $ utctDay now
   runConduit $
-    yield "https://danceplace.com"
-      .| C.concatMap (parseRequest . (<> "/robots.txt") :: String -> Maybe Request)
+    yieldMany [currentYear, succ currentYear]
+      .| C.concatMap (\y -> parseRequest ("https://www.danceplace.com/events/in/" <> show y) :: Maybe Request)
       .| doHttpRequestWith
       .| logRequestErrors
-      .| C.concatMap
-        ( \(_, response) ->
-            mapMaybe (SB.stripPrefix "Sitemap: ") $ SB8.lines $ LB.toStrict $ responseBody response
-        )
-      .| C.concatMap (parseRequest . SB8.unpack :: ByteString -> Maybe Request)
-      .| doHttpRequestWith
-      .| logRequestErrors
-      .| C.map (responseBody . snd)
-      .| C.splitOnUnboundedE (== 0x0a)
-      .| C.filter ("+event" `LB8.isSuffixOf`)
-      .| C.map LB.toStrict
-      .| C.filter
-        ( \url ->
-            SB8.pack (show currentYear) `SB8.isInfixOf` url
-              || SB8.pack (show (succ currentYear)) `SB8.isInfixOf` url
-        )
+      .| parseEventLinksFromYearPage
       .| deduplicateC
-      .| C.concatMap (parseRequest . SB8.unpack :: ByteString -> Maybe Request)
+      .| C.concatMap (\t -> parseRequest (T.unpack t) :: Maybe Request)
       .| doHttpRequestWith
       .| logRequestErrors
       .| C.mapM_ (uncurry parseEventFromPage)
+
+parseEventLinksFromYearPage :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Text Import ()
+parseEventLinksFromYearPage = awaitForever $ \(_, response) -> do
+  let urls = fromMaybe [] $
+        scrapeStringLike (responseBody response) $ do
+          refs <-
+            chroots ("div" @: [hasClass "event-txt"]) $
+              attr "href" "a"
+          pure (mapMaybe maybeUtf8 refs :: [Text])
+
+  yieldMany urls
 
 parseEventFromPage :: HTTP.Request -> HTTP.Response LB.ByteString -> Import ()
 parseEventFromPage request response = do
