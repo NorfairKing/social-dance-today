@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -257,7 +258,7 @@ environmentParser =
       <$> Env.var (fmap Just . Env.str) "CONFIG_FILE" (mE <> Env.help "Config file")
       <*> Env.var (fmap Just . Env.str) "HOST" (mE <> Env.help "Host, example: salsa-party.cs-syd.eu")
       <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "Port")
-      <*> Env.var (fmap Just . Env.auto) "LOG_LEVEL" (mE <> Env.help "Minimal severity for log messages")
+      <*> Env.var (fmap Just . logLevelReader) "LOG_LEVEL" (mE <> Env.help "Minimal severity for log messages")
       <*> Env.var (fmap Just . Env.auto) "DATABASE" (mE <> Env.help "The path to the database file")
       <*> Env.var (fmap Just . Env.auto) "SEND_EMAILS" (mE <> Env.help "Whether to send emails and require email verification")
       <*> Env.var (fmap Just . Env.str) "SEND_ADDRESS" (mE <> Env.help "The address to send emails from")
@@ -283,6 +284,12 @@ environmentParser =
       <*> looperEnvironmentParser "LATINWORLD_NL_IMPORTER"
       <*> looperEnvironmentParser "TANZAGENDA_CH_IMPORTER"
   where
+    logLevelReader = \case
+      "Debug" -> Right LevelDebug
+      "Info" -> Right LevelInfo
+      "Warn" -> Right LevelWarn
+      "Error" -> Right LevelError
+      s -> Left $ Env.UnreadError $ "Unknown log level: " <> s
     mE = Env.def Nothing
 
 sentryEnvironmentParser :: Env.Parser Env.Error SentryEnvironment
