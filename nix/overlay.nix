@@ -101,7 +101,7 @@ in
   salsaPartyRelease =
     final.symlinkJoin {
       name = "salsa-party-release";
-      paths = final.lib.attrValues final.salsaPartyPackages;
+      paths = builtins.map justStaticExecutables (final.lib.attrValues final.salsaPartyPackages);
     };
 
 
