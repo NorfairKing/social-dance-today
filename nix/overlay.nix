@@ -58,7 +58,7 @@ in
                 ''
                   local path="${path}"
                   mkdir --parents $(dirname "''$path")
-                  cp ${resource} "''$path"
+                  ln -s ${resource} "''$path"
                 '';
               copyScript = concatStringsSep "\n" (mapAttrsToList copyResource resources);
             in
@@ -120,33 +120,12 @@ in
             )
             (
               self: super:
-                let
-                  # envparse
-                  envparseRepo =
-                    final.fetchFromGitHub {
-                      owner = "supki";
-                      repo = "envparse";
-                      rev = "de5944fb09e9d941fafa35c0f05446af348e7b4d";
-                      sha256 = "sha256:0piljyzplj3bjylnxqfl4zpc3vc88i9fjhsj06bk7xj48dv3jg3b";
-                    };
-                  envparsePkg =
-                    dontCheck (
-                      self.callCabal2nix "envparse" envparseRepo { }
-                    );
-
-                in
                 final.salsaPartyPackages // {
-                  envparse = envparsePkg;
                   # base64-bytestring = self.callHackage "base64-bytestring" "1.0.0.3" { };
                   yesod-autoreload = self.callCabal2nix "yesod-autoreload" sources.yesod-autoreload { };
                   # Tests access the internet
                   yesod-static-remote = dontCheck (self.callCabal2nix "yesod-static-remote" sources.yesod-static-remote { });
-                  token-limiter-concurrent = self.callCabal2nix "token-limiter-concurrent"
-                    (builtins.fetchGit {
-                      url = "https://github.com/NorfairKing/token-limiter-concurrent";
-                      rev = "336f8bb6d1281c7a11e9b11da9bc1a86b5d89057";
-                    })
-                    { };
+                  token-limiter-concurrent = self.callCabal2nix "token-limiter-concurrent" sources.token-limiter-concurrent { };
                   iCalendar = self.callCabal2nix "iCalendar" sources.iCalendar { };
                 }
             );

@@ -5,10 +5,10 @@
         "homepage": "",
         "owner": "NorfairKing",
         "repo": "autodocodec",
-        "rev": "f0cb2ead0985b4394db0627e6befd7ce23c54c22",
-        "sha256": "1wyhwq38zl8ph2y1n8xjia67f7viyv253jg9rr3a78qnwlpvjxbd",
+        "rev": "d269215812a8641f143ee96163b980db47a55c2c",
+        "sha256": "1ns9vfy8gxn8x8w3rc209sxprjadpii8phi59aayvmmvv3ppibp2",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/autodocodec/archive/f0cb2ead0985b4394db0627e6befd7ce23c54c22.tar.gz",
+        "url": "https://github.com/NorfairKing/autodocodec/archive/d269215812a8641f143ee96163b980db47a55c2c.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "gitignore": {
@@ -77,10 +77,10 @@
         "homepage": "",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "e34c5379866833f41e2a36f309912fa675d687c7",
-        "sha256": "15shzr1wmc5770kblvlfwq5dsdlmvkpc3rhkn40nyi00fidqq96v",
+        "rev": "9ab7d12287ced0e1b4c03b61c781901f178d9d77",
+        "sha256": "0bbd2pgcyavqn5wgq0xp8p67lha0kv9iqnh49i9w5fb5g29q7i30",
         "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/e34c5379866833f41e2a36f309912fa675d687c7.tar.gz",
+        "url": "https://github.com/NixOS/nixpkgs/archive/9ab7d12287ced0e1b4c03b61c781901f178d9d77.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "pre-commit-hooks": {
@@ -89,10 +89,10 @@
         "homepage": "",
         "owner": "cachix",
         "repo": "pre-commit-hooks.nix",
-        "rev": "c3b4f94350b0e59c2546fa85890cc70d03616b9c",
-        "sha256": "1x90b2m8kzxzslfssvnaq9s1m0n9rxqw41qhz298gnv4nvahcr0f",
+        "rev": "ff9c0b459ddc4b79c06e19d44251daa8e9cd1746",
+        "sha256": "0z09ndxvbk6w4j28lzgj0b9qqcbwrvr58c0xsm0rf0xsdipi0nwf",
         "type": "tarball",
-        "url": "https://github.com/cachix/pre-commit-hooks.nix/archive/c3b4f94350b0e59c2546fa85890cc70d03616b9c.tar.gz",
+        "url": "https://github.com/cachix/pre-commit-hooks.nix/archive/ff9c0b459ddc4b79c06e19d44251daa8e9cd1746.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "pretty-relative-time": {
@@ -137,10 +137,22 @@
         "homepage": "",
         "owner": "NorfairKing",
         "repo": "sydtest",
-        "rev": "5b0eee208753e3554d9b158a6e48b1760514aed0",
-        "sha256": "1nr1p2mfwlajga3azfwzzkfsx0djh3hzxyjf7hhp5ya24a189qds",
+        "rev": "373a72f6763e2ebf90e6a9de137349e1568540a8",
+        "sha256": "0p33hfl9c1bfyyv2b3x9af069gwpmv93c56ir8l4nlc86q89mh7z",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/sydtest/archive/5b0eee208753e3554d9b158a6e48b1760514aed0.tar.gz",
+        "url": "https://github.com/NorfairKing/sydtest/archive/373a72f6763e2ebf90e6a9de137349e1568540a8.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "token-limiter-concurrent": {
+        "branch": "master",
+        "description": "A type-safe token-bucket-based rate limiter with fairness and without the thundering herd problem",
+        "homepage": null,
+        "owner": "NorfairKing",
+        "repo": "token-limiter-concurrent",
+        "rev": "b6829d93a9daf4b9cbe73aae0edeef05597394f2",
+        "sha256": "06gqj0f502kmc7i3p7cgh95jgzsjqjw486a64dr31ff21lh59590",
+        "type": "tarball",
+        "url": "https://github.com/NorfairKing/token-limiter-concurrent/archive/b6829d93a9daf4b9cbe73aae0edeef05597394f2.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "typed-uuid": {

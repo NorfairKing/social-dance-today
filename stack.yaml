@@ -11,7 +11,7 @@ ghc-options:
 
 extra-deps:
 - github: NorfairKing/token-limiter-concurrent
-  commit: 336f8bb6d1281c7a11e9b11da9bc1a86b5d89057
+  commit: b6829d93a9daf4b9cbe73aae0edeef05597394f2
 - github: NorfairKing/looper
   commit: e01054970b47d9eaab8b9314a1400c231ac4a960
   subdirs:
@@ -81,7 +81,7 @@ extra-deps:
     - safe-coloured-text
     - safe-coloured-text-terminfo
 - github: NorfairKing/sydtest
-  commit: 5b0eee208753e3554d9b158a6e48b1760514aed0
+  commit: 373a72f6763e2ebf90e6a9de137349e1568540a8
   subdirs:
     - sydtest
     - sydtest-aeson
@@ -99,7 +99,7 @@ extra-deps:
   commit: e08c16dceaab4d15b0f00860512018bc64791f07
 
 - github: NorfairKing/autodocodec
-  commit: f0cb2ead0985b4394db0627e6befd7ce23c54c22
+  commit: d269215812a8641f143ee96163b980db47a55c2c
   subdirs:
     - autodocodec
     - autodocodec-schema
