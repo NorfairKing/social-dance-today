@@ -15,6 +15,7 @@ import Yesod.EmbeddedStatic (EmbeddedStatic)
 data App = App
   { appRoot :: !(Maybe Text),
     appLogLevel :: !LogLevel,
+    appHashDifficulty :: !Int,
     appStatic :: !EmbeddedStatic,
     appHTTPManager :: !HTTP.Manager,
     appConnectionPool :: !ConnectionPool,

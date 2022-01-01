@@ -57,6 +57,7 @@ serverSetupFunc man = do
       { appRoot = Nothing,
         appLogLevel = LevelError,
         appStatic = salsaPartyWebServerStatic,
+        appHashDifficulty = 4, -- Lowest
         appHTTPManager = man,
         appConnectionPool = pool,
         appSessionKeyFile = sessionKeyFile,

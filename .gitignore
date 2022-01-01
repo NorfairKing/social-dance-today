@@ -4,3 +4,4 @@ result*
 .pre-commit-config.yaml
 *.aes
 *.sqlite3*
+.direnv/

@@ -51,6 +51,7 @@ runSalsaPartyServer settings@Settings {..} = do
                 { appRoot = settingHost,
                   appLogLevel = settingLogLevel,
                   appStatic = salsaPartyWebServerStatic,
+                  appHashDifficulty = 10,
                   appConnectionPool = pool,
                   appHTTPManager = man,
                   appSessionKeyFile = sessionKeyFile,

@@ -35,6 +35,7 @@ in
             doHaddock = false;
             doCoverage = false;
             doHoogle = false;
+            doCheck = false; # Only check the release version.
             hyperlinkSource = false;
             enableLibraryProfiling = false;
             enableExecutableProfiling = false;
@@ -44,6 +45,9 @@ in
             preConfigure = (old.preConfigure or "") + ''
               export SALSA_PARTY_STATIC_DIR=${staticDir}
             '';
+            # Ugly hack because we can't just add flags to the 'test' invocation.
+            # Show test output as we go, instead of all at once afterwards.
+            testTarget = (old.testTarget or "") + " --show-details=direct";
           });
       salsaPartyPkgWithComp =
         exeName: name:
@@ -98,12 +102,12 @@ in
       inherit salsa-party-web-server-webdriver;
     };
 
-  salsaPartyRelease =
-    final.symlinkJoin {
-      name = "salsa-party-release";
-      paths = builtins.map justStaticExecutables (final.lib.attrValues final.salsaPartyPackages);
-    };
+  salsaPartyReleasePackages = mapAttrs (_: pkg: justStaticExecutables (doCheck pkg)) final.salsaPartyPackages;
 
+  salsaPartyRelease = final.symlinkJoin {
+    name = "salsa-party-release";
+    paths = final.lib.attrValues final.salsaPartyReleasePackages;
+  };
 
   haskellPackages =
     previous.haskellPackages.override (
