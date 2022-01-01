@@ -14,8 +14,6 @@ $forall (classes, message) <- messages
         <span id="copyright">
           <a href="https://cs-syd.eu">
             CS SYD
-          <script>
-            document.getElementById('copyright').appendChild(document.createTextNode(new Date().getFullYear()))
 
     $if mCurrentRoute == Just HomeR
       <div .columns .is-centered .py-6>
