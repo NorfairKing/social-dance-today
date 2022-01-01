@@ -55,7 +55,7 @@ serverSetupFunc man = do
   pure
     App
       { appRoot = Nothing,
-        appLogLevel = LevelWarn,
+        appLogLevel = LevelError,
         appStatic = salsaPartyWebServerStatic,
         appHTTPManager = man,
         appConnectionPool = pool,

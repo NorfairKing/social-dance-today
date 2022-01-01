@@ -37,6 +37,7 @@ import Lens.Micro
 import qualified Network.AWS.SES as SES
 import Salsa.Party.DB
 import Salsa.Party.Email
+import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.Foundation.App
 import Salsa.Party.Web.Server.Foundation.Auth.Routes
 import Salsa.Party.Web.Server.Foundation.I18N.Messages
@@ -127,7 +128,11 @@ postRegisterR = liftHandler $ do
       if unsafeShowPassword registerFormPassphrase == unsafeShowPassword registerFormConfirmPassphrase
         then do
           verificationKey <- liftIO $ T.pack <$> replicateM 32 (randomRIO ('a', 'z'))
-          passphraseHash <- liftIO $ hashPassword registerFormPassphrase
+          passphraseHash <-
+            liftIO $
+              hashPasswordWithParams
+                (if development then 4 else 10)
+                registerFormPassphrase
           now <- liftIO getCurrentTime
           runDB $
             insert_
