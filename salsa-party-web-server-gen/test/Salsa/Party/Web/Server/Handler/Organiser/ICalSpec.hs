@@ -6,7 +6,6 @@ import Data.Default
 import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Handler.TestImport
 import qualified Text.ICalendar.Parser as ICal
-import qualified Text.ICalendar.Printer as ICal
 
 spec :: Spec
 spec = serverSpec $ do

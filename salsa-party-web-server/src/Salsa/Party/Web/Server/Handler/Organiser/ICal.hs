@@ -1,16 +1,11 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Salsa.Party.Web.Server.Handler.Organiser.ICal
   ( getOrganiserCalendarR,
     getOrganiserSlugCalendarR,
   )
 where
 
-import qualified Data.Text.Encoding as TE
 import qualified Database.Esqueleto.Legacy as E
+import Salsa.Party.Web.Server.Handler.Event.Party.ICal
 import Salsa.Party.Web.Server.Handler.Import
 import qualified Text.ICalendar.Types as ICal
 
@@ -31,5 +26,19 @@ getOrganiserSlugCalendarR slug = do
     Just organiserEntity -> organiserCalendarPage organiserEntity
 
 organiserCalendarPage :: Entity Organiser -> Handler ICal.VCalendar
-organiserCalendarPage (Entity organiserId organiser@Organiser {..}) = do
-  undefined
+organiserCalendarPage (Entity organiserId organiser) = do
+  parties <- runDB $ getPartiesOfOrganiser organiserId
+  renderUrl <- getUrlRender
+  pure $
+    foldMap
+      (\(Entity _ party, Entity _ place) -> partyCalendar renderUrl organiser party place)
+      parties
+
+getPartiesOfOrganiser :: MonadIO m => OrganiserId -> SqlPersistT m [(Entity Party, Entity Place)]
+getPartiesOfOrganiser organiserId = do
+  E.select $
+    E.from $ \(party `E.InnerJoin` p) -> do
+      E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
+      E.where_ (party E.^. PartyOrganiser E.==. E.val organiserId)
+      E.orderBy [E.asc $ party E.^. PartyDay]
+      pure (party, p)
