@@ -42,6 +42,8 @@
                     <h5 .subtitle .is-6>
                       #{placeQuery p}
 
+<section .section>
+  <div .container>
     <h3 .title .is-5>
       _{MsgOrganiserCalendarTitle}
     <div .content>
