@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.5.
+-- This file has been generated from package.yaml by hpack version 0.34.6.
 --
 -- see: https://github.com/sol/hpack
 
@@ -102,6 +102,8 @@ library
       Salsa.Party.Web.Server.Handler.Image
       Salsa.Party.Web.Server.Handler.Import
       Salsa.Party.Web.Server.Handler.Organiser
+      Salsa.Party.Web.Server.Handler.Organiser.HTML
+      Salsa.Party.Web.Server.Handler.Organiser.ICal
       Salsa.Party.Web.Server.Handler.Reminder
       Salsa.Party.Web.Server.Handler.Search
       Salsa.Party.Web.Server.Handler.Search.Deduplication

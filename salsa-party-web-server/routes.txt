@@ -22,6 +22,8 @@
 
 /organiser/#OrganiserUUID OrganiserR GET
 !/organiser/#OrganiserSlug OrganiserSlugR GET
+/organiser/#OrganiserUUID/calendar.ics OrganiserCalendarR GET
+!/organiser/#OrganiserSlug/calendar.ics OrganiserSlugCalendarR GET
 
 /image/#CASKey ImageR GET
 
