@@ -111,6 +111,8 @@ OrganiserDescription name@Text: The organiser profile of #{name}, and a list of 
 OrganiserName name@Text: Organiser: #{name}
 OrganiserUpcomingParties: Upcoming parties
 OrganiserNoUpcomingParties: No upcoming parties
+OrganiserCalendarTitle: Calendar URL
+OrganiserCalendarExplanation: Add all these events to your calendar automatically by subscribing using this link:
 
 # Poster
 PosterAltFull title@Text day@String organiser@Text: Poster for #{title} on #{day} by #{organiser}

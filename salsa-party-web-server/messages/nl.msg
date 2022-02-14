@@ -112,6 +112,9 @@ OrganiserDescription name@Text: Het organisatorprofiel van #{name} en een lijst 
 OrganiserName name@Text: Organisator: #{name}
 OrganiserUpcomingParties: Komende feesten
 OrganiserNoUpcomingParties: Geen komende feesten
+OrganiserCalendarTitle: Kalender URL
+OrganiserCalendarExplanation: Voeg al deze evenementen automatisch toe aan je agenda door je te abonneren via deze link:
+
 
 # Poster
 PosterAltFull title@Text day@String organiser@Text: Poster voor #{title} op #{day} door #{organiser}.

@@ -186,10 +186,18 @@ typeCalendar = "text/calendar"
 organiserRoute :: Organiser -> Route App
 organiserRoute organiser = fromMaybe (OrganiserR (organiserUuid organiser)) $ organiserSlugRoute organiser
 
+organiserCalendarRoute :: Organiser -> Route App
+organiserCalendarRoute organiser = fromMaybe (OrganiserCalendarR (organiserUuid organiser)) $ organiserSlugCalendarRoute organiser
+
 organiserSlugRoute :: Organiser -> Maybe (Route App)
 organiserSlugRoute Organiser {..} = do
   organiserSlug_ <- organiserSlug
   pure $ OrganiserSlugR organiserSlug_
+
+organiserSlugCalendarRoute :: Organiser -> Maybe (Route App)
+organiserSlugCalendarRoute Organiser {..} = do
+  organiserSlug_ <- organiserSlug
+  pure $ OrganiserSlugCalendarR organiserSlug_
 
 makeOrganiserSlug :: Text -> Maybe OrganiserSlug
 makeOrganiserSlug = mkSlug

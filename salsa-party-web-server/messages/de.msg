@@ -116,6 +116,9 @@ OrganiserDescription name@Text:  Veranstalterprofil von #{name}, und eine Liste 
 OrganiserName name@Text: Veranstalter/in: #{name}
 OrganiserUpcomingParties: Bevorstehende Parties
 OrganiserNoUpcomingParties: Keine bevorstehenden Parties
+OrganiserCalendarTitle: Kalender-URL
+OrganiserCalendarExplanation: Füge all diese Veranstaltungen automatisch zu deinem Kalender hinzu, indem du diese mit diesem Link abonnierst:
+
 
 # Poster
 PosterAltFull title@Text day@String organiser@Text: Bild für #{title} am #{day} organisiert durch #{organiser}

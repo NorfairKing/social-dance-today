@@ -111,6 +111,8 @@ OrganiserDescription name@Text: Le profil de l’organisateur #{name} et une lis
 OrganiserName name@Text: Organisateur: #{name}
 OrganiserUpcomingParties: Prochaines soirées
 OrganiserNoUpcomingParties: Pas de prochaines soirées
+OrganiserCalendarTitle: URL du calendrier
+OrganiserCalendarExplanation: Ajoutez tous ces évènements à votre agenda en souscrivant à l'abonnement par ce lien:
 
 # Poster
 PosterAltFull title@Text day@String organiser@Text: Affiche pour #{title} le #{day} par #{organiser}
