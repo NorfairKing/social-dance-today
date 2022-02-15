@@ -11,6 +11,7 @@ where
 
 import qualified Data.Text.Encoding as TE
 import qualified Database.Esqueleto.Legacy as E
+import Safe (maximumMay)
 import Salsa.Party.Web.Server.Handler.Import
 
 getOrganiserR :: OrganiserUUID -> Handler Html
@@ -37,10 +38,13 @@ organiserPage (Entity organiserId organiser@Organiser {..}) = do
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
   prettyDateTimeFormat <- getPrettyDateTimeFormat
+  let mLatestModifiedParty = maximumMay $ map (\(Entity _ Party {..}, _, _) -> fromMaybe partyCreated partyModified) parties
+  let latestModifiedOrganiser = fromMaybe organiserCreated organiserModified
+  let lastModified = maybe latestModifiedOrganiser (max latestModifiedOrganiser) mLatestModifiedParty
   withNavBar $ do
     setTitleI $ MsgOrganiserTitle organiserName
     setDescriptionI $ MsgOrganiserDescription organiserName
-    addHeader "Last-Modified" $ TE.decodeLatin1 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe organiserCreated organiserModified
+    addHeader "Last-Modified" $ TE.decodeLatin1 $ formatHTTPDate $ utcToHTTPDate lastModified
     $(widgetFile "organiser")
 
 getUpcomingPartiesOfOrganiser :: MonadIO m => OrganiserId -> SqlPersistT m [(Entity Party, Entity Place, Maybe CASKey)]
