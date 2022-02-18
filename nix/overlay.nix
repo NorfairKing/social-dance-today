@@ -78,8 +78,8 @@ in
           sha256 = "0nbwcsa1gi36f2aq9y96bap7glkp40k3g2bjb9s1vmg0011sri1v";
         };
         "static/sentry.js" = builtins.fetchurl {
-          url = "https://browser.sentry-cdn.com/6.10.0/bundle.tracing.min.js";
-          sha256 = "sha256:0idyjhnhv6sc6q8mr5f820qcy72s5x4al04llhz5cvgjgixlg3x5";
+          url = "https://browser.sentry-cdn.com/6.17.9/bundle.min.js";
+          sha256 = "sha256:1519nqhij8q7wblcaqkvi5jd97gq93bajdy57cgv9jkbddkb1z2p";
         };
       };
       salsa-party-web-server-e2e = salsaPartyPkg "salsa-party-web-server-e2e";
