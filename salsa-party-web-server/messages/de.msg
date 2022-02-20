@@ -27,7 +27,7 @@ LocateMeHelpBefore: Drücken Sie auf 'Mein standort', um parties in ihrer Umgebu
 LocateMeHelpAfter: Dein aktueller Standort wird für die Suche verwendet, es sei denn, du gibst oben einen anderen Standort ein. 
  
 # Explore
-ExploreTitle: Erkunde die Welt des Sozial Dance!
+ExploreTitle: Erkunde die Welt des Social Dance!
 ExploreDescription: Social Dance gibt es auf der ganzen Welt, finde heraus, wohin du gehen kannst!
 ExploreButton: Erkunden
 ExploreUpcomingParties number@String: #{number} bevorstehenden Parties
