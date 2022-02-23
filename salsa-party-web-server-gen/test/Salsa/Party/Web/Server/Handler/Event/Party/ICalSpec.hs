@@ -4,6 +4,7 @@ module Salsa.Party.Web.Server.Handler.Event.Party.ICalSpec (spec) where
 
 import qualified Data.ByteString.Lazy as LB
 import Data.Default
+import Data.GenValidity.Text
 import Data.Text (Text)
 import qualified Data.UUID as UUID
 import qualified Data.UUID.Typed as Typed
@@ -77,6 +78,53 @@ spec = do
                                 [_] -> pure ()
                                 _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
                               _ -> liftIO $ expectationFailure $ unlines $ "Warnings while parsing ical: " : warnings
+
+      let genAnnoyingText =
+            genTextBy $
+              oneof
+                [ elements
+                    [ '\n', -- line feed
+                      '\r', -- carriage return
+                      '\'', -- single quote
+                      '\"', -- double quote
+                      '😀', -- example emoji
+                      '\\' -- Escape char
+                    ],
+                  choose (minBound, maxBound)
+                ]
+
+      it "Can get the ical calendar for an existing party via event.ics, even for very annoying parties" $ \yc ->
+        forAll genAnnoyingText $ \annoyingText1 ->
+          forAll genAnnoyingText $ \annoyingText2 ->
+            forAll genAnnoyingText $ \annoyingText3 ->
+              forAllValid $ \organiserPrototype ->
+                forAllValid $ \placePrototype ->
+                  forAllValid $ \partyPrototype ->
+                    runYesodClientM yc $ do
+                      let organiser = organiserPrototype {organiserName = annoyingText1}
+                          place = placePrototype {placeQuery = annoyingText2}
+                          party = partyPrototype {partyTitle = annoyingText3}
+
+                      testDB $ do
+                        organiserId <- DB.insert organiser
+                        placeId <- DB.insert place
+                        DB.insert_ $ party {partyOrganiser = organiserId, partyPlace = placeId}
+
+                      get $ EventIcsR $ partyUuid party
+                      statusIs 200
+                      mResp <- getResponse
+                      case mResp of
+                        Nothing -> liftIO $ expectationFailure "Should have had a response by now."
+                        Just resp -> do
+                          let cts = responseBody resp
+                          case ICal.parseICalendar def "response" cts of
+                            Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
+                            Right (cals, warnings) -> do
+                              case warnings of
+                                [] -> case cals of
+                                  [_] -> pure ()
+                                  _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
+                                _ -> liftIO $ expectationFailure $ unlines $ "Warnings while parsing ical: " : warnings
 
   modifyMaxSuccess (`div` 20) $
     modifyMaxSize (* 10) $
