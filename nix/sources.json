@@ -132,15 +132,15 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "sydtest": {
-        "branch": "development",
+        "branch": "master",
         "description": "A modern testing framework for Haskell with good defaults and advanced testing features.",
         "homepage": "",
         "owner": "NorfairKing",
         "repo": "sydtest",
-        "rev": "9c6141b8536adfe34f44265e5754b3dc539dc042",
-        "sha256": "1g3x65pabl29ls3smm29ysjb928hqhkn2i2ranwjsqfc9pilzbnh",
+        "rev": "aac96e2e520a4fca97bccd3403721dc0036b026f",
+        "sha256": "06fb6h32z4mqvkmvya9s2zpqb64iyib7bwzn6mym7wiisgbwc98k",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/sydtest/archive/9c6141b8536adfe34f44265e5754b3dc539dc042.tar.gz",
+        "url": "https://github.com/NorfairKing/sydtest/archive/aac96e2e520a4fca97bccd3403721dc0036b026f.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "token-limiter-concurrent": {
