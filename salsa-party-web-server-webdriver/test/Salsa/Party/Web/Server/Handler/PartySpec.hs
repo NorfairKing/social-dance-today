@@ -9,14 +9,14 @@ import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Handler.TestImport hiding (Image)
 
-spec :: WebdriverSpec
+spec :: WebdriverSpec App
 spec = do
   partyScreenshotTest Nothing Nothing
   partyScreenshotTest Nothing (Just "test_resources/maps/bachata-community.jpg")
   partyScreenshotTest (Just "test_resources/posters/bachata-community.jpg") Nothing
   partyScreenshotTest (Just "test_resources/posters/bachata-community.jpg") (Just "test_resources/maps/bachata-community.jpg")
 
-partyScreenshotTest :: Maybe FilePath -> Maybe FilePath -> WebdriverSpec
+partyScreenshotTest :: Maybe FilePath -> Maybe FilePath -> WebdriverSpec App
 partyScreenshotTest mPosterFilePath mMapFilePath = do
   let day = fromGregorian 2021 09 02
       moment = UTCTime day 0

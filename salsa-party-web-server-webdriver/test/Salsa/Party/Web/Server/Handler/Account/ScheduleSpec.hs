@@ -5,7 +5,7 @@ import Salsa.Party.Web.Server.Handler.Account.Schedule
 import Salsa.Party.Web.Server.Handler.Account.Schedule.TestUtils
 import Salsa.Party.Web.Server.Handler.TestImport
 
-spec :: WebdriverSpec
+spec :: WebdriverSpec App
 spec = do
   it "can submit a new schedule" $ \env ->
     forAllValid $ \coordinates -> runWebdriverTestM env $

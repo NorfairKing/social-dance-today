@@ -7,7 +7,7 @@ import Salsa.Party.Web.Server.Handler.Account.Party
 import Salsa.Party.Web.Server.Handler.Account.Party.TestUtils
 import Salsa.Party.Web.Server.Handler.TestImport
 
-spec :: WebdriverSpec
+spec :: WebdriverSpec App
 spec = do
   it "can submit a new party" $ \env ->
     forAllValid $ \coordinates -> runWebdriverTestM env $

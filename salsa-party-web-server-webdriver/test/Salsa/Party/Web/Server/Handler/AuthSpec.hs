@@ -3,7 +3,7 @@ module Salsa.Party.Web.Server.Handler.AuthSpec (spec) where
 import Salsa.Party.Web.Server.Handler.Auth.TestUtils
 import Salsa.Party.Web.Server.Handler.TestImport
 
-spec :: WebdriverSpec
+spec :: WebdriverSpec App
 spec = do
   describe "Registration" $
     it "can register a dummy user" $ do

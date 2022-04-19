@@ -8,7 +8,7 @@ import Salsa.Party.Web.Server.Handler.Search
 import Salsa.Party.Web.Server.Handler.TestImport
 import Test.WebDriver as WD
 
-spec :: WebdriverSpec
+spec :: WebdriverSpec App
 spec = do
   it "Can do a real search on the homepage" $ \env ->
     forAll (elements locations) $ \Location {..} -> runWebdriverTestM env $ do

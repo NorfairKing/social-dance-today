@@ -5,4 +5,4 @@ import Spec
 import Test.Syd
 
 main :: IO ()
-main = sydTest $ webdriverSpec spec
+main = sydTest $ salsaWebdriverSpec spec

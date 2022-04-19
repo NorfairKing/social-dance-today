@@ -28,6 +28,9 @@ library:
   - salsa-party-web-server-gen
   - sydtest
   - sydtest-typed-process
+  - sydtest-webdriver
+  - sydtest-webdriver-screenshot
+  - sydtest-webdriver-yesod
   - sydtest-yesod
   - text
   - time
@@ -69,6 +72,9 @@ tests:
     - salsa-party-web-server-webdriver
     - sydtest
     - sydtest-typed-process
+    - sydtest-webdriver
+    - sydtest-webdriver-screenshot
+    - sydtest-webdriver-yesod
     - sydtest-yesod
     - text
     - time

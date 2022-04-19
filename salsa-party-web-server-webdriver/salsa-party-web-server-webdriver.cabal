@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.34.6.
 --
 -- see: https://github.com/sol/hpack
 
@@ -38,6 +38,9 @@ library
     , salsa-party-web-server-gen
     , sydtest
     , sydtest-typed-process
+    , sydtest-webdriver
+    , sydtest-webdriver-screenshot
+    , sydtest-webdriver-yesod
     , sydtest-yesod
     , text
     , time
@@ -91,6 +94,9 @@ test-suite salsa-party-web-server-webdriver-test
     , salsa-party-web-server-webdriver
     , sydtest
     , sydtest-typed-process
+    , sydtest-webdriver
+    , sydtest-webdriver-screenshot
+    , sydtest-webdriver-yesod
     , sydtest-yesod
     , text
     , time

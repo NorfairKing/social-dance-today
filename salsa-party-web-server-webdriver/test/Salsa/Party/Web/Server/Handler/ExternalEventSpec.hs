@@ -8,7 +8,7 @@ import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Handler.TestImport hiding (Image)
 
-spec :: WebdriverSpec
+spec :: WebdriverSpec App
 spec = do
   -- The most common window sizings we deal with.
   let day = fromGregorian 2021 09 02

@@ -1,8 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -15,14 +13,8 @@
 
 module Salsa.Party.Web.Server.TestUtils.Selenium where
 
-import Codec.Picture as Picture
-import Control.Arrow
-import Control.Monad.Base
 import Control.Monad.Reader
-import Control.Monad.Trans.Control
 import Data.Aeson as JSON
-import qualified Data.ByteString as SB
-import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Lazy as LB
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -31,15 +23,6 @@ import Data.Time
 import Database.Persist (Entity (..))
 import qualified Database.Persist as DB
 import qualified Database.Persist.Sql as DB
-import GHC.Stack
-import Network.HTTP.Client as HTTP
-import qualified Network.HTTP.Types as HTTP
-import Network.Socket
-import Network.Socket.Free
-import Network.Socket.Wait as Port
-import Network.URI
-import Path
-import Path.IO
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
@@ -49,81 +32,20 @@ import Salsa.Party.Web.Server.Handler.Account.Schedule
 import Salsa.Party.Web.Server.Handler.Auth.TestUtils
 import Salsa.Party.Web.Server.Handler.Search
 import Salsa.Party.Web.Server.TestUtils
-import System.Exit
-import System.Process.Typed
 import Test.Syd
-import Test.Syd.Path
-import Test.Syd.Process.Typed
-import Test.Syd.Yesod
+import Test.Syd.Webdriver
+import Test.Syd.Webdriver.Yesod
 import Test.WebDriver as WD hiding (setWindowSize)
-import Test.WebDriver.Class (WebDriver (..))
-import qualified Test.WebDriver.Commands.Internal as WD
 import Test.WebDriver.Commands.Wait as WD
-import qualified Test.WebDriver.JSON as WD
-import Test.WebDriver.Session (WDSessionState (..))
 import qualified Yesod
 
-newtype WebdriverTestM a = WebdriverTestM
-  { unWebdriverTestM :: ReaderT WebdriverTestEnv WD a
-  }
-  deriving
-    ( Functor,
-      Applicative,
-      Monad,
-      MonadIO,
-      MonadReader WebdriverTestEnv,
-      MonadBaseControl IO, -- We don't want these, but we have to because webdriver uses them.
-      MonadBase IO
-    )
+salsaWebdriverSpec :: WebdriverSpec App -> Spec
+salsaWebdriverSpec = webdriverYesodSpec serverSetupFunc
 
-data WebdriverTestEnv = WebdriverTestEnv
-  { webdriverTestEnvURI :: !URI,
-    webdriverTestEnvConfig :: !WDConfig,
-    webdriverTestEnvApp :: !App
-  }
-
-instance WDSessionState WebdriverTestM where
-  getSession = WebdriverTestM getSession
-  putSession = WebdriverTestM . putSession
-
-instance WebDriver WebdriverTestM where
-  doCommand m p a = WebdriverTestM $ doCommand m p a
-
-instance IsTest (WebdriverTestM ()) where
-  type Arg1 (WebdriverTestM ()) = ()
-  type Arg2 (WebdriverTestM ()) = WebdriverTestEnv
-  runTest wdTestFunc = runTest (\() wdte -> runWebdriverTestM wdte wdTestFunc)
-
-instance IsTest (WebdriverTestM (GoldenTest a)) where
-  type Arg1 (WebdriverTestM (GoldenTest a)) = ()
-  type Arg2 (WebdriverTestM (GoldenTest a)) = WebdriverTestEnv
-  runTest wdTestFunc = runTest (\() wdte -> runWebdriverTestM wdte wdTestFunc)
-
-runWebdriverTestM :: WebdriverTestEnv -> WebdriverTestM a -> IO a
-runWebdriverTestM env (WebdriverTestM func) = WD.runSession (webdriverTestEnvConfig env) $
-  WD.finallyClose $ do
-    setImplicitWait 10_000
-    setScriptTimeout 10_000
-    setPageLoadTimeout 10_000
-    runReaderT func env
-
-openHome :: WebdriverTestM ()
+openHome :: WebdriverTestM App ()
 openHome = openRoute HomeR
 
-openRoute :: Route App -> WebdriverTestM ()
-openRoute route = openRouteWithParams route []
-
-openRouteWithParams :: Route App -> [(Text, Text)] -> WebdriverTestM ()
-openRouteWithParams route extraParams = do
-  uri <- asks webdriverTestEnvURI
-  let (pathPieces, queryParams) = Yesod.renderRoute route
-  let q = queryTextToQuery $ map (second Just) (queryParams <> extraParams)
-  let pathBS = encodePath pathPieces q
-  case TE.decodeUtf8' (LB.toStrict (BB.toLazyByteString pathBS)) of
-    Left err -> liftIO $ die $ show err
-    Right t -> openPage $ show uri <> T.unpack t
-
-driveAdvancedSearch :: QueryForm -> WebdriverTestM ()
+driveAdvancedSearch :: QueryForm -> WebdriverTestM App ()
 driveAdvancedSearch QueryForm {..} = do
   forM_ queryFormAddress $ \address -> findElem (ById "query") >>= sendKeys address
   forM_ queryFormCoordinates $ \Coordinates {..} -> do
@@ -146,7 +68,7 @@ dummyEmail = "dummy@example.com"
 dummyPassword :: Text
 dummyPassword = "dummy"
 
-driveRegister :: TestUser -> WebdriverTestM (Entity User)
+driveRegister :: TestUser -> WebdriverTestM App (Entity User)
 driveRegister TestUser {..} = do
   findElem (ById "nav-register") >>= click
   findElem (ByName "email-address") >>= sendKeys (emailAddressText testUserEmail)
@@ -158,18 +80,18 @@ driveRegister TestUser {..} = do
     Nothing -> liftIO $ expectationFailure "Should have found a user by now."
     Just userEntity -> pure userEntity
 
-driveLogin :: TestUser -> WebdriverTestM ()
+driveLogin :: TestUser -> WebdriverTestM App ()
 driveLogin TestUser {..} = do
   findElem (ById "nav-login") >>= click
   findElem (ByName "email-address") >>= sendKeys (emailAddressText testUserEmail)
   findElem (ByName "passphrase") >>= sendKeys testUserPassword
   findElem (ById "submit") >>= submit
 
-driveLogout :: WebdriverTestM ()
+driveLogout :: WebdriverTestM App ()
 driveLogout = do
   findElem (ById "nav-logout") >>= click
 
-driveDeleteAccount :: WebdriverTestM ()
+driveDeleteAccount :: WebdriverTestM App ()
 driveDeleteAccount = do
   findElem (ById "nav-account") >>= click
   findElem (ById "delete-account") >>= click
@@ -186,7 +108,7 @@ dummyOrganiserForm =
       organiserFormConsentReminder = True
     }
 
-driveSubmitOrganiser :: OrganiserForm -> WebdriverTestM ()
+driveSubmitOrganiser :: OrganiserForm -> WebdriverTestM App ()
 driveSubmitOrganiser OrganiserForm {..} = do
   findElem (ById "nav-account") >>= click
   findElem (ById "account-organiser") >>= click
@@ -195,10 +117,10 @@ driveSubmitOrganiser OrganiserForm {..} = do
   when organiserFormConsentReminder $ findElem (ByName "reminder-consent") >>= click
   findElem (ById "submit") >>= submit
 
-driveAsNewUser_ :: TestUser -> WebdriverTestM a -> WebdriverTestM a
+driveAsNewUser_ :: TestUser -> WebdriverTestM App a -> WebdriverTestM App a
 driveAsNewUser_ testUser func = driveAsNewUser testUser (\_ -> func)
 
-driveAsNewUser :: TestUser -> (Entity User -> WebdriverTestM a) -> WebdriverTestM a
+driveAsNewUser :: TestUser -> (Entity User -> WebdriverTestM App a) -> WebdriverTestM App a
 driveAsNewUser testUser func = do
   openHome
   userEntity <- driveRegister testUser
@@ -206,7 +128,7 @@ driveAsNewUser testUser func = do
   driveLogout
   pure result
 
-driveAsUser :: TestUser -> WebdriverTestM a -> WebdriverTestM a
+driveAsUser :: TestUser -> WebdriverTestM App a -> WebdriverTestM App a
 driveAsUser testUser func = do
   openHome
   driveLogin testUser
@@ -245,7 +167,7 @@ dummyAddPartyForm =
       addPartyFormPosterKey = Nothing
     }
 
-driveAddParty :: AddPartyForm -> WebdriverTestM EventUUID
+driveAddParty :: AddPartyForm -> WebdriverTestM App EventUUID
 driveAddParty AddPartyForm {..} = do
   let AddPartyForm _ _ _ _ _ _ _ _ = undefined
   findElem (ById "nav-submit") >>= click
@@ -263,27 +185,6 @@ driveAddParty AddPartyForm {..} = do
     (AccountR (AccountPartyR partyUuid)) -> pure partyUuid
     _ -> liftIO $ expectationFailure "Should have been on a party route"
 
-getCurrentRoute :: WebdriverTestM (Route App)
-getCurrentRoute = do
-  currentUrl <- getCurrentURL
-  case parseURI currentUrl of
-    Nothing -> liftIO $ expectationFailure $ "Should have been able to parse the current url into an URI: " <> currentUrl
-    Just URI {..} -> do
-      let (textPieces, query_) = HTTP.decodePath $ TE.encodeUtf8 $ T.pack $ concat [uriPath, uriQuery]
-          queryPieces = map unJust $ HTTP.queryToQueryText query_
-      case Yesod.parseRoute (textPieces, queryPieces) of
-        Nothing ->
-          liftIO $
-            expectationFailure $
-              unlines
-                [ "Should have been able to parse an App route from " <> currentUrl,
-                  ppShow (textPieces, queryPieces)
-                ]
-        Just route -> pure route
-  where
-    unJust (a, Just b) = (a, b)
-    unJust (a, Nothing) = (a, "")
-
 dummyEditPartyForm :: EditPartyForm
 dummyEditPartyForm =
   EditPartyForm
@@ -296,7 +197,7 @@ dummyEditPartyForm =
       editPartyFormPosterKey = Nothing
     }
 
-driveEditParty :: Text -> EditPartyForm -> WebdriverTestM EventUUID
+driveEditParty :: Text -> EditPartyForm -> WebdriverTestM App EventUUID
 driveEditParty title EditPartyForm {..} = do
   let EditPartyForm _ _ _ _ _ _ _ = undefined
   findElem (ById "nav-account-parties") >>= click
@@ -333,7 +234,7 @@ dummyDuplicatePartyForm =
       addPartyFormPosterKey = Nothing
     }
 
-driveDuplicateParty :: Text -> AddPartyForm -> WebdriverTestM EventUUID
+driveDuplicateParty :: Text -> AddPartyForm -> WebdriverTestM App EventUUID
 driveDuplicateParty title AddPartyForm {..} = do
   let AddPartyForm _ _ _ _ _ _ _ _ = undefined
   findElem (ById "nav-account-parties") >>= click
@@ -358,19 +259,19 @@ driveDuplicateParty title AddPartyForm {..} = do
     (AccountR (AccountPartyR partyUuid)) -> pure partyUuid
     _ -> liftIO $ expectationFailure $ "Should have been on a party route, but was: " <> show route
 
-driveCancelParty :: Text -> WebdriverTestM ()
+driveCancelParty :: Text -> WebdriverTestM App ()
 driveCancelParty title = do
   findElem (ById "nav-account-parties") >>= click
   findElem (ByLinkText title) >>= click
   findElem (ById "cancel-party") >>= click
 
-driveUnCancelParty :: Text -> WebdriverTestM ()
+driveUnCancelParty :: Text -> WebdriverTestM App ()
 driveUnCancelParty title = do
   findElem (ById "nav-account-parties") >>= click
   findElem (ByPartialLinkText title) >>= click
   findElem (ById "uncancel-party") >>= click
 
-driveDeleteParty :: Text -> WebdriverTestM ()
+driveDeleteParty :: Text -> WebdriverTestM App ()
 driveDeleteParty title = do
   findElem (ById "nav-account-parties") >>= click
   findElem (ByPartialLinkText title) >>= click
@@ -391,7 +292,7 @@ dummyAddScheduleForm =
       addScheduleFormPrice = Just "Free"
     }
 
-driveAddSchedule :: AddScheduleForm -> WebdriverTestM ScheduleUUID
+driveAddSchedule :: AddScheduleForm -> WebdriverTestM App ScheduleUUID
 driveAddSchedule AddScheduleForm {..} = do
   findElem (ById "nav-submit") >>= click
   findElem (ById "submit-schedule") >>= click
@@ -422,7 +323,7 @@ dummyEditScheduleForm =
       editScheduleFormPrice = Just "Free!!"
     }
 
-driveEditSchedule :: Text -> EditScheduleForm -> WebdriverTestM ScheduleUUID
+driveEditSchedule :: Text -> EditScheduleForm -> WebdriverTestM App ScheduleUUID
 driveEditSchedule title EditScheduleForm {..} = do
   findElem (ById "nav-account-parties") >>= click
   findElem (ByLinkText title) >>= click
@@ -448,7 +349,7 @@ driveEditSchedule title EditScheduleForm {..} = do
     (AccountR (AccountScheduleEditR partyUuid)) -> pure partyUuid
     _ -> liftIO $ expectationFailure $ "Should have been on a schedule route, but was: " <> show route
 
-driveDeleteSchedule :: Text -> WebdriverTestM ()
+driveDeleteSchedule :: Text -> WebdriverTestM App ()
 driveDeleteSchedule title = do
   findElem (ById "nav-account-parties") >>= click
   findElem (ByLinkText title) >>= click
@@ -457,86 +358,10 @@ driveDeleteSchedule title = do
   -- Wait for refresh
   waitUntil 5 $ void $ findElem (ById "account-parties-title")
 
-driveDB :: DB.SqlPersistT IO a -> WebdriverTestM a
+driveDB :: DB.SqlPersistT IO a -> WebdriverTestM App a
 driveDB func = do
   pool <- asks $ appConnectionPool . webdriverTestEnvApp
   liftIO $ DB.runSqlPool func pool
-
-type WebdriverSpec = TestDef '[SeleniumServerHandle, HTTP.Manager] WebdriverTestEnv
-
-webdriverSpec :: WebdriverSpec -> Spec
-webdriverSpec = modifyMaxSuccess (`div` 50) . yesodClientSpec . setupAroundAll seleniumServerSetupFunc . webdriverTestEnvSpec
-
-webdriverTestEnvSpec ::
-  TestDef '[SeleniumServerHandle, HTTP.Manager] WebdriverTestEnv ->
-  TestDef '[SeleniumServerHandle, HTTP.Manager] (YesodClient App)
-webdriverTestEnvSpec = setupAroundWith' go2 . setupAroundWith' go1
-  where
-    go1 :: SeleniumServerHandle -> (SeleniumServerHandle -> SetupFunc WebdriverTestEnv) -> SetupFunc WebdriverTestEnv
-    go1 ssh func = func ssh
-    go2 :: HTTP.Manager -> YesodClient App -> SetupFunc (SeleniumServerHandle -> SetupFunc WebdriverTestEnv)
-    go2 man yc = pure $ \ssh -> webdriverTestEnvSetupFunc ssh man yc
-
-webdriverTestEnvSetupFunc :: SeleniumServerHandle -> HTTP.Manager -> YesodClient App -> SetupFunc WebdriverTestEnv
-webdriverTestEnvSetupFunc SeleniumServerHandle {..} manager YesodClient {..} = do
-  chromeExecutable <- liftIO $ do
-    chromeFile <- parseRelFile "chromium"
-    mExecutable <- findExecutable chromeFile
-    case mExecutable of
-      Nothing -> die "No chromium found on PATH."
-      Just executable -> pure executable
-
-  userDataDir <- tempDirSetupFunc "chromium-user-data"
-
-  let browser =
-        chrome
-          { chromeOptions =
-              [ "--user-data-dir=" <> fromAbsDir userDataDir,
-                "--headless",
-                "--no-sandbox", -- Bypass OS security model to run on nix as well
-                "--disable-dev-shm-usage", -- Overcome limited resource problem
-                "--disable-gpu",
-                "--use-gl=angle",
-                "--use-angle=swiftshader",
-                "--window-size=1920,1080"
-              ],
-            chromeBinary = Just $ fromAbsFile chromeExecutable
-          }
-  let caps =
-        WD.defaultCaps
-          { browser = browser
-          }
-  let webdriverTestEnvConfig =
-        WD.defaultConfig
-          { wdPort = (fromIntegral :: PortNumber -> Int) seleniumServerHandlePort,
-            wdHTTPManager = Just manager,
-            wdCapabilities = caps
-          }
-  let webdriverTestEnvURI = yesodClientSiteURI
-      webdriverTestEnvApp = yesodClientSite
-  pure WebdriverTestEnv {..}
-
-seleniumServerSetupFunc :: SetupFunc SeleniumServerHandle
-seleniumServerSetupFunc = do
-  tempDir <- tempDirSetupFunc "selenium-server"
-  portInt <- liftIO getFreePort
-  let processConfig =
-        setStdout nullStream $
-          setStderr nullStream $
-            setWorkingDir (fromAbsDir tempDir) $
-              proc
-                "selenium-server"
-                [ "-port",
-                  show portInt
-                ]
-  _ <- typedProcessSetupFunc processConfig
-  liftIO $ Port.wait "127.0.0.1" portInt
-  let seleniumServerHandlePort = fromIntegral portInt
-  pure SeleniumServerHandle {..}
-
-data SeleniumServerHandle = SeleniumServerHandle
-  { seleniumServerHandlePort :: PortNumber
-  }
 
 screenSizes :: [(Word, Word)]
 screenSizes =
@@ -546,69 +371,3 @@ screenSizes =
 
 timeOverrideQueryParam :: UTCTime -> (Text, Text)
 timeOverrideQueryParam moment = (currentTimeOverrideParam, TE.decodeLatin1 $ LB.toStrict $ JSON.encode moment)
-
-data Screenshot = Screenshot
-  { screenshotFile :: !(Path Abs File),
-    screenshotImage :: !(Picture.Image PixelRGB8)
-  }
-
-pureGoldenScreenshot :: FilePath -> LB.ByteString -> GoldenTest Screenshot
-pureGoldenScreenshot fp contents =
-  GoldenTest
-    { goldenTestRead = do
-        relFile <- parseRelFile fp
-        currentDir <- getCurrentDir
-        let resolvedFile = currentDir </> relFile
-        mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile resolvedFile
-        forM mContents $ \cts -> do
-          case decodePng cts of
-            Left err -> die err
-            Right dynamicImage ->
-              pure $
-                Screenshot
-                  { screenshotFile = resolvedFile,
-                    screenshotImage = convertRGB8 dynamicImage
-                  },
-      goldenTestProduce = do
-        let sb = LB.toStrict contents
-        case decodePng sb of
-          Left err -> expectationFailure $ "Could not parse screenshot as png: " <> err
-          Right dynamicImage -> do
-            let image = convertRGB8 dynamicImage
-            relFile <- parseRelFile fp
-            tempDir <- resolveDir' "screenshot-comparison"
-            let tempFile = tempDir </> relFile
-            ensureDir $ parent tempFile
-            -- Write it to a file so we can compare it if it differs.
-            writePng (fromAbsFile tempFile) image
-            pure $
-              Screenshot
-                { screenshotFile = tempFile,
-                  screenshotImage = image
-                },
-      goldenTestWrite = \(Screenshot _ actual) -> do
-        relFile <- parseRelFile fp
-        currentDir <- getCurrentDir
-        let resolvedFile = currentDir </> relFile
-        ensureDir $ parent resolvedFile
-        writePng (fromAbsFile resolvedFile) actual,
-      goldenTestCompare = \(Screenshot actualPath actual) (Screenshot expectedPath expected) ->
-        if actual == expected
-          then Nothing
-          else
-            Just $
-              ExpectationFailed $
-                unlines
-                  [ "Screenshots differ.",
-                    "expected: " <> fromAbsFile expectedPath,
-                    "actual: " <> fromAbsFile actualPath
-                  ]
-    }
-
--- We have to override this because it returns something.
--- So we remove the 'noReturn'.
-setWindowSize :: (HasCallStack, WebDriver wd) => (Word, Word) -> wd ()
-setWindowSize (w, h) =
-  WD.ignoreReturn $
-    WD.doWinCommand methodPost currentWindow "/size" $
-      object ["width" .= w, "height" .= h]
