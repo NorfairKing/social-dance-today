@@ -13,7 +13,7 @@ extra-deps:
 - github: NorfairKing/token-limiter-concurrent
   commit: b6829d93a9daf4b9cbe73aae0edeef05597394f2
 - github: NorfairKing/looper
-  commit: e01054970b47d9eaab8b9314a1400c231ac4a960
+  commit: 2013f85daa4c1cffb895b22daa68b773c576cdb9
   subdirs:
     - looper
 - github: NorfairKing/typed-uuid
@@ -22,11 +22,11 @@ extra-deps:
     - genvalidity-typed-uuid
     - typed-uuid
 - github: NorfairKing/linkcheck
-  commit: 04168bc98011cf5c9589bc3e94086d7e72f86981
+  commit: 17758e2cd4d2433c7bc35d7df4fd07296615c91d
   subdirs:
     - linkcheck
 - github: NorfairKing/seocheck
-  commit: 499d88b40243b06cad216a492deca782738fa0b3
+  commit: 23266a7ba6af03c1ed200d62a582fdafb0cfdeaf
   subdirs:
     - seocheck
 - github: supki/envparse
@@ -34,7 +34,7 @@ extra-deps:
 - github: NorfairKing/yesod-autoreload
   commit: 7135e864c0d4a48efeae473ee2761f5168946e58
 - github: NorfairKing/validity
-  commit: 466bb2f140e62cae0d4fe3770681c3d74e99cf40
+  commit: 11126dd085148f4bf420417ca0a122d120d06ea0
   subdirs:
     - genvalidity
     - genvalidity-aeson
@@ -81,7 +81,7 @@ extra-deps:
     - safe-coloured-text
     - safe-coloured-text-terminfo
 - github: NorfairKing/sydtest
-  commit: 373a72f6763e2ebf90e6a9de137349e1568540a8
+  commit: ac99c29645bc4d1e0a0a445a2c76eaeb3fd4dee9
   subdirs:
     - sydtest
     - sydtest-aeson
@@ -91,6 +91,9 @@ extra-deps:
     - sydtest-process
     - sydtest-typed-process
     - sydtest-wai
+    - sydtest-webdriver
+    - sydtest-webdriver-screenshot
+    - sydtest-webdriver-yesod
     - sydtest-yesod
 - github: NorfairKing/yesod-static-remote
   commit: ed6bf8ef434d49b160429028613a1f6882fccfdf

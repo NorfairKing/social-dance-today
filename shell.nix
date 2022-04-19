@@ -7,7 +7,7 @@ in
 pkgs.haskell.lib.buildStackProject {
   name = "salsa-party-nix-shell";
   buildInputs = with pkgs; [
-    (import sources.niv { inherit pkgs; }).niv
+    (import sources.niv { }).niv
     bzip2
     chromedriver
     chromium
