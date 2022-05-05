@@ -12,3 +12,11 @@ CREATE TABLE "importer_metadata"("id" INTEGER PRIMARY KEY,"name" VARCHAR NOT NUL
 CREATE TABLE "external_event"("id" INTEGER PRIMARY KEY,"uuid" BLOB NOT NULL,"slug" VARCHAR NULL DEFAULT null,"key" VARCHAR NOT NULL,"title" VARCHAR NOT NULL,"description" VARCHAR NULL,"organiser" VARCHAR NULL,"day" DATE NOT NULL,"start" TIME NULL,"homepage" VARCHAR NULL,"price" VARCHAR NULL DEFAULT NULL,"cancelled" BOOLEAN NULL DEFAULT NULL,"created" TIMESTAMP NOT NULL,"modified" TIMESTAMP NULL DEFAULT NULL,"place" INTEGER NOT NULL REFERENCES "place" ON DELETE RESTRICT ON UPDATE RESTRICT,"importer" INTEGER NOT NULL REFERENCES "importer_metadata" ON DELETE RESTRICT ON UPDATE RESTRICT,"origin" VARCHAR NOT NULL,CONSTRAINT "unique_external_event_u_u_i_d" UNIQUE ("uuid"),CONSTRAINT "unique_external_event_key" UNIQUE ("importer","key"));
 CREATE TABLE "external_event_poster"("id" INTEGER PRIMARY KEY,"external_event" INTEGER NOT NULL REFERENCES "external_event" ON DELETE RESTRICT ON UPDATE RESTRICT,"image" INTEGER NOT NULL REFERENCES "image" ON DELETE RESTRICT ON UPDATE RESTRICT,"created" TIMESTAMP NOT NULL,"modified" TIMESTAMP NULL DEFAULT NULL,CONSTRAINT "unique_external_event_poster" UNIQUE ("external_event"));
 CREATE TABLE "static_map"("id" INTEGER PRIMARY KEY,"place" INTEGER NOT NULL REFERENCES "place" ON DELETE RESTRICT ON UPDATE RESTRICT,"image" INTEGER NOT NULL REFERENCES "image" ON DELETE RESTRICT ON UPDATE RESTRICT,CONSTRAINT "unique_static_map_place" UNIQUE ("place"));
+
+-- ATTENTION CODE REVIEWER
+-- If this file has been updated, please make sure to check
+-- whether this test failed before that happened:
+-- "Salsa.Party.DBSpec.Can automatically migrate from the previous database schema"
+-- If this test failed beforehand, but this golden test has
+-- been updated anyway, that means the current migration is
+-- dangerous with respect to the current database.
