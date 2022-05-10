@@ -74,7 +74,9 @@ instance Yesod App where
             Just sentrySettings -> case mCurrentRoute of
               Just (AdminR _) -> id
               _ -> (<> sentryWidget sentrySettings)
+
     let body = withSentry $ withAutoReload $(widgetFile "default-body")
+
     pageContent <- widgetToPageContent body
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
 

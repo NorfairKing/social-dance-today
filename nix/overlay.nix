@@ -81,19 +81,14 @@ in
           url = "https://browser.sentry-cdn.com/6.19.6/bundle.tracing.min.js";
           sha256 = "sha256:1wzf3l06y5xj56k5p8a0h2yzavkqpz107cxkkmyif86c2qm5sqkr";
         };
+        "static/instantpage.js" = builtins.fetchurl {
+          url = "https://instant.page/5.1.0";
+          sha256 = "sha256:03ryk64a2dxrs65fwpjy2n03nvxd68mdi414pmwd7b7k3lvk8p7s";
+        };
       };
       salsa-party-web-server-e2e = salsaPartyPkg "salsa-party-web-server-e2e";
       salsa-party-web-server-gen = salsaPartyPkg "salsa-party-web-server-gen";
-      salsa-party-web-server-webdriver = overrideCabal (salsaPartyPkg "salsa-party-web-server-webdriver") (old: {
-        preConfigure = (old.preConfigure or "") + ''
-          export FONTCONFIG_SYSROOT=${final.callPackage ./fonts-conf.nix {}}
-        '';
-        testDepends = (old.testDepends or [ ]) ++ (with final; [
-          chromedriver
-          chromium
-          selenium-server-standalone
-        ]);
-      });
+      salsa-party-web-server-webdriver = final.haskellPackages.sydtest-webdriver.enableWebdriver (salsaPartyPkg "salsa-party-web-server-webdriver");
     in
     {
       inherit salsa-party-web-server;

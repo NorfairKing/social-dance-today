@@ -31,5 +31,7 @@ $doctype 5
 
         gtag('config', '#{trackingId}');
 
+    <script src=@{StaticR instantpage_js} type="module" defer>
+
   <body>
     ^{pageBody pageContent}
