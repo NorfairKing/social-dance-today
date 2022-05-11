@@ -127,7 +127,7 @@ fetchHome = awaitForever $ \homeUrl -> do
         pure (item, mImage)
 
   lift $ logDebugN "Done loading page, getting logs"
-  yieldMany vals
+  yieldManyShuffled vals
 
 getResponseBodyFor :: Text -> WD GetResponseBodyResponse
 getResponseBodyFor requestId = do

@@ -42,7 +42,7 @@ func = do
   now <- liftIO getCurrentTime
   let (currentYear, _, _) = toGregorian $ utctDay now
   runConduit $
-    yieldMany [currentYear, succ currentYear]
+    yieldManyShuffled [currentYear, succ currentYear]
       .| C.concatMap (\y -> parseRequest ("https://www.danceplace.com/events/in/" <> show y) :: Maybe Request)
       .| doHttpRequestWith
       .| logRequestErrors
@@ -62,7 +62,7 @@ parseEventLinksFromYearPage = awaitForever $ \(_, response) -> do
               attr "href" "a"
           pure (mapMaybe maybeUtf8 refs :: [Text])
 
-  yieldMany urls
+  yieldManyShuffled urls
 
 parseEventFromPage :: HTTP.Request -> HTTP.Response LB.ByteString -> Import ()
 parseEventFromPage request response = do

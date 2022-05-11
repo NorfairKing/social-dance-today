@@ -72,7 +72,7 @@ parseCategoryUrls = awaitForever $ \(_, response) -> do
         scrapeStringLike (responseBody response) $ do
           refs <- attrs "href" "a"
           pure $ mapMaybe maybeUtf8 $ filter ("https://golatindance.com/events/category/" `LB.isPrefixOf`) refs
-  yieldMany $ mapMaybe (parseURI . T.unpack) links
+  yieldManyShuffled $ mapMaybe (parseURI . T.unpack) links
 
 -- We remove details at Jason's request, so we only link to golatindance.com
 removeDetails :: ExternalEvent -> ExternalEvent

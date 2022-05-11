@@ -49,7 +49,7 @@ latinworldNlImporter =
 func :: Import ()
 func = do
   runConduit $
-    yieldMany
+    yieldManyShuffled
       [ "https://www.latinworld.nl/salsa/agenda/",
         "https://www.latinworld.nl/bachata/agenda/",
         "https://www.latinworld.nl/kizomba/agenda/",
@@ -66,8 +66,8 @@ func = do
       .| logRequestErrors'
       .| importEventPage
 
-withPeriods :: Monad m => ConduitT a (a, Maybe Int) m ()
-withPeriods = awaitForever $ \a -> yieldMany $ map ((,) a) [Nothing, Just 1, Just 2, Just 3, Just 4]
+withPeriods :: MonadIO m => ConduitT a (a, Maybe Int) m ()
+withPeriods = awaitForever $ \a -> yieldManyShuffled $ map ((,) a) [Nothing, Just 1, Just 2, Just 3, Just 4]
 
 makeAgendaRequestForPeriod :: Monad m => ConduitT (String, Maybe Int) HTTP.Request m ()
 makeAgendaRequestForPeriod = C.concatMap $ \(url, mp) ->
@@ -87,7 +87,7 @@ parseAgendaPageUrls = awaitForever $ \(_, response) -> do
               chroot "table" $ do
                 refs <- chroots "td" $ attr "href" "a"
                 pure (mapMaybe maybeUtf8 refs :: [Text])
-  yieldMany urls
+  yieldManyShuffled urls
 
 makeEventPageRequest :: Monad m => ConduitT Text (Text, HTTP.Request) m ()
 makeEventPageRequest = C.concatMap $ \url ->

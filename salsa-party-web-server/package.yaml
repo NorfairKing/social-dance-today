@@ -52,6 +52,7 @@ library:
   - pretty-relative-time
   - pretty-show
   - random
+  - random-shuffle
   - resourcet
   - retry
   - safe

@@ -71,7 +71,7 @@ func = do
           Nothing -> pure ()
           Just danceTypes -> do
             runConduit $
-              yieldMany danceTypes
+              yieldManyShuffled danceTypes
                 .| C.concatMap (\style -> parseRequest $ baseUrl <> "/festivals/" <> T.unpack style :: Maybe Request)
                 .| doHttpRequestWith
                 .| logRequestErrors

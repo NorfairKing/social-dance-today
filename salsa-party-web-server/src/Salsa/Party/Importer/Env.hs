@@ -43,6 +43,7 @@ import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Poster
 import System.Random (randomRIO)
+import System.Random.Shuffle
 import Text.HTML.Scalpel
 import Text.Show.Pretty (pPrint, ppShow)
 import UnliftIO
@@ -540,3 +541,8 @@ parseJSONLDEvents = awaitForever $ \(request, response, value) ->
 -- We don't care about importing _too_ far ahead
 daysToImportAhead :: Integer
 daysToImportAhead = 45
+
+yieldManyShuffled :: MonadIO m => [a] -> ConduitT void a m ()
+yieldManyShuffled list = do
+  shuffledList <- liftIO $ shuffleM list
+  yieldMany shuffledList

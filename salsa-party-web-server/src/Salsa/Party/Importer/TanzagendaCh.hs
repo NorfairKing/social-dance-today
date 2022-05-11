@@ -43,21 +43,21 @@ func =
       .| logRequestErrors'
       .| parseEventPage
 
-withPages :: Monad m => ConduitT a (a, Int) m ()
+withPages :: MonadIO m => ConduitT a (a, Int) m ()
 withPages = awaitForever $ \a -> do
-  yieldMany $ map ((,) a) [0 .. 4]
+  yieldManyShuffled $ map ((,) a) [0 .. 4]
 
 makeListRequest :: (String, Int) -> Maybe Request
 makeListRequest (url, pageNum) = parseRequest $ url <> "&page=" <> show pageNum
 
-parseEventsKeys :: Monad m => ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Text m ()
+parseEventsKeys :: MonadIO m => ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Text m ()
 parseEventsKeys = awaitForever $ \(_, response) -> do
   let uris = fromMaybe [] $
         scrapeStringLike (responseBody response) $ do
           refs <- attrs "href" "a"
           let links = mapMaybe maybeUtf8 refs
           pure $ mapMaybe (T.stripPrefix "/events/") links
-  yieldMany uris
+  yieldManyShuffled uris
 
 parseEventPage :: ConduitT (Text, HTTP.Request, HTTP.Response LB.ByteString) Void Import ()
 parseEventPage = awaitForever $ \(key, request, response) -> do

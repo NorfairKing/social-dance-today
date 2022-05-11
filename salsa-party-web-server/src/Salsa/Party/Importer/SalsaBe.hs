@@ -72,7 +72,7 @@ scrapeEventLinks = awaitForever $ \(_, response) -> do
         pure $ mapMaybe maybeUtf8 $ concat refss
   forM_ mrefs $ \refs -> do
     let eventIds = mapMaybe (T.stripPrefix "event_view.php?event_id=") refs
-    yieldMany eventIds
+    yieldManyShuffled eventIds
 
 makeEventRequest :: Text -> Maybe HTTP.Request
 makeEventRequest eventId = parseRequest $ "http://www.salsa.be/vcalendar/event_view.php?event_id=" <> T.unpack eventId
