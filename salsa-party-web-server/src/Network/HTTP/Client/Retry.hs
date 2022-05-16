@@ -22,7 +22,41 @@ import Network.HTTP.Types as HTTP
 import Text.Show.Pretty
 import UnliftIO
 
-tryHttpOnce :: (MonadLogger m, MonadIO m) => RetryStatus -> HTTP.Request -> HTTP.Manager -> m (Either HttpException (HTTP.Response LB.ByteString))
+-- | Try five times:
+--
+--   *  after 1 second
+--   *  after 2 seconds
+--   *  after 4 seconds
+--   *  after 8 seconds
+--   *  after 16 seconds
+httpRetryPolicy :: RetryPolicy
+httpRetryPolicy = exponentialBackoff 1_000_000 <> limitRetries 5
+
+httpLbsWithRetry ::
+  (MonadLogger m, MonadUnliftIO m) =>
+  HTTP.Request ->
+  HTTP.Manager ->
+  m (Either HttpException (HTTP.Response LB.ByteString))
+httpLbsWithRetry request man = retrying httpRetryPolicy (\_ -> shouldRetryHttpRequest) $ \retryStatus ->
+  tryHttpOnce retryStatus request man
+    `catches` [ Handler $ \e ->
+                  pure
+                    ( Left
+                        ( HttpExceptionRequest
+                            request
+                            (InternalException (SomeException (e :: IOError)))
+                        )
+                    ),
+                Handler $ \e -> pure (Left (toHttpException request e)),
+                Handler $ \e -> pure (Left (e :: HttpException))
+              ]
+
+tryHttpOnce ::
+  (MonadLogger m, MonadIO m) =>
+  RetryStatus ->
+  HTTP.Request ->
+  HTTP.Manager ->
+  m (Either HttpException (HTTP.Response LB.ByteString))
 tryHttpOnce retryStatus request man = do
   when (rsIterNumber retryStatus > 0) $
     logWarnN $
@@ -70,20 +104,3 @@ shouldRetryHttpException exception = case exception of
       HttpZlibException _ -> True
       ConnectionClosed -> True
       _ -> False
-
--- | Try five times:
---
---   *  after 1 second
---   *  after 2 seconds
---   *  after 4 seconds
---   *  after 8 seconds
---   *  after 16 seconds
-httpRetryPolicy :: RetryPolicy
-httpRetryPolicy = exponentialBackoff 1_000_000 <> limitRetries 5
-
-httpLbsWithRetry :: (MonadLogger m, MonadUnliftIO m) => HTTP.Request -> HTTP.Manager -> m (Either HttpException (HTTP.Response LB.ByteString))
-httpLbsWithRetry request man = retrying httpRetryPolicy (\_ -> shouldRetryHttpRequest) $ \retryStatus ->
-  tryHttpOnce retryStatus request man
-    `catches` [ Handler $ \e -> pure (Left (toHttpException request e)),
-                Handler $ \e -> pure (Left (e :: HttpException))
-              ]
