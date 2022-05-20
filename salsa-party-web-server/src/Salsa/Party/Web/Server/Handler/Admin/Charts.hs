@@ -45,6 +45,14 @@ getAdminChartsR = do
 
   let dayCountMapOfTotal30Days = combineUpcomingEventsMap dayCountMapOfParties30Days dayCountMapOfExternalEvents30Days
 
+  dayCountMapOfExternalEvents7Days <- makeUpcomingEventsMapWithLimit today 7 acqExternalEventsSource $ \(Entity _ ExternalEvent {..}) ->
+    (utctDay externalEventCreated, externalEventDay)
+
+  dayCountMapOfParties7Days <- makeUpcomingEventsMapWithLimit today 7 acqPartiesSource $ \(Entity _ Party {..}) ->
+    (utctDay partyCreated, partyDay)
+
+  let dayCountMapOfTotal7Days = combineUpcomingEventsMap dayCountMapOfParties7Days dayCountMapOfExternalEvents7Days
+
   -- Users and organisers
   acqUsersSource <- runDB $ selectSourceRes [] [Asc UserId]
   dayCountOfUsers <- makeDayCountMap today acqUsersSource $ utctDay . userCreated . entityVal

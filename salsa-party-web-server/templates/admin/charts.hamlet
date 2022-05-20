@@ -16,6 +16,16 @@
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
+          ⭐ Upcoming events (7 days): ^{currentAndLastMonthCountWidget dayCountMapOfTotal7Days}
+        ^{lineChart minDay curDay [("Parties", dayCountMapOfParties7Days), ("External events", dayCountMapOfExternalEvents7Days), ("Total", dayCountMapOfTotal7Days)]}
+
+      <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
+        <h2 .title .is-4>
+          Upcoming parties (7 days): ^{currentAndLastMonthCountWidget dayCountMapOfParties7Days}
+        ^{lineChart minDay curDay [("parties", dayCountMapOfParties7Days)]}
+
+      <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
+        <h2 .title .is-4>
           Upcoming events: ^{currentAndLastMonthCountWidget dayCountMapOfTotal}
         ^{lineChart minDay curDay [("Parties", dayCountMapOfParties), ("External events", dayCountMapOfExternalEvents), ("Total", dayCountMapOfTotal)]}
 
