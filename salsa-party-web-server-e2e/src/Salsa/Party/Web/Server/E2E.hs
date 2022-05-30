@@ -43,7 +43,8 @@ spec uri = do
             LinkCheck.setFetchers = Nothing,
             LinkCheck.setExternal = False,
             LinkCheck.setCheckFragments = False,
-            LinkCheck.setMaxDepth = Just 4
+            LinkCheck.setMaxDepth = Just 4,
+            LinkCheck.setCacheSize = Nothing
           }
   sequential $
     it "passes seocheck" $ do

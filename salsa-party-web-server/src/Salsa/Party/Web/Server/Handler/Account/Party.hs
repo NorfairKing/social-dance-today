@@ -161,7 +161,8 @@ addParty organiserId AddPartyForm {..} mFileInfo = do
     -- This is really only for duplication, I think.
     Nothing -> forM_ addPartyFormPosterKey $ \posterKey -> do
       mImage <- runDB $ getBy $ UniqueImageKey posterKey
-      forM_ mImage $ \(Entity imageId _) -> -- TODO don't fetch the entire image.
+      forM_ mImage $ \(Entity imageId _) ->
+        -- TODO don't fetch the entire image.
         runDB $
           upsertBy
             (UniquePartyPoster partyId)

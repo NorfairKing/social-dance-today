@@ -21,7 +21,8 @@ spec = do
     pureGoldenJSONValueFile "test_resources/recurrence/weekly.json" $ WeeklyRecurrence Friday
   describe "nextOccurrences" $ do
     it "are always different from the current day" $
-      forAll (sized (pure . fromIntegral)) $ \limit -> -- Small limits
+      forAll (sized (pure . fromIntegral)) $ \limit ->
+        -- Small limits
         forAllValid $ \recurrence ->
           forAllValid $ \day ->
             nextOccurrences (addDays limit day) recurrence day `shouldSatisfy` all (> day)

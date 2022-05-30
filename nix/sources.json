@@ -5,10 +5,10 @@
         "homepage": "",
         "owner": "NorfairKing",
         "repo": "autodocodec",
-        "rev": "be340221275c6a26be6afe80548d2b834df0dbcf",
-        "sha256": "1inp1r8mrpczz2vjyg703f20lf5zj26vpljr3q92rdl2a9mqdb6r",
+        "rev": "38bd4865ff2dd40d342141b7fde9319f835d98c6",
+        "sha256": "1g4rjq3jb6wpk1x71d7777zhdf2bfps0l25lmw2zn3695siv5k66",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/autodocodec/archive/be340221275c6a26be6afe80548d2b834df0dbcf.tar.gz",
+        "url": "https://github.com/NorfairKing/autodocodec/archive/38bd4865ff2dd40d342141b7fde9319f835d98c6.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "gitignore": {
@@ -41,10 +41,10 @@
         "homepage": null,
         "owner": "NorfairKing",
         "repo": "linkcheck",
-        "rev": "17758e2cd4d2433c7bc35d7df4fd07296615c91d",
-        "sha256": "1gsmzp9n7q4alxfa87fn5x838fm5bbhg2rr9pm2qacz72krsxiki",
+        "rev": "40583474407492314173bf936933988923fa762e",
+        "sha256": "1yj361ymvf6hg3wk3hx8l06m53d538nd6xlbi2w4h8apimlsfx9p",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/linkcheck/archive/17758e2cd4d2433c7bc35d7df4fd07296615c91d.tar.gz",
+        "url": "https://github.com/NorfairKing/linkcheck/archive/40583474407492314173bf936933988923fa762e.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "looper": {
@@ -53,10 +53,10 @@
         "homepage": "http://hackage.haskell.org/package/looper",
         "owner": "NorfairKing",
         "repo": "looper",
-        "rev": "2013f85daa4c1cffb895b22daa68b773c576cdb9",
-        "sha256": "1d30v3nrglbqlgyclcsn4hbkmb0c6yj4f3p2wchxqdwv48idcgj3",
+        "rev": "6f7d44f563a7e21c3ca5fa24ebe01ed1665426ca",
+        "sha256": "1ar959rflmij9s9qjjb8d3s1kds5xamqn6hjymbzwf6rpkm0jhjw",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/looper/archive/2013f85daa4c1cffb895b22daa68b773c576cdb9.tar.gz",
+        "url": "https://github.com/NorfairKing/looper/archive/6f7d44f563a7e21c3ca5fa24ebe01ed1665426ca.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "niv": {
@@ -65,10 +65,10 @@
         "homepage": "https://github.com/nmattia/niv",
         "owner": "nmattia",
         "repo": "niv",
-        "rev": "df49d53b71ad5b6b5847b32e5254924d60703c46",
-        "sha256": "1j5p8mi1wi3pdcq0lfb881p97i232si07nb605dl92cjwnira88c",
+        "rev": "82e5cd1ad3c387863f0545d7591512e76ab0fc41",
+        "sha256": "090l219mzc0gi33i3psgph6s2pwsc8qy4lyrqjdj4qzkvmaj65a7",
         "type": "tarball",
-        "url": "https://github.com/nmattia/niv/archive/df49d53b71ad5b6b5847b32e5254924d60703c46.tar.gz",
+        "url": "https://github.com/nmattia/niv/archive/82e5cd1ad3c387863f0545d7591512e76ab0fc41.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs": {
@@ -77,10 +77,10 @@
         "homepage": "",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "7b38b03d76ab71bdc8dc325e3f6338d984cc35ca",
-        "sha256": "0g880gbkxf9n80pkz2nkf177naxf6n95qkca1ca7m9nk32gvki0f",
+        "rev": "cc257c49c495b2d0d7d40c5753a452d0abc8adf3",
+        "sha256": "1saxvyrcb976hhfbx8ybmgirk6ysfggjmm62cn3lvgkkl8nfgqap",
         "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/7b38b03d76ab71bdc8dc325e3f6338d984cc35ca.tar.gz",
+        "url": "https://github.com/NixOS/nixpkgs/archive/cc257c49c495b2d0d7d40c5753a452d0abc8adf3.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "pre-commit-hooks": {
@@ -89,10 +89,10 @@
         "homepage": "",
         "owner": "cachix",
         "repo": "pre-commit-hooks.nix",
-        "rev": "e5e7b3b542e7f4f96967966a943d7e1c07558042",
-        "sha256": "0gc3alsav9fb6c2nr3yc82rh3rm82dizadl8bqw43a9bp8gh0gy3",
+        "rev": "521a524771a8e93caddaa0ac1d67d03766a8b0b3",
+        "sha256": "16qfrylk41r7gc7g4352hxz7b3vk9w7bc6893apmmr6yy08ra0m9",
         "type": "tarball",
-        "url": "https://github.com/cachix/pre-commit-hooks.nix/archive/e5e7b3b542e7f4f96967966a943d7e1c07558042.tar.gz",
+        "url": "https://github.com/cachix/pre-commit-hooks.nix/archive/521a524771a8e93caddaa0ac1d67d03766a8b0b3.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "pretty-relative-time": {
@@ -113,10 +113,10 @@
         "homepage": "https://cs-syd.eu/posts/2021-03-07-safe-coloured-text",
         "owner": "NorfairKing",
         "repo": "safe-coloured-text",
-        "rev": "f30fe0e4d2a0fa036967ffe17538b60e5f9861f5",
-        "sha256": "0lgq503wa3ws5cci82kmaz4ws6bl9fz11i73kkqmmrldsr0gsvs0",
+        "rev": "71c5940a3b84eeb498304d8e584e7638f875d51b",
+        "sha256": "05lw5xxwzikricmkpbxf04rk2ikak05wwbihqy6dql7mckavfyda",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/safe-coloured-text/archive/f30fe0e4d2a0fa036967ffe17538b60e5f9861f5.tar.gz",
+        "url": "https://github.com/NorfairKing/safe-coloured-text/archive/71c5940a3b84eeb498304d8e584e7638f875d51b.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "seocheck": {
@@ -125,10 +125,10 @@
         "homepage": null,
         "owner": "NorfairKing",
         "repo": "seocheck",
-        "rev": "23266a7ba6af03c1ed200d62a582fdafb0cfdeaf",
-        "sha256": "1ja5hshw9f67x06qjjf128ssvqmip4j1g5y26gmjgax1ks07qm44",
+        "rev": "9784aaab22aca7979800b9daf7a2293df7533858",
+        "sha256": "00d7aqahf7swygh5hgafpv6lgab9xnhj2mc4rm3smn6frvnwxm8g",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/seocheck/archive/23266a7ba6af03c1ed200d62a582fdafb0cfdeaf.tar.gz",
+        "url": "https://github.com/NorfairKing/seocheck/archive/9784aaab22aca7979800b9daf7a2293df7533858.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "sydtest": {
@@ -137,10 +137,10 @@
         "homepage": "",
         "owner": "NorfairKing",
         "repo": "sydtest",
-        "rev": "e55fad0f6b8058a9b44c6c0d66bdd3c3be556d71",
-        "sha256": "0421z6159zm8bdsadlzgnv1jpgw0p3qpp24j2bqsg4fycsf1vsdk",
+        "rev": "7e30853ff89503968165d4ebb9c3d42f005a1975",
+        "sha256": "0ssbvj0fdsbw07s8wmlxdaiv94z4ykf8daz1f9432y1sqff24mhp",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/sydtest/archive/e55fad0f6b8058a9b44c6c0d66bdd3c3be556d71.tar.gz",
+        "url": "https://github.com/NorfairKing/sydtest/archive/7e30853ff89503968165d4ebb9c3d42f005a1975.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "token-limiter-concurrent": {
@@ -173,10 +173,10 @@
         "homepage": "https://www.youtube.com/watch?v=eIs9qNh17SM",
         "owner": "NorfairKing",
         "repo": "validity",
-        "rev": "11126dd085148f4bf420417ca0a122d120d06ea0",
-        "sha256": "1ijh6lw0pmrgv6za4z741ddiypgch3079ij3wa1yh94ba8s3rafw",
+        "rev": "160e846cc5de8e92e6758172da341f5d81fe0374",
+        "sha256": "03a4s2gq1mjjd452xbhs0h1iycjpdidxprpvjiwy55hx0lzqfpli",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/validity/archive/11126dd085148f4bf420417ca0a122d120d06ea0.tar.gz",
+        "url": "https://github.com/NorfairKing/validity/archive/160e846cc5de8e92e6758172da341f5d81fe0374.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "yesod-autoreload": {

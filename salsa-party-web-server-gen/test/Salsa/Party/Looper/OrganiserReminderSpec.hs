@@ -38,7 +38,7 @@ spec = do
                   userId <- insert user
                   organiserId <- insert $ organiserPrototype {organiserUser = userId}
                   now <- liftIO getCurrentTime
-                  let tooRecently = addUTCTime (- notEnoughTime) now
+                  let tooRecently = addUTCTime (-notEnoughTime) now
                   let organiserReminder =
                         organiserReminderPrototype
                           { organiserReminderConsent = True,
@@ -60,7 +60,7 @@ spec = do
                     userId <- insert user
                     organiserId <- insert $ organiserPrototype {organiserUser = userId}
                     now <- liftIO getCurrentTime
-                    let tooRecentDay = addDays (- notEnoughDays) (utctDay now)
+                    let tooRecentDay = addDays (-notEnoughDays) (utctDay now)
                     insert_ $
                       partyPrototype
                         { partyOrganiser = organiserId,
@@ -104,7 +104,7 @@ spec = do
               forAllValid $ \organiserReminderPrototype ->
                 runPersistentTest pool $ do
                   now <- liftIO getCurrentTime
-                  let created = addUTCTime (- notLongEnough) now
+                  let created = addUTCTime (-notLongEnough) now
                   let user = userPrototype {userCreated = created, userVerificationKey = Nothing}
                   userId <- insert user
                   organiserId <- insert $ organiserPrototype {organiserUser = userId}
@@ -126,7 +126,7 @@ spec = do
               forAllValid $ \organiserReminderPrototype ->
                 runPersistentTest pool $ do
                   now <- liftIO getCurrentTime
-                  let created = addUTCTime (- longEnough) now
+                  let created = addUTCTime (-longEnough) now
                   let user = userPrototype {userCreated = created, userVerificationKey = Nothing}
                   userId <- insert user
                   organiserId <- insert $ organiserPrototype {organiserUser = userId}

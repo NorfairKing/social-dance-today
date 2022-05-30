@@ -138,7 +138,7 @@ makeUpcomingEventsMapWithLimit today limit source func =
 
 addToUpcomingEventsMapWithLimit :: Day -> Integer -> Map Day Word64 -> Day -> Day -> Map Day Word64
 addToUpcomingEventsMapWithLimit today limit m created scheduled =
-  let days = [max created (addDays (- limit) scheduled) .. min today scheduled]
+  let days = [max created (addDays (-limit) scheduled) .. min today scheduled]
       mapOfOnes = M.fromAscList $ map (\d -> (d, 1)) days
    in M.unionWith (+) mapOfOnes m
 

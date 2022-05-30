@@ -258,8 +258,8 @@ searchResultsPage searchParameters@SearchParameters {..} = do
 
   -- Resolve end day
   let end = case searchParameterDate of
-        SearchFromToday -> addDays (defaultDaysAhead -1) today
-        SearchFromOn day -> addDays (defaultDaysAhead -1) day
+        SearchFromToday -> addDays (defaultDaysAhead - 1) today
+        SearchFromOn day -> addDays (defaultDaysAhead - 1) day
         SearchFromTo _ day -> day
         SearchExactlyOn day -> day
 

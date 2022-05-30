@@ -274,20 +274,20 @@ autoDayMsg today day =
           -5 -> MsgDay5DaysAgo
           -6 -> MsgDay6DaysAgo
           i
-            | i > (- 2 * 7) -> MsgDay1WeekAgo
-            | i > (- 3 * 7) -> MsgDay2WeeksAgo
-            | i > (- 4 * 7) -> MsgDay3WeeksAgo
-            | i > (- 1 * 30) -> MsgDay4WeeksAgo
-            | i > (- 2 * 30) -> MsgDay1MonthAgo
-            | i > (- 3 * 30) -> MsgDay2MonthsAgo
-            | i > (- 4 * 30) -> MsgDay3MonthsAgo
-            | i > (- 5 * 30) -> MsgDay4MonthsAgo
-            | i > (- 6 * 30) -> MsgDay5MonthsAgo
-            | i > (- 7 * 30) -> MsgDay6MonthsAgo
-            | i > (- 8 * 30) -> MsgDay7MonthsAgo
-            | i > (- 9 * 30) -> MsgDay8MonthsAgo
-            | i > (- 10 * 30) -> MsgDay9MonthsAgo
-            | i > (- 11 * 30) -> MsgDay10MonthsAgo
+            | i > (-2 * 7) -> MsgDay1WeekAgo
+            | i > (-3 * 7) -> MsgDay2WeeksAgo
+            | i > (-4 * 7) -> MsgDay3WeeksAgo
+            | i > (-1 * 30) -> MsgDay4WeeksAgo
+            | i > (-2 * 30) -> MsgDay1MonthAgo
+            | i > (-3 * 30) -> MsgDay2MonthsAgo
+            | i > (-4 * 30) -> MsgDay3MonthsAgo
+            | i > (-5 * 30) -> MsgDay4MonthsAgo
+            | i > (-6 * 30) -> MsgDay5MonthsAgo
+            | i > (-7 * 30) -> MsgDay6MonthsAgo
+            | i > (-8 * 30) -> MsgDay7MonthsAgo
+            | i > (-9 * 30) -> MsgDay8MonthsAgo
+            | i > (-10 * 30) -> MsgDay9MonthsAgo
+            | i > (-11 * 30) -> MsgDay10MonthsAgo
             | i > -365 -> MsgDay11MonthsAgo
             | otherwise -> MsgDayMoreThanAYearAgo
         GT -> case d of

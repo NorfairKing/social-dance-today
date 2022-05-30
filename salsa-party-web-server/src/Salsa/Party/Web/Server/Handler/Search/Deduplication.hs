@@ -54,8 +54,8 @@ findDel predicate = go
     go (a : as)
       | predicate a = Just (a, as)
       | otherwise = do
-        (f, rest) <- go as
-        pure (f, a : rest)
+          (f, rest) <- go as
+          pure (f, a : rest)
 
 externalEventIsSimilarEnoughTo :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Bool
 externalEventIsSimilarEnoughTo trip1 trip2 = similarEnough 0.748 $ computeSimilarityFormula $ similarityScoreExternalToExternal trip1 trip2

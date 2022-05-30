@@ -13,7 +13,7 @@ extra-deps:
 - github: NorfairKing/token-limiter-concurrent
   commit: b6829d93a9daf4b9cbe73aae0edeef05597394f2
 - github: NorfairKing/looper
-  commit: 2013f85daa4c1cffb895b22daa68b773c576cdb9
+  commit: 6f7d44f563a7e21c3ca5fa24ebe01ed1665426ca
   subdirs:
     - looper
 - github: NorfairKing/typed-uuid
@@ -22,11 +22,11 @@ extra-deps:
     - genvalidity-typed-uuid
     - typed-uuid
 - github: NorfairKing/linkcheck
-  commit: 17758e2cd4d2433c7bc35d7df4fd07296615c91d
+  commit: 40583474407492314173bf936933988923fa762e
   subdirs:
     - linkcheck
 - github: NorfairKing/seocheck
-  commit: 23266a7ba6af03c1ed200d62a582fdafb0cfdeaf
+  commit: 9784aaab22aca7979800b9daf7a2293df7533858
   subdirs:
     - seocheck
 - github: supki/envparse
@@ -34,7 +34,7 @@ extra-deps:
 - github: NorfairKing/yesod-autoreload
   commit: 7135e864c0d4a48efeae473ee2761f5168946e58
 - github: NorfairKing/validity
-  commit: 11126dd085148f4bf420417ca0a122d120d06ea0
+  commit: 160e846cc5de8e92e6758172da341f5d81fe0374
   subdirs:
     - genvalidity
     - genvalidity-aeson
@@ -76,12 +76,12 @@ extra-deps:
     - validity-uuid
     - validity-vector
 - github: NorfairKing/safe-coloured-text
-  commit: f30fe0e4d2a0fa036967ffe17538b60e5f9861f5
+  commit: 71c5940a3b84eeb498304d8e584e7638f875d51b
   subdirs:
     - safe-coloured-text
     - safe-coloured-text-terminfo
 - github: NorfairKing/sydtest
-  commit: e55fad0f6b8058a9b44c6c0d66bdd3c3be556d71
+  commit: 7e30853ff89503968165d4ebb9c3d42f005a1975
   subdirs:
     - sydtest
     - sydtest-aeson
@@ -102,7 +102,7 @@ extra-deps:
   commit: e08c16dceaab4d15b0f00860512018bc64791f07
 
 - github: NorfairKing/autodocodec
-  commit: d269215812a8641f143ee96163b980db47a55c2c
+  commit: 38bd4865ff2dd40d342141b7fde9319f835d98c6
   subdirs:
     - autodocodec
     - autodocodec-schema
