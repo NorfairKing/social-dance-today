@@ -97,6 +97,11 @@ in
       inherit salsa-party-web-server-webdriver;
     };
 
+  salsaPartyHoogle = final.buildEnv {
+    name = "hoogle";
+    paths = [ (final.haskellPackages.ghcWithHoogle (_: final.lib.attrValues final.salsaPartyPackages)) ];
+  };
+
   salsaPartyReleasePackages = mapAttrs (_: pkg: justStaticExecutables (doCheck pkg)) final.salsaPartyPackages;
 
   salsaPartyRelease = final.symlinkJoin {
