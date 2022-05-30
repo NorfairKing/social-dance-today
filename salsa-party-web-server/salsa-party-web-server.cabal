@@ -109,6 +109,7 @@ library
       Salsa.Party.Web.Server.Handler.Search.Deduplication
       Salsa.Party.Web.Server.Handler.Search.Query
       Salsa.Party.Web.Server.Handler.Search.Scoring
+      Salsa.Party.Web.Server.Handler.Search.Types
       Salsa.Party.Web.Server.Handler.Sitemap
       Salsa.Party.Web.Server.Handler.StaticMap
       Salsa.Party.Web.Server.Poster
@@ -135,6 +136,7 @@ library
     , base64-bytestring
     , blaze-html
     , bytestring
+    , cache
     , case-insensitive
     , conduit
     , containers

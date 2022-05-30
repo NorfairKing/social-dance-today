@@ -16,6 +16,7 @@ import Safe
 import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Query
+import Salsa.Party.Web.Server.Handler.Search.Types
 
 getExploreR :: Handler Html
 getExploreR = do

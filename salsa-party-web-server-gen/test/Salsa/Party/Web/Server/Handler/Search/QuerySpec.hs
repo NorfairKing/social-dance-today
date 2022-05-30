@@ -10,6 +10,7 @@ import qualified Database.Esqueleto.Legacy as E
 import qualified Database.Persist as DB
 import qualified Database.Persist.Sql as DB
 import Salsa.Party.Web.Server.Handler.Search.Query
+import Salsa.Party.Web.Server.Handler.Search.Types
 import Salsa.Party.Web.Server.Handler.TestImport
 import Test.Syd.Persistent
 

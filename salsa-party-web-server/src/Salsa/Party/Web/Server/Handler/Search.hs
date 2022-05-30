@@ -24,6 +24,7 @@ import qualified Data.Text as T
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Query
+import Salsa.Party.Web.Server.Handler.Search.Types
 
 getAdvancedSearchR :: Handler Html
 getAdvancedSearchR = withNavBar $ do

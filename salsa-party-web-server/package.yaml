@@ -19,6 +19,7 @@ library:
   - base64-bytestring
   - blaze-html
   - bytestring
+  - cache
   - case-insensitive
   - conduit
   - containers

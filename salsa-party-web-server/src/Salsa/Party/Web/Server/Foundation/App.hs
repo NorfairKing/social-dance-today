@@ -2,6 +2,7 @@ module Salsa.Party.Web.Server.Foundation.App where
 
 import Control.Concurrent.TokenLimiter.Concurrent
 import Control.Monad.Logger
+import Data.Cache
 import Data.Text (Text)
 import Data.Validity.Text ()
 import Data.Validity.Time ()
@@ -10,6 +11,7 @@ import Network.HTTP.Client as HTTP
 import Path
 import Salsa.Party.DB
 import Salsa.Party.OptParse
+import Salsa.Party.Web.Server.Handler.Search.Types
 import Yesod.EmbeddedStatic (EmbeddedStatic)
 
 data App = App
@@ -22,6 +24,7 @@ data App = App
     appSessionKeyFile :: !(Path Abs File),
     appSendEmails :: !Bool,
     appSendAddress :: !(Maybe Text),
+    appSearchCache :: !(Cache SearchQuery SearchResult),
     appAdmin :: !(Maybe EmailAddress),
     appOSMRateLimiter :: !(Maybe TokenLimiter), -- Nothing means disabled.
     appSentrySettings :: !(Maybe SentrySettings), -- Nothing means disabled.

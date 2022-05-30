@@ -12,6 +12,7 @@ import Control.Monad.Logger
 import Control.Monad.Reader
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
+import Data.Cache
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
@@ -52,6 +53,8 @@ serverSetupFunc man = do
   tdir <- tempDirSetupFunc "salsa"
   pool <- salsaConnectionPoolSetupFunc
   sessionKeyFile <- resolveFile tdir "session-key.aes"
+  searchResultCache <- liftIO $ newCache Nothing
+
   pure
     App
       { appRoot = Nothing,
@@ -63,6 +66,7 @@ serverSetupFunc man = do
         appSessionKeyFile = sessionKeyFile,
         appSendEmails = False,
         appSendAddress = Nothing,
+        appSearchCache = searchResultCache,
         appAdmin = Just adminEmail,
         appOSMRateLimiter = Nothing,
         appSentrySettings = Nothing,

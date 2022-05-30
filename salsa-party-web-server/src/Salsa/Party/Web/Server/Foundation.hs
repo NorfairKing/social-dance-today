@@ -59,9 +59,6 @@ getFaviconR = redirect $ StaticR favicon_ico
 instance Validity Textarea where
   validate = validate . unTextarea
 
-placeCoordinates :: Place -> Coordinates
-placeCoordinates Place {..} = Coordinates {coordinatesLat = placeLat, coordinatesLon = placeLon}
-
 insertPlace_ :: MonadIO m => Text -> Coordinates -> SqlPersistT m ()
 insertPlace_ address coordinates = void $ insertPlace address coordinates
 

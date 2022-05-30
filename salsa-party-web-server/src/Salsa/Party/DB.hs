@@ -421,3 +421,6 @@ normaliseDescription = normaliseNewlines . T.strip
 
 normaliseNewlines :: Text -> Text
 normaliseNewlines = T.replace "\r\n" "\n"
+
+placeCoordinates :: Place -> Coordinates
+placeCoordinates Place {..} = Coordinates {coordinatesLat = placeLat, coordinatesLon = placeLon}

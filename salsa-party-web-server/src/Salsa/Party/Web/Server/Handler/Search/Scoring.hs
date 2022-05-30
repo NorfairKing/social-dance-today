@@ -4,8 +4,10 @@ module Salsa.Party.Web.Server.Handler.Search.Scoring where
 
 import Data.Char as Char
 import Data.Foldable
+import Data.Text (Text)
 import qualified Data.Text as T
-import Salsa.Party.Web.Server.Handler.Import
+import Database.Persist
+import Salsa.Party.DB
 
 scoreExternalEventTrip :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Double
 scoreExternalEventTrip (Entity _ externalEvent, Entity _ place, mPoster) =

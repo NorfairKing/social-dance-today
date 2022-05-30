@@ -7,6 +7,7 @@ import Control.Concurrent.TokenLimiter.Concurrent
 import Control.Monad
 import Control.Monad.Logger
 import qualified Data.ByteString as SB
+import Data.Cache
 import qualified Data.Text as T
 import Database.Persist.Sqlite
 import Lens.Micro
@@ -45,6 +46,7 @@ runSalsaPartyServer settings@Settings {..} = do
         sessionKeyFile <- resolveFile' "client_session_key.aes"
         man <- HTTP.newTlsManager
         rateLimiter <- liftIO $ makeTokenLimiter OSM.tokenLimitConfig
+        searchResultCache <- liftIO $ newCache Nothing
 
         let app =
               App
@@ -57,6 +59,7 @@ runSalsaPartyServer settings@Settings {..} = do
                   appSessionKeyFile = sessionKeyFile,
                   appSendEmails = settingSendEmails,
                   appSendAddress = settingSendAddress,
+                  appSearchCache = searchResultCache,
                   appAdmin = settingAdmin,
                   appOSMRateLimiter = do
                     guard settingEnableOSMGeocoding
