@@ -2,10 +2,7 @@ module Salsa.Party.Web.Server.Foundation.App where
 
 import Control.Concurrent.TokenLimiter.Concurrent
 import Control.Monad.Logger
-import Data.Cache
-import Data.Map (Map)
 import Data.Text (Text)
-import Data.Time
 import Data.Validity.Text ()
 import Data.Validity.Time ()
 import Database.Persist.Sql
