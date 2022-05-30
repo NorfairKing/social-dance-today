@@ -15,7 +15,7 @@ runPartyGarbageCollector :: App -> LoggingT IO ()
 runPartyGarbageCollector App {..} = do
   let runDBHere func = runSqlPool (retryOnBusy func) appConnectionPool
   today <- liftIO $ utctDay <$> getCurrentTime
-  let aMonthAgo = addDays (- daysToKeepParties) today
+  let aMonthAgo = addDays (-daysToKeepParties) today
   acqKeysSource <- runDBHere $ selectKeysRes [ExternalEventDay <=. aMonthAgo] [Asc ExternalEventId]
   withAcquire acqKeysSource $ \keysSource ->
     runConduit $ keysSource .| C.mapM_ (runDBHere . garbageCollectExternalEvent)

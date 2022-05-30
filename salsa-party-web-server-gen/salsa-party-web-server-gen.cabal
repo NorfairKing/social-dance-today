@@ -181,9 +181,11 @@ benchmark smos-api-bench
   build-depends:
       QuickCheck
     , base >=4.7 && <5
+    , cache
     , criterion
     , genvalidity
     , genvalidity-criterion
+    , monad-logger
     , persistent
     , salsa-party-web-server
     , salsa-party-web-server-gen

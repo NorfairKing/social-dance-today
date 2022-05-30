@@ -6,8 +6,8 @@
     <div .columns .is-multiline .is-centered>
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
-          ⭐ Upcoming events (30 days): ^{currentAndLastMonthCountWidget dayCountMapOfTotal30Days}
-        ^{lineChart minDay curDay [("Parties", dayCountMapOfParties30Days), ("External events", dayCountMapOfExternalEvents30Days), ("Total", dayCountMapOfTotal30Days)]}
+          Upcoming events (30 days): ^{currentAndLastMonthCountWidget dayCountMapOfTotal30Days}
+        ^{lineChart minPartyDay curDay [("Parties", dayCountMapOfParties30Days), ("External events", dayCountMapOfExternalEvents30Days), ("Total", dayCountMapOfTotal30Days)]}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
@@ -17,7 +17,7 @@
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
           ⭐ Upcoming events (7 days): ^{currentAndLastMonthCountWidget dayCountMapOfTotal7Days}
-        ^{lineChart minDay curDay [("Parties", dayCountMapOfParties7Days), ("External events", dayCountMapOfExternalEvents7Days), ("Total", dayCountMapOfTotal7Days)]}
+        ^{lineChart minPartyDay curDay [("Parties", dayCountMapOfParties7Days), ("External events", dayCountMapOfExternalEvents7Days), ("Total", dayCountMapOfTotal7Days)]}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
@@ -27,7 +27,7 @@
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
           Upcoming events: ^{currentAndLastMonthCountWidget dayCountMapOfTotal}
-        ^{lineChart minDay curDay [("Parties", dayCountMapOfParties), ("External events", dayCountMapOfExternalEvents), ("Total", dayCountMapOfTotal)]}
+        ^{lineChart minPartyDay curDay [("Parties", dayCountMapOfParties), ("External events", dayCountMapOfExternalEvents), ("Total", dayCountMapOfTotal)]}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
@@ -42,4 +42,4 @@
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
           Parties per day: ^{currentAndLastMonthCountWidget eventsPerDayMap}
-        ^{barChart minDay maxDay [("Parties", partiesPerDayMap),("External Events", externalEventsPerDayMap)]}
+        ^{barChart minPartyDay curDay [("Parties", partiesPerDayMap),("External Events", externalEventsPerDayMap)]}

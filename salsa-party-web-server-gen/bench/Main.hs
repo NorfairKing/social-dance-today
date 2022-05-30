@@ -5,16 +5,18 @@
 module Main where
 
 import Control.Monad
+import Control.Monad.Logger
 import Criterion.Main as Criterion
+import Data.Cache (newCache)
 import Data.GenValidity
 import Data.Time
 import Database.Persist
 import Database.Persist.Sql
 import Salsa.Party.DB
 import Salsa.Party.DB.Migration
-import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Gen
 import Salsa.Party.Web.Server.Handler.Search.Query
+import Salsa.Party.Web.Server.Handler.Search.Types
 import Salsa.Party.Web.Server.TestUtils
 import Test.QuickCheck
 import Test.QuickCheck.Gen
@@ -22,12 +24,13 @@ import Test.QuickCheck.Random
 import Test.Syd
 
 main :: IO ()
-main = unSetupFunc salsaConnectionPoolSetupFunc $ \pool ->
-  Criterion.defaultMain
-    [ env
-        (setupSearchData pool)
-        (doSearchAtBenchmark pool)
-    ]
+main =
+  unSetupFunc salsaConnectionPoolSetupFunc $ \pool ->
+    Criterion.defaultMain
+      [ env
+          (setupSearchData pool)
+          (doSearchAtBenchmark pool)
+      ]
 
 runGen :: Gen a -> a
 runGen (MkGen func) = func qcGen 30
@@ -118,7 +121,10 @@ genDay :: Gen Day
 genDay = fromGregorian 2021 <$> choose (1, 12) <*> choose (1, 31)
 
 doSearchAtBenchmark :: ConnectionPool -> [SearchQuery] -> Benchmark
-doSearchAtBenchmark pool query = bench "search" $ whnfIO $ doSearchAt pool query
+doSearchAtBenchmark pool query = bench "search" $
+  whnfIO $ do
+    cache <- newCache Nothing
+    doSearchAt cache pool query
 
-doSearchAt :: ConnectionPool -> [SearchQuery] -> IO [SearchResult]
-doSearchAt pool queries = runSqlPool (mapM runSearchQuery queries) pool
+doSearchAt :: SearchResultCache -> ConnectionPool -> [SearchQuery] -> IO [SearchResult]
+doSearchAt cache pool queries = runNoLoggingT $ runSqlPool (mapM (runSearchQuery cache) queries) pool

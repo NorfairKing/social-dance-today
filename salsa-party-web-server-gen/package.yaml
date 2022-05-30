@@ -63,9 +63,11 @@ benchmarks:
     - -Wall
     dependencies:
     - QuickCheck
+    - cache
     - criterion
     - genvalidity
     - genvalidity-criterion
+    - monad-logger
     - persistent
     - salsa-party-web-server
     - salsa-party-web-server-gen
