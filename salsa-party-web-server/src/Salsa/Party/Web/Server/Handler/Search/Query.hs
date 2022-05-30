@@ -8,7 +8,7 @@ module Salsa.Party.Web.Server.Handler.Search.Query where
 
 import Control.Monad
 import Control.Monad.IO.Class
-import Data.Cache
+import qualified Data.Cache as Cache
 import Data.List
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
@@ -21,6 +21,7 @@ import Salsa.Party.DB
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Deduplication
 import Salsa.Party.Web.Server.Handler.Search.Types
+import qualified System.Clock as TimeSpec
 
 runSearchQuery :: MonadIO m => SearchResultCache -> SearchQuery -> SqlPersistT m SearchResult
 runSearchQuery searchResultCache searchQuery@SearchQuery {..} = do
@@ -40,7 +41,14 @@ runSearchQuery searchResultCache searchQuery@SearchQuery {..} = do
 -- day sorted by distance, and with external parties at the end in any case.
 runSearchQueryForResults :: MonadIO m => SearchResultCache -> SearchQuery -> SqlPersistT m (Map Day [Result])
 runSearchQueryForResults searchResultCache searchQuery = do
-  runUncachedSearchQueryForResults searchQuery
+  mResults <- liftIO $ Cache.lookup searchResultCache searchQuery
+  case mResults of
+    Just results -> pure results
+    Nothing -> do
+      results <- runUncachedSearchQueryForResults searchQuery
+      let anHour = TimeSpec.fromNanoSecs $ 60 * 60 * 1_000_000_000
+      liftIO $ Cache.insert' searchResultCache (Just anHour) searchQuery results
+      pure results
 
 runUncachedSearchQueryForResults :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
 runUncachedSearchQueryForResults SearchQuery {..} = do
@@ -258,7 +266,7 @@ makeGroupedByDay = foldr go M.empty -- This could be falter with a fold
 
 -- TODO this can be optimised
 -- We can probably use a count query, and there's definitely no need to fetch the posters for example
-noDataQuery :: MonadIO m => Cache SearchQuery (Map Day [Result]) -> Coordinates -> Word -> SqlPersistT m Bool -- True means no data
+noDataQuery :: MonadIO m => SearchResultCache -> Coordinates -> Word -> SqlPersistT m Bool -- True means no data
 noDataQuery searchResultCache coordinates maximumDistance = do
   today <- liftIO $ utctDay <$> getCurrentTime
   nullSearchResults

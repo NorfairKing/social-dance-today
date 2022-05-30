@@ -49,6 +49,7 @@ import Control.Arrow (left)
 import Control.DeepSeq
 import Data.Aeson as JSON
 import Data.Fixed
+import Data.Hashable
 import Data.Int
 import Data.List
 import Data.Proxy
@@ -83,6 +84,8 @@ newtype Coord = Coord {unCoord :: Int64}
   deriving (Eq, Ord, Generic)
 
 instance Validity Coord
+
+instance Hashable Coord
 
 instance NFData Coord
 
@@ -151,6 +154,8 @@ instance Validity Latitude where
         declare ("Is 90 or less: " <> show unLatitude) $ lat <= maxBound
       ]
 
+instance Hashable Latitude
+
 instance NFData Latitude
 
 instance Show Latitude where
@@ -209,6 +214,8 @@ instance Validity Longitude where
         declare ("Is 180 or less: " <> show unLongitude) $ lon <= maxBound
       ]
 
+instance Hashable Longitude
+
 instance NFData Longitude
 
 instance Show Longitude where
@@ -248,6 +255,8 @@ data Coordinates = Coordinates
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity Coordinates
+
+instance Hashable Coordinates
 
 instance NFData Coordinates
 
