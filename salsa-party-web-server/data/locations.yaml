@@ -15,6 +15,9 @@
 - query: "Lucerne"
   lat: 47.090820700
   lon: 8.171961100
+- query: "Basel"
+  lat: 47.55810
+  lon: 7.58782
   ## Belgium
 - query: "Brussels"
   lat: 50.843670900
