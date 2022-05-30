@@ -48,6 +48,7 @@ library
       Salsa.Party.Looper.ImageGarbageCollector
       Salsa.Party.Looper.Import
       Salsa.Party.Looper.OrganiserReminder
+      Salsa.Party.Looper.PartyGarbageCollector
       Salsa.Party.Looper.PartyScheduler
       Salsa.Party.OptParse
       Salsa.Party.Server
