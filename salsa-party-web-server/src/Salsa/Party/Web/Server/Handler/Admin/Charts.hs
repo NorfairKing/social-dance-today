@@ -19,6 +19,7 @@ import qualified Data.Map.Strict as M
 import Data.Word
 import Safe
 import Salsa.Party.Web.Server.Handler.Import
+import Salsa.Party.Web.Server.Handler.Search
 import Text.Julius
 import Text.Printf
 
@@ -65,6 +66,7 @@ getAdminChartsR = do
   let eventsPerDayMap = M.unionWith (+) partiesPerDayMap externalEventsPerDayMap
 
   let minDay = fromMaybe today $ minimumMay $ map fst $ mapMaybe M.lookupMin [dayCountMapOfExternalEvents, dayCountMapOfParties]
+      minPartyDay = addDays (- daysToKeepParties) today
       curDay = today
       maxDay = addDays 30 today
 

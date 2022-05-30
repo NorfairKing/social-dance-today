@@ -5,6 +5,14 @@ const data#{rawJS classIdent} = {
 const config#{rawJS classIdent} = {
   type: 'line',
   data: data#{rawJS classIdent},
+  options: {
+    indexAxis: 'x',
+    scales: {
+      y: {
+        beginAtZero: true
+      }
+    }
+  }
 };
 
 var ctx#{rawJS classIdent} = document.getElementById(#{classIdent});
