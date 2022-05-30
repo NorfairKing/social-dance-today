@@ -33,6 +33,7 @@ completeServerMigration quiet = do
             )
   logInfoN "Autmatic migrations done, starting application-specific migrations."
   setUpPlaces
+  setUpIndices
   logInfoN "Migrations done."
 
 data Location = Location
@@ -71,3 +72,18 @@ locations =
 
 locationsFileContents :: ByteString
 locationsFileContents = $(makeRelativeToProject "data/locations.yaml" >>= embedFile)
+
+setUpIndices :: MonadIO m => SqlPersistT m ()
+setUpIndices = do
+  -- Place indices
+  rawExecute "CREATE INDEX IF NOT EXISTS place_lat ON place (lat)" []
+  rawExecute "CREATE INDEX IF NOT EXISTS place_lon ON place (lon)" []
+  rawExecute "CREATE INDEX IF NOT EXISTS place_location ON place (lat, lon)" []
+  -- Party indices
+  rawExecute "CREATE UNIQUE INDEX IF NOT EXISTS party_uuid ON party (uuid)" []
+  rawExecute "CREATE INDEX IF NOT EXISTS party_day ON party (day)" []
+  rawExecute "CREATE INDEX IF NOT EXISTS party_place ON party (day)" []
+  -- External event indices
+  rawExecute "CREATE UNIQUE INDEX IF NOT EXISTS external_event_uuid ON external_event (uuid)" []
+  rawExecute "CREATE INDEX IF NOT EXISTS external_event_day ON external_event (day)" []
+  rawExecute "CREATE INDEX IF NOT EXISTS external_event_place ON external_event (place)" []
