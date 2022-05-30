@@ -8,11 +8,13 @@ module Salsa.Party.Web.Server.Handler.Search.Query where
 
 import Control.Monad
 import Control.Monad.IO.Class
+import Control.Monad.Logger
 import qualified Data.Cache as Cache
 import Data.List
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import Data.Ord
+import qualified Data.Text as T
 import Data.Time
 import qualified Database.Esqueleto.Legacy as E
 import Database.Persist
@@ -21,9 +23,10 @@ import Salsa.Party.DB
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Deduplication
 import Salsa.Party.Web.Server.Handler.Search.Types
+import System.Clock (TimeSpec)
 import qualified System.Clock as TimeSpec
 
-runSearchQuery :: MonadIO m => SearchResultCache -> SearchQuery -> SqlPersistT m SearchResult
+runSearchQuery :: (MonadIO m, MonadLogger m) => SearchResultCache -> SearchQuery -> SqlPersistT m SearchResult
 runSearchQuery searchResultCache searchQuery@SearchQuery {..} = do
   results <- runSearchQueryForResults searchResultCache searchQuery
   if nullSearchResults results
@@ -39,16 +42,33 @@ runSearchQuery searchResultCache searchQuery@SearchQuery {..} = do
 
 -- For a begin day end day (inclusive) and a given place, find all parties per
 -- day sorted by distance, and with external parties at the end in any case.
-runSearchQueryForResults :: MonadIO m => SearchResultCache -> SearchQuery -> SqlPersistT m (Map Day [Result])
+runSearchQueryForResults :: (MonadIO m, MonadLogger m) => SearchResultCache -> SearchQuery -> SqlPersistT m (Map Day [Result])
 runSearchQueryForResults searchResultCache searchQuery = do
   mResults <- liftIO $ Cache.lookup searchResultCache searchQuery
   case mResults of
-    Just results -> pure results
-    Nothing -> do
-      results <- runUncachedSearchQueryForResults searchQuery
-      let anHour = TimeSpec.fromNanoSecs $ 60 * 60 * 1_000_000_000
-      liftIO $ Cache.insert' searchResultCache (Just anHour) searchQuery results
+    Just results -> do
+      logDebugN $
+        T.pack $
+          unlines
+            [ "Found cached result, not doing search.",
+              "query:",
+              ppShow searchQuery
+            ]
       pure results
+    Nothing -> do
+      logDebugN $
+        T.pack $
+          unlines
+            [ "No cached result, doing search.",
+              "query:",
+              ppShow searchQuery
+            ]
+      results <- runUncachedSearchQueryForResults searchQuery
+      liftIO $ Cache.insert' searchResultCache (Just searchResultCacheTimeSpec) searchQuery results
+      pure results
+
+searchResultCacheTimeSpec :: TimeSpec
+searchResultCacheTimeSpec = TimeSpec.fromNanoSecs $ 60 * 60 * 1_000_000_000
 
 runUncachedSearchQueryForResults :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
 runUncachedSearchQueryForResults SearchQuery {..} = do
@@ -266,7 +286,7 @@ makeGroupedByDay = foldr go M.empty -- This could be falter with a fold
 
 -- TODO this can be optimised
 -- We can probably use a count query, and there's definitely no need to fetch the posters for example
-noDataQuery :: MonadIO m => SearchResultCache -> Coordinates -> Word -> SqlPersistT m Bool -- True means no data
+noDataQuery :: (MonadIO m, MonadLogger m) => SearchResultCache -> Coordinates -> Word -> SqlPersistT m Bool -- True means no data
 noDataQuery searchResultCache coordinates maximumDistance = do
   today <- liftIO $ utctDay <$> getCurrentTime
   nullSearchResults

@@ -59,7 +59,7 @@ runSalsaPartyServer settings@Settings {..} = do
                   appSessionKeyFile = sessionKeyFile,
                   appSendEmails = settingSendEmails,
                   appSendAddress = settingSendAddress,
-                  appSearchCache = searchResultCache,
+                  appSearchResultCache = searchResultCache,
                   appAdmin = settingAdmin,
                   appOSMRateLimiter = do
                     guard settingEnableOSMGeocoding

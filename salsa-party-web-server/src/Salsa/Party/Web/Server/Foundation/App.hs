@@ -23,7 +23,7 @@ data App = App
     appSessionKeyFile :: !(Path Abs File),
     appSendEmails :: !Bool,
     appSendAddress :: !(Maybe Text),
-    appSearchCache :: !SearchResultCache,
+    appSearchResultCache :: !SearchResultCache,
     appAdmin :: !(Maybe EmailAddress),
     appOSMRateLimiter :: !(Maybe TokenLimiter), -- Nothing means disabled.
     appSentrySettings :: !(Maybe SentrySettings), -- Nothing means disabled.

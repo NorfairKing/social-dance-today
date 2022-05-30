@@ -16,6 +16,7 @@ import Salsa.Party.Importer
 import Salsa.Party.Looper.ImageGarbageCollector
 import Salsa.Party.Looper.OrganiserReminder
 import Salsa.Party.Looper.PartyScheduler
+import Salsa.Party.Looper.SearchCachePopulator
 import Salsa.Party.OptParse
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
@@ -26,6 +27,10 @@ runLoopers settings@Settings {..} app = do
   let looperDefs =
         importerLoopers settings app
           ++ [ mkLooperDef
+                 "search-cache-populator"
+                 settingSearchCachePopulatorLooperSettings
+                 (runReaderT runSearchCachePopulator app),
+               mkLooperDef
                  "organiser-reminder"
                  settingOrganiserReminderLooperSettings
                  (runReaderT runOrganiserReminder app),

@@ -21,7 +21,7 @@ import Salsa.Party.Web.Server.Handler.Search.Types
 getExploreR :: Handler Html
 getExploreR = do
   today <- liftIO $ utctDay <$> getCurrentTime
-  searchResultCache <- getsYesod appSearchCache
+  searchResultCache <- getsYesod appSearchResultCache
   locationTups <- fmap (sortOn (Down . snd) . catMaybes) $
     runDB $
       forM locations $ \Location {..} -> do
@@ -39,17 +39,21 @@ minimumUpcomingParties :: Int
 minimumUpcomingParties = 10
 
 -- TODO we can probably optimise this with a count query, or at least we don't have to fetch any posters.
-explorePartiesAroundLocationQuery :: MonadIO m => SearchResultCache -> Day -> Coordinates -> SqlPersistT m Int
+explorePartiesAroundLocationQuery :: (MonadIO m, MonadLogger m) => SearchResultCache -> Day -> Coordinates -> SqlPersistT m Int
 explorePartiesAroundLocationQuery searchResultCache today coordinates =
   countSearchResults
     <$> runSearchQueryForResults
       searchResultCache
-      SearchQuery
-        { searchQueryBegin = today,
-          searchQueryMEnd = Nothing,
-          searchQueryCoordinates = coordinates,
-          searchQueryDistance = Just defaultMaximumDistance
-        }
+      (exploreQueryFor today coordinates)
+
+exploreQueryFor :: Day -> Coordinates -> SearchQuery
+exploreQueryFor day coordinates =
+  SearchQuery
+    { searchQueryBegin = day,
+      searchQueryMEnd = Nothing,
+      searchQueryCoordinates = coordinates,
+      searchQueryDistance = Just defaultMaximumDistance
+    }
 
 getExploreSkylineR :: Text -> Handler TypedContent
 getExploreSkylineR locationName = do

@@ -49,6 +49,7 @@ library
       Salsa.Party.Looper.Import
       Salsa.Party.Looper.OrganiserReminder
       Salsa.Party.Looper.PartyScheduler
+      Salsa.Party.Looper.SearchCachePopulator
       Salsa.Party.OptParse
       Salsa.Party.Server
       Salsa.Party.Web.Server

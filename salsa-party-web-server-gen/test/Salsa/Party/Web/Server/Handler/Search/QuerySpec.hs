@@ -5,6 +5,7 @@
 
 module Salsa.Party.Web.Server.Handler.Search.QuerySpec (spec) where
 
+import Control.Monad.Logger
 import Data.Cache
 import qualified Data.Map as M
 import qualified Database.Esqueleto.Legacy as E
@@ -127,30 +128,31 @@ spec = do
         forAllValid $ \day ->
           forAllValid $ \organiser ->
             forAllValid $ \party1Prototype ->
-              flip runSqlPool pool $ do
-                let queryPlace = Place {placeQuery = "Search Place", placeLat = Latitude 0, placeLon = Longitude 0}
-                _ <- DB.insert queryPlace
-                let place1 = Place {placeQuery = "Place 1", placeLat = Latitude 45, placeLon = Longitude 0.05}
-                place1Id <- DB.insert place1
-                organiserId <- DB.insert organiser
-                let party1 =
-                      party1Prototype
-                        { partyOrganiser = organiserId,
-                          partyDay = day,
-                          partyPlace = place1Id
+              runNoLoggingT $
+                flip runSqlPool pool $ do
+                  let queryPlace = Place {placeQuery = "Search Place", placeLat = Latitude 0, placeLon = Longitude 0}
+                  _ <- DB.insert queryPlace
+                  let place1 = Place {placeQuery = "Place 1", placeLat = Latitude 45, placeLon = Longitude 0.05}
+                  place1Id <- DB.insert place1
+                  organiserId <- DB.insert organiser
+                  let party1 =
+                        party1Prototype
+                          { partyOrganiser = organiserId,
+                            partyDay = day,
+                            partyPlace = place1Id
+                          }
+                  DB.insert_ party1
+                  emptyCache <- liftIO $ newCache Nothing
+                  sr <-
+                    runSearchQuery @(NoLoggingT IO)
+                      emptyCache
+                      SearchQuery
+                        { searchQueryBegin = day,
+                          searchQueryMEnd = Just day,
+                          searchQueryCoordinates = placeCoordinates queryPlace,
+                          searchQueryDistance = Just defaultMaximumDistance
                         }
-                DB.insert_ party1
-                emptyCache <- liftIO $ newCache Nothing
-                sr <-
-                  runSearchQuery @IO
-                    emptyCache
-                    SearchQuery
-                      { searchQueryBegin = day,
-                        searchQueryMEnd = Just day,
-                        searchQueryCoordinates = placeCoordinates queryPlace,
-                        searchQueryDistance = Just defaultMaximumDistance
-                      }
-                liftIO $ sr `shouldBe` NoDataYet
+                  liftIO $ sr `shouldBe` NoDataYet
 
       it "runs correctly with these three parties where one is on a different day" $ \pool ->
         forAllValid $ \organiser ->
