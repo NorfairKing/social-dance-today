@@ -15,6 +15,7 @@ import Salsa.Party.AdminNotification
 import Salsa.Party.Importer
 import Salsa.Party.Looper.ImageGarbageCollector
 import Salsa.Party.Looper.OrganiserReminder
+import Salsa.Party.Looper.PartyGarbageCollector
 import Salsa.Party.Looper.PartyScheduler
 import Salsa.Party.Looper.SearchCachePopulator
 import Salsa.Party.OptParse
@@ -34,6 +35,10 @@ runLoopers settings@Settings {..} app = do
                  "organiser-reminder"
                  settingOrganiserReminderLooperSettings
                  (runReaderT runOrganiserReminder app),
+               mkLooperDef
+                 "party-garbage-collector"
+                 settingPartyGarbageCollectorLooperSettings
+                 (runPartyGarbageCollector app),
                mkLooperDef
                  "image-garbage-collector"
                  settingImageGarbageCollectorLooperSettings

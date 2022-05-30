@@ -49,6 +49,7 @@ data Settings = Settings
     settingSentrySettings :: !(Maybe SentrySettings),
     settingSearchCachePopulatorLooperSettings :: !LooperSettings,
     settingOrganiserReminderLooperSettings :: !LooperSettings,
+    settingPartyGarbageCollectorLooperSettings :: !LooperSettings,
     settingImageGarbageCollectorLooperSettings :: !LooperSettings,
     settingPartySchedulerLooperSettings :: !LooperSettings,
     settingImporterInterval :: NominalDiffTime,
@@ -100,6 +101,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingGoogleSearchConsoleVerification = flagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification
   let settingSearchCachePopulatorLooperSettings = deriveLooperSettings (seconds 15) (hours 1) flagSearchCachePopulatorLooperFlags envSearchCachePopulatorLooperEnvironment (mc confSearchCachePopulatorLooperConfiguration)
   let settingOrganiserReminderLooperSettings = deriveLooperSettings (seconds 30) (hours 24) flagOrganiserReminderLooperFlags envOrganiserReminderLooperEnvironment (mc confOrganiserReminderLooperConfiguration)
+  let settingPartyGarbageCollectorLooperSettings = deriveLooperSettings (minutes 1) (hours 24) flagPartyGarbageCollectorLooperFlags envPartyGarbageCollectorLooperEnvironment (mc confPartyGarbageCollectorLooperConfiguration)
   let settingImageGarbageCollectorLooperSettings = deriveLooperSettings (minutes 1 + seconds 30) (hours 24) flagImageGarbageCollectorLooperFlags envImageGarbageCollectorLooperEnvironment (mc confImageGarbageCollectorLooperConfiguration)
   let settingPartySchedulerLooperSettings = deriveLooperSettings (minutes 2 + seconds 30) (hours 24) flagPartySchedulerLooperFlags envPartySchedulerLooperEnvironment (mc confPartySchedulerLooperConfiguration)
   let settingImporterInterval = maybe (hours 24) fromIntegral $ flagImporterInterval <|> envImporterInterval <|> mc confImporterInterval
@@ -140,6 +142,7 @@ data Configuration = Configuration
     confGoogleSearchConsoleVerification :: !(Maybe Text),
     confSearchCachePopulatorLooperConfiguration :: !(Maybe LooperConfiguration),
     confOrganiserReminderLooperConfiguration :: !(Maybe LooperConfiguration),
+    confPartyGarbageCollectorLooperConfiguration :: !(Maybe LooperConfiguration),
     confImageGarbageCollectorLooperConfiguration :: !(Maybe LooperConfiguration),
     confPartySchedulerLooperConfiguration :: !(Maybe LooperConfiguration),
     confImporterInterval :: !(Maybe Int),
@@ -175,6 +178,7 @@ instance HasCodec Configuration where
         <*> optionalFieldOrNull "google-search-console-verification" "Google search console html element verification code" .= confGoogleSearchConsoleVerification
         <*> optionalFieldOrNull "search-cache-populator" "The search cache populator looper" .= confSearchCachePopulatorLooperConfiguration
         <*> optionalFieldOrNull "organiser-reminder" "The organiser reminder looper" .= confOrganiserReminderLooperConfiguration
+        <*> optionalFieldOrNull "party-garbage-collector" "The party garbage collector looper" .= confPartyGarbageCollectorLooperConfiguration
         <*> optionalFieldOrNull "image-garbage-collector" "The image garbage collector looper" .= confImageGarbageCollectorLooperConfiguration
         <*> optionalFieldOrNull "party-scheduler" "The party scheduler looper" .= confPartySchedulerLooperConfiguration
         <*> optionalFieldOrNull "importer-interval" "The default interval for importers" .= confImporterInterval
@@ -230,6 +234,7 @@ data Environment = Environment
     envGoogleSearchConsoleVerification :: !(Maybe Text),
     envSearchCachePopulatorLooperEnvironment :: !LooperEnvironment,
     envOrganiserReminderLooperEnvironment :: !LooperEnvironment,
+    envPartyGarbageCollectorLooperEnvironment :: !LooperEnvironment,
     envImageGarbageCollectorLooperEnvironment :: !LooperEnvironment,
     envPartySchedulerLooperEnvironment :: !LooperEnvironment,
     envImporterInterval :: !(Maybe Int),
@@ -271,11 +276,12 @@ environmentParser =
       <*> Env.var (fmap Just . Env.auto) "ENABLE_OSM_GEOCODING" (mE <> Env.help "Enable OpenStreetMaps Geocoding")
       <*> Env.var (fmap Just . Env.auto) "ENABLE_GOOGLE_GEOCODING" (mE <> Env.help "Enable Google Geocoding")
       <*> sentryEnvironmentParser
-      <*> Env.var (fmap Just . Env.str) "GOOGLE_API_KEY" (mE <> Env.help "Google api key")
+      <*> Env.var (fmap Just . Env.str) "GOOGLE_API_KEY" (mE <> Env.help "Google API key")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_ANALYTICS_TRACKING" (mE <> Env.help "Google analytics tracking code")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (mE <> Env.help "Google search console html element verification code")
       <*> looperEnvironmentParser "SEARCH_CACHE_POPULATOR"
       <*> looperEnvironmentParser "ORGANISER_REMINDER"
+      <*> looperEnvironmentParser "PARTY_GARBAGE_COLLECTOR"
       <*> looperEnvironmentParser "IMAGE_GARBAGE_COLLECTOR"
       <*> looperEnvironmentParser "PARTY_SCHEDULER"
       <*> Env.var (fmap Just . Env.auto) "IMPORTER_INTERVAL" (mE <> Env.help "The default interval for the importers")
@@ -348,6 +354,7 @@ data Flags = Flags
     flagGoogleSearchConsoleVerification :: !(Maybe Text),
     flagSearchCachePopulatorLooperFlags :: !LooperFlags,
     flagOrganiserReminderLooperFlags :: !LooperFlags,
+    flagPartyGarbageCollectorLooperFlags :: !LooperFlags,
     flagImageGarbageCollectorLooperFlags :: !LooperFlags,
     flagPartySchedulerLooperFlags :: !LooperFlags,
     flagImporterInterval :: !(Maybe Int),
@@ -510,6 +517,7 @@ parseFlags =
       )
     <*> getLooperFlags "search-cache-populator"
     <*> getLooperFlags "organiser-reminder"
+    <*> getLooperFlags "party-garbage-collector"
     <*> getLooperFlags "image-garbage-collector"
     <*> getLooperFlags "party-scheduler"
     <*> optional

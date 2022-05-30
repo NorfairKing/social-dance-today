@@ -369,4 +369,4 @@ maximumDaysAhead :: Integer
 maximumDaysAhead = 5 * defaultDaysAhead
 
 daysToKeepParties :: Integer
-daysToKeepParties = 60
+daysToKeepParties = 30
