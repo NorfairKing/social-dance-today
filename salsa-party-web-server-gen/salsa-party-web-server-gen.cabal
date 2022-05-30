@@ -125,6 +125,7 @@ test-suite salsa-party-web-server-gen-test
     , aeson-pretty
     , base >=4.7 && <5
     , bytestring
+    , cache
     , containers
     , data-default
     , esqueleto

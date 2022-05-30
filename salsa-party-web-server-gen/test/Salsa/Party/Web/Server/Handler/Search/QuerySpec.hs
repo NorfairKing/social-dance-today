@@ -5,6 +5,7 @@
 
 module Salsa.Party.Web.Server.Handler.Search.QuerySpec (spec) where
 
+import Data.Cache
 import qualified Data.Map as M
 import qualified Database.Esqueleto.Legacy as E
 import qualified Database.Persist as DB
@@ -113,7 +114,7 @@ spec = do
             forAllValid $ \coordinates ->
               flip runSqlPool pool $ do
                 sr <-
-                  runSearchQueryForResults @IO
+                  runUncachedSearchQueryForResults @IO
                     SearchQuery
                       { searchQueryBegin = begin,
                         searchQueryMEnd = mEnd,
@@ -139,8 +140,10 @@ spec = do
                           partyPlace = place1Id
                         }
                 DB.insert_ party1
+                emptyCache <- liftIO $ newCache Nothing
                 sr <-
                   runSearchQuery @IO
+                    emptyCache
                     SearchQuery
                       { searchQueryBegin = day,
                         searchQueryMEnd = Just day,
@@ -188,7 +191,7 @@ spec = do
                             }
                     DB.insert_ party3
                     sr <-
-                      runSearchQueryForResults @IO
+                      runUncachedSearchQueryForResults @IO
                         SearchQuery
                           { searchQueryBegin = day,
                             searchQueryMEnd = Just day,
@@ -244,7 +247,7 @@ spec = do
                             }
                     DB.insert_ party3
                     sr <-
-                      runSearchQueryForResults @IO
+                      runUncachedSearchQueryForResults @IO
                         SearchQuery
                           { searchQueryBegin = day,
                             searchQueryMEnd = Just day,
@@ -297,7 +300,7 @@ spec = do
                           image2Id <- DB.insert image2Prototype
                           DB.insert_ partyPoster2Prototype {partyPosterParty = party2Id, partyPosterImage = image2Id}
                           sr <-
-                            runSearchQueryForResults @IO
+                            runUncachedSearchQueryForResults @IO
                               SearchQuery
                                 { searchQueryBegin = day,
                                   searchQueryMEnd = Just day,
@@ -420,7 +423,7 @@ spec = do
                                         }
                                 DB.insert_ externalEvent4
                                 sr <-
-                                  runSearchQueryForResults @IO
+                                  runUncachedSearchQueryForResults @IO
                                     SearchQuery
                                       { searchQueryBegin = day,
                                         searchQueryMEnd = Just day,

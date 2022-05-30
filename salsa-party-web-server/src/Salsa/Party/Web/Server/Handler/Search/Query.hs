@@ -8,6 +8,7 @@ module Salsa.Party.Web.Server.Handler.Search.Query where
 
 import Control.Monad
 import Control.Monad.IO.Class
+import Data.Cache
 import Data.List
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
@@ -21,14 +22,14 @@ import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Deduplication
 import Salsa.Party.Web.Server.Handler.Search.Types
 
-runSearchQuery :: MonadIO m => SearchQuery -> SqlPersistT m SearchResult
-runSearchQuery searchQuery@SearchQuery {..} = do
-  results <- runSearchQueryForResults searchQuery
+runSearchQuery :: MonadIO m => SearchResultCache -> SearchQuery -> SqlPersistT m SearchResult
+runSearchQuery searchResultCache searchQuery@SearchQuery {..} = do
+  results <- runSearchQueryForResults searchResultCache searchQuery
   if nullSearchResults results
     then case searchQueryDistance of
       Nothing -> pure $ ResultsFound results
       Just maximumDistance -> do
-        noDataYet <- noDataQuery searchQueryCoordinates maximumDistance
+        noDataYet <- noDataQuery searchResultCache searchQueryCoordinates maximumDistance
         pure $
           if noDataYet
             then NoDataYet
@@ -37,8 +38,12 @@ runSearchQuery searchQuery@SearchQuery {..} = do
 
 -- For a begin day end day (inclusive) and a given place, find all parties per
 -- day sorted by distance, and with external parties at the end in any case.
-runSearchQueryForResults :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
-runSearchQueryForResults SearchQuery {..} = do
+runSearchQueryForResults :: MonadIO m => SearchResultCache -> SearchQuery -> SqlPersistT m (Map Day [Result])
+runSearchQueryForResults searchResultCache searchQuery = do
+  runUncachedSearchQueryForResults searchQuery
+
+runUncachedSearchQueryForResults :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
+runUncachedSearchQueryForResults SearchQuery {..} = do
   rawPartyResults <- E.select $
     E.from $ \((organiser `E.InnerJoin` party `E.InnerJoin` place)) -> do
       E.on (organiser E.^. OrganiserId E.==. party E.^. PartyOrganiser)
@@ -253,11 +258,12 @@ makeGroupedByDay = foldr go M.empty -- This could be falter with a fold
 
 -- TODO this can be optimised
 -- We can probably use a count query, and there's definitely no need to fetch the posters for example
-noDataQuery :: MonadIO m => Coordinates -> Word -> SqlPersistT m Bool -- True means no data
-noDataQuery coordinates maximumDistance = do
+noDataQuery :: MonadIO m => Cache SearchQuery (Map Day [Result]) -> Coordinates -> Word -> SqlPersistT m Bool -- True means no data
+noDataQuery searchResultCache coordinates maximumDistance = do
   today <- liftIO $ utctDay <$> getCurrentTime
   nullSearchResults
     <$> runSearchQueryForResults
+      searchResultCache
       SearchQuery
         { searchQueryBegin = today,
           searchQueryMEnd = Nothing,

@@ -3,7 +3,9 @@ module Salsa.Party.Web.Server.Foundation.App where
 import Control.Concurrent.TokenLimiter.Concurrent
 import Control.Monad.Logger
 import Data.Cache
+import Data.Map (Map)
 import Data.Text (Text)
+import Data.Time
 import Data.Validity.Text ()
 import Data.Validity.Time ()
 import Database.Persist.Sql
@@ -24,7 +26,7 @@ data App = App
     appSessionKeyFile :: !(Path Abs File),
     appSendEmails :: !Bool,
     appSendAddress :: !(Maybe Text),
-    appSearchCache :: !(Cache SearchQuery SearchResult),
+    appSearchCache :: !SearchResultCache,
     appAdmin :: !(Maybe EmailAddress),
     appOSMRateLimiter :: !(Maybe TokenLimiter), -- Nothing means disabled.
     appSentrySettings :: !(Maybe SentrySettings), -- Nothing means disabled.

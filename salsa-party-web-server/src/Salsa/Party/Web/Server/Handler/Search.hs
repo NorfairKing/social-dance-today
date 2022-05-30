@@ -277,7 +277,8 @@ searchResultsPage searchParameters@SearchParameters {..} = do
           }
 
   -- Do the actual search
-  searchResult <- runDB $ runSearchQuery query
+  searchResultCache <- getsYesod appSearchCache
+  searchResult <- runDB $ runSearchQuery searchResultCache query
 
   withNavBar $ do
     searchParametersHtmlTitle searchParameters >>= setTitleI

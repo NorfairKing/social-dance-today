@@ -3,6 +3,7 @@
 module Salsa.Party.Web.Server.Handler.Search.Types where
 
 import Control.DeepSeq
+import Data.Cache
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import Data.Time
@@ -35,3 +36,5 @@ data Result
   = External (Entity ExternalEvent) (Entity Place) (Maybe CASKey)
   | Internal (Entity Organiser) (Entity Party) (Entity Place) (Maybe CASKey)
   deriving (Show, Eq)
+
+type SearchResultCache = Cache SearchQuery (Map Day [Result])

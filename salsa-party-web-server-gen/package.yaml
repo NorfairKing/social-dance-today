@@ -87,6 +87,7 @@ tests:
     - aeson
     - aeson-pretty
     - bytestring
+    - cache
     - containers
     - data-default
     - esqueleto
