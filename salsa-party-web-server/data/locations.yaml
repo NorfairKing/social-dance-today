@@ -232,9 +232,6 @@
 - query: "Vancouver"
   lat: 49.260872400
   lon: -123.113952900
-- query: "Toronto"
-  lat: 43.653481700
-  lon: -79.383934700
   ## United States
 - query: "New York"
   lat: 40.748551
