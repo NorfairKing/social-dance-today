@@ -12,7 +12,6 @@ import qualified Data.Text as T
 import Salsa.Party.DB.Migration
 import Salsa.Party.Looper.Import
 import Salsa.Party.Web.Server.Constants
-import Salsa.Party.Web.Server.Handler.Explore
 import Salsa.Party.Web.Server.Handler.Search
 import Salsa.Party.Web.Server.Handler.Search.Query
 import Salsa.Party.Web.Server.Handler.Search.Types
@@ -22,7 +21,6 @@ runSearchCachePopulator = do
   pool <- asks appConnectionPool
   today <- liftIO $ utctDay <$> getCurrentTime
   searchResultCache <- asks appSearchResultCache
-  exploreResultCache <- asks appExploreResultCache
   let runDBHere func = runSqlPool (retryOnBusy func) pool
   forM_ locations $ \location -> do
     when (not development) $ do

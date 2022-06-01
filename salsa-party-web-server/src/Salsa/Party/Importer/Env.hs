@@ -190,7 +190,10 @@ runImporter a Importer {..} = do
         ]
 
 addImporterNameToLog :: Text -> LoggingT m a -> LoggingT m a
-addImporterNameToLog importerName = modLogSource $ \source -> if source == "" then "importer-" <> importerName else source
+addImporterNameToLog importerName = modLogSource $ \source ->
+  if T.null source
+    then "importer-" <> importerName
+    else source
 
 modLogSource :: (LogSource -> LogSource) -> LoggingT m a -> LoggingT m a
 modLogSource func (LoggingT mFunc) = LoggingT $ \logFunc ->

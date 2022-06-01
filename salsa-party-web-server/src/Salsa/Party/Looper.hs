@@ -7,12 +7,14 @@ module Salsa.Party.Looper where
 import Control.Exception (AsyncException)
 import Control.Monad.Logger
 import Control.Monad.Reader
+import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
 import GHC.Clock (getMonotonicTimeNSec)
 import Looper
 import Salsa.Party.AdminNotification
 import Salsa.Party.Importer
+import Salsa.Party.Looper.ExploreCachePopulator
 import Salsa.Party.Looper.ImageGarbageCollector
 import Salsa.Party.Looper.OrganiserReminder
 import Salsa.Party.Looper.PartyGarbageCollector
@@ -32,6 +34,10 @@ runLoopers settings@Settings {..} app = do
                  settingSearchCachePopulatorLooperSettings
                  (runReaderT runSearchCachePopulator app),
                mkLooperDef
+                 "explore-cache-populator"
+                 settingExploreCachePopulatorLooperSettings
+                 (runReaderT runExploreCachePopulator app),
+               mkLooperDef
                  "organiser-reminder"
                  settingOrganiserReminderLooperSettings
                  (runReaderT runOrganiserReminder app),
@@ -48,8 +54,8 @@ runLoopers settings@Settings {..} app = do
                  settingPartySchedulerLooperSettings
                  (runReaderT runPartyScheduler app)
              ]
-      looperRunner LooperDef {..} = do
-        logInfoNS looperDefName "Starting"
+      looperRunner LooperDef {..} = addLooperNameToLog looperDefName $ do
+        logInfoN "Starting"
         begin <- liftIO getMonotonicTimeNSec
         errOrUnit <-
           (Right <$> looperDefFunc)
@@ -64,12 +70,25 @@ runLoopers settings@Settings {..} app = do
           Right () -> pure ()
           Left err -> do
             let message = "Looper threw an exception:\n" <> T.pack (displayException err)
-            logErrorNS looperDefName message
+            logErrorN message
             runReaderT (sendAdminNotification message) app
-        logInfoNS looperDefName $
+        logInfoN $
           T.pack $
             formatTime
               defaultTimeLocale
               "Done, took %Hh%Mm%Ss"
               (realToFrac (fromIntegral (end - begin) / (1_000_000_000 :: Double)) :: NominalDiffTime)
   runLoopersIgnoreOverrun looperRunner looperDefs
+
+addLooperNameToLog :: Text -> LoggingT m a -> LoggingT m a
+addLooperNameToLog importerName = modLogSource $ \source ->
+  if T.null source
+    then "looper-" <> importerName
+    else source
+
+modLogSource :: (LogSource -> LogSource) -> LoggingT m a -> LoggingT m a
+modLogSource func (LoggingT mFunc) = LoggingT $ \logFunc ->
+  let newLogFunc loc source level str =
+        let source' = func source
+         in logFunc loc source' level str
+   in mFunc newLogFunc
