@@ -67,7 +67,7 @@ explorePartiesAroundLocationQuery exploreResultCache today coordinates = do
       pure result
 
 exploreResultCacheTimeSpec :: TimeSpec
-exploreResultCacheTimeSpec = TimeSpec.fromNanoSecs $ 60 * 60 * 1_000_000_000 -- one hour
+exploreResultCacheTimeSpec = TimeSpec.fromNanoSecs $ 6 * 60 * 60 * 1_000_000_000 -- six hours
 
 uncachedExplorePartiesAroundLocationQuery :: MonadIO m => Day -> Coordinates -> SqlPersistT m Word
 uncachedExplorePartiesAroundLocationQuery today coordinates = do

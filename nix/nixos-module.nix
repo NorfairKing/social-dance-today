@@ -117,8 +117,13 @@ in
                             };
                         });
                     };
-                  image-garbage-collector = mkLooperOption "image-garbage-collector";
+                  search-cache-populator = mkLooperOption "search-cache-populator";
+                  explore-cache-populator = mkLooperOption "explore-cache-populator";
                   organiser-reminder = mkLooperOption "organiser-reminder";
+                  party-garbage-collector = mkLooperOption "party-garbage-collector";
+                  image-garbage-collector = mkLooperOption "image-garbage-collector";
+                  party-scheduler = mkLooperOption "party-scheduler";
+
                   events-info-importer = mkLooperOption "events-info-importer";
                   golatindance-com-importer = mkLooperOption "golatindance-com-importer";
                   danceplace-com-importer = mkLooperOption "danceplace-com-importer";

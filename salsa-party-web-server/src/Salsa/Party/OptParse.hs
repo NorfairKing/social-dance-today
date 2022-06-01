@@ -48,6 +48,7 @@ data Settings = Settings
     settingGoogleSearchConsoleVerification :: !(Maybe Text),
     settingSentrySettings :: !(Maybe SentrySettings),
     settingSearchCachePopulatorLooperSettings :: !LooperSettings,
+    settingExploreCachePopulatorLooperSettings :: !LooperSettings,
     settingOrganiserReminderLooperSettings :: !LooperSettings,
     settingPartyGarbageCollectorLooperSettings :: !LooperSettings,
     settingImageGarbageCollectorLooperSettings :: !LooperSettings,
@@ -100,6 +101,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingGoogleAnalyticsTracking = flagGoogleAnalyticsTracking <|> envGoogleAnalyticsTracking <|> mc confGoogleAnalyticsTracking
   let settingGoogleSearchConsoleVerification = flagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification
   let settingSearchCachePopulatorLooperSettings = deriveLooperSettings (seconds 15) (hours 1) flagSearchCachePopulatorLooperFlags envSearchCachePopulatorLooperEnvironment (mc confSearchCachePopulatorLooperConfiguration)
+  let settingExploreCachePopulatorLooperSettings = deriveLooperSettings (seconds 15) (hours 6) flagExploreCachePopulatorLooperFlags envExploreCachePopulatorLooperEnvironment (mc confExploreCachePopulatorLooperConfiguration)
   let settingOrganiserReminderLooperSettings = deriveLooperSettings (seconds 30) (hours 24) flagOrganiserReminderLooperFlags envOrganiserReminderLooperEnvironment (mc confOrganiserReminderLooperConfiguration)
   let settingPartyGarbageCollectorLooperSettings = deriveLooperSettings (minutes 1) (hours 24) flagPartyGarbageCollectorLooperFlags envPartyGarbageCollectorLooperEnvironment (mc confPartyGarbageCollectorLooperConfiguration)
   let settingImageGarbageCollectorLooperSettings = deriveLooperSettings (minutes 1 + seconds 30) (hours 24) flagImageGarbageCollectorLooperFlags envImageGarbageCollectorLooperEnvironment (mc confImageGarbageCollectorLooperConfiguration)
@@ -141,6 +143,7 @@ data Configuration = Configuration
     confGoogleAnalyticsTracking :: !(Maybe Text),
     confGoogleSearchConsoleVerification :: !(Maybe Text),
     confSearchCachePopulatorLooperConfiguration :: !(Maybe LooperConfiguration),
+    confExploreCachePopulatorLooperConfiguration :: !(Maybe LooperConfiguration),
     confOrganiserReminderLooperConfiguration :: !(Maybe LooperConfiguration),
     confPartyGarbageCollectorLooperConfiguration :: !(Maybe LooperConfiguration),
     confImageGarbageCollectorLooperConfiguration :: !(Maybe LooperConfiguration),
@@ -177,6 +180,7 @@ instance HasCodec Configuration where
         <*> optionalFieldOrNull "google-analytics-tracking" "Google analytics tracking code" .= confGoogleAnalyticsTracking
         <*> optionalFieldOrNull "google-search-console-verification" "Google search console html element verification code" .= confGoogleSearchConsoleVerification
         <*> optionalFieldOrNull "search-cache-populator" "The search cache populator looper" .= confSearchCachePopulatorLooperConfiguration
+        <*> optionalFieldOrNull "explore-cache-populator" "The explore cache populator looper" .= confExploreCachePopulatorLooperConfiguration
         <*> optionalFieldOrNull "organiser-reminder" "The organiser reminder looper" .= confOrganiserReminderLooperConfiguration
         <*> optionalFieldOrNull "party-garbage-collector" "The party garbage collector looper" .= confPartyGarbageCollectorLooperConfiguration
         <*> optionalFieldOrNull "image-garbage-collector" "The image garbage collector looper" .= confImageGarbageCollectorLooperConfiguration
@@ -233,6 +237,7 @@ data Environment = Environment
     envGoogleAnalyticsTracking :: !(Maybe Text),
     envGoogleSearchConsoleVerification :: !(Maybe Text),
     envSearchCachePopulatorLooperEnvironment :: !LooperEnvironment,
+    envExploreCachePopulatorLooperEnvironment :: !LooperEnvironment,
     envOrganiserReminderLooperEnvironment :: !LooperEnvironment,
     envPartyGarbageCollectorLooperEnvironment :: !LooperEnvironment,
     envImageGarbageCollectorLooperEnvironment :: !LooperEnvironment,
@@ -280,6 +285,7 @@ environmentParser =
       <*> Env.var (fmap Just . Env.str) "GOOGLE_ANALYTICS_TRACKING" (mE <> Env.help "Google analytics tracking code")
       <*> Env.var (fmap Just . Env.str) "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (mE <> Env.help "Google search console html element verification code")
       <*> looperEnvironmentParser "SEARCH_CACHE_POPULATOR"
+      <*> looperEnvironmentParser "EXPLORE_CACHE_POPULATOR"
       <*> looperEnvironmentParser "ORGANISER_REMINDER"
       <*> looperEnvironmentParser "PARTY_GARBAGE_COLLECTOR"
       <*> looperEnvironmentParser "IMAGE_GARBAGE_COLLECTOR"
@@ -353,6 +359,7 @@ data Flags = Flags
     flagGoogleAnalyticsTracking :: !(Maybe Text),
     flagGoogleSearchConsoleVerification :: !(Maybe Text),
     flagSearchCachePopulatorLooperFlags :: !LooperFlags,
+    flagExploreCachePopulatorLooperFlags :: !LooperFlags,
     flagOrganiserReminderLooperFlags :: !LooperFlags,
     flagPartyGarbageCollectorLooperFlags :: !LooperFlags,
     flagImageGarbageCollectorLooperFlags :: !LooperFlags,
@@ -516,6 +523,7 @@ parseFlags =
           )
       )
     <*> getLooperFlags "search-cache-populator"
+    <*> getLooperFlags "explore-cache-populator"
     <*> getLooperFlags "organiser-reminder"
     <*> getLooperFlags "party-garbage-collector"
     <*> getLooperFlags "image-garbage-collector"

@@ -45,6 +45,7 @@ library
       Salsa.Party.Importer.TanzagendaCh
       Salsa.Party.Importer.TribeCalendar
       Salsa.Party.Looper
+      Salsa.Party.Looper.ExploreCachePopulator
       Salsa.Party.Looper.ImageGarbageCollector
       Salsa.Party.Looper.Import
       Salsa.Party.Looper.OrganiserReminder

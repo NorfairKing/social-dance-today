@@ -45,7 +45,3 @@ runSearchCachePopulator = do
             }
     userQueryResults <- runDBHere $ runUncachedSearchQueryForResults userQuery
     liftIO $ Cache.insert' searchResultCache (Just searchResultCacheTimeSpec) userQuery userQueryResults
-
-    logInfoN $ T.pack $ unwords ["Populating explore cache for", show placeName]
-    exploreQueryResult <- runDBHere $ uncachedExplorePartiesAroundLocationQuery today coordinates
-    liftIO $ Cache.insert' exploreResultCache (Just searchResultCacheTimeSpec) coordinates exploreQueryResult
