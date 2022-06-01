@@ -47,6 +47,7 @@ runSalsaPartyServer settings@Settings {..} = do
         man <- HTTP.newTlsManager
         rateLimiter <- liftIO $ makeTokenLimiter OSM.tokenLimitConfig
         searchResultCache <- liftIO $ newCache Nothing
+        exploreResultCache <- liftIO $ newCache Nothing
 
         let app =
               App
@@ -60,6 +61,7 @@ runSalsaPartyServer settings@Settings {..} = do
                   appSendEmails = settingSendEmails,
                   appSendAddress = settingSendAddress,
                   appSearchResultCache = searchResultCache,
+                  appExploreResultCache = exploreResultCache,
                   appAdmin = settingAdmin,
                   appOSMRateLimiter = do
                     guard settingEnableOSMGeocoding

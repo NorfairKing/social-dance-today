@@ -54,6 +54,7 @@ serverSetupFunc man = do
   pool <- salsaConnectionPoolSetupFunc
   sessionKeyFile <- resolveFile tdir "session-key.aes"
   searchResultCache <- liftIO $ newCache Nothing
+  exploreResultCache <- liftIO $ newCache Nothing
   pure
     App
       { appRoot = Nothing,
@@ -66,6 +67,7 @@ serverSetupFunc man = do
         appSendEmails = False,
         appSendAddress = Nothing,
         appSearchResultCache = searchResultCache,
+        appExploreResultCache = exploreResultCache,
         appAdmin = Just adminEmail,
         appOSMRateLimiter = Nothing,
         appSentrySettings = Nothing,

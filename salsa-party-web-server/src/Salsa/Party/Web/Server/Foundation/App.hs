@@ -2,6 +2,7 @@ module Salsa.Party.Web.Server.Foundation.App where
 
 import Control.Concurrent.TokenLimiter.Concurrent
 import Control.Monad.Logger
+import Data.Cache
 import Data.Text (Text)
 import Data.Validity.Text ()
 import Data.Validity.Time ()
@@ -24,6 +25,7 @@ data App = App
     appSendEmails :: !Bool,
     appSendAddress :: !(Maybe Text),
     appSearchResultCache :: !SearchResultCache,
+    appExploreResultCache :: !(Cache Coordinates Word),
     appAdmin :: !(Maybe EmailAddress),
     appOSMRateLimiter :: !(Maybe TokenLimiter), -- Nothing means disabled.
     appSentrySettings :: !(Maybe SentrySettings), -- Nothing means disabled.

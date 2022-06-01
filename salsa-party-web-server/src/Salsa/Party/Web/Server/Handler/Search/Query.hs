@@ -44,22 +44,22 @@ runSearchQuery searchResultCache searchQuery@SearchQuery {..} = do
 -- day sorted by distance, and with external parties at the end in any case.
 runSearchQueryForResults :: (MonadIO m, MonadLogger m) => SearchResultCache -> SearchQuery -> SqlPersistT m (Map Day [Result])
 runSearchQueryForResults searchResultCache searchQuery = do
-  mResults <- liftIO $ Cache.lookup searchResultCache searchQuery
-  case mResults of
-    Just results -> do
+  mCachedResults <- liftIO $ Cache.lookup searchResultCache searchQuery
+  case mCachedResults of
+    Just cachedResults -> do
       logDebugN $
         T.pack $
           unlines
-            [ "Found cached result, not doing search.",
+            [ "Found cached search results, not doing search.",
               "query:",
               ppShow searchQuery
             ]
-      pure results
+      pure cachedResults
     Nothing -> do
       logDebugN $
         T.pack $
           unlines
-            [ "No cached result, doing search.",
+            [ "No cached search results, doing search.",
               "query:",
               ppShow searchQuery
             ]
@@ -68,7 +68,7 @@ runSearchQueryForResults searchResultCache searchQuery = do
       pure results
 
 searchResultCacheTimeSpec :: TimeSpec
-searchResultCacheTimeSpec = TimeSpec.fromNanoSecs $ 60 * 60 * 1_000_000_000
+searchResultCacheTimeSpec = TimeSpec.fromNanoSecs $ 60 * 60 * 1_000_000_000 -- One hour
 
 runUncachedSearchQueryForResults :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
 runUncachedSearchQueryForResults SearchQuery {..} = do

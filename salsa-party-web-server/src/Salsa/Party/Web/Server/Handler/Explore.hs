@@ -1,3 +1,4 @@
+{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -6,6 +7,8 @@
 module Salsa.Party.Web.Server.Handler.Explore where
 
 import Control.Monad.Logger
+import Data.Cache (Cache)
+import qualified Data.Cache as Cache
 import Data.Hashable
 import Data.List
 import Data.Ord
@@ -17,14 +20,17 @@ import Safe
 import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Query
+import System.Clock (TimeSpec)
+import qualified System.Clock as TimeSpec
 
 getExploreR :: Handler Html
 getExploreR = do
   today <- liftIO $ utctDay <$> getCurrentTime
+  exploreResultCache <- getsYesod appExploreResultCache
   locationTups <- fmap (sortOn (Down . snd) . catMaybes) $
     runDB $
       forM locations $ \Location {..} -> do
-        nbUpcomingParties <- explorePartiesAroundLocationQuery today (placeCoordinates locationPlace)
+        nbUpcomingParties <- explorePartiesAroundLocationQuery exploreResultCache today (placeCoordinates locationPlace)
         pure $ do
           guard $ nbUpcomingParties > minimumUpcomingParties
           pure (locationPlace, nbUpcomingParties)
@@ -34,11 +40,37 @@ getExploreR = do
     setDescriptionI MsgExploreDescription
     $(widgetFile "explore")
 
-minimumUpcomingParties :: Int
+minimumUpcomingParties :: Word
 minimumUpcomingParties = 10
 
-explorePartiesAroundLocationQuery :: MonadIO m => Day -> Coordinates -> SqlPersistT m Int
-explorePartiesAroundLocationQuery today coordinates = do
+explorePartiesAroundLocationQuery :: (MonadIO m, MonadLogger m) => Cache Coordinates Word -> Day -> Coordinates -> SqlPersistT m Word
+explorePartiesAroundLocationQuery exploreResultCache today coordinates = do
+  mCachedResult <- liftIO $ Cache.lookup exploreResultCache coordinates
+  case mCachedResult of
+    Just cachedResults -> do
+      logDebugN $
+        T.pack $
+          unlines
+            [ "Found cached explore result, not doing count.",
+              show coordinates
+            ]
+      pure cachedResults
+    Nothing -> do
+      logDebugN $
+        T.pack $
+          unlines
+            [ "No cached explore result, doing count.",
+              show coordinates
+            ]
+      result <- uncachedExplorePartiesAroundLocationQuery today coordinates
+      liftIO $ Cache.insert' exploreResultCache (Just exploreResultCacheTimeSpec) coordinates result
+      pure result
+
+exploreResultCacheTimeSpec :: TimeSpec
+exploreResultCacheTimeSpec = TimeSpec.fromNanoSecs $ 60 * 60 * 1_000_000_000 -- one hour
+
+uncachedExplorePartiesAroundLocationQuery :: MonadIO m => Day -> Coordinates -> SqlPersistT m Word
+uncachedExplorePartiesAroundLocationQuery today coordinates = do
   let distance = defaultMaximumDistance
   rawPartyPlaces <- E.select $
     E.from $ \((party `E.InnerJoin` place)) -> do
@@ -58,7 +90,12 @@ explorePartiesAroundLocationQuery today coordinates = do
 
   let places = map entityVal $ rawPartyPlaces ++ rawExternalEventPlaces
 
-  pure $ length $ filter (\place -> coordinates `distanceTo` placeCoordinates place <= defaultMaximumDistance) places
+  pure $
+    fromIntegral $
+      length $
+        filter
+          (\place -> coordinates `distanceTo` placeCoordinates place <= defaultMaximumDistance)
+          places
 
 getExploreSkylineR :: Text -> Handler TypedContent
 getExploreSkylineR locationName = do
