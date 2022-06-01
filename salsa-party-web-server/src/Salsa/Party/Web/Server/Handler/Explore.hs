@@ -10,22 +10,21 @@ import Data.Hashable
 import Data.List
 import Data.Ord
 import qualified Data.Text as T
+import qualified Database.Esqueleto.Legacy as E
 import Path
 import Path.IO
 import Safe
 import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Query
-import Salsa.Party.Web.Server.Handler.Search.Types
 
 getExploreR :: Handler Html
 getExploreR = do
   today <- liftIO $ utctDay <$> getCurrentTime
-  searchResultCache <- getsYesod appSearchResultCache
   locationTups <- fmap (sortOn (Down . snd) . catMaybes) $
     runDB $
       forM locations $ \Location {..} -> do
-        nbUpcomingParties <- explorePartiesAroundLocationQuery searchResultCache today (placeCoordinates locationPlace)
+        nbUpcomingParties <- explorePartiesAroundLocationQuery today (placeCoordinates locationPlace)
         pure $ do
           guard $ nbUpcomingParties > minimumUpcomingParties
           pure (locationPlace, nbUpcomingParties)
@@ -38,22 +37,28 @@ getExploreR = do
 minimumUpcomingParties :: Int
 minimumUpcomingParties = 10
 
--- TODO we can probably optimise this with a count query, or at least we don't have to fetch any posters.
-explorePartiesAroundLocationQuery :: (MonadIO m, MonadLogger m) => SearchResultCache -> Day -> Coordinates -> SqlPersistT m Int
-explorePartiesAroundLocationQuery searchResultCache today coordinates =
-  countSearchResults
-    <$> runSearchQueryForResults
-      searchResultCache
-      (exploreQueryFor today coordinates)
+explorePartiesAroundLocationQuery :: MonadIO m => Day -> Coordinates -> SqlPersistT m Int
+explorePartiesAroundLocationQuery today coordinates = do
+  let distance = defaultMaximumDistance
+  rawPartyPlaces <- E.select $
+    E.from $ \((party `E.InnerJoin` place)) -> do
+      E.on (party E.^. PartyPlace E.==. place E.^. PlaceId)
+      E.where_ $ dayLimit (party E.^. PartyDay) today Nothing
+      distanceEstimationQuery distance coordinates place
+      pure place
 
-exploreQueryFor :: Day -> Coordinates -> SearchQuery
-exploreQueryFor day coordinates =
-  SearchQuery
-    { searchQueryBegin = day,
-      searchQueryMEnd = Nothing,
-      searchQueryCoordinates = coordinates,
-      searchQueryDistance = Just defaultMaximumDistance
-    }
+  -- Overcounting a bit because we're not deduplicating external events
+  -- but that's fine for the explore page
+  rawExternalEventPlaces <- E.select $
+    E.from $ \(externalEvent `E.InnerJoin` place) -> do
+      E.on (externalEvent E.^. ExternalEventPlace E.==. place E.^. PlaceId)
+      E.where_ $ dayLimit (externalEvent E.^. ExternalEventDay) today Nothing
+      distanceEstimationQuery distance coordinates place
+      pure place
+
+  let places = map entityVal $ rawPartyPlaces ++ rawExternalEventPlaces
+
+  pure $ length $ filter (\place -> coordinates `distanceTo` placeCoordinates place <= defaultMaximumDistance) places
 
 getExploreSkylineR :: Text -> Handler TypedContent
 getExploreSkylineR locationName = do

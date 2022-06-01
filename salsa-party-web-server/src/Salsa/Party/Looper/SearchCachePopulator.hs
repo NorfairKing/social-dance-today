@@ -33,13 +33,6 @@ runSearchCachePopulator = do
     liftIO $ threadDelay 5_000_000
     logInfoN $ T.pack $ unwords ["Populating search cache for", show placeName]
     let coordinates = placeCoordinates $ locationPlace location
-
-    logDebugN $ T.pack $ unwords ["Populating explore search cache for", show placeName]
-    let exploreQuery = exploreQueryFor today coordinates
-    exploreQueryResults <- runDBHere $ runUncachedSearchQueryForResults exploreQuery
-    liftIO $ Cache.insert' searchResultCache (Just searchResultCacheTimeSpec) exploreQuery exploreQueryResults
-
-    logDebugN $ T.pack $ unwords ["Populating normal user search cache for", show placeName]
     let userQuery =
           SearchQuery
             { searchQueryBegin = today,
@@ -49,5 +42,3 @@ runSearchCachePopulator = do
             }
     userQueryResults <- runDBHere $ runUncachedSearchQueryForResults userQuery
     liftIO $ Cache.insert' searchResultCache (Just searchResultCacheTimeSpec) userQuery userQueryResults
-
-    pure () -- TODO
