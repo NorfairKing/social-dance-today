@@ -84,7 +84,6 @@ importEventPage = awaitForever $ \(eventId, request, response) -> do
       eventScraper = chroot ("table" @: ["cellspacing" @= "5", "cellpadding" @= "0", "border" @= "0"]) $
         chroot ("table" @: ["cellspacing" @= "0", "cellpadding" @= "0", "border" @= "0"]) $ do
           externalEventUuid <- nextRandomUUID
-          let externalEventSlug = Nothing
           let externalEventKey = eventId
 
           rawHeader <- chroot ("td" @: ["valign" @= "top"]) $ text "th"
@@ -92,6 +91,7 @@ importEventPage = awaitForever $ \(eventId, request, response) -> do
           (externalEventTitle, address) <- case T.splitOn " - " headerText of
             (title : rest) -> pure (title, T.intercalate " - " rest)
             _ -> fail "Expected two pieces in the header"
+          let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
 
           chroot ("table" @: [hasClass "Grid", "cellspacing" @= "0", "cellpadding" @= "0"]) $
             chroot ("tr" @: [hasClass "Row"]) $ do

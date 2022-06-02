@@ -136,13 +136,13 @@ convertToExternalEvent = awaitForever $ \(request, _, ldEvent) -> do
     Nothing -> logWarnN "Place not found."
     Just (Entity externalEventPlace _) -> do
       externalEventUuid <- nextRandomUUID
-      let externalEventSlug = Nothing
       let externalEventKey =
             let uriText = T.pack $ show $ getUri request
              in case T.stripPrefix "https://stayhappening.com/e/" uriText of
                   Nothing -> uriText
                   Just suffix -> suffix
       let externalEventTitle = LD.eventName ldEvent
+      let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
       let externalEventDescription = LD.eventDescription ldEvent
       let externalEventOrganiser = do
             eventOrganizer <- LD.eventOrganizer ldEvent

@@ -110,7 +110,6 @@ importFestivalPage = awaitForever $ \(request, response) -> do
   let scrapeExternalEventFromFestivalPage :: ScraperT LB.ByteString Import (ExternalEvent, Maybe URI)
       scrapeExternalEventFromFestivalPage = do
         externalEventUuid <- nextRandomUUID
-        let externalEventSlug = Nothing
         let externalEventKey =
               let uriText = T.pack $ show $ getUri request
                in case T.stripPrefix "https://www.danceplace.com/index/no/" uriText of
@@ -119,6 +118,8 @@ importFestivalPage = awaitForever $ \(request, response) -> do
 
         rawTitle <- chroot ("div" @: [hasClass "evt-title-name"]) $ text $ "h1" @: ["itemprop" @= "name"]
         externalEventTitle <- utf8 rawTitle
+
+        let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
 
         externalEventDescription <- optional $
           chroot ("div" @: ["itemprop" @= "description", "lang" @= "en"]) $ do

@@ -181,9 +181,9 @@ instance FromJSON EventImage where
 eventDetailsSink :: ConduitT (Text, EventDetails) o Import ()
 eventDetailsSink = awaitForever $ \(identifier, EventDetails {..}) -> do
   externalEventUuid <- nextRandomUUID
-  let externalEventSlug = Nothing
   let externalEventKey = identifier
   let externalEventTitle = eventDetailsName
+  let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
   let externalEventDescription = eventDetailsDescription
   let externalEventOrganiser = eventVenueName eventDetailsVenue
   let LocalTime externalEventDay tod = zonedTimeToLocalTime eventDetailsStart

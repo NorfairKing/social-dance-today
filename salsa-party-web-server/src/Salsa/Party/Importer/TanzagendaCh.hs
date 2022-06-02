@@ -66,12 +66,13 @@ parseEventPage = awaitForever $ \(key, request, response) -> do
   let scrapeExternalEventFromPage :: ScraperT LB.ByteString Import (ExternalEvent, Maybe URI)
       scrapeExternalEventFromPage = chroot ("section" @: ["id" @= "events"]) $ do
         externalEventUuid <- nextRandomUUID
-        let externalEventSlug = Nothing
 
         let externalEventKey = key
 
         rawTitle <- text "h1"
         externalEventTitle <- utf8 rawTitle
+
+        let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
 
         chroot ("div" @: [hasClass "card-body"]) $ do
           externalEventDay <- chroot ("div" @: [hasClass "row"]) $

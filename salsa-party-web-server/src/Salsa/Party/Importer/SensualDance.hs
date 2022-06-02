@@ -232,11 +232,11 @@ importItem = awaitForever $ \(Item {..}, mImageBlob) -> do
   let today = utctDay now
 
   externalEventUuid <- nextRandomUUID
-  let externalEventSlug = Nothing
 
   let externalEventKey = itemId
 
   let externalEventTitle = itemTitle
+  let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
   let externalEventDescription = itemDescription
   let externalEventOrganiser = Nothing
   let localTime = zonedTimeToLocalTime itemDateFrom
