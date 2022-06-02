@@ -198,6 +198,7 @@ in
           (nullOrOption "salsa-be-importer" salsa-be-importer)
           (nullOrOption "latinworld-nl-importer" latinworld-nl-importer)
           (nullOrOption "tanzagenda-ch-importer" tanzagenda-ch-importer)
+          (nullOrOption "stayhappening-com-importer" stayhappening-com-importer)
           (nullOrOption "sentry" sentry)
           cfg.web-server.config
         ];

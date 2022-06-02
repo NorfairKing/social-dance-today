@@ -200,7 +200,7 @@ instance HasCodec Configuration where
         <*> optionalFieldOrNull "salsa-be-importer" "The salsa.be import looper" .= confSalsaBeImportLooperConfiguration
         <*> optionalFieldOrNull "latinworld-nl-importer" "The latinworld.nl import looper" .= confLatinworldNlImportLooperConfiguration
         <*> optionalFieldOrNull "tanzagenda-ch-importer" "The tanzagenda.ch import looper" .= confTanzagendaChImportLooperConfiguration
-        <*> optionalFieldOrNull "stayhappening-com-importer" "The tanzagenda.ch import looper" .= confStayHappeningComImportLooperConfiguration
+        <*> optionalFieldOrNull "stayhappening-com-importer" "The stayhappening.com import looper" .= confStayHappeningComImportLooperConfiguration
 
 data SentryConfiguration = SentryConfiguration
   { sentryConfDSN :: !(Maybe Text),
