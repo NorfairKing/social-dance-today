@@ -16,6 +16,7 @@ import qualified Data.Text.Lazy.Builder as TLB
 import qualified Database.Esqueleto.Legacy as E
 import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Handler.Import
+import Salsa.Party.Web.Server.Handler.Search
 import Text.Shakespeare.Text
 import Yesod.Sitemap
 
@@ -23,10 +24,14 @@ getSitemapR :: Handler TypedContent
 getSitemapR = do
   today <- liftIO $ utctDay <$> getCurrentTime
   let yesterday = addDays (-1) today
-  let earliestDayToShow = addDays (-30) today
+  let earliestDayToShow = yesterday
+  let latestDayToShow = addDays maximumDaysAhead today
   acqOrganisers <- runDB $ selectSourceRes [] [Asc OrganiserId]
-  acqImages <- runDB $ selectSourceRes [] [Asc ImageId]
-  acqExternalEvents <- runDB $ selectSourceRes [ExternalEventDay >=. earliestDayToShow] [Asc ExternalEventId]
+  acqExternalEvents <-
+    runDB $
+      selectSourceRes
+        [ExternalEventDay >=. earliestDayToShow, ExternalEventDay <. latestDayToShow]
+        [Asc ExternalEventId]
 
   sitemap $ do
     yield
@@ -75,7 +80,9 @@ getSitemapR = do
       ( E.selectSource $
           E.from $ \(organiser `E.InnerJoin` party) -> do
             E.on $ party E.^. PartyOrganiser E.==. organiser E.^. OrganiserId
-            E.where_ $ party E.^. PartyDay E.>=. E.val earliestDayToShow
+            E.where_ $
+              (party E.^. PartyDay E.>=. E.val earliestDayToShow)
+                E.&&. (party E.^. PartyDay E.<. E.val earliestDayToShow)
             pure (organiser, party)
       )
       .| C.map
@@ -83,8 +90,8 @@ getSitemapR = do
             SitemapUrl
               { sitemapLoc = partyRoute organiser party,
                 sitemapLastMod = Just $ fromMaybe partyCreated partyModified,
-                sitemapChangeFreq = if partyDay >= yesterday then Nothing else Just Never,
-                sitemapPriority = Just $ if partyDay >= yesterday then 0.4 else 0.2
+                sitemapChangeFreq = Nothing,
+                sitemapPriority = Just 0.4
               }
         )
     dbAcq
@@ -93,18 +100,8 @@ getSitemapR = do
           SitemapUrl
             { sitemapLoc = externalEventRoute externalEvent,
               sitemapLastMod = Just $ fromMaybe externalEventCreated externalEventModified,
-              sitemapChangeFreq = if externalEventDay >= yesterday then Nothing else Just Never,
-              sitemapPriority = Just $ if externalEventDay >= yesterday then 0.3 else 0.1
-            }
-      )
-    dbAcq
-      acqImages
-      ( \(Entity _ Image {..}) ->
-          SitemapUrl
-            { sitemapLoc = ImageR imageKey,
-              sitemapLastMod = Just imageCreated,
-              sitemapChangeFreq = Just Never,
-              sitemapPriority = Just 0.1
+              sitemapChangeFreq = Nothing,
+              sitemapPriority = Just 0.3
             }
       )
 
