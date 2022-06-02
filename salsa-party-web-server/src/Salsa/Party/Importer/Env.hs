@@ -41,10 +41,12 @@ import Salsa.Party.AdminNotification
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.Foundation
+import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Poster
 import System.Random (randomRIO)
 import System.Random.Shuffle
 import Text.HTML.Scalpel
+import qualified Text.HTML.TagSoup as HTML
 import Text.Show.Pretty (pPrint, ppShow)
 import UnliftIO
 import qualified Web.JSONLD as LD
@@ -549,3 +551,76 @@ yieldManyShuffled :: MonadIO m => [a] -> ConduitT void a m ()
 yieldManyShuffled list = do
   shuffledList <- liftIO $ shuffleM list
   yieldMany shuffledList
+
+convertLDEventToExternalEvent :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString, LD.Event) (ExternalEvent, Maybe URI) Import ()
+convertLDEventToExternalEvent = awaitForever $ \(request, _, ldEvent) -> do
+  let unescapeHtml = HTML.innerText . HTML.parseTags
+
+  mPlaceEntity <- case LD.eventLocation ldEvent of
+    LD.EventLocationPlace place ->
+      let address = case LD.placeAddress place of
+            LD.PlaceAddressText t -> unescapeHtml t
+            LD.PlaceAddressPostalAddress postalAddress ->
+              unescapeHtml $
+                T.unwords $
+                  catMaybes
+                    [ LD.postalAddressStreetAddress postalAddress,
+                      LD.postalAddressLocality postalAddress,
+                      LD.postalAddressRegion postalAddress,
+                      LD.postalAddressCountry postalAddress
+                    ]
+       in case LD.placeGeo place of
+            Just (LD.PlaceGeoCoordinates geoCoordinates) ->
+              fmap Just $
+                lift $
+                  importDB $
+                    upsertBy
+                      (UniquePlaceQuery address)
+                      ( Place
+                          { placeQuery = address,
+                            placeLat = LD.geoCoordinatesLatitude geoCoordinates,
+                            placeLon = LD.geoCoordinatesLongitude geoCoordinates
+                          }
+                      )
+                      [] -- Don't change if it's already there, so that they can't fill our page with junk.
+            Nothing -> lift $ do
+              app <- asks importEnvApp
+              runReaderT (lookupPlaceRaw address) app
+
+  case mPlaceEntity of
+    Nothing -> logWarnN "Place not found."
+    Just (Entity externalEventPlace _) -> do
+      externalEventUuid <- nextRandomUUID
+      let externalEventKey =
+            let uriText = T.pack $ show $ getUri request
+             in case T.stripPrefix "https://stayhappening.com/e/" uriText of
+                  Nothing -> uriText
+                  Just suffix -> suffix
+      let externalEventTitle = unescapeHtml $ LD.eventName ldEvent
+      let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
+      let externalEventDescription = LD.eventDescription ldEvent
+      let externalEventOrganiser = do
+            eventOrganizer <- LD.eventOrganizer ldEvent
+            case eventOrganizer of
+              LD.EventOrganizerOrganization organization -> pure $ LD.organizationName organization
+      let (externalEventDay, externalEventStart) = case LD.eventStartDate ldEvent of
+            LD.EventStartDate d -> (d, Nothing)
+            LD.EventStartDateTime dateTime ->
+              let LocalTime d tod = LD.dateTimeLocalTime dateTime
+               in (d, Just tod)
+      let externalEventHomepage = Nothing
+      let externalEventPrice = Nothing
+      let externalEventCancelled = case LD.eventStatus ldEvent of
+            Just LD.EventCancelled -> Just True
+            _ -> Nothing
+      now <- liftIO getCurrentTime
+      let externalEventCreated = now
+      let externalEventModified = Nothing
+      externalEventImporter <- asks importEnvId
+      let externalEventOrigin = T.pack $ show $ getUri request
+      let mImageURI = do
+            eventImage <- listToMaybe (LD.eventImages ldEvent)
+            case eventImage of
+              LD.EventImageURL t -> parseURI $ T.unpack t
+
+      yield (ExternalEvent {..}, mImageURI)
