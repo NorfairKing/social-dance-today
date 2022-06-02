@@ -75,7 +75,9 @@ instance FromJSON Event where
       <*> ( o .:? "image" .!= []
               <|> (maybeToList <$> o .:? "image")
           )
-      <*> o .:? "organizer"
+      -- One or multiple organisers, we only care about the first
+      <*> ( (listToMaybe <$> o .: "organizer") <|> o .:? "organizer"
+          )
 
 data EventLocation
   = EventLocationPlace Place
@@ -90,6 +92,7 @@ instance FromJSON EventLocation where
     let parsePlace = EventLocationPlace <$> parseJSON (JSON.Object o)
     case mType :: Maybe Text of
       Just "Place" -> parsePlace
+      Just "place" -> parsePlace
       Nothing -> parsePlace
       _ -> fail "Unknown EventLocation"
 
