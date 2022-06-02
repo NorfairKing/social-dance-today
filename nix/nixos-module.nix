@@ -134,6 +134,7 @@ in
                   salsa-be-importer = mkLooperOption "salsa-be-importer";
                   latinworld-nl-importer = mkLooperOption "latinworld-nl-importer";
                   tanzagenda-ch-importer = mkLooperOption "tanzagenda-ch-importer";
+                  stayhappening-com-importer = mkLooperOption "stayhappening-com-importer";
                 };
             });
           default = null;
