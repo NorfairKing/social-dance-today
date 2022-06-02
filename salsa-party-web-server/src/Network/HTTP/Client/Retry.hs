@@ -62,7 +62,9 @@ tryHttpOnce retryStatus request man = do
     logWarnN $
       T.pack $
         unwords
-          [ "Retrying, iteration",
+          [ "Retrying request",
+            show (getUri request),
+            "iteration",
             show $ rsIterNumber retryStatus
           ]
   fmap Right $ do
