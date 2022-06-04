@@ -136,6 +136,7 @@ in
                   tanzagenda-ch-importer = mkLooperOption "tanzagenda-ch-importer";
                   stayhappening-com-importer = mkLooperOption "stayhappening-com-importer";
                   londonsalsaevents-com-importer = mkLooperOption "londonsalsaevents-com-importer";
+                  salsalovers-be-importer = mkLooperOption "salsalovers-be-importer";
                 };
             });
           default = null;
@@ -201,6 +202,7 @@ in
           (nullOrOption "tanzagenda-ch-importer" tanzagenda-ch-importer)
           (nullOrOption "stayhappening-com-importer" stayhappening-com-importer)
           (nullOrOption "londonsalsaevents-com-importer" londonsalsaevents-com-importer)
+          (nullOrOption "salsalovers-be-importer" salsalovers-be-importer)
           (nullOrOption "sentry" sentry)
           cfg.web-server.config
         ];

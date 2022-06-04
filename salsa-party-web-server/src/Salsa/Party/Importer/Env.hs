@@ -316,7 +316,8 @@ jsonRequestConduitWith = awaitForever $ \(c, request) -> do
           logErrorN $
             T.unlines
               [ "Invalid JSON:" <> T.pack err,
-                T.pack (show body)
+                T.pack (show body),
+                T.pack err
               ]
         Right jsonValue ->
           case JSON.parseEither parseJSON jsonValue of
@@ -326,7 +327,8 @@ jsonRequestConduitWith = awaitForever $ \(c, request) -> do
                   [ "Unable to parse JSON:" <> T.pack err,
                     case TE.decodeUtf8' (LB.toStrict (JSON.encodePretty jsonValue)) of
                       Left _ -> "non-utf8, somehow"
-                      Right t -> t
+                      Right t -> t,
+                    T.pack err
                   ]
             Right a -> yield (c, a)
 
