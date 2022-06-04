@@ -111,7 +111,7 @@ tribeCalendarJSONLDEvents = awaitForever $ \(request, response, event) -> do
           LD.EventOrganizerOrganization organization -> pure $ LD.organizationName organization
 
   let (externalEventDay, externalEventStart) = case LD.eventStartDate event of
-        LD.EventStartDate d -> (d, Nothing)
+        LD.EventStartDate d -> (LD.dateDay d, Nothing)
         LD.EventStartDateTime dateTime ->
           let LocalTime d tod = LD.dateTimeLocalTime dateTime
            in (d, Just tod)

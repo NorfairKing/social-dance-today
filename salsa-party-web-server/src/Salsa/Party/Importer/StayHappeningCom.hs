@@ -67,7 +67,7 @@ func =
       .| doHttpRequestWith
       .| logRequestErrors
       .| jsonLDEventsC
-      .| convertLDEventToExternalEvent
+      .| convertLDEventToExternalEvent eventUrlPrefix
       .| C.mapM_ importExternalEventWithMImage
 
 scrapeLocationLinks :: MonadIO m => ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Text m ()
@@ -86,8 +86,11 @@ scrapeEventLinks = awaitForever $ \(_, response) -> do
   let uris = fromMaybe [] $
         scrapeStringLike (responseBody response) $ do
           refs <- attrs "href" "a"
-          pure $ filter ("https://stayhappening.com/e/" `T.isPrefixOf`) $ mapMaybe maybeUtf8 refs
+          pure $ filter (eventUrlPrefix `T.isPrefixOf`) $ mapMaybe maybeUtf8 refs
   yieldManyShuffled uris
 
 makeEventRequest :: Text -> Maybe Request
 makeEventRequest = parseRequest . T.unpack
+
+eventUrlPrefix :: Text
+eventUrlPrefix = "https://stayhappening.com/e/"

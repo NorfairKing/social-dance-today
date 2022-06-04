@@ -36,7 +36,7 @@ partyToLDEvent renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
                           }
                 },
           LD.eventStartDate = case partyStart of
-            Nothing -> LD.EventStartDate partyDay
+            Nothing -> LD.EventStartDate (LD.Date partyDay)
             Just timeOfDay ->
               LD.EventStartDateTime
                 LD.DateTime

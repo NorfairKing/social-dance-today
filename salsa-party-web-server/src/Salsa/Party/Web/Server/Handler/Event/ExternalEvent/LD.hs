@@ -34,7 +34,7 @@ externalEventToLDEvent renderUrl ExternalEvent {..} Place {..} mPosterKey =
                           }
                 },
           LD.eventStartDate = case externalEventStart of
-            Nothing -> LD.EventStartDate externalEventDay
+            Nothing -> LD.EventStartDate (LD.Date externalEventDay)
             Just timeOfDay ->
               LD.EventStartDateTime
                 LD.DateTime

@@ -552,8 +552,8 @@ yieldManyShuffled list = do
   shuffledList <- liftIO $ shuffleM list
   yieldMany shuffledList
 
-convertLDEventToExternalEvent :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString, LD.Event) (ExternalEvent, Maybe URI) Import ()
-convertLDEventToExternalEvent = awaitForever $ \(request, _, ldEvent) -> do
+convertLDEventToExternalEvent :: Text -> ConduitT (HTTP.Request, HTTP.Response LB.ByteString, LD.Event) (ExternalEvent, Maybe URI) Import ()
+convertLDEventToExternalEvent keyPrefix = awaitForever $ \(request, _, ldEvent) -> do
   let unescapeHtml = HTML.innerText . HTML.parseTags
 
   mPlaceEntity <- case LD.eventLocation ldEvent of
@@ -593,7 +593,7 @@ convertLDEventToExternalEvent = awaitForever $ \(request, _, ldEvent) -> do
       externalEventUuid <- nextRandomUUID
       let externalEventKey =
             let uriText = T.pack $ show $ getUri request
-             in case T.stripPrefix "https://stayhappening.com/e/" uriText of
+             in case T.stripPrefix keyPrefix uriText of
                   Nothing -> uriText
                   Just suffix -> suffix
       let externalEventTitle = unescapeHtml $ LD.eventName ldEvent
@@ -604,7 +604,7 @@ convertLDEventToExternalEvent = awaitForever $ \(request, _, ldEvent) -> do
             case eventOrganizer of
               LD.EventOrganizerOrganization organization -> pure $ LD.organizationName organization
       let (externalEventDay, externalEventStart) = case LD.eventStartDate ldEvent of
-            LD.EventStartDate d -> (d, Nothing)
+            LD.EventStartDate d -> (LD.dateDay d, Nothing)
             LD.EventStartDateTime dateTime ->
               let LocalTime d tod = LD.dateTimeLocalTime dateTime
                in (d, Just tod)

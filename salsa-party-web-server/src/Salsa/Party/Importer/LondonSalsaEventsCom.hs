@@ -42,22 +42,23 @@ func =
       .| logRequestErrors
       .| scrapeEventLinks
       .| deduplicateC
-      .| C.mapM_ (liftIO . print)
-
--- .| C.concatMap makeEventRequest
--- .| doHttpRequestWith
--- .| logRequestErrors
--- .| jsonLDEventsC
--- .| convertLDEventToExternalEvent
--- .| C.mapM_ importExternalEventWithMImage
+      .| C.concatMap makeEventRequest
+      .| doHttpRequestWith
+      .| logRequestErrors
+      .| jsonLDEventsC
+      .| convertLDEventToExternalEvent eventUrlPrefix
+      .| C.mapM_ importExternalEventWithMImage
 
 scrapeEventLinks :: MonadIO m => ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Text m ()
 scrapeEventLinks = awaitForever $ \(_, response) -> do
   let uris = fromMaybe [] $
         scrapeStringLike (responseBody response) $ do
           refs <- attrs "href" "a"
-          pure $ filter ("https://londonsalsaevents.com/event-pro/" `T.isPrefixOf`) $ mapMaybe maybeUtf8 refs
+          pure $ filter (eventUrlPrefix `T.isPrefixOf`) $ mapMaybe maybeUtf8 refs
   yieldManyShuffled uris
+
+eventUrlPrefix :: Text
+eventUrlPrefix = "https://londonsalsaevents.com/event-pro/"
 
 makeEventRequest :: Text -> Maybe Request
 makeEventRequest = parseRequest . T.unpack

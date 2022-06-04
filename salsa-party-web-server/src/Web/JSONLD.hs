@@ -239,7 +239,7 @@ instance ToJSON GeoCoordinates where
 -- https://schema.org/Date
 -- https://schema.org/DateTime
 data EventStartDate
-  = EventStartDate Day
+  = EventStartDate Date
   | EventStartDateTime DateTime
   deriving (Show, Eq, Generic)
 
@@ -247,8 +247,8 @@ instance Validity EventStartDate
 
 instance FromJSON EventStartDate where
   parseJSON v =
-    EventStartDate <$> parseJSON v
-      <|> EventStartDateTime <$> parseJSON v
+    EventStartDateTime <$> parseJSON v
+      <|> EventStartDate <$> parseJSON v
 
 instance ToJSON EventStartDate where
   toJSON = \case
@@ -259,7 +259,7 @@ instance ToJSON EventStartDate where
 -- https://schema.org/Date
 -- https://schema.org/DateTime
 data EventEndDate
-  = EventEndDate Day
+  = EventEndDate Date
   | EventEndDateTime DateTime
   deriving (Show, Eq, Generic)
 
@@ -267,8 +267,8 @@ instance Validity EventEndDate
 
 instance FromJSON EventEndDate where
   parseJSON v =
-    EventEndDate <$> parseJSON v
-      <|> EventEndDateTime <$> parseJSON v
+    EventEndDateTime <$> parseJSON v
+      <|> EventEndDate <$> parseJSON v
 
 instance ToJSON EventEndDate where
   toJSON = \case
@@ -284,7 +284,9 @@ instance Show Date where
   show (Date zt) = iso8601Show zt
 
 instance FromJSON Date where
-  parseJSON = withText "Date" $ \t -> Date <$> iso8601ParseM (T.unpack t)
+  parseJSON = withText "Date" $ \t ->
+    (Date <$> iso8601ParseM (T.unpack t))
+      <|> (Date <$> parseTimeM False defaultTimeLocale "%F" (T.unpack t))
 
 instance ToJSON Date where
   toJSON = toJSON . iso8601Show . dateDay
@@ -327,6 +329,14 @@ instance FromJSON DateTime where
                   }
             )
               <$> iso8601ParseM (T.unpack t)
+          )
+      <|> ( ( \localTime ->
+                DateTime
+                  { dateTimeLocalTime = localTime,
+                    dateTimeTimeZone = Nothing
+                  }
+            )
+              <$> parseTimeM False defaultTimeLocale "%F %H:%M:%S" (T.unpack t)
           )
 
 instance ToJSON DateTime where
