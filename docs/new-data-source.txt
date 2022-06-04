@@ -1,0 +1,10 @@
+ 1. Check Robots.txt, Terms, Sitemap, Machine readibility with the site tester and double-check myself
+ 2. Add optparse: Settings, Flags, Configuration, Environment
+ 3. Add the nixos module option and use it in the config.
+ 4. Add the lines to `scripts/restart-web-server.sh` to run the looper locally.
+ 5. Add the line and import to `salsa-party-web-server/src/Salsa/Party/Importer.hs`
+ 6. Add the importer module.
+ 7. Write the importer
+ 8. Try it out in staging
+ 9. Run it in prod
+10. Check if it worked, a month later

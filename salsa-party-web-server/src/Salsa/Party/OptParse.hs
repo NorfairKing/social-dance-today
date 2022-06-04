@@ -75,7 +75,9 @@ data Settings = Settings
     -- https://tanzagenda.ch
     settingTanzagendaChImportLooperSettings :: !LooperSettings,
     -- https://stayhappening.com
-    settingStayHappeningComImportLooperSettings :: !LooperSettings
+    settingStayHappeningComImportLooperSettings :: !LooperSettings,
+    -- https://londonsalsaevents.com
+    settingLondonSalsaEventsComImportLooperSettings :: !LooperSettings
   }
   deriving (Show, Eq, Generic)
 
@@ -120,6 +122,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingLatinworldNlImportLooperSettings = deriveLooperSettings (minutes 10 + seconds 9) (hours 1) flagLatinworldNlImportLooperFlags envLatinworldNlImportLooperEnvironment (mc confLatinworldNlImportLooperConfiguration)
   let settingTanzagendaChImportLooperSettings = deriveLooperSettings (minutes 11 + seconds 10) (hours 1) flagTanzagendaChImportLooperFlags envTanzagendaChImportLooperEnvironment (mc confTanzagendaChImportLooperConfiguration)
   let settingStayHappeningComImportLooperSettings = deriveLooperSettings (minutes 12 + seconds 10) (hours 1) flagStayHappeningComImportLooperFlags envStayHappeningComImportLooperEnvironment (mc confStayHappeningComImportLooperConfiguration)
+  let settingLondonSalsaEventsComImportLooperSettings = deriveLooperSettings (minutes 13 + seconds 10) (hours 1) flagLondonSalsaEventsComImportLooperFlags envLondonSalsaEventsComImportLooperEnvironment (mc confLondonSalsaEventsComImportLooperConfiguration)
   pure Settings {..}
   where
     mc :: (Configuration -> Maybe a) -> Maybe a
@@ -162,7 +165,8 @@ data Configuration = Configuration
     confSalsaBeImportLooperConfiguration :: !(Maybe LooperConfiguration),
     confLatinworldNlImportLooperConfiguration :: !(Maybe LooperConfiguration),
     confTanzagendaChImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confStayHappeningComImportLooperConfiguration :: !(Maybe LooperConfiguration)
+    confStayHappeningComImportLooperConfiguration :: !(Maybe LooperConfiguration),
+    confLondonSalsaEventsComImportLooperConfiguration :: !(Maybe LooperConfiguration)
   }
   deriving (Show, Eq, Generic)
 
@@ -201,6 +205,7 @@ instance HasCodec Configuration where
         <*> optionalFieldOrNull "latinworld-nl-importer" "The latinworld.nl import looper" .= confLatinworldNlImportLooperConfiguration
         <*> optionalFieldOrNull "tanzagenda-ch-importer" "The tanzagenda.ch import looper" .= confTanzagendaChImportLooperConfiguration
         <*> optionalFieldOrNull "stayhappening-com-importer" "The stayhappening.com import looper" .= confStayHappeningComImportLooperConfiguration
+        <*> optionalFieldOrNull "londonsalsaevents-com-importer" "The londonsalsavents.com import looper" .= confLondonSalsaEventsComImportLooperConfiguration
 
 data SentryConfiguration = SentryConfiguration
   { sentryConfDSN :: !(Maybe Text),
@@ -258,7 +263,8 @@ data Environment = Environment
     envSalsaBeImportLooperEnvironment :: !LooperEnvironment,
     envLatinworldNlImportLooperEnvironment :: !LooperEnvironment,
     envTanzagendaChImportLooperEnvironment :: !LooperEnvironment,
-    envStayHappeningComImportLooperEnvironment :: !LooperEnvironment
+    envStayHappeningComImportLooperEnvironment :: !LooperEnvironment,
+    envLondonSalsaEventsComImportLooperEnvironment :: !LooperEnvironment
   }
   deriving (Show, Eq, Generic)
 
@@ -308,6 +314,7 @@ environmentParser =
       <*> looperEnvironmentParser "LATINWORLD_NL_IMPORTER"
       <*> looperEnvironmentParser "TANZAGENDA_CH_IMPORTER"
       <*> looperEnvironmentParser "STAYHAPPENING_COM_IMPORTER"
+      <*> looperEnvironmentParser "LONDONSALSAEVENTS_COM_IMPORTER"
   where
     logLevelReader = \case
       "Debug" -> Right LevelDebug
@@ -382,7 +389,8 @@ data Flags = Flags
     flagSalsaBeImportLooperFlags :: !LooperFlags,
     flagLatinworldNlImportLooperFlags :: !LooperFlags,
     flagTanzagendaChImportLooperFlags :: !LooperFlags,
-    flagStayHappeningComImportLooperFlags :: !LooperFlags
+    flagStayHappeningComImportLooperFlags :: !LooperFlags,
+    flagLondonSalsaEventsComImportLooperFlags :: !LooperFlags
   }
   deriving (Show, Eq, Generic)
 
@@ -557,6 +565,7 @@ parseFlags =
     <*> getLooperFlags "latinworld-nl-importer"
     <*> getLooperFlags "tanzagenda-ch-importer"
     <*> getLooperFlags "stayhappening-com-importer"
+    <*> getLooperFlags "londonsalsaevents-com-importer"
 
 data SentryFlags = SentryFlags
   { sentryFlagDSN :: !(Maybe Text),
