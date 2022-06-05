@@ -93,7 +93,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
 
   let settingImporterInterval = maybe (hours 24) fromIntegral $ flagImporterInterval <|> envImporterInterval <|> mc confImporterInterval
   settingImporterSettings <- fmap M.fromList $
-    forM dataSources $ \dataSource -> do
+    forM (zip [0 ..] dataSources) $ \(ix, dataSource) -> do
       flags <- case M.lookup dataSource flagImporterFlags of
         Nothing -> fail $ unwords ["No flags for data source", show dataSource]
         Just fs -> pure fs
@@ -101,7 +101,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
         Nothing -> fail $ unwords ["No environment for data source", show dataSource]
         Just e -> pure e
       let mLConf = M.lookup dataSource (maybe M.empty confImporterConfigurations mConf)
-      pure (dataSource, deriveLooperSettings (minutes 3) (hours 24) flags env mLConf)
+      pure (dataSource, deriveLooperSettings (minutes (3 + ix)) (hours 24) flags env mLConf)
 
   pure Settings {..}
   where
