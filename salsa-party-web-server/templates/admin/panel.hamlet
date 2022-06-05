@@ -64,7 +64,27 @@
       <div .level-item .has-text-centered>
         <div>
           <p .heading>
-            ⭐ Upcoming events (next 30 days)
+            ⭐ Upcoming events (next 7 days)
+          <p .title>
+            #{nbUpcomingParties7Days + nbUpcomingExternalEvents7Days}
+      <div .level-item .has-text-centered>
+        <div>
+          <p .heading>
+            Upcoming parties (next 7 days)
+          <p .title>
+            #{nbUpcomingParties7Days}
+      <div .level-item .has-text-centered>
+        <div>
+          <p .heading>
+            Upcoming external events (next 7 days)
+          <p .title>
+            #{nbUpcomingExternalEvents7Days}
+
+    <nav .level>
+      <div .level-item .has-text-centered>
+        <div>
+          <p .heading>
+            Upcoming events (next 30 days)
           <p .title>
             #{nbUpcomingParties30Days + nbUpcomingExternalEvents30Days}
       <div .level-item .has-text-centered>
