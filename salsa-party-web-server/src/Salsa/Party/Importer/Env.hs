@@ -260,35 +260,40 @@ importExternalEvent externalEvent = importExternalEventAnd externalEvent $ \_ ->
 -- Import an external event and run the given function if anything has changed.
 -- We use this extra function to import images but only if the event has changed.
 importExternalEventAnd :: ExternalEvent -> (ExternalEventId -> Import ()) -> Import ()
-importExternalEventAnd externalEvent@ExternalEvent {..} func = do
-  logDebugN $ T.pack $ "Importing external event:\n" <> ppShow externalEvent
-  case prettyValidate externalEvent of
-    Left err -> logWarnN $ T.pack $ unlines ["Not importing invalid event:", err, ppShow externalEvent]
-    Right _ -> do
+importExternalEventAnd candidate func = do
+  logDebugN $ T.pack $ "Considering importing external event:\n" <> ppShow candidate
+  case prettyValidate candidate of
+    Left err -> logWarnN $ T.pack $ unlines ["Not importing invalid event:", err, ppShow candidate]
+    Right externalEvent@ExternalEvent {..} -> do
       now <- liftIO getCurrentTime
-      importerId <- asks importEnvId
-      mExternalEvent <- importDB $ do
-        update importerId [ImporterMetadataLastRunImported +=. Just 1]
-        getBy (UniqueExternalEventKey importerId externalEventKey)
-      case mExternalEvent of
-        Nothing -> do
-          logInfoN $ T.pack $ unwords ["Importing never-before-seen event from", T.unpack externalEventOrigin]
-          importDB (insert externalEvent) >>= func
-        Just (Entity externalEventId oldExternalEvent) -> do
-          case externalEvent `changesComparedTo` oldExternalEvent of
+      let today = utctDay now
+      let yesterday = addDays (-1) today
+      if externalEventDay < yesterday
+        then logDebugN $ T.pack $ unwords ["Not importing external event because it is in the past:", T.unpack externalEventOrigin]
+        else do
+          importerId <- asks importEnvId
+          mExternalEvent <- importDB $ do
+            update importerId [ImporterMetadataLastRunImported +=. Just 1]
+            getBy (UniqueExternalEventKey importerId externalEventKey)
+          case mExternalEvent of
             Nothing -> do
-              logInfoN $ T.pack $ unwords ["Not re-importing known event, because it was not changed, from", T.unpack externalEventOrigin]
-              pure ()
-            Just updates -> do
-              logInfoN $ T.pack $ unwords ["Importing known-but-changed event from", T.unpack externalEventOrigin]
-              importDB $
-                void $
-                  update
-                    externalEventId
-                    ( (ExternalEventModified =. Just now) :
-                      NE.toList updates
-                    )
-              func externalEventId
+              logInfoN $ T.pack $ unwords ["Importing never-before-seen event from", T.unpack externalEventOrigin]
+              importDB (insert externalEvent) >>= func
+            Just (Entity externalEventId oldExternalEvent) -> do
+              case externalEvent `changesComparedTo` oldExternalEvent of
+                Nothing -> do
+                  logInfoN $ T.pack $ unwords ["Not re-importing known event, because it was not changed, from", T.unpack externalEventOrigin]
+                  pure ()
+                Just updates -> do
+                  logInfoN $ T.pack $ unwords ["Importing known-but-changed event from", T.unpack externalEventOrigin]
+                  importDB $
+                    void $
+                      update
+                        externalEventId
+                        ( (ExternalEventModified =. Just now) :
+                          NE.toList updates
+                        )
+                  func externalEventId
 
 jsonRequestConduit :: FromJSON a => ConduitT HTTP.Request a Import ()
 jsonRequestConduit = C.map ((,) ()) .| jsonRequestConduitWith .| C.map snd
@@ -370,28 +375,79 @@ chooseUserAgent = do
   index <- randomRIO (0, length userAgentList - 1)
   pure $ userAgentList !! index
 
+-- https://techblog.willshouse.com/2012/01/03/most-common-user-agents/
+-- Last Updated: Sun, 05 Jun 2022 10:08:39 +0000
 userAgentList :: [ByteString]
 userAgentList =
-  [ "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; FSL 7.0.6.01001)",
-    "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; FSL 7.0.7.01001)",
-    "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; FSL 7.0.5.01003)",
-    "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0",
-    "Mozilla/5.0 (X11; U; Linux x86_64; de; rv:1.9.2.8) Gecko/20100723 Ubuntu/10.04 (lucid) Firefox/3.6.8",
-    "Mozilla/5.0 (Windows NT 5.1; rv:13.0) Gecko/20100101 Firefox/13.0.1",
-    "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20100101 Firefox/11.0",
-    "Mozilla/5.0 (X11; U; Linux x86_64; de; rv:1.9.2.8) Gecko/20100723 Ubuntu/10.04 (lucid) Firefox/3.6.8",
-    "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; .NET CLR 1.0.3705)",
-    "Mozilla/5.0 (Windows NT 5.1; rv:13.0) Gecko/20100101 Firefox/13.0.1",
-    "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:13.0) Gecko/20100101 Firefox/13.0.1",
-    "Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)",
-    "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)",
-    "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)",
-    "Opera/9.80 (Windows NT 5.1; U; en) Presto/2.10.289 Version/12.01",
-    "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; SV1; .NET CLR 2.0.50727)",
-    "Mozilla/5.0 (Windows NT 5.1; rv:5.0.1) Gecko/20100101 Firefox/5.0.1",
-    "Mozilla/5.0 (Windows NT 6.1; rv:5.0) Gecko/20100101 Firefox/5.02",
-    "Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/13.0.782.112 Safari/535.1",
-    "Mozilla/4.0 (compatible; MSIE 6.0; MSIE 5.5; Windows NT 5.0) Opera 7.02 Bork-edition [en]"
+  [ "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0",
+    "Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:100.0) Gecko/20100101 Firefox/100.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:101.0) Gecko/20100101 Firefox/101.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.53",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Safari/605.1.15",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.62 Safari/537.36",
+    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.47",
+    "Mozilla/5.0 (X11; Linux x86_64; rv:101.0) Gecko/20100101 Firefox/101.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36 Edg/101.0.1210.39",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:99.0) Gecko/20100101 Firefox/99.0",
+    "Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Safari/605.1.15",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64; rv:99.0) Gecko/20100101 Firefox/99.0",
+    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:99.0) Gecko/20100101 Firefox/99.0",
+    "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 OPR/86.0.4363.59",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36 Edg/101.0.1210.32",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.141 YaBrowser/22.3.3.852 Yowser/2.5 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15",
+    "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.60 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36 OPR/85.0.4341.75",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:101.0) Gecko/20100101 Firefox/101.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:99.0) Gecko/20100101 Firefox/99.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15",
+    "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 OPR/86.0.4363.64",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36 OPR/85.0.4341.71",
+    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.143 YaBrowser/22.5.0.1814 Yowser/2.5 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0"
   ]
 
 tryToImportImage :: URI -> Import (Maybe ImageId)
@@ -556,73 +612,77 @@ yieldManyShuffled list = do
 
 convertLDEventToExternalEvent :: Text -> ConduitT (HTTP.Request, HTTP.Response LB.ByteString, LD.Event) (ExternalEvent, Maybe URI) Import ()
 convertLDEventToExternalEvent keyPrefix = awaitForever $ \(request, _, ldEvent) -> do
-  let unescapeHtml = HTML.innerText . HTML.parseTags
+  let (externalEventDay, externalEventStart) = case LD.eventStartDate ldEvent of
+        LD.EventStartDate d -> (LD.dateDay d, Nothing)
+        LD.EventStartDateTime dateTime ->
+          let LocalTime d tod = LD.dateTimeLocalTime dateTime
+           in (d, Just tod)
 
-  mPlaceEntity <- case LD.eventLocation ldEvent of
-    LD.EventLocationPlace place ->
-      let address = case LD.placeAddress place of
-            LD.PlaceAddressText t -> unescapeHtml t
-            LD.PlaceAddressPostalAddress postalAddress ->
-              unescapeHtml $
-                T.unwords $
-                  catMaybes
-                    [ LD.postalAddressStreetAddress postalAddress,
-                      LD.postalAddressLocality postalAddress,
-                      LD.postalAddressRegion postalAddress,
-                      LD.postalAddressCountry postalAddress
-                    ]
-       in case LD.placeGeo place of
-            Just (LD.PlaceGeoCoordinates geoCoordinates) ->
-              fmap Just $
-                lift $
-                  importDB $
-                    upsertBy
-                      (UniquePlaceQuery address)
-                      ( Place
-                          { placeQuery = address,
-                            placeLat = LD.geoCoordinatesLatitude geoCoordinates,
-                            placeLon = LD.geoCoordinatesLongitude geoCoordinates
-                          }
-                      )
-                      [] -- Don't change if it's already there, so that they can't fill our page with junk.
-            Nothing -> lift $ do
-              app <- asks importEnvApp
-              runReaderT (lookupPlaceRaw address) app
+  -- Check for day here already so we don't do any unnecessary place lookups.
+  today <- liftIO $ utctDay <$> getCurrentTime
+  let yesterday = addDays (-1) today
+  when (externalEventDay >= yesterday) $ do
+    let unescapeHtml = HTML.innerText . HTML.parseTags
+    mPlaceEntity <- case LD.eventLocation ldEvent of
+      LD.EventLocationPlace place ->
+        let address = case LD.placeAddress place of
+              LD.PlaceAddressText t -> unescapeHtml t
+              LD.PlaceAddressPostalAddress postalAddress ->
+                unescapeHtml $
+                  T.unwords $
+                    catMaybes
+                      [ LD.postalAddressStreetAddress postalAddress,
+                        LD.postalAddressLocality postalAddress,
+                        LD.postalAddressRegion postalAddress,
+                        LD.postalAddressCountry postalAddress
+                      ]
+         in case LD.placeGeo place of
+              Just (LD.PlaceGeoCoordinates geoCoordinates) ->
+                fmap Just $
+                  lift $
+                    importDB $
+                      upsertBy
+                        (UniquePlaceQuery address)
+                        ( Place
+                            { placeQuery = address,
+                              placeLat = LD.geoCoordinatesLatitude geoCoordinates,
+                              placeLon = LD.geoCoordinatesLongitude geoCoordinates
+                            }
+                        )
+                        [] -- Don't change if it's already there, so that they can't fill our page with junk.
+              Nothing -> lift $ do
+                app <- asks importEnvApp
+                runReaderT (lookupPlaceRaw address) app
 
-  case mPlaceEntity of
-    Nothing -> logWarnN "Place not found."
-    Just (Entity externalEventPlace _) -> do
-      externalEventUuid <- nextRandomUUID
-      let externalEventKey =
-            let uriText = T.pack $ show $ getUri request
-             in case T.stripPrefix keyPrefix uriText of
-                  Nothing -> uriText
-                  Just suffix -> suffix
-      let externalEventTitle = unescapeHtml $ LD.eventName ldEvent
-      let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
-      let externalEventDescription = LD.eventDescription ldEvent
-      let externalEventOrganiser = do
-            eventOrganizer <- LD.eventOrganizer ldEvent
-            case eventOrganizer of
-              LD.EventOrganizerOrganization organization -> pure $ LD.organizationName organization
-      let (externalEventDay, externalEventStart) = case LD.eventStartDate ldEvent of
-            LD.EventStartDate d -> (LD.dateDay d, Nothing)
-            LD.EventStartDateTime dateTime ->
-              let LocalTime d tod = LD.dateTimeLocalTime dateTime
-               in (d, Just tod)
-      let externalEventHomepage = Nothing
-      let externalEventPrice = Nothing
-      let externalEventCancelled = case LD.eventStatus ldEvent of
-            Just LD.EventCancelled -> Just True
-            _ -> Nothing
-      now <- liftIO getCurrentTime
-      let externalEventCreated = now
-      let externalEventModified = Nothing
-      externalEventImporter <- asks importEnvId
-      let externalEventOrigin = T.pack $ show $ getUri request
-      let mImageURI = do
-            eventImage <- listToMaybe (LD.eventImages ldEvent)
-            case eventImage of
-              LD.EventImageURL t -> parseURI $ T.unpack t
+    case mPlaceEntity of
+      Nothing -> logWarnN "Place not found."
+      Just (Entity externalEventPlace _) -> do
+        externalEventUuid <- nextRandomUUID
+        let externalEventKey =
+              let uriText = T.pack $ show $ getUri request
+               in case T.stripPrefix keyPrefix uriText of
+                    Nothing -> uriText
+                    Just suffix -> suffix
+        let externalEventTitle = unescapeHtml $ LD.eventName ldEvent
+        let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
+        let externalEventDescription = LD.eventDescription ldEvent
+        let externalEventOrganiser = do
+              eventOrganizer <- LD.eventOrganizer ldEvent
+              case eventOrganizer of
+                LD.EventOrganizerOrganization organization -> pure $ LD.organizationName organization
+        let externalEventHomepage = Nothing
+        let externalEventPrice = Nothing
+        let externalEventCancelled = case LD.eventStatus ldEvent of
+              Just LD.EventCancelled -> Just True
+              _ -> Nothing
+        now <- liftIO getCurrentTime
+        let externalEventCreated = now
+        let externalEventModified = Nothing
+        externalEventImporter <- asks importEnvId
+        let externalEventOrigin = T.pack $ show $ getUri request
+        let mImageURI = do
+              eventImage <- listToMaybe (LD.eventImages ldEvent)
+              case eventImage of
+                LD.EventImageURL t -> parseURI $ T.unpack t
 
-      yield (ExternalEvent {..}, mImageURI)
+        yield (ExternalEvent {..}, mImageURI)
