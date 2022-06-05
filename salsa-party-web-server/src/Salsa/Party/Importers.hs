@@ -20,8 +20,8 @@ importerLoopers Settings {..} app = do
           Just sets -> do
             logDebugN $
               T.pack $
-                unlines
-                  [ unwords ["Configured importer", show (importerName importer), "with settings"],
+                concat
+                  [ unwords ["Configured importer", show (importerName importer), "with settings:\n"],
                     ppShow sets
                   ]
             pure $
