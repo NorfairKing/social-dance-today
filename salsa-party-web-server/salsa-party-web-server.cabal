@@ -47,6 +47,7 @@ library
       Salsa.Party.Importer.StayHappeningCom
       Salsa.Party.Importer.TanzagendaCh
       Salsa.Party.Importer.TribeCalendar
+      Salsa.Party.Importers
       Salsa.Party.Looper
       Salsa.Party.Looper.ExploreCachePopulator
       Salsa.Party.Looper.ImageGarbageCollector
@@ -55,6 +56,7 @@ library
       Salsa.Party.Looper.PartyGarbageCollector
       Salsa.Party.Looper.PartyScheduler
       Salsa.Party.Looper.SearchCachePopulator
+      Salsa.Party.Loopers
       Salsa.Party.OptParse
       Salsa.Party.Server
       Salsa.Party.Web.Server

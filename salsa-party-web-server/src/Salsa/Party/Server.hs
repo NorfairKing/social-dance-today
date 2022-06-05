@@ -16,7 +16,7 @@ import qualified OpenStreetMaps.Geocoding as OSM
 import Path
 import Path.IO
 import Salsa.Party.DB.Migration
-import Salsa.Party.Looper
+import Salsa.Party.Loopers
 import Salsa.Party.OptParse
 import Salsa.Party.Web.Server
 import Salsa.Party.Web.Server.Application ()
