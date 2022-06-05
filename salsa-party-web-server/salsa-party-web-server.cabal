@@ -46,6 +46,7 @@ library
       Salsa.Party.Importer.SensualDance
       Salsa.Party.Importer.StayHappeningCom
       Salsa.Party.Importer.TanzagendaCh
+      Salsa.Party.Importer.TanzeventsCh
       Salsa.Party.Importer.TribeCalendar
       Salsa.Party.Importers
       Salsa.Party.Looper

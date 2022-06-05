@@ -1,9 +1,8 @@
 1. Check Robots.txt, Terms, Sitemap, Machine readibility with the site tester and double-check myself
 2. Add entry in the 'dataSources' list in `salsa-party-web-server/src/Salsa/Party/OptParse.hs`.
 3. Add the lines to `scripts/restart-web-server.sh` to run the looper locally.
-4. Add the line and import to `salsa-party-web-server/src/Salsa/Party/Importer.hs`
-5. Add the importer module.
-6. Write the importer
-7. Try it out in staging
-8. Run it in prod
-9. Check if it worked, a month later
+4. Add the importer module.
+5. Write the importer
+6. Try it out in staging
+7. Run it in prod
+8. Check if it worked, a month later
