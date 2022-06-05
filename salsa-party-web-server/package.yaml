@@ -30,6 +30,7 @@ library:
   - edit-distance
   - envparse
   - esqueleto
+  - fast-logger
   - file-embed
   - hashable
   - http-api-data
@@ -58,6 +59,7 @@ library:
   - resourcet
   - retry
   - safe
+  - safe-coloured-text
   - scalpel
   - scientific
   - shakespeare

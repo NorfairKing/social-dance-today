@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -7,6 +8,7 @@ import Control.Concurrent.TokenLimiter.Concurrent
 import Control.Monad
 import Control.Monad.Logger
 import qualified Data.ByteString as SB
+import qualified Data.ByteString.Char8 as SB8
 import Data.Cache
 import qualified Data.Text as T
 import Database.Persist.Sqlite
@@ -25,20 +27,19 @@ import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Poster
 import Salsa.Party.Web.Server.Static
 import System.Exit
+import Text.Colour
 import Text.Show.Pretty
 import UnliftIO
 
 salsaPartyServer :: IO ()
-salsaPartyServer = do
-  settings <- getSettings
-  when development $ pPrint settings
-  runSalsaPartyServer settings
+salsaPartyServer = getSettings >>= runSalsaPartyServer
 
 runSalsaPartyServer :: Settings -> IO ()
 runSalsaPartyServer settings@Settings {..} = do
   let info = mkSqliteConnectionInfo (T.pack (fromAbsFile settingDbFile)) & walEnabled .~ False & fkEnabled .~ False
-  runStderrLoggingT $
+  runMyLoggingT $
     filterLogger (\_ ll -> ll >= settingLogLevel) $ do
+      logInfoN $ T.pack $ ppShow settings
       -- Set this to true momentarily when adding a new poster
       when False convertPosters
       withSqlitePoolInfo info 1 $ \pool -> do
@@ -76,6 +77,49 @@ runSalsaPartyServer settings@Settings {..} = do
         concurrently_
           (runLoopers settings app)
           (runSalsaPartyWebServer settings app)
+
+runMyLoggingT :: LoggingT IO a -> IO a
+runMyLoggingT func =
+  if development
+    then runLoggingT func developmentLogFunc
+    else runStderrLoggingT func
+  where
+    developmentLogFunc _ src level msg =
+      SB8.hPutStrLn stderr $
+        fromLogStr $
+          mconcat
+            [ toLogStr $
+                renderChunks With24BitColours $
+                  map
+                    (logLevelColour level)
+                    [ "[",
+                      logLevelChunk level,
+                      if T.null src
+                        then ""
+                        else chunk $ "#" `mappend` src,
+                      "]"
+                    ],
+              " ",
+              msg
+            ]
+
+logLevelColour :: LogLevel -> (Chunk -> Chunk)
+logLevelColour = \case
+  LevelDebug -> fore white
+  LevelInfo -> fore yellow
+  LevelWarn -> fore orange
+  LevelError -> fore red
+  LevelOther _ -> id
+  where
+    orange = color256 214
+
+logLevelChunk :: LogLevel -> Chunk
+logLevelChunk = \case
+  LevelDebug -> "DEBUG"
+  LevelInfo -> "INFO"
+  LevelWarn -> "WARNING"
+  LevelError -> "ERROR"
+  LevelOther t -> chunk t
 
 -- We convert the posters before we commit them so that they're already
 -- converted by the time we serve them.
