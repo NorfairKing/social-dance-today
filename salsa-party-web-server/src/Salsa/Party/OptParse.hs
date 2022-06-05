@@ -11,7 +11,10 @@ module Salsa.Party.OptParse where
 
 import Autodocodec
 import Autodocodec.Yaml
+import Control.Monad
 import Control.Monad.Logger
+import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -53,33 +56,8 @@ data Settings = Settings
     settingPartyGarbageCollectorLooperSettings :: !LooperSettings,
     settingImageGarbageCollectorLooperSettings :: !LooperSettings,
     settingPartySchedulerLooperSettings :: !LooperSettings,
-    settingImporterInterval :: NominalDiffTime,
-    -- https://events.info
-    settingEventsInfoImportLooperSettings :: !LooperSettings,
-    -- https://golatindance.com
-    settingGolatindanceComImportLooperSettings :: !LooperSettings,
-    -- https://danceplace.com
-    settingDanceplaceComImportLooperSettings :: !LooperSettings,
-    -- https://mapdance.com
-    settingMapdanceComImportLooperSettings :: !LooperSettings,
-    -- https://salsachicago.com
-    settingSalsachicagoComImportLooperSettings :: !LooperSettings,
-    -- https://dancefloorfinder.com
-    settingDancefloorfinderComImportLooperSettings :: !LooperSettings,
-    -- https://sensual.dance
-    settingSensualDanceImportLooperSettings :: !LooperSettings,
-    -- https://salsa.be
-    settingSalsaBeImportLooperSettings :: !LooperSettings,
-    -- https://latinworld.nl
-    settingLatinworldNlImportLooperSettings :: !LooperSettings,
-    -- https://tanzagenda.ch
-    settingTanzagendaChImportLooperSettings :: !LooperSettings,
-    -- https://stayhappening.com
-    settingStayHappeningComImportLooperSettings :: !LooperSettings,
-    -- https://londonsalsaevents.com
-    settingLondonSalsaEventsComImportLooperSettings :: !LooperSettings,
-    -- https://salsalovers.be
-    settingSalsaLoversBeImportLooperSettings :: !LooperSettings
+    settingImporterInterval :: !NominalDiffTime,
+    settingImporterSettings :: !(Map Text LooperSettings)
   }
   deriving (Show, Eq, Generic)
 
@@ -112,20 +90,19 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingPartyGarbageCollectorLooperSettings = deriveLooperSettings (minutes 1) (hours 24) flagPartyGarbageCollectorLooperFlags envPartyGarbageCollectorLooperEnvironment (mc confPartyGarbageCollectorLooperConfiguration)
   let settingImageGarbageCollectorLooperSettings = deriveLooperSettings (minutes 1 + seconds 30) (hours 24) flagImageGarbageCollectorLooperFlags envImageGarbageCollectorLooperEnvironment (mc confImageGarbageCollectorLooperConfiguration)
   let settingPartySchedulerLooperSettings = deriveLooperSettings (minutes 2 + seconds 30) (hours 24) flagPartySchedulerLooperFlags envPartySchedulerLooperEnvironment (mc confPartySchedulerLooperConfiguration)
+
   let settingImporterInterval = maybe (hours 24) fromIntegral $ flagImporterInterval <|> envImporterInterval <|> mc confImporterInterval
-  let settingEventsInfoImportLooperSettings = deriveLooperSettings (minutes 2 + seconds 1) (hours 1) flagEventsInfoImportLooperFlags envEventsInfoImportLooperEnvironment (mc confEventsInfoImportLooperConfiguration)
-  let settingGolatindanceComImportLooperSettings = deriveLooperSettings (minutes 3 + seconds 2) (hours 1) flagGolatindanceComImportLooperFlags envGolatindanceComImportLooperEnvironment (mc confGolatindanceComImportLooperConfiguration)
-  let settingDanceplaceComImportLooperSettings = deriveLooperSettings (minutes 4 + seconds 3) (hours 1) flagDanceplaceComImportLooperFlags envDanceplaceComImportLooperEnvironment (mc confDanceplaceComImportLooperConfiguration)
-  let settingMapdanceComImportLooperSettings = deriveLooperSettings (minutes 5 + seconds 4) (hours 1) flagMapdanceComImportLooperFlags envMapdanceComImportLooperEnvironment (mc confMapdanceComImportLooperConfiguration)
-  let settingSalsachicagoComImportLooperSettings = deriveLooperSettings (minutes 6 + seconds 5) (hours 1) flagSalsachicagoComImportLooperFlags envSalsachicagoComImportLooperEnvironment (mc confSalsachicagoComImportLooperConfiguration)
-  let settingDancefloorfinderComImportLooperSettings = deriveLooperSettings (minutes 7 + seconds 6) (hours 1) flagDancefloorfinderComImportLooperFlags envDancefloorfinderComImportLooperEnvironment (mc confDancefloorfinderComImportLooperConfiguration)
-  let settingSensualDanceImportLooperSettings = deriveLooperSettings (minutes 8 + seconds 7) (hours 1) flagSensualDanceImportLooperFlags envSensualDanceImportLooperEnvironment (mc confSensualDanceImportLooperConfiguration)
-  let settingSalsaBeImportLooperSettings = deriveLooperSettings (minutes 9 + seconds 8) (hours 1) flagSalsaBeImportLooperFlags envSalsaBeImportLooperEnvironment (mc confSalsaBeImportLooperConfiguration)
-  let settingLatinworldNlImportLooperSettings = deriveLooperSettings (minutes 10 + seconds 9) (hours 1) flagLatinworldNlImportLooperFlags envLatinworldNlImportLooperEnvironment (mc confLatinworldNlImportLooperConfiguration)
-  let settingTanzagendaChImportLooperSettings = deriveLooperSettings (minutes 11 + seconds 10) (hours 1) flagTanzagendaChImportLooperFlags envTanzagendaChImportLooperEnvironment (mc confTanzagendaChImportLooperConfiguration)
-  let settingStayHappeningComImportLooperSettings = deriveLooperSettings (minutes 12 + seconds 10) (hours 1) flagStayHappeningComImportLooperFlags envStayHappeningComImportLooperEnvironment (mc confStayHappeningComImportLooperConfiguration)
-  let settingLondonSalsaEventsComImportLooperSettings = deriveLooperSettings (minutes 13 + seconds 10) (hours 1) flagLondonSalsaEventsComImportLooperFlags envLondonSalsaEventsComImportLooperEnvironment (mc confLondonSalsaEventsComImportLooperConfiguration)
-  let settingSalsaLoversBeImportLooperSettings = deriveLooperSettings (minutes 13 + seconds 10) (hours 1) flagSalsaLoversBeImportLooperFlags envSalsaLoversBeImportLooperEnvironment (mc confSalsaLoversBeImportLooperConfiguration)
+  settingImporterSettings <- fmap M.fromList $
+    forM dataSources $ \dataSource -> do
+      flags <- case M.lookup dataSource flagImporterFlags of
+        Nothing -> fail $ unwords ["No flags for data source", show dataSource]
+        Just fs -> pure fs
+      env <- case M.lookup dataSource envImporterEnvironments of
+        Nothing -> fail $ unwords ["No environment for data source", show dataSource]
+        Just e -> pure e
+      let mLConf = M.lookup dataSource (maybe M.empty confImporterConfigurations mConf)
+      pure (dataSource, deriveLooperSettings (minutes 3) (hours 24) flags env mLConf)
+
   pure Settings {..}
   where
     mc :: (Configuration -> Maybe a) -> Maybe a
@@ -158,19 +135,7 @@ data Configuration = Configuration
     confImageGarbageCollectorLooperConfiguration :: !(Maybe LooperConfiguration),
     confPartySchedulerLooperConfiguration :: !(Maybe LooperConfiguration),
     confImporterInterval :: !(Maybe Int),
-    confEventsInfoImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confGolatindanceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confDanceplaceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confMapdanceComImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confSalsachicagoComImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confDancefloorfinderComImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confSensualDanceImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confSalsaBeImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confLatinworldNlImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confTanzagendaChImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confStayHappeningComImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confLondonSalsaEventsComImportLooperConfiguration :: !(Maybe LooperConfiguration),
-    confSalsaLoversBeImportLooperConfiguration :: !(Maybe LooperConfiguration)
+    confImporterConfigurations :: !(Map Text LooperConfiguration)
   }
   deriving (Show, Eq, Generic)
 
@@ -198,19 +163,7 @@ instance HasCodec Configuration where
         <*> optionalFieldOrNull "image-garbage-collector" "The image garbage collector looper" .= confImageGarbageCollectorLooperConfiguration
         <*> optionalFieldOrNull "party-scheduler" "The party scheduler looper" .= confPartySchedulerLooperConfiguration
         <*> optionalFieldOrNull "importer-interval" "The default interval for importers" .= confImporterInterval
-        <*> optionalFieldOrNull "events-info-importer" "The events.info import looper" .= confEventsInfoImportLooperConfiguration
-        <*> optionalFieldOrNull "golatindance-com-importer" "The golatindance.com import looper" .= confGolatindanceComImportLooperConfiguration
-        <*> optionalFieldOrNull "danceplace-com-importer" "The danceplace.com import looper" .= confDanceplaceComImportLooperConfiguration
-        <*> optionalFieldOrNull "mapdance-com-importer" "The mapdance.com import looper" .= confMapdanceComImportLooperConfiguration
-        <*> optionalFieldOrNull "salsachicago-com-importer" "The salsachicago.com import looper" .= confSalsachicagoComImportLooperConfiguration
-        <*> optionalFieldOrNull "dancefloorfinder-com-importer" "The dancefloorfinder.com import looper" .= confDancefloorfinderComImportLooperConfiguration
-        <*> optionalFieldOrNull "sensual-dance-importer" "The sensual.dance import looper" .= confSensualDanceImportLooperConfiguration
-        <*> optionalFieldOrNull "salsa-be-importer" "The salsa.be import looper" .= confSalsaBeImportLooperConfiguration
-        <*> optionalFieldOrNull "latinworld-nl-importer" "The latinworld.nl import looper" .= confLatinworldNlImportLooperConfiguration
-        <*> optionalFieldOrNull "tanzagenda-ch-importer" "The tanzagenda.ch import looper" .= confTanzagendaChImportLooperConfiguration
-        <*> optionalFieldOrNull "stayhappening-com-importer" "The stayhappening.com import looper" .= confStayHappeningComImportLooperConfiguration
-        <*> optionalFieldOrNull "londonsalsaevents-com-importer" "The londonsalsavents.com import looper" .= confLondonSalsaEventsComImportLooperConfiguration
-        <*> optionalFieldOrNull "salsalovers-be-importer" "The salsalovers.be import looper" .= confSalsaLoversBeImportLooperConfiguration
+        <*> optionalFieldOrNullWithOmittedDefault "importer" M.empty "The per-importer configurations" .= confImporterConfigurations
 
 data SentryConfiguration = SentryConfiguration
   { sentryConfDSN :: !(Maybe Text),
@@ -258,19 +211,7 @@ data Environment = Environment
     envImageGarbageCollectorLooperEnvironment :: !LooperEnvironment,
     envPartySchedulerLooperEnvironment :: !LooperEnvironment,
     envImporterInterval :: !(Maybe Int),
-    envEventsInfoImportLooperEnvironment :: !LooperEnvironment,
-    envGolatindanceComImportLooperEnvironment :: !LooperEnvironment,
-    envDanceplaceComImportLooperEnvironment :: !LooperEnvironment,
-    envMapdanceComImportLooperEnvironment :: !LooperEnvironment,
-    envSalsachicagoComImportLooperEnvironment :: !LooperEnvironment,
-    envDancefloorfinderComImportLooperEnvironment :: !LooperEnvironment,
-    envSensualDanceImportLooperEnvironment :: !LooperEnvironment,
-    envSalsaBeImportLooperEnvironment :: !LooperEnvironment,
-    envLatinworldNlImportLooperEnvironment :: !LooperEnvironment,
-    envTanzagendaChImportLooperEnvironment :: !LooperEnvironment,
-    envStayHappeningComImportLooperEnvironment :: !LooperEnvironment,
-    envLondonSalsaEventsComImportLooperEnvironment :: !LooperEnvironment,
-    envSalsaLoversBeImportLooperEnvironment :: !LooperEnvironment
+    envImporterEnvironments :: !(Map Text LooperEnvironment)
   }
   deriving (Show, Eq, Generic)
 
@@ -309,19 +250,7 @@ environmentParser =
       <*> looperEnvironmentParser "IMAGE_GARBAGE_COLLECTOR"
       <*> looperEnvironmentParser "PARTY_SCHEDULER"
       <*> Env.var (fmap Just . Env.auto) "IMPORTER_INTERVAL" (mE <> Env.help "The default interval for the importers")
-      <*> looperEnvironmentParser "EVENTS_INFO_IMPORTER"
-      <*> looperEnvironmentParser "GOLATINDANCE_COM_IMPORTER"
-      <*> looperEnvironmentParser "DANCEPLACE_COM_IMPORTER"
-      <*> looperEnvironmentParser "MAPDANCE_COM_IMPORTER"
-      <*> looperEnvironmentParser "SALSACHICAGO_COM_IMPORTER"
-      <*> looperEnvironmentParser "DANCEFLOORFINDER_COM_IMPORTER"
-      <*> looperEnvironmentParser "SENSUAL_DANCE_IMPORTER"
-      <*> looperEnvironmentParser "SALSA_BE_IMPORTER"
-      <*> looperEnvironmentParser "LATINWORLD_NL_IMPORTER"
-      <*> looperEnvironmentParser "TANZAGENDA_CH_IMPORTER"
-      <*> looperEnvironmentParser "STAYHAPPENING_COM_IMPORTER"
-      <*> looperEnvironmentParser "LONDONSALSAEVENTS_COM_IMPORTER"
-      <*> looperEnvironmentParser "SALSALOVERS_BE_IMPORTER"
+      <*> importerEnvironments
   where
     logLevelReader = \case
       "Debug" -> Right LevelDebug
@@ -330,6 +259,16 @@ environmentParser =
       "Error" -> Right LevelError
       s -> Left $ Env.UnreadError $ "Unknown log level: " <> s
     mE = Env.def Nothing
+
+importerEnvironments :: Env.Parser Env.Error (Map Text LooperEnvironment)
+importerEnvironments =
+  M.fromList
+    <$> traverse
+      (\ds -> (,) ds <$> looperEnvironmentParser (dataSourceEnvVar ds))
+      dataSources
+
+dataSourceEnvVar :: Text -> String
+dataSourceEnvVar = (<> "_IMPORTER") . T.unpack . T.toUpper . T.replace "." "_"
 
 sentryEnvironmentParser :: Env.Parser Env.Error SentryEnvironment
 sentryEnvironmentParser =
@@ -386,19 +325,7 @@ data Flags = Flags
     flagImageGarbageCollectorLooperFlags :: !LooperFlags,
     flagPartySchedulerLooperFlags :: !LooperFlags,
     flagImporterInterval :: !(Maybe Int),
-    flagEventsInfoImportLooperFlags :: !LooperFlags,
-    flagGolatindanceComImportLooperFlags :: !LooperFlags,
-    flagDanceplaceComImportLooperFlags :: !LooperFlags,
-    flagMapdanceComImportLooperFlags :: !LooperFlags,
-    flagSalsachicagoComImportLooperFlags :: !LooperFlags,
-    flagDancefloorfinderComImportLooperFlags :: !LooperFlags,
-    flagSensualDanceImportLooperFlags :: !LooperFlags,
-    flagSalsaBeImportLooperFlags :: !LooperFlags,
-    flagLatinworldNlImportLooperFlags :: !LooperFlags,
-    flagTanzagendaChImportLooperFlags :: !LooperFlags,
-    flagStayHappeningComImportLooperFlags :: !LooperFlags,
-    flagLondonSalsaEventsComImportLooperFlags :: !LooperFlags,
-    flagSalsaLoversBeImportLooperFlags :: !LooperFlags
+    flagImporterFlags :: !(Map Text LooperFlags)
   }
   deriving (Show, Eq, Generic)
 
@@ -562,19 +489,17 @@ parseFlags =
               ]
           )
       )
-    <*> getLooperFlags "events-info-importer"
-    <*> getLooperFlags "golatindance-com-importer"
-    <*> getLooperFlags "danceplace-com-importer"
-    <*> getLooperFlags "mapdance-com-importer"
-    <*> getLooperFlags "salsachicago-com-importer"
-    <*> getLooperFlags "dancefloorfinder-com-importer"
-    <*> getLooperFlags "sensual-dance-importer"
-    <*> getLooperFlags "salsa-be-importer"
-    <*> getLooperFlags "latinworld-nl-importer"
-    <*> getLooperFlags "tanzagenda-ch-importer"
-    <*> getLooperFlags "stayhappening-com-importer"
-    <*> getLooperFlags "londonsalsaevents-com-importer"
-    <*> getLooperFlags "salsalovers-be-importer"
+    <*> getImporterFlags
+
+getImporterFlags :: OptParse.Parser (Map Text LooperFlags)
+getImporterFlags =
+  M.fromList
+    <$> traverse
+      (\ds -> (,) ds <$> getLooperFlags (dataSourceFlagPrefix ds))
+      dataSources
+
+dataSourceFlagPrefix :: Text -> String
+dataSourceFlagPrefix = (<> "-importer") . T.unpack . T.toLower . T.replace "." "-"
 
 data SentryFlags = SentryFlags
   { sentryFlagDSN :: !(Maybe Text),
@@ -612,3 +537,20 @@ instance HasCodec LogLevel where
         (LevelWarn, "Warn"),
         (LevelError, "Error")
       ]
+
+dataSources :: [Text]
+dataSources =
+  [ "events.info",
+    "golatindance.com",
+    "danceplace.com",
+    "mapdance.com",
+    "salsachicago.com",
+    "dancefloorfinder.com",
+    "sensual.dance",
+    "salsa.be",
+    "latinworld.nl",
+    "tanzagenda.ch",
+    "stayhappening.com",
+    "londonsalsaevents.com",
+    "salsalovers.be"
+  ]

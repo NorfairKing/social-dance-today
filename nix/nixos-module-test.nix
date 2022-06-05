@@ -28,12 +28,12 @@ pkgs.nixosTest (
             enable-osm-geocoding = false;
             enable-google-geocoding = false;
             organiser-reminder.enable = false;
-            events-info-importer.enable = false;
-            golatindance-com-importer.enable = false;
-            danceplace-com-importer.enable = false;
-            mapdance-com-importer.enable = false;
-            salsachicago-com-importer.enable = false;
-            dancefloorfinder-com-importer.enable = false;
+            importer = {
+              "salsalovers.be" = {
+                enable = false;
+                phase = 0;
+              };
+            };
           };
         };
       };

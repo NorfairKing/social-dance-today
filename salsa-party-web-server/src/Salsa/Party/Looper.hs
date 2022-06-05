@@ -27,8 +27,9 @@ import UnliftIO
 
 runLoopers :: Settings -> App -> LoggingT IO ()
 runLoopers settings@Settings {..} app = do
+  importers <- importerLoopers settings app
   let looperDefs =
-        importerLoopers settings app
+        importers
           ++ [ mkLooperDef
                  "search-cache-populator"
                  settingSearchCachePopulatorLooperSettings

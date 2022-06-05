@@ -124,19 +124,10 @@ in
                   image-garbage-collector = mkLooperOption "image-garbage-collector";
                   party-scheduler = mkLooperOption "party-scheduler";
 
-                  events-info-importer = mkLooperOption "events-info-importer";
-                  golatindance-com-importer = mkLooperOption "golatindance-com-importer";
-                  danceplace-com-importer = mkLooperOption "danceplace-com-importer";
-                  mapdance-com-importer = mkLooperOption "mapdance-com-importer";
-                  salsachicago-com-importer = mkLooperOption "salsachicago-com-importer";
-                  dancefloorfinder-com-importer = mkLooperOption "dancefloorfinder-com-importer";
-                  sensual-dance-importer = mkLooperOption "sensual-dance-importer";
-                  salsa-be-importer = mkLooperOption "salsa-be-importer";
-                  latinworld-nl-importer = mkLooperOption "latinworld-nl-importer";
-                  tanzagenda-ch-importer = mkLooperOption "tanzagenda-ch-importer";
-                  stayhappening-com-importer = mkLooperOption "stayhappening-com-importer";
-                  londonsalsaevents-com-importer = mkLooperOption "londonsalsaevents-com-importer";
-                  salsalovers-be-importer = mkLooperOption "salsalovers-be-importer";
+                  importer = mkOption {
+                    default = { };
+                    type = types.attrsOf (mkLooperOption "importer").type;
+                  };
                 };
             });
           default = null;
@@ -190,19 +181,7 @@ in
           (nullOrOption "google-search-console-verification" google-search-console-verification)
           (nullOrOption "image-garbage-collector" image-garbage-collector)
           (nullOrOption "organiser-reminder" organiser-reminder)
-          (nullOrOption "events-info-importer" events-info-importer)
-          (nullOrOption "golatindance-com-importer" golatindance-com-importer)
-          (nullOrOption "danceplace-com-importer" danceplace-com-importer)
-          (nullOrOption "mapdance-com-importer" mapdance-com-importer)
-          (nullOrOption "salsachicago-com-importer" salsachicago-com-importer)
-          (nullOrOption "dancefloorfinder-com-importer" dancefloorfinder-com-importer)
-          (nullOrOption "sensual-dance-importer" sensual-dance-importer)
-          (nullOrOption "salsa-be-importer" salsa-be-importer)
-          (nullOrOption "latinworld-nl-importer" latinworld-nl-importer)
-          (nullOrOption "tanzagenda-ch-importer" tanzagenda-ch-importer)
-          (nullOrOption "stayhappening-com-importer" stayhappening-com-importer)
-          (nullOrOption "londonsalsaevents-com-importer" londonsalsaevents-com-importer)
-          (nullOrOption "salsalovers-be-importer" salsalovers-be-importer)
+          (nullOrOption "importer" importer)
           (nullOrOption "sentry" sentry)
           cfg.web-server.config
         ];

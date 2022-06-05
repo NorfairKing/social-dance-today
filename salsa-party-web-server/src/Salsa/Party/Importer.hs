@@ -4,6 +4,8 @@
 module Salsa.Party.Importer where
 
 import Control.Monad.Logger
+import qualified Data.Map as M
+import qualified Data.Text as T
 import Looper
 import Salsa.Party.Importer.DancefloorfinderCom
 import Salsa.Party.Importer.DanceplaceCom
@@ -22,26 +24,39 @@ import Salsa.Party.Importer.TanzagendaCh
 import Salsa.Party.OptParse
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
+import Text.Show.Pretty (ppShow)
 
-importerLoopers :: Settings -> App -> [LooperDef (LoggingT IO)]
-importerLoopers Settings {..} app =
-  let importerLooper :: Importer -> LooperSettings -> LooperDef (LoggingT IO)
-      importerLooper importer sets =
-        mkLooperDef
-          ("importer-" <> importerName importer)
-          sets
-          (runImporterWithDoubleCheck settingImporterInterval app sets importer)
-   in [ importerLooper eventsInfoImporter settingEventsInfoImportLooperSettings,
-        importerLooper golatindanceComImporter settingGolatindanceComImportLooperSettings,
-        importerLooper danceplaceComImporter settingDanceplaceComImportLooperSettings,
-        importerLooper mapdanceComImporter settingMapdanceComImportLooperSettings,
-        importerLooper salsachicagoComImporter settingSalsachicagoComImportLooperSettings,
-        importerLooper dancefloorfinderComImporter settingDancefloorfinderComImportLooperSettings,
-        importerLooper sensualDanceImporter settingSensualDanceImportLooperSettings,
-        importerLooper salsaBeImporter settingSalsaBeImportLooperSettings,
-        importerLooper latinworldNlImporter settingLatinworldNlImportLooperSettings,
-        importerLooper tanzagendaChImporter settingTanzagendaChImportLooperSettings,
-        importerLooper stayHappeningComImporter settingStayHappeningComImportLooperSettings,
-        importerLooper londonSalsaEventsComImporter settingLondonSalsaEventsComImportLooperSettings,
-        importerLooper salsaLoversBeImporter settingSalsaLoversBeImportLooperSettings
-      ]
+importerLoopers :: Settings -> App -> LoggingT IO [LooperDef (LoggingT IO)]
+importerLoopers Settings {..} app = do
+  let importerLooper :: Importer -> LoggingT IO (LooperDef (LoggingT IO))
+      importerLooper importer =
+        case M.lookup (importerName importer) settingImporterSettings of
+          Nothing -> fail $ unwords ["Failed to configure importer:", show (importerName importer)]
+          Just sets -> do
+            logDebugN $
+              T.pack $
+                unlines
+                  [ unwords ["Configured importer", show (importerName importer), "with settings"],
+                    ppShow sets
+                  ]
+            pure $
+              mkLooperDef
+                ("importer-" <> importerName importer)
+                sets
+                (runImporterWithDoubleCheck settingImporterInterval app sets importer)
+   in mapM
+        importerLooper
+        [ eventsInfoImporter,
+          golatindanceComImporter,
+          danceplaceComImporter,
+          mapdanceComImporter,
+          salsachicagoComImporter,
+          dancefloorfinderComImporter,
+          sensualDanceImporter,
+          salsaBeImporter,
+          latinworldNlImporter,
+          tanzagendaChImporter,
+          stayHappeningComImporter,
+          londonSalsaEventsComImporter,
+          salsaLoversBeImporter
+        ]
