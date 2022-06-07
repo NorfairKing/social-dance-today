@@ -32,6 +32,7 @@ library
       Salsa.Party.Importer
       Salsa.Party.Importer.DancefloorfinderCom
       Salsa.Party.Importer.DanceplaceCom
+      Salsa.Party.Importer.DanceusOrg
       Salsa.Party.Importer.Env
       Salsa.Party.Importer.EventsInfo
       Salsa.Party.Importer.GolatindanceCom

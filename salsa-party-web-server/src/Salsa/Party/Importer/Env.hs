@@ -546,11 +546,11 @@ jsonLDEventsC ::
 jsonLDEventsC = parseJSONLDPieces .| parseJSONLDEvents
 
 parseJSONLDPieces :: ConduitT (Request, Response LB.ByteString) (Request, Response LB.ByteString, JSON.Value) Import ()
-parseJSONLDPieces = C.concatMap $ \(request, response) -> do
+parseJSONLDPieces = awaitForever $ \(request, response) -> do
   let c = HTTP.statusCode (responseStatus response)
-  guard $ 200 <= c && c < 300
-  value <- fromMaybe [] $ scrapeStringLike (responseBody response) LD.scrapeJSONLDValues
-  pure (request, response, value)
+  when (200 <= c && c < 300) $ do
+    let values = fromMaybe [] $ scrapeStringLike (responseBody response) LD.scrapeJSONLDValues
+    yieldManyShuffled $ map (\value -> (request, response, value)) values
 
 parseJSONLDEvents ::
   ConduitT
