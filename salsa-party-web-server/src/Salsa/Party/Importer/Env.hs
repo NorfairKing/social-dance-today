@@ -282,10 +282,22 @@ importExternalEventAnd candidate func = do
             Just (Entity externalEventId oldExternalEvent) -> do
               case externalEvent `changesComparedTo` oldExternalEvent of
                 Nothing -> do
-                  logInfoN $ T.pack $ unwords ["Not re-importing known event, because it was not changed, from", T.unpack externalEventOrigin]
+                  logInfoN $
+                    T.pack $
+                      unlines
+                        [ "Not re-importing known event, because it was not changed",
+                          unwords ["origin:", show externalEventOrigin],
+                          unwords ["key:", show externalEventKey]
+                        ]
                   pure ()
                 Just updates -> do
-                  logInfoN $ T.pack $ unwords ["Importing known-but-changed event from", T.unpack externalEventOrigin]
+                  logInfoN $
+                    T.pack $
+                      unlines
+                        [ "Importing known-but-changed event from",
+                          unwords ["origin:", show externalEventOrigin],
+                          unwords ["key:", show externalEventKey]
+                        ]
                   importDB $
                     void $
                       update

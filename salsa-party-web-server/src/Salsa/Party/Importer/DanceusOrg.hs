@@ -53,6 +53,11 @@ func =
       .| C.concatMap makeLocationRequest
       .| doHttpRequestWith
       .| logRequestErrors
+      .| scrapeEventLinks
+      .| deduplicateC
+      .| C.concatMap makeEventRequest
+      .| doHttpRequestWith
+      .| logRequestErrors
       .| jsonLDEventsC
       .| convertLDEventToExternalEvent eventUrlPrefix
       .| C.mapM_ importExternalEventWithMImage
@@ -67,6 +72,17 @@ scrapeLocationLinks = awaitForever $ \(request, response) -> do
 
 makeLocationRequest :: URI -> Maybe Request
 makeLocationRequest = requestFromURI
+
+scrapeEventLinks :: MonadIO m => ConduitT (HTTP.Request, HTTP.Response LB.ByteString) URI m ()
+scrapeEventLinks = awaitForever $ \(request, response) -> do
+  let uris = fromMaybe [] $
+        scrapeStringLike (responseBody response) $ do
+          refs <- attrs "href" "a"
+          pure $ filter ("/event/" `T.isPrefixOf`) $ mapMaybe maybeUtf8 refs
+  yieldManyShuffled $ map (`relativeTo` getUri request) $ mapMaybe (parseURIReference . T.unpack) uris
+
+makeEventRequest :: URI -> Maybe Request
+makeEventRequest = requestFromURI
 
 eventUrlPrefix :: Text
 eventUrlPrefix = "https://www.danceus.org/event/"
