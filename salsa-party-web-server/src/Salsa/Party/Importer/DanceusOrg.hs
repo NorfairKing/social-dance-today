@@ -33,6 +33,7 @@ import Network.URI
 import Salsa.Party.Importer.Import
 import Text.HTML.Scalpel
 import Text.HTML.Scalpel.Extended
+import qualified Web.JSONLD as LD
 
 danceusOrgImporter :: Importer
 danceusOrgImporter =
@@ -59,6 +60,7 @@ func =
       .| doHttpRequestWith
       .| logRequestErrors
       .| jsonLDEventsC
+      .| scrapImageIfStatic
       .| convertLDEventToExternalEvent eventUrlPrefix
       .| C.mapM_ importExternalEventWithMImage
 
@@ -80,6 +82,31 @@ scrapeEventLinks = awaitForever $ \(request, response) -> do
           refs <- attrs "href" "a"
           pure $ filter ("/event/" `T.isPrefixOf`) $ mapMaybe maybeUtf8 refs
   yieldManyShuffled $ map (`relativeTo` getUri request) $ mapMaybe (parseURIReference . T.unpack) uris
+
+scrapImageIfStatic :: ConduitT (Request, Response LB.ByteString, LD.Event) (Request, Response LB.ByteString, LD.Event) Import ()
+scrapImageIfStatic = awaitForever $ \(request, response, ldEvent) -> do
+  let mIsStaticImage =
+        scrapeStringLike (responseBody response) $
+          chroot "section" $
+            chroot ("div" @: [hasClass "cover-image-container", hasClass "in-content-cover"]) $ do
+              attr "src" "img"
+  letThrough <- case mIsStaticImage of
+    Nothing -> do
+      logWarnN "Could not figure out if the image was static or not."
+      pure True
+    Just src ->
+      if src == "/static/img/event-cover.jpg"
+        then do
+          logDebugN "Static image, not fetching it."
+          pure False
+        else do
+          logDebugN "Non-static image, fetching it."
+          pure True
+  let modifiedEvent =
+        if letThrough
+          then ldEvent
+          else ldEvent {LD.eventImages = []}
+  yield (request, response, modifiedEvent)
 
 makeEventRequest :: URI -> Maybe Request
 makeEventRequest = requestFromURI
