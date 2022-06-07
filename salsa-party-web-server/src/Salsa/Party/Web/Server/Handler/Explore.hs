@@ -20,8 +20,6 @@ import Safe
 import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Query
-import System.Clock (TimeSpec)
-import qualified System.Clock as TimeSpec
 
 getExploreR :: Handler Html
 getExploreR = do
@@ -63,11 +61,8 @@ explorePartiesAroundLocationQuery exploreResultCache today coordinates = do
               show coordinates
             ]
       result <- uncachedExplorePartiesAroundLocationQuery today coordinates
-      liftIO $ Cache.insert' exploreResultCache (Just exploreResultCacheTimeSpec) coordinates result
+      liftIO $ Cache.insert' exploreResultCache Nothing coordinates result
       pure result
-
-exploreResultCacheTimeSpec :: TimeSpec
-exploreResultCacheTimeSpec = TimeSpec.fromNanoSecs $ 6 * 60 * 60 * 1_000_000_000 -- six hours
 
 uncachedExplorePartiesAroundLocationQuery :: MonadIO m => Day -> Coordinates -> SqlPersistT m Word
 uncachedExplorePartiesAroundLocationQuery today coordinates = do

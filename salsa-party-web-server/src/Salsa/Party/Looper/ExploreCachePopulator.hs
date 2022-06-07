@@ -21,17 +21,27 @@ runExploreCachePopulator = do
   exploreResultCache <- asks appExploreResultCache
   let runDBHere func = runSqlPool (retryOnBusy func) pool
   forM_ locations $ \location -> do
-    when (not development) $ do
-      logDebugN $
-        T.pack $
-          unwords
-            [ "Waiting a bit to populate the explore cache for",
-              "to not overload the server with the sudden amount of queries"
-            ]
-      liftIO $ threadDelay 5_000_000
     let placeName = placeQuery $ locationPlace location
     let coordinates = placeCoordinates $ locationPlace location
+    mResult <- liftIO $ Cache.lookup exploreResultCache coordinates
+    case mResult of
+      Nothing ->
+        logDebugN $
+          T.pack $
+            unwords
+              [ "No results in search cache for this place yet, populate it asap:",
+                show placeName
+              ]
+      Just _ -> do
+        when (not development) $ do
+          logDebugN $
+            T.pack $
+              unwords
+                [ "Waiting a bit to populate the explore cache for",
+                  "to not overload the server with the sudden amount of queries"
+                ]
+          liftIO $ threadDelay 5_000_000
 
     logInfoN $ T.pack $ unwords ["Populating explore cache for", show placeName]
     exploreQueryResult <- runDBHere $ uncachedExplorePartiesAroundLocationQuery today coordinates
-    liftIO $ Cache.insert' exploreResultCache (Just exploreResultCacheTimeSpec) coordinates exploreQueryResult
+    liftIO $ Cache.insert' exploreResultCache Nothing coordinates exploreQueryResult

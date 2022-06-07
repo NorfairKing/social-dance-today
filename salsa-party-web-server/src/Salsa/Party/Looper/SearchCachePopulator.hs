@@ -23,23 +23,35 @@ runSearchCachePopulator = do
   searchResultCache <- asks appSearchResultCache
   let runDBHere func = runSqlPool (retryOnBusy func) pool
   forM_ locations $ \location -> do
-    when (not development) $ do
-      logDebugN $
-        T.pack $
-          unwords
-            [ "Waiting a bit to populate the search cache for",
-              "to not overload the server with the sudden amount of queries"
-            ]
-      liftIO $ threadDelay 5_000_000
     let placeName = placeQuery $ locationPlace location
     let coordinates = placeCoordinates $ locationPlace location
-    logInfoN $ T.pack $ unwords ["Populating search cache for", show placeName]
-    let userQuery =
+    let query =
           SearchQuery
             { searchQueryBegin = today,
               searchQueryMEnd = Just $ addDays (defaultDaysAhead - 1) today,
               searchQueryCoordinates = coordinates,
               searchQueryDistance = Just defaultMaximumDistance
             }
-    userQueryResults <- runDBHere $ runUncachedSearchQueryForResults userQuery
-    liftIO $ Cache.insert' searchResultCache (Just searchResultCacheTimeSpec) userQuery userQueryResults
+    mResult <- liftIO $ Cache.lookup searchResultCache query
+    case mResult of
+      Nothing ->
+        logDebugN $
+          T.pack $
+            unwords
+              [ "No results in search cache for this place yet, populate it asap:",
+                show placeName
+              ]
+      Just _ ->
+        when (not development) $ do
+          logDebugN $
+            T.pack $
+              unwords
+                [ "Waiting a bit to populate the search cache for",
+                  show placeName,
+                  "to not overload the server with the sudden amount of queries"
+                ]
+          liftIO $ threadDelay 5_000_000
+
+    logInfoN $ T.pack $ unwords ["Populating search cache for", show placeName]
+    queryResults <- runDBHere $ runUncachedSearchQueryForResults query
+    liftIO $ Cache.insert' searchResultCache Nothing query queryResults

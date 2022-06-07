@@ -1,4 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -26,6 +27,7 @@ import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Poster
 import Salsa.Party.Web.Server.Static
+import qualified System.Clock as TimeSpec
 import System.Exit
 import Text.Colour
 import Text.Show.Pretty
@@ -47,9 +49,8 @@ runSalsaPartyServer settings@Settings {..} = do
         sessionKeyFile <- resolveFile' "client_session_key.aes"
         man <- HTTP.newTlsManager
         rateLimiter <- liftIO $ makeTokenLimiter OSM.tokenLimitConfig
-        searchResultCache <- liftIO $ newCache Nothing
-        exploreResultCache <- liftIO $ newCache Nothing
-
+        searchResultCache <- liftIO $ newCache $ Just $ TimeSpec.fromNanoSecs $ (60 * 60 + 5) * 1_000_000_000 -- A bit more than one hour
+        exploreResultCache <- liftIO $ newCache $ Just $ TimeSpec.fromNanoSecs $ (6 * 60 * 60 + 5) * 1_000_000_000 -- A bit more than six hours
         let app =
               App
                 { appRoot = settingHost,

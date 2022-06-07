@@ -23,8 +23,6 @@ import Salsa.Party.DB
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Deduplication
 import Salsa.Party.Web.Server.Handler.Search.Types
-import System.Clock (TimeSpec)
-import qualified System.Clock as TimeSpec
 
 runSearchQuery :: (MonadIO m, MonadLogger m) => SearchResultCache -> SearchQuery -> SqlPersistT m SearchResult
 runSearchQuery searchResultCache searchQuery@SearchQuery {..} = do
@@ -64,11 +62,8 @@ runSearchQueryForResults searchResultCache searchQuery = do
               ppShow searchQuery
             ]
       results <- runUncachedSearchQueryForResults searchQuery
-      liftIO $ Cache.insert' searchResultCache (Just searchResultCacheTimeSpec) searchQuery results
+      liftIO $ Cache.insert' searchResultCache Nothing searchQuery results
       pure results
-
-searchResultCacheTimeSpec :: TimeSpec
-searchResultCacheTimeSpec = TimeSpec.fromNanoSecs $ 60 * 60 * 1_000_000_000 -- One hour
 
 runUncachedSearchQueryForResults :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
 runUncachedSearchQueryForResults SearchQuery {..} = do
