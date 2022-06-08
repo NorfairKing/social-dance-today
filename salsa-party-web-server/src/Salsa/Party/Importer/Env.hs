@@ -677,7 +677,7 @@ convertLDEventToExternalEvent keyPrefix = awaitForever $ \(request, _, ldEvent) 
                     Just suffix -> suffix
         let externalEventTitle = unescapeHtml $ LD.eventName ldEvent
         let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
-        let externalEventDescription = LD.eventDescription ldEvent
+        let externalEventDescription = unescapeHtml <$> LD.eventDescription ldEvent
         let externalEventOrganiser = do
               eventOrganizer <- LD.eventOrganizer ldEvent
               case eventOrganizer of
