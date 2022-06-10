@@ -19,8 +19,9 @@
 --    that end in "-classes/".
 --
 -- 2. We fetch each of these links.
---
--- 3. There are JSONLD events right on these pages, so we can import those as is.
+-- 3. On each of those pages, there's a "See More Events" button, we fetch that page.
+-- 4. On each of the search result pages, there are search results with links to events, as well as potentially more result pages.
+--    We fetch each of those result pages.
 module Salsa.Party.Importer.DanceusOrg (danceusOrgImporter) where
 
 import Conduit
@@ -29,6 +30,7 @@ import qualified Data.Conduit.Combinators as C
 import Data.Maybe
 import qualified Data.Text as T
 import Network.HTTP.Client as HTTP
+import Network.HTTP.Types as HTTP
 import Network.URI
 import Salsa.Party.Importer.Import
 import Text.HTML.Scalpel
@@ -54,6 +56,11 @@ func =
       .| C.concatMap makeLocationRequest
       .| doHttpRequestWith
       .| logRequestErrors
+      .| scrapeSeeMoreEventsLinks
+      .| C.concatMap makeSeeMoreEventsRequest
+      .| doHttpRequestWith
+      .| logRequestErrors
+      .| alsoScrapeOtherSearchResultPages
       .| scrapeEventLinks
       .| deduplicateC
       .| C.concatMap makeEventRequest
@@ -74,6 +81,49 @@ scrapeLocationLinks = awaitForever $ \(request, response) -> do
 
 makeLocationRequest :: URI -> Maybe Request
 makeLocationRequest = requestFromURI
+
+scrapeSeeMoreEventsLinks :: MonadIO m => ConduitT (HTTP.Request, HTTP.Response LB.ByteString) URI m ()
+scrapeSeeMoreEventsLinks = awaitForever $ \(request, response) -> do
+  let uris = fromMaybe [] $
+        scrapeStringLike (responseBody response) $
+          chroot ("div" @: [hasClass "see-more-button-container"]) $ do
+            refs <- attrs "href" ("a" @: [hasClass "see-more-button"])
+            pure $ filter ("/search-events/" `T.isPrefixOf`) $ mapMaybe maybeUtf8 refs
+  yieldMany $ map (`relativeTo` getUri request) $ mapMaybe (parseURIReference . escapeURIString isUnescapedInURI . T.unpack) uris
+
+makeSeeMoreEventsRequest :: URI -> Maybe Request
+makeSeeMoreEventsRequest = requestFromURI
+
+alsoScrapeOtherSearchResultPages :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString) (HTTP.Request, HTTP.Response LB.ByteString) Import ()
+alsoScrapeOtherSearchResultPages = do
+  awaitForever $ \(request, response) -> do
+    yield (request, response)
+    go (request, response)
+  where
+    go :: (Request, Response LB.ByteString) -> ConduitT (HTTP.Request, HTTP.Response LB.ByteString) (HTTP.Request, HTTP.Response LB.ByteString) Import ()
+    go (request, response) =
+      if HTTP.statusCode (HTTP.responseStatus response) == 404
+        then pure () -- End reached
+        else do
+          let mLink :: Maybe Text
+              mLink =
+                scrapeStringLike (responseBody response) $ do
+                  chroot ("ul" @: [hasClass "pagination"]) $
+                    chroot ("li" @: [notP $ hasClass "disabled"]) $ do
+                      ref <- attr "href" ("a" @: ["aria-label" @= "Next"])
+                      link <- utf8 ref
+                      guard $ "/search-events/" `T.isPrefixOf` link
+                      pure link
+          case mLink >>= fmap (`relativeTo` getUri request) . parseURIReference . escapeURIString isUnescapedInURI . T.unpack >>= requestFromURI of
+            Nothing -> logDebugN $ T.pack $ unwords ["Pages end here:", show (getUri request)]
+            Just request' -> do
+              logDebugN $ T.pack $ unwords ["Trying to fetch the next page", show (getUri request')]
+              errOrResponse' <- lift $ doHttpRequest request'
+              case errOrResponse' of
+                Left err -> logErrorN $ T.pack $ unlines ["Error while fetching page: " <> ppShow err]
+                Right response' -> do
+                  yield (request', response')
+                  go (request', response')
 
 scrapeEventLinks :: MonadIO m => ConduitT (HTTP.Request, HTTP.Response LB.ByteString) URI m ()
 scrapeEventLinks = awaitForever $ \(request, response) -> do

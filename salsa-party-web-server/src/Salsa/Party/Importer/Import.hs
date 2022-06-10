@@ -10,6 +10,7 @@ import Data.List as X (isInfixOf, isPrefixOf, isSuffixOf, sort)
 import Data.Text as X (Text)
 import Data.Time as X
 import Database.Persist as X
+import Debug.Trace as X
 import Network.HTTP.Client as X
 import Path as X
 import Path.IO as X
