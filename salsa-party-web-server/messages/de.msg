@@ -5,7 +5,7 @@
 Logo title@Text: #{title} Logo
 
 # Home Page
-HomeDescription title@Text: #{title}: Wo kann ich tanzen gehen? Finde heute Social Dance Partys. Egal ob du nach Salsa, Bachata, Kizomba, Mambo, Cha-Cha-Cha, Tango, Zouk, Swng, Kindy Hop oder einen anderen Tanz suchst, du findest sie hier.
+HomeDescription title@Text: #{title}: Wo kann ich tanzen gehen? Finde heute Social Dance Partys. Egal ob Du nach Salsa, Bachata, Kizomba, Mambo, Cha-Cha-Cha, Tango, Zouk, Swng, Kindy Hop oder einen anderen Tanz suchst, Du findest sie hier.
 HomeSubtitleQuestion: Wo kann ich tanzen gehen?
 HomeFormSearch: Suche
 
@@ -23,15 +23,15 @@ LocateMeLocation: Mein Standort
 LocateMeUnable: Lokalisierung fehlgeschlagen.
 LocateMeInProgress: Lokalisieren…
 LocateMeDone: Lokalisiert
-LocateMeHelpBefore: Drücken Sie auf 'Mein standort', um parties in ihrer Umgebung zu finden.
-LocateMeHelpAfter: Dein aktueller Standort wird für die Suche verwendet, es sei denn, du gibst oben einen anderen Standort ein. 
+LocateMeHelpBefore: Drücken Sie auf 'Mein Standort', um Parties in Ihrer Umgebung zu finden.
+LocateMeHelpAfter: Dein aktueller Standort wird für die Suche verwendet, es sei denn, Du gibst oben einen anderen Standort ein. 
  
 # Explore
 ExploreTitle: Erkunde die Welt des Social Dance!
 ExploreDescription: Social Dance gibt es auf der ganzen Welt, finde heraus, wohin du gehen kannst!
 ExploreButton: Erkunden
-ExploreUpcomingParties number@String: #{number} bevorstehenden Parties
-ExploreSkylineAlt location@Text:  Nächtliche Skyline von #{location}
+ExploreUpcomingParties number@String: #{number} bevorstehende Parties
+ExploreSkylineAlt location@Text: Nächtliche Skyline von #{location}
 
 ## Footer
 FooterGeocodingAttribution: Geokodierung durch OpenStreetMaps Nominatim
@@ -51,7 +51,7 @@ NavLogIn: Anmelden
 NavLogOut: Abmelden
 
 # Form messages
-InvalidLatitude lat@String: Ungültiger Breitengrat: #{lat}
+InvalidLatitude lat@String: Ungültiger Breitengrad: #{lat}
 InvalidLongitude lon@String: Ungültiger Längengrad: #{lon}
 DistanceTooGreat distance@String: Entfernung zu groß: #{distance} km
 EndBeforeBegin: Das Enddatum lag vor dem Startdatum.
@@ -59,19 +59,19 @@ EndTooFarAhead: Suchzeitraum zu groß.
 AddressOrCoordinates: Geben Sie entweder eine Adresse oder Koordinate ein.
 
 # Search Results
-SearchTitleAroundYourLocationToday: Social Dance Parties in deiner Umgebung heute
+SearchTitleAroundYourLocationToday: Social Dance Parties in Deiner Umgebung heute
 SearchTitleAroundYourLocationOnDay day@String: Social Dance Parties in der Nähe am #{day}
 SearchTitleAroundYourLocationFromTo begin@String end@String: Social Dance Parties in der Nähe zwischen #{begin} und #{end}
 SearchTitleAroundAddressToday address@Text: Social Dance Parties in der Nähe von #{address} heute
 SearchTitleAroundAddressOnDay address@Text day@String: Social Dance Parties in der Nähe von #{address} am #{day}
 SearchTitleAroundAddressFromTo address@Text begin@String end@String: Social Dance Parties in der Nähe von #{address} zwischen #{begin} und #{end}
-SearchDescriptionAroundYourLocationToday: Eine Liste von allen Social Dance Parties in deiner Umgebung heute
+SearchDescriptionAroundYourLocationToday: Eine Liste von allen Social Dance Parties in Deiner Umgebung heute
 SearchDescriptionAroundYourLocationOnDay day@String: Eine Liste von allen Social Dance Parties in der Nähe am #{day}
 SearchDescriptionAroundYourLocationFromTo begin@String end@String: Eine Liste von allen Social Dance Parties in der Nähe zwischen #{begin} und #{end}
 
 SearchDescriptionAroundAddressToday address@Text:  Eine Liste von allen Social Dance Parties in der Nähe von #{address} today
 SearchDescriptionAroundAddressOnDay address@Text day@String: Eine Liste von allen Social Dance Parties in der Nähe  von #{address} am #{day}
-SearchDescriptionAroundAddressFromTo address@Text begin@String end@String: Eine Liste von allen Social Dance Parties in der Nähe  von #{address} zwischen #{begin} und #{end}
+SearchDescriptionAroundAddressFromTo address@Text begin@String end@String: Eine Liste von allen Social Dance Parties in der Nähe von #{address} zwischen #{begin} und #{end}
 
 SearchPartiesAroundAddress address@Text: Social Dance Parties in der Nähe von #{address}
 SearchPartiesAroundYourLocation: Social Dance Parties in deiner Umgebung
@@ -88,7 +88,7 @@ SearchNavLater: Später
 # Party Page
 PartyTitleScheduled title@Text: #{title}
 PartyTitleCancelled title@Text: ABGESAGT: #{title}
-PartyDescription description@Text:  #{description}
+PartyDescription description@Text: #{description}
 
 PartyAddress address@Text: #{address}
 PartyOrganiser name@Text: Veranstalter: #{name}
@@ -96,8 +96,8 @@ PartyOrganiserTitle organiserName@Text: Veranstalterprofil von #{organiserName}
 PartyPrice price@Text: Preis: #{price}
 PartyHomepage: Webseite
 PartyHomepageTitle partyTitle@Text: Webseite von #{partyTitle}
-PartyDownloadCalendarEvent: Kalendar-Event herunterladen
-PartyDownloadCalendarEventTitle partyTitle@Text: Kalendar-Event herunterladen für #{partyTitle}
+PartyDownloadCalendarEvent: Kalendereintrag herunterladen
+PartyDownloadCalendarEventTitle partyTitle@Text: Kalendereintrag herunterladen für #{partyTitle}
 PartyAddToGoogleCalendar: Zu Google Calendar hinzufügen
 PartyAddToGoogleCalendarTitle partyTitle@Text: #{partyTitle} zu Google Calendar hinzufügen
 
@@ -109,15 +109,15 @@ PartyDescriptionAddress address@Text: Adresse: #{address}
 ExternalEventCaution: Event via Websuche gefunden. Behandeln Sie diese Informationen mit Vorsicht. (Or: Angaben ohne Gewähr.)
 
 # Organiser Page
-OrganiserTitle name@Text:  Veranstalterprofil: #{name}
+OrganiserTitle name@Text: Veranstalterprofil: #{name}
 OrganiserHomepage: Webseite
 OrganiserHomepageTitle name@Text: Webseite von #{name}
-OrganiserDescription name@Text:  Veranstalterprofil von #{name}, und eine Liste seiner/ihrer bevorstehenden Social Dance Parties 
+OrganiserDescription name@Text: Veranstalterprofil von #{name}, und eine Liste seiner/ihrer bevorstehenden Social Dance Parties 
 OrganiserName name@Text: Veranstalter/in: #{name}
 OrganiserUpcomingParties: Bevorstehende Parties
 OrganiserNoUpcomingParties: Keine bevorstehenden Parties
 OrganiserCalendarTitle: Kalender-URL
-OrganiserCalendarExplanation: Füge all diese Veranstaltungen automatisch zu deinem Kalender hinzu, indem du diese mit diesem Link abonnierst:
+OrganiserCalendarExplanation: Füge all diese Veranstaltungen automatisch zu Deinem Kalender hinzu, indem Du mit diesem Link abonnierst:
 
 
 # Poster
@@ -152,7 +152,7 @@ VerificationEmailButton: Bestätigen Sie Ihre Email-Adresse.
 VerificationEmailInvitation: Wir hoffen, Sie bald zu treffen.
 VerificationEmailExplanation title@Text: Sie haben dieses Mail erhalten, weil Sie versucht haben, sich bei #{title} zu registrieren. 
 
-VerificationEmailFailure:  Senden des Bestätigungs-Emails fehlgeschlagen 
+VerificationEmailFailure:  Senden der Bestätigungs-Email fehlgeschlagen 
 VerificationErrorAlreadyVerified:  Dieses Konto ist bereits bestätigt.
 
 # Account Page
@@ -178,7 +178,7 @@ OrganiserViewPublicProfileButton:  Öffentliches Veranstalterprofil anzeigen
 OrganiserSaveSuccess: Veranstalterprofil erfolgreich gespeichert
 
 # Submit
-SubmitTitle: Ihre party hinzufügen
+SubmitTitle: Ihre Party hinzufügen
 SubmitSingleParty: Einzelne Party
 SubmitRecurringParty: Wiederkehrende Party
 SubmitSinglePartyExplanation1: Eine einzelne Party findet nur einmal an einem bestimmten Datum statt. 
@@ -218,7 +218,7 @@ PartyFormPosterNoPoster:  Kein Bild ausgewählt
 PartyFormBackButton:  Zurück
 
 # Account Party
-AccountPartyErrorNotYourParty: Dies ist nicht ihre Party.
+AccountPartyErrorNotYourParty: Dies ist nicht Ihre Party.
 
 # Submit Party
 SubmitPartyTitle:  Party erstellen
@@ -240,10 +240,10 @@ DuplicatePartyTitle: Party duplizieren
 DuplicatePartyButton: Speichern
 
 # Cancel party
-CancelPartyErrorNotYourParty: Diese Party können sie nicht absagen, da es nicht Ihre Party ist.
+CancelPartyErrorNotYourParty: Diese Party können Sie nicht absagen, da es nicht Ihre Party ist.
 
 # Un-Cancel party
-UnCancelPartyErrorNotYourParty: Die Absage dieser Party können Sie nicht Rückgängig machen, da es nicht Ihre Party ist.
+UnCancelPartyErrorNotYourParty: Die Absage dieser Party können Sie nicht rückgängig machen, da es nicht Ihre Party ist.
 
 # Delete party
 DeletePartyErrorNotYourParty: Sie können diese Party nicht löschen, da es nicht Ihre Party ist.
@@ -275,7 +275,7 @@ SubmitScheduleTitle: Partyplan erstellen
 SubmitScheduleButton: Erstellen
 SubmitScheduleSuccess: Partyplan erfolgreich erstellt
 SubmitScheduleErrorUnverified: Ihr Konto muss zuerst bestätigt werden, bevor Sie Partypläne erstellen können. 
-SubmitScheduleErrorNoOrganiser: Bevor Sie ein Partyplan erstellen können, müssen Sie in der Kontoübersicht ein Veranstalterprofil anlegen.
+SubmitScheduleErrorNoOrganiser: Bevor Sie einen Partyplan erstellen können, müssen Sie in der Kontoübersicht ein Veranstalterprofil anlegen.
 
 # Edit Schedule
 EditScheduleTitle: Partyplan bearbeiten
@@ -293,7 +293,7 @@ YourSchedulesDeleteScheduleButton: löshen
 ScheduleTitle title@Text: #{title}
 
 # Delete schedule
-DeleteScheduleErrorNotYourSchedule: Sie können diesen Partyplan nicht löschen, da es nicht Ihren Partyplan ist.
+DeleteScheduleErrorNotYourSchedule: Sie können diesen Partyplan nicht löschen, da es nicht Ihr Partyplan ist.
 
 
 # Unsubscribe Reminder
