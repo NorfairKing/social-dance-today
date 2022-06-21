@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -634,38 +635,7 @@ convertLDEventToExternalEvent keyPrefix = awaitForever $ \(request, _, ldEvent) 
   today <- liftIO $ utctDay <$> getCurrentTime
   let yesterday = addDays (-1) today
   when (externalEventDay >= yesterday) $ do
-    let unescapeHtml = HTML.innerText . HTML.parseTags
-    mPlaceEntity <- case LD.eventLocation ldEvent of
-      LD.EventLocationPlace place ->
-        let address = case LD.placeAddress place of
-              LD.PlaceAddressText t -> unescapeHtml t
-              LD.PlaceAddressPostalAddress postalAddress ->
-                unescapeHtml $
-                  T.unwords $
-                    catMaybes
-                      [ LD.postalAddressStreetAddress postalAddress,
-                        LD.postalAddressLocality postalAddress,
-                        LD.postalAddressRegion postalAddress,
-                        LD.postalAddressCountry postalAddress
-                      ]
-         in case LD.placeGeo place of
-              Just (LD.PlaceGeoCoordinates geoCoordinates) ->
-                fmap Just $
-                  lift $
-                    importDB $
-                      upsertBy
-                        (UniquePlaceQuery address)
-                        ( Place
-                            { placeQuery = address,
-                              placeLat = LD.geoCoordinatesLatitude geoCoordinates,
-                              placeLon = LD.geoCoordinatesLongitude geoCoordinates
-                            }
-                        )
-                        [] -- Don't change if it's already there, so that they can't fill our page with junk.
-              Nothing -> lift $ do
-                app <- asks importEnvApp
-                runReaderT (lookupPlaceRaw address) app
-
+    mPlaceEntity <- lift $ geocodeLDEventLocation $ LD.eventLocation ldEvent
     case mPlaceEntity of
       Nothing -> logWarnN "Place not found."
       Just (Entity externalEventPlace _) -> do
@@ -698,3 +668,62 @@ convertLDEventToExternalEvent keyPrefix = awaitForever $ \(request, _, ldEvent) 
                 LD.EventImageURL t -> parseURI $ T.unpack t
 
         yield (ExternalEvent {..}, mImageURI)
+
+geocodeLDEventLocation :: LD.EventLocation -> Import (Maybe (Entity Place))
+geocodeLDEventLocation = \case
+  LD.EventLocationPlace place -> geocodeLDPlace place
+
+geocodeLDPlace :: LD.Place -> Import (Maybe (Entity Place))
+geocodeLDPlace ldPlace = do
+  let address = case LD.placeAddress ldPlace of
+        LD.PlaceAddressText t -> unescapeHtml t
+        LD.PlaceAddressPostalAddress postalAddress ->
+          unescapeHtml $
+            T.unwords $
+              catMaybes
+                [ LD.postalAddressStreetAddress postalAddress,
+                  LD.postalAddressLocality postalAddress,
+                  LD.postalAddressRegion postalAddress,
+                  LD.postalAddressCountry postalAddress
+                ]
+  case LD.placeGeo ldPlace of
+    Just (LD.PlaceGeoCoordinates geoCoordinates) -> do
+      let place =
+            Place
+              { placeQuery = address,
+                placeLat = LD.geoCoordinatesLatitude geoCoordinates,
+                placeLon = LD.geoCoordinatesLongitude geoCoordinates
+              }
+      -- TODO consider double-checking coordinates.
+      importPlaceWithSpecifiedCoordinates place
+    Nothing -> do
+      app <- asks importEnvApp
+      runReaderT (lookupPlaceRaw address) app
+
+importPlaceWithSpecifiedCoordinates :: Place -> Import (Maybe (Entity Place))
+importPlaceWithSpecifiedCoordinates place =
+  case prettyValidate place of
+    Left err -> do
+      logErrorN $
+        T.pack $
+          unlines
+            [ unwords
+                [ "Importing address",
+                  show $ placeQuery place,
+                  "with specified coordinates",
+                  show $ placeCoordinates place,
+                  "from LD Place failed because it produced an invalid place"
+                ],
+              err
+            ]
+      pure Nothing
+    Right _ -> do
+      fmap Just $
+        importDB $
+          upsertBy
+            (UniquePlaceQuery $ placeQuery place)
+            place
+            [] -- Don't change if it's already there, so that they can't fill our page with junk.
+
+unescapeHtml :: Text -> Text
+unescapeHtml = HTML.innerText . HTML.parseTags

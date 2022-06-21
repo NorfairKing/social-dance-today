@@ -26,7 +26,7 @@ import qualified Data.Conduit.Combinators as C
 import qualified Data.Text as T
 import Network.HTTP.Client as HTTP
 import Salsa.Party.Importer.Import
-import Text.Read
+import Text.Read (readMaybe)
 
 salsaLoversBeImporter :: Importer
 salsaLoversBeImporter =
@@ -48,7 +48,7 @@ func = do
             Right fe -> yield fe
         )
       .| C.concatMap getEventFromFeedElem
-      .| C.mapM convertToExternalEvent
+      .| convertToExternalEvent
       .| C.mapM_ importExternalEvent
 
 data FeedElem
@@ -122,8 +122,8 @@ instance FromJSON Location where
                   )
           )
 
-convertToExternalEvent :: Event -> Import ExternalEvent
-convertToExternalEvent Event {..} = do
+convertToExternalEvent :: ConduitT Event ExternalEvent Import ()
+convertToExternalEvent = awaitForever $ \Event {..} -> do
   let externalEventKey = eventId
   let externalEventTitle = eventTitle
   let externalEventDescription = eventDescription
@@ -137,23 +137,29 @@ convertToExternalEvent Event {..} = do
 
   let Location {..} = eventLocation
   let address = T.unwords [locationName, locationStreet, locationZipCode, locationCity]
-  Entity externalEventPlace _ <-
-    importDB $
-      upsertBy
-        (UniquePlaceQuery address)
-        ( Place
-            { placeQuery = address,
-              placeLat = locationLat,
-              placeLon = locationLon
-            }
-        )
-        [] -- Don't change if it's already there, so that they can't fill our page with junk.
-  externalEventUuid <- nextRandomUUID
-  let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
-  now <- liftIO getCurrentTime
-  let externalEventCreated = now
-  let externalEventModified = Nothing
-  externalEventImporter <- asks importEnvId
-  let externalEventOrigin = "https://agenda.salsalovers.be/parties/" <> eventId
+  let place =
+        Place
+          { placeQuery = address,
+            placeLat = locationLat,
+            placeLon = locationLon
+          }
+  mPlaceEntity <- lift $ importPlaceWithSpecifiedCoordinates place
+  case mPlaceEntity of
+    Nothing ->
+      logWarnN $
+        T.pack $
+          unwords
+            [ "Not yielding any external event for event with id",
+              show eventId,
+              "because we couldn't geocode it."
+            ]
+    Just (Entity externalEventPlace _) -> do
+      externalEventUuid <- nextRandomUUID
+      let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
+      now <- liftIO getCurrentTime
+      let externalEventCreated = now
+      let externalEventModified = Nothing
+      externalEventImporter <- asks importEnvId
+      let externalEventOrigin = "https://agenda.salsalovers.be/parties/" <> eventId
 
-  pure ExternalEvent {..}
+      yield ExternalEvent {..}

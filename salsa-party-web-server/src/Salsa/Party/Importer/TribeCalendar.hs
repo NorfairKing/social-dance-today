@@ -31,10 +31,8 @@ import qualified Data.Text.Encoding as TE
 import Network.HTTP.Client as HTTP
 import Network.URI
 import Salsa.Party.Importer.Import
-import Salsa.Party.Web.Server.Geocoding
 import Text.HTML.Scalpel
 import Text.HTML.Scalpel.Extended
-import qualified Text.HTML.TagSoup as HTML
 import qualified Web.JSONLD as LD
 
 -- For a given URL, find the tribe calendar and get all the event URLs in there.
@@ -83,7 +81,6 @@ tribeCalendarJSONLDEvents = awaitForever $ \(request, response, event) -> do
   -- We use this 'unescapeHtml' function because
   -- there are still html entities in the tags that we get.
   -- I'm not sure whether that's a mistake on their part or on ours, but it's definitely weird.
-  let unescapeHtml = HTML.innerText . HTML.parseTags
   externalEventUuid <- nextRandomUUID
 
   -- This is not ideal, because the URL could change, in which case we'll
@@ -133,36 +130,7 @@ tribeCalendarJSONLDEvents = awaitForever $ \(request, response, event) -> do
       now <- liftIO getCurrentTime
       let externalEventCreated = now
       let externalEventModified = Nothing
-      mPlaceEntity <- case LD.eventLocation event of
-        LD.EventLocationPlace place ->
-          let address = case LD.placeAddress place of
-                LD.PlaceAddressText t -> unescapeHtml t
-                LD.PlaceAddressPostalAddress postalAddress ->
-                  unescapeHtml $
-                    T.unwords $
-                      catMaybes
-                        [ LD.postalAddressStreetAddress postalAddress,
-                          LD.postalAddressLocality postalAddress,
-                          LD.postalAddressRegion postalAddress,
-                          LD.postalAddressCountry postalAddress
-                        ]
-           in case LD.placeGeo place of
-                Just (LD.PlaceGeoCoordinates geoCoordinates) ->
-                  fmap Just $
-                    lift $
-                      importDB $
-                        upsertBy
-                          (UniquePlaceQuery address)
-                          ( Place
-                              { placeQuery = address,
-                                placeLat = LD.geoCoordinatesLatitude geoCoordinates,
-                                placeLon = LD.geoCoordinatesLongitude geoCoordinates
-                              }
-                          )
-                          [] -- Don't change if it's already there, so that they can't fill our page with junk.
-                Nothing -> lift $ do
-                  app <- asks importEnvApp
-                  runReaderT (lookupPlaceRaw address) app
+      mPlaceEntity <- lift $ geocodeLDEventLocation $ LD.eventLocation event
       let mImageURI = do
             eventImage <- listToMaybe (LD.eventImages event)
             case eventImage of

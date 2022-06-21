@@ -108,7 +108,11 @@ lookupPlaceRaw query = do
                   logErrorNS "geocoding" $
                     T.pack $
                       unlines
-                        [ unwords ["Geocoding of", show query, "failed because it produced an invalid place"],
+                        [ unwords
+                            [ "Geocoding of",
+                              show query,
+                              "failed because it produced an invalid place"
+                            ],
                           err
                         ]
                   pure Nothing

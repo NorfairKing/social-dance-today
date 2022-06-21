@@ -51,7 +51,8 @@ func =
       .| homePageConduit
       .| deduplicateC
       .| eventPageConduit
-      .| eventDetailsSink
+      .| eventDetailsConverter
+      .| C.mapM_ importExternalEventWithMImage
 
 homePageConduit ::
   ConduitT
@@ -178,8 +179,8 @@ instance FromJSON EventImage where
       <$> o .: "id"
       <*> o .: "src"
 
-eventDetailsSink :: ConduitT (Text, EventDetails) o Import ()
-eventDetailsSink = awaitForever $ \(identifier, EventDetails {..}) -> do
+eventDetailsConverter :: ConduitT (Text, EventDetails) (ExternalEvent, Maybe URI) Import ()
+eventDetailsConverter = awaitForever $ \(identifier, EventDetails {..}) -> do
   externalEventUuid <- nextRandomUUID
   let externalEventKey = identifier
   let externalEventTitle = eventDetailsName
@@ -203,14 +204,23 @@ eventDetailsSink = awaitForever $ \(identifier, EventDetails {..}) -> do
   let externalEventModified = Nothing
   let VenueLocation {..} = eventVenueLocation eventDetailsVenue
   let address = T.unwords $ catMaybes [venueLocationStreet, Just venueLocationCity]
-  Entity externalEventPlace _ <-
-    lift $
-      importDB $
-        upsertBy
-          (UniquePlaceQuery address)
-          (Place {placeQuery = address, placeLat = venueLocationLat, placeLon = venueLocationLon})
-          [] -- Don't change if it's already there, so that they can't fill our page with junk.
-  let externalEventOrigin = "https://events.info/events/" <> eventDetailsId
-  externalEventImporter <- asks importEnvId
-  -- Import the event and download its images if anything has changed.
-  lift $ importExternalEventWithMImage (ExternalEvent {..}, eventImageSrc <$> listToMaybe eventDetailsImages)
+  let place =
+        Place
+          { placeQuery = address,
+            placeLat = venueLocationLat,
+            placeLon = venueLocationLon
+          }
+  mPlaceEntity <- lift $ importPlaceWithSpecifiedCoordinates place
+  case mPlaceEntity of
+    Nothing ->
+      logWarnN $
+        T.pack $
+          unwords
+            [ "Not yielding any external event for event with id",
+              show identifier,
+              "because we couldn't geocode it."
+            ]
+    Just (Entity externalEventPlace _) -> do
+      let externalEventOrigin = "https://events.info/events/" <> eventDetailsId
+      externalEventImporter <- asks importEnvId
+      yield (ExternalEvent {..}, eventImageSrc <$> listToMaybe eventDetailsImages)
