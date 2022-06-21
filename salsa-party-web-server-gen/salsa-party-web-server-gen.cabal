@@ -78,6 +78,7 @@ test-suite salsa-party-web-server-gen-test
       Salsa.Party.DB.RecurrenceSpec
       Salsa.Party.DB.SlugSpec
       Salsa.Party.DBSpec
+      Salsa.Party.Importer.EnvSpec
       Salsa.Party.Looper.OrganiserReminderSpec
       Salsa.Party.Looper.PartySchedulerSpec
       Salsa.Party.Web.Server.Handler.Account.OrganiserSpec

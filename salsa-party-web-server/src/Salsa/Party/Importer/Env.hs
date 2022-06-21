@@ -25,7 +25,6 @@ import qualified Data.Set as S
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import qualified Data.Text.Encoding.Error as TE
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LTB
 import Data.Time
@@ -729,12 +728,22 @@ importPlaceWithSpecifiedCoordinates place =
 unescapeHtml :: Text -> Text
 unescapeHtml = HTML.innerText . HTML.parseTags
 
+-- There seems to be a bug in tagsoup, that makes it so that characters that do not fit
+-- into latin1, when utf8-encoded as HTML entities, are truncated when parsed.
+-- Here is an example:
+-- > HTML.parseTags ("&#128512;" :: ByteString)
+-- [TagText "\NUL"]
+-- > HTML.parseTags ("&#128512;" :: Text)
+-- [TagText "\128512"]
 unHTMLText :: LB.ByteString -> Text
 unHTMLText =
-  decodeBytestringPessimistically . LB.toStrict . HTML.innerText . HTML.parseTags
+  HTML.innerText
+    . HTML.parseTags
+    . decodeBytestringPessimistically
+    . LB.toStrict
 
 unHTMLAttribute :: LB.ByteString -> Text
-unHTMLAttribute = TE.decodeUtf8With TE.lenientDecode . LB.toStrict
+unHTMLAttribute = decodeBytestringPessimistically . LB.toStrict
 
 decodeBytestringPessimistically :: ByteString -> Text
 decodeBytestringPessimistically strictBS =
