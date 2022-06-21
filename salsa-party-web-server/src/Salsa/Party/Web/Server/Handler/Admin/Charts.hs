@@ -66,7 +66,7 @@ getAdminChartsR = do
   let eventsPerDayMap = M.unionWith (+) partiesPerDayMap externalEventsPerDayMap
 
   let minDay = fromMaybe today $ minimumMay $ map fst $ mapMaybe M.lookupMin [dayCountMapOfExternalEvents, dayCountMapOfParties]
-      minPartyDay = addDays (-daysToKeepParties) today
+      minPartyDay = addDays (-daysToKeepParties + 1) today
       curDay = today
 
   withNavBar $ do
