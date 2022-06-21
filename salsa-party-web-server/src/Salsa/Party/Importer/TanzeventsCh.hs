@@ -21,8 +21,6 @@ import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
-import qualified Data.Text.Encoding.Error as TE
 import Network.HTTP.Client as HTTP
 import Network.URI as URI
 import Salsa.Party.Importer.Import
@@ -75,18 +73,15 @@ parseEventsFromStylePage = awaitForever $ \(request, response) -> do
         chroot ("div" @: [hasClass "dynpg_AA_row_Table"]) $
           chroots ("div" @: [hasClass "row"]) $ do
             rawTitle <- text $ "div" @: [hasClass "dynpg_e_header_text"]
-            let externalEventTitle = TE.decodeUtf8With TE.ignore (LB.toStrict rawTitle)
+            let externalEventTitle = unHTMLText rawTitle
 
             let externalEventDescription = Nothing :: Maybe Text
             (externalEventDay, externalEventStart) <- chroot ("div" @: [hasClass "when"]) $ do
               day <- chroot ("div" @: [hasClass "date"]) $ do
                 rawDay <- text $ "span" @: [hasClass "day"]
-                dayText <- utf8 rawDay
                 rawMonth <- text $ "span" @: [hasClass "month"]
-                monthText <- utf8 rawMonth
                 rawYear <- text $ "span" @: [hasClass "year"]
-                yearText <- utf8 rawYear
-                let dateText = T.concat [yearText, " ", monthText, ". ", dayText]
+                let dateText = T.concat [unHTMLText rawYear, " ", unHTMLText rawMonth, ". ", unHTMLText rawDay]
 
                 day <- case parseTimeM True germanTimeLocale "%Y %b %d." (T.unpack dateText) of
                   Nothing -> fail "day not parseable"
@@ -97,8 +92,7 @@ parseEventsFromStylePage = awaitForever $ \(request, response) -> do
 
               hour <- optional $ do
                 rawHour <- text $ "div" @: [hasClass "hour"]
-                hourText <- utf8 rawHour
-                case parseTimeM True germanTimeLocale "%H:%M Uhr" (T.unpack hourText) of
+                case parseTimeM True germanTimeLocale "%H:%M Uhr" (T.unpack (unHTMLText rawHour)) of
                   Nothing -> fail "hour not parseable"
                   Just h -> pure (h :: TimeOfDay)
 
@@ -110,8 +104,7 @@ parseEventsFromStylePage = awaitForever $ \(request, response) -> do
             externalEventHomepage <- optional $
               chroot ("p" @: [hasClass "event_url"]) $ do
                 ref <- attr "href" "a"
-                let link = TE.decodeUtf8With TE.ignore (LB.toStrict ref)
-                pure link
+                pure $ unHTMLAttribute ref
 
             forM_ externalEventHomepage $ \link -> do
               let isLocal = T.isPrefixOf "https://social-dance.today/" link
@@ -126,7 +119,7 @@ parseEventsFromStylePage = awaitForever $ \(request, response) -> do
 
             externalEventPlace <- do
               rawAddress <- text ("span" @: [hasClass "shorttext"])
-              let addressText = TE.decodeUtf8With TE.ignore (LB.toStrict rawAddress)
+              let addressText = unHTMLText rawAddress
               let address = T.unwords $ filter (not . T.null) $ map T.strip $ T.words addressText
 
               app <- asks importEnvApp

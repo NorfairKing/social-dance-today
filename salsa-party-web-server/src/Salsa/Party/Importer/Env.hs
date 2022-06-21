@@ -25,6 +25,7 @@ import qualified Data.Set as S
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Encoding.Error as TE
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LTB
 import Data.Time
@@ -727,3 +728,16 @@ importPlaceWithSpecifiedCoordinates place =
 
 unescapeHtml :: Text -> Text
 unescapeHtml = HTML.innerText . HTML.parseTags
+
+unHTMLText :: LB.ByteString -> Text
+unHTMLText =
+  decodeBytestringPessimistically . LB.toStrict . HTML.innerText . HTML.parseTags
+
+unHTMLAttribute :: LB.ByteString -> Text
+unHTMLAttribute = TE.decodeUtf8With TE.lenientDecode . LB.toStrict
+
+decodeBytestringPessimistically :: ByteString -> Text
+decodeBytestringPessimistically strictBS =
+  case TE.decodeUtf8' strictBS of
+    Left _ -> TE.decodeLatin1 strictBS
+    Right t -> t

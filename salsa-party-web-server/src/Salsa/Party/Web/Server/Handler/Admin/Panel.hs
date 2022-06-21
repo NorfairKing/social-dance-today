@@ -149,7 +149,11 @@ getAdminExternalEventsR :: Handler Html
 getAdminExternalEventsR = redirect $ AdminR $ AdminExternalEventsPageR paginatedFirstPage
 
 getAdminExternalEventsPageR :: PageNumber -> Handler Html
-getAdminExternalEventsPageR = externalEventsListPage [] [Asc ExternalEventDay, Asc ExternalEventId] (AdminR . AdminExternalEventsPageR)
+getAdminExternalEventsPageR =
+  externalEventsListPage
+    []
+    [Desc ExternalEventModified, Desc ExternalEventCreated]
+    (AdminR . AdminExternalEventsPageR)
 
 getAdminUpcomingExternalEventsR :: Handler Html
 getAdminUpcomingExternalEventsR = redirect $ AdminR $ AdminUpcomingExternalEventsPageR paginatedFirstPage
@@ -159,7 +163,7 @@ getAdminUpcomingExternalEventsPageR pn = do
   today <- liftIO $ utctDay <$> getCurrentTime
   externalEventsListPage
     [ExternalEventDay >=. today]
-    [Asc ExternalEventDay, Asc ExternalEventId]
+    [Desc ExternalEventModified, Desc ExternalEventCreated]
     (AdminR . AdminUpcomingExternalEventsPageR)
     pn
 
@@ -170,7 +174,7 @@ getAdminImporterEventsPageR :: ImporterMetadataId -> PageNumber -> Handler Html
 getAdminImporterEventsPageR importerId =
   externalEventsListPage
     [ExternalEventImporter ==. importerId]
-    [Desc ExternalEventId]
+    [Desc ExternalEventModified, Desc ExternalEventCreated]
     (AdminR . AdminImporterEventsPageR importerId)
 
 getAdminImporterUpcomingEventsR :: ImporterMetadataId -> Handler Html
@@ -183,7 +187,7 @@ getAdminImporterUpcomingEventsPageR importerId pn = do
     [ ExternalEventImporter ==. importerId,
       ExternalEventDay >=. today
     ]
-    [Desc ExternalEventId]
+    [Desc ExternalEventModified, Desc ExternalEventCreated]
     (AdminR . AdminImporterUpcomingEventsPageR importerId)
     pn
 

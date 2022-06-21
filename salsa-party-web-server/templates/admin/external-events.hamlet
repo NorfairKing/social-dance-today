@@ -19,6 +19,8 @@
           <th>
             Created
           <th>
+            Modified
+          <th>
             Day
           <th width=50px>
             Delete
@@ -31,6 +33,8 @@
               _{externalEventTitleMessage externalEvent}
             <td>
               ^{formatAdminTime $ externalEventCreated externalEvent}
+            <td>
+              ^{maybe "" formatAdminTime $ externalEventModified externalEvent}
             <td>
               ^{formatAdminDay $ externalEventDay externalEvent}
             <td>
