@@ -4,6 +4,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -13,9 +14,10 @@ import Conduit
 import Control.Monad
 import Control.Monad.Logger
 import Data.ByteString (ByteString)
+import qualified Data.Conduit.Combinators as C
 import Data.FileEmbed
 import qualified Data.Text as T
-import Data.Validity (Validity)
+import Data.Validity (Validity, prettyValidate)
 import Data.Yaml as Yaml
 import Database.Persist.Sql
 import GHC.Generics (Generic)
@@ -33,6 +35,7 @@ completeServerMigration quiet = do
             )
   logInfoN "Autmatic migrations done, starting application-specific migrations."
   setUpPlaces
+  removeInvalidPlaces
   setUpIndices
   logInfoN "Migrations done."
 
@@ -62,6 +65,21 @@ setUpPlaces = do
       [ PlaceLat =. placeLat locationPlace,
         PlaceLon =. placeLon locationPlace
       ]
+
+removeInvalidPlaces :: forall m. (MonadUnliftIO m, MonadLogger m) => SqlPersistT m ()
+removeInvalidPlaces = do
+  logInfoN "Removing invalid places from the database"
+  acqPlacesSource <- selectSourceRes [] []
+  withAcquire acqPlacesSource $ \placesSource ->
+    runConduit $ placesSource .| C.mapM_ go
+  where
+    go :: Entity Place -> SqlPersistT m ()
+    go (Entity placeId place) =
+      case prettyValidate place of
+        Left err -> do
+          logInfoN $ T.pack $ unlines [unwords ["Removing invalid place", show place], err]
+          delete placeId
+        Right _ -> pure ()
 
 {-# NOINLINE locations #-}
 locations :: [Location]
