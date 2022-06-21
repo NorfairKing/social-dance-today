@@ -343,7 +343,12 @@ StaticMap
 
 instance Validity User
 
-instance Validity Place
+instance Validity Place where
+  validate place@Place {..} =
+    mconcat
+      [ genericValidate place,
+        declare "The place query is not empty" $ not $ T.null placeQuery
+      ]
 
 instance Validity Organiser
 
