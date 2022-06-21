@@ -107,3 +107,60 @@
               <pre>
                 #{ppShow schedule}
         
+
+$if development || isAdmin
+  <section .section>
+    <div .container>
+      <div .columns .is-centered>
+        <div .column .is-12-tablet .is-11-desktop .is-10-widescreen>
+          <div .notification>
+            <h4 .title .is-4>
+              Admin Debug Info
+
+            <div .block>
+              <div .buttons>
+                <a .button .is-warning href=@{EventExportR partyUuid} download="#{uuidText partyUuid}.json">
+                  Export
+
+            <div .block>
+              <h5 .title .is-5>
+                Summary
+
+              <pre>
+                UUID: #{uuidText partyUuid}
+                Slug: #{maybe "" unSlug partySlug}
+                Created: #{formatTime timeLocale prettyDateTimeFormat partyCreated} (_{autoDayMsg today (utctDay partyCreated)})
+                Modified: 
+                $maybe modified <- partyModified
+                  #{formatTime timeLocale prettyDateTimeFormat modified} (_{autoDayMsg today (utctDay modified)})
+                $nothing
+                  No
+
+            <div .block>
+              <h5 .title .is-5>
+                Raw event data:
+
+              <pre>
+                #{ppShow party}
+
+            <div .block>
+              <h5 .title .is-5>
+                Raw place data:
+
+              <pre>
+                #{ppShow place}
+
+            <div .block>
+              <h5 .title .is-5>
+                Raw organiser data
+
+              <pre>
+                #{ppShow organiser}
+
+            $maybe schedule <- mSchedule
+              <div .block>
+                <h5 .title .is-5>
+                  Raw schedule data
+                <pre>
+                  #{ppShow schedule}
+        

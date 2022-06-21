@@ -20,6 +20,14 @@ import Salsa.Party.Web.Server.Handler.Import
 
 partyPageHtml :: Entity Organiser -> Entity Party -> Handler Html
 partyPageHtml (Entity _ organiser@Organiser {..}) (Entity partyId party@Party {..}) = do
+  isAdmin <- do
+    mAuth <- maybeAuth
+    case mAuth of
+      Nothing -> pure False
+      Just (Entity _ u) -> do
+        mAdmin <- getsYesod appAdmin
+        pure $ Just (userEmailAddress u) == mAdmin
+
   place@Place {..} <- runDB $ get404 partyPlace
   mSchedule <- runDB $ getScheduleForParty partyId
   mPosterKey <- runDB $ getPosterForParty partyId

@@ -108,8 +108,8 @@ instance Yesod App where
           Just _ -> pure Authorized
       AdminR _ -> do
         -- Has to be admin
-        mAuthId <- maybeAuth
-        case mAuthId of
+        mAuth <- maybeAuth
+        case mAuth of
           Nothing -> notFound
           Just (Entity _ u) -> do
             mAdmin <- getsYesod appAdmin

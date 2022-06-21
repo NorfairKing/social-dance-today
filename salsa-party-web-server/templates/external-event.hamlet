@@ -82,19 +82,51 @@
           <meta name="twitter:image" content=@{ImageR posterKey}>
         
               
-        $if development
-          <details>
-            <summary>
-              Debug info
+$if development || isAdmin
+  <section .section>
+    <div .container>
+      <div .columns .is-centered>
+        <div .column .is-12-tablet .is-11-desktop .is-10-widescreen>
+          <div .notification>
+            <h4 .title .is-4>
+              Admin Debug Info
 
-            <a .button .is-warning href=@{EventExportR externalEventUuid} download="#{uuidText externalEventUuid}.json">
-              Export
+            <div .block>
+              <div .buttons>
+                <a .button .is-warning href=@{EventExportR externalEventUuid} download="#{uuidText externalEventUuid}.json">
+                  Export
 
-            <a .button .is-danger href=#{externalEventOrigin}>
-              Origin
+                <a .button .is-danger href=#{externalEventOrigin}>
+                  Origin
 
-            <pre>
-              #{ppShow externalEvent}
-            <pre>
-              #{ppShow place}
+            <div .block>
+              <h5 .title .is-5>
+                Summary
+
+              <pre>
+                UUID: #{uuidText externalEventUuid}
+                Slug: #{maybe "" unSlug externalEventSlug}
+                Key: #{externalEventKey}
+                Origin: #{externalEventOrigin}
+                Created: #{formatTime timeLocale prettyDateTimeFormat externalEventCreated} (_{autoDayMsg today (utctDay externalEventCreated)})
+                Modified: 
+                $maybe modified <- externalEventModified
+                  #{formatTime timeLocale prettyDateTimeFormat modified} (_{autoDayMsg today (utctDay modified)})
+                $nothing
+                  No
+
+
+            <div .block>
+              <h5 .title .is-5>
+                Raw event data:
+
+              <pre>
+                #{ppShow externalEvent}
+
+            <div .block>
+              <h5 .title .is-5>
+                Raw place data:
+
+              <pre>
+                #{ppShow place}
 

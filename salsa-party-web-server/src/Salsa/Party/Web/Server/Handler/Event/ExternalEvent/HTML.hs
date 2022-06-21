@@ -19,6 +19,14 @@ import Salsa.Party.Web.Server.Handler.Import
 
 externalEventPageHtml :: Entity ExternalEvent -> Entity Place -> Maybe CASKey -> Handler Html
 externalEventPageHtml (Entity _ externalEvent@ExternalEvent {..}) (Entity _ place@Place {..}) mPosterKey = do
+  isAdmin <- do
+    mAuth <- maybeAuth
+    case mAuth of
+      Nothing -> pure False
+      Just (Entity _ u) -> do
+        mAdmin <- getsYesod appAdmin
+        pure $ Just (userEmailAddress u) == mAdmin
+
   googleMapsWidget <- makeGoogleMapsWidget externalEventUuid placeQuery
   now <- getCurrentTimeH
   let today = utctDay now
