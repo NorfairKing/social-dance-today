@@ -123,103 +123,128 @@ $maybe (siteTest, result) <- mSiteTest
       <h2 .title .is-4>
         Machine-readability
       <p .content>
-        If any of the following three sections show a result on an event page, that means that the events are machine-readible.
+        If any of the following three sections show a result on an event page, that means that the events may be machine-readible.
 
-      <h3 .title .is-5>
-        JSON Linked Data
-      $case siteTestResultJSONLD result
-        $of []
-          <p .content>
-            No Linked data found
-        $of l
-          $forall result <- l
-            $case result
-              $of ErrJSONLD err
-                <p .content>
-                  Error while trying to find the JSON LD:
-                  <details>
-                    <pre>
-                      #{err}
-              $of ErrJSONValue value e
-                <p .content>
-                  Found a JSON LD tag with valid JSON, but it was not an event or list of events.
-                  This means that it either contains something different, or that our event parser is broken for this page:
-                  <details>
-                    <pre>
-                      #{TE.decodeUtf8 $ LB.toStrict $ encodePretty value}
-                  <details>
-                    <summary>
-                      Error message
-                    <pre>
-                      #{e}
-              $of JSONLD event
-                <p .content>
-                  Found a JSON LD Event on this page, this means the event is machine readible:
-                  <details>
-                    <summary>
-                      Event
-                    <pre>
-                      #{ppShow event}
+      <div .block>
+        <h3 .title .is-5>
+          JSON Linked Data in the
+          <code>
+            head
+          of the page
+        $case siteTestResultJSONLD result
+          $of []
+            <p .content>
+              No Linked data found
+          $of l
+            $forall result <- l
+              $case result
+                $of ErrJSONLD err
+                  <p .content>
+                    Error while trying to find a JSON LD tag in the
+                    <code>
+                      head
+                    of the page:
+                    <details>
+                      <pre>
+                        #{err}
+                $of ErrJSONValue value e
+                  <p .content>
+                    Found a JSON LD tag in the
+                    <code>
+                      head
+                    head of the page with valid JSON, but it was not an event or list of events.
+                    This means that it either contains something different, or that our event parser is broken for this page:
+                    <details>
+                      <pre>
+                        #{TE.decodeUtf8 $ LB.toStrict $ encodePretty value}
+                    <details>
+                      <summary>
+                        Error message
+                      <pre>
+                        #{e}
+                $of JSONLD event
+                  <p .content>
+                    Found a JSON LD tag in the
+                    <code>
+                      head
+                    of the page with a valid Event on this page, this means the event is machine readible:
+                    <details>
+                      <summary>
+                        Event
+                      <pre>
+                        #{ppShow event}
 
-      <h3 .title .is-5>
-        JSON LD
-      $case siteTestAcceptJSONLD result
-        $of ErrAcceptJSON err
-          <p .content>
-            Error while fetching with
-            <code>
-              Accept: application/ld+json
-            :
-            <details>
-              <pre>
-                #{err}
-        $of AcceptJSON value
-          <p .content>
-            Found a JSON object on this page, this means there is something machine readible on this page (but not necessarily an event):
-            <details>
-              <summary>
-                Value
-              <pre>
-                #{TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty value}
+      <div .block>
+        <h3 .title .is-5>
+          JSON LD
+        $case siteTestAcceptJSONLD result
+          $of ErrAcceptJSON err
+            <p .content>
+              Error while fetching with
+              <code>
+                Accept: application/ld+json
+              :
+              <details>
+                <pre>
+                  #{err}
+          $of AcceptJSON value
+            <p .content>
+              Found a JSON object on this page while fetching with
+              <code>
+                Accept: application/ld+json
+              , this means there is something machine readible on this page (but not necessarily an event):
+              <details>
+                <summary>
+                  Value
+                <pre>
+                  #{TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty value}
 
-      <h3 .title .is-5>
-        JSON
-      $case siteTestAcceptJSON result
-        $of ErrAcceptJSON err
-          <p .content>
-            Error while fetching with
-            <code>
-              Accept: application/json
-            :
-            <details>
-              <pre>
-                #{err}
-        $of AcceptJSON value
-          <p .content>
-            Found a JSON object on this page, this means there is something machine readible on this page (but not necessarily an event):
-            <details>
-              <summary>
-                Value
-              <pre>
-                #{TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty value}
+      <div .block>
+        <h3 .title .is-5>
+          JSON
+        $case siteTestAcceptJSON result
+          $of ErrAcceptJSON err
+            <p .content>
+              Error while fetching with
+              <code>
+                Accept: application/json
+              :
+              <details>
+                <pre>
+                  #{err}
+          $of AcceptJSON value
+            <p .content>
+              Found a JSON object on this page while fetching with
+              <code>
+                Accept: application/json
+              , this means there is something machine readible on this page (but not necessarily an event):
+              <details>
+                <summary>
+                  Value
+                <pre>
+                  #{TE.decodeUtf8 $ LB.toStrict $ JSON.encodePretty value}
 
-      <h3 .title .is-5>
-        XML
-      $case siteTestAcceptXML result
-        $of ErrAcceptXML err
-          <p .content>
-            Error while fetching with
-            <code>
-              Accept: application/xml
-            :
-            <details>
-              <pre>
-                #{err}
-        $of AcceptXML value
-          <p .content>
-            Found an XML document on this page, this means there is something machine readible on this page (but not necessarily an event):
-            <details>
-              <summary>
-                Value
-              <pre>
-                #{XML.renderText xmlRenderSets value}
+      <div .block>
+        <h3 .title .is-5>
+          XML
+        $case siteTestAcceptXML result
+          $of ErrAcceptXML err
+            <p .content>
+              Error while fetching with
+              <code>
+                Accept: application/xml
+              :
+              <details>
+                <pre>
+                  #{err}
+          $of AcceptXML value
+            <p .content>
+              Found an XML document on this page while fetching with
+              <code>
+                Accept: application/xml
+              , this means there is something machine readible on this page (but not necessarily an event):
+              <details>
+                <summary>
+                  Value
+                <pre>
+                  #{XML.renderText xmlRenderSets value}
