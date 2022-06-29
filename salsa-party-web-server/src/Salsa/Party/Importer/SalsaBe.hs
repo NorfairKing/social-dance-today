@@ -31,6 +31,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Encoding.Error as TE
 import Network.HTTP.Client as HTTP
+import Network.URI
 import Salsa.Party.Importer.Import
 import Salsa.Party.Web.Server.Geocoding
 import Text.HTML.Scalpel
@@ -58,12 +59,44 @@ func = do
     yield request
       .| doHttpRequestWith
       .| logRequestErrors
+      .| crawlSearchResults
       .| scrapeEventLinks
       .| deduplicateC
       .| C.concatMap (\eventId -> (,) eventId <$> makeEventRequest eventId)
       .| doHttpRequestWith'
       .| logRequestErrors'
       .| importEventPage
+
+crawlSearchResults :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString) (HTTP.Request, HTTP.Response LB.ByteString) Import ()
+crawlSearchResults = awaitForever $ \(request, response) -> do
+  yield (request, response)
+  go (request, response)
+  where
+    go :: (Request, Response LB.ByteString) -> ConduitT (HTTP.Request, HTTP.Response LB.ByteString) (HTTP.Request, HTTP.Response LB.ByteString) Import ()
+    go (request, response) = do
+      let mLink :: Maybe Text
+          mLink =
+            join $
+              scrapeStringLike (responseBody response) $ do
+                chroot ("tr" @: [hasClass "Footer"]) $ do
+                  links <- chroots "a" $ do
+                    ref <- attr "href" "a"
+                    src <- attr "src" "img"
+                    guard $ "Next.gif" `LB.isSuffixOf` src
+                    pure ref
+                  -- The third link is the next page
+                  pure $ listToMaybe $ mapMaybe maybeUtf8 links
+      liftIO $ print mLink
+      case mLink >>= fmap (`relativeTo` getUri request) . parseURIReference . T.unpack >>= requestFromURI of
+        Nothing -> logDebugN $ T.pack $ unwords ["Pages end here:", show (getUri request)]
+        Just request' -> do
+          logDebugN $ T.pack $ unwords ["Trying to fetch the next page", show (getUri request')]
+          errOrResponse' <- lift $ doHttpRequest request'
+          case errOrResponse' of
+            Left err -> logErrorN $ T.pack $ unlines ["Error while fetching page: " <> ppShow err]
+            Right response' -> do
+              yield (request', response')
+              go (request', response')
 
 scrapeEventLinks :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Text Import ()
 scrapeEventLinks = awaitForever $ \(_, response) -> do
