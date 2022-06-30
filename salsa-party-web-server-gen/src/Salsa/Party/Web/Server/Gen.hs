@@ -20,9 +20,9 @@ import Salsa.Party.DB
 import Salsa.Party.Web.Server.Handler.Account.Organiser
 import Salsa.Party.Web.Server.Handler.Account.Party
 import Salsa.Party.Web.Server.Handler.Account.Schedule
-import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
+import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Export
 import Salsa.Party.Web.Server.Handler.Event.JSON.Place
-import Salsa.Party.Web.Server.Handler.Event.Party.JSON
+import Salsa.Party.Web.Server.Handler.Event.Party.Export
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Deduplication
 import Test.QuickCheck

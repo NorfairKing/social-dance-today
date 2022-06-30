@@ -13,8 +13,8 @@ import qualified Database.Persist as DB
 import qualified Database.Persist.Sql as DB
 import Path
 import Path.IO
-import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
-import Salsa.Party.Web.Server.Handler.Event.Party.JSON
+import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Export
+import Salsa.Party.Web.Server.Handler.Event.Party.Export
 import Salsa.Party.Web.Server.Handler.Search.Deduplication
 import Salsa.Party.Web.Server.Handler.TestImport
 import Test.Syd.Persistent

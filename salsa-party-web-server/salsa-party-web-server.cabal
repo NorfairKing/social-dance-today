@@ -90,18 +90,20 @@ library
       Salsa.Party.Web.Server.Handler.Admin.SiteTest
       Salsa.Party.Web.Server.Handler.Admin.TestOrganiserReminder
       Salsa.Party.Web.Server.Handler.Event
+      Salsa.Party.Web.Server.Handler.Event.Export
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Description
+      Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Export
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.HTML
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Query
       Salsa.Party.Web.Server.Handler.Event.ICal
-      Salsa.Party.Web.Server.Handler.Event.JSON
       Salsa.Party.Web.Server.Handler.Event.JSON.Place
       Salsa.Party.Web.Server.Handler.Event.Party
       Salsa.Party.Web.Server.Handler.Event.Party.Description
+      Salsa.Party.Web.Server.Handler.Event.Party.Export
       Salsa.Party.Web.Server.Handler.Event.Party.HTML
       Salsa.Party.Web.Server.Handler.Event.Party.ICal
       Salsa.Party.Web.Server.Handler.Event.Party.JSON

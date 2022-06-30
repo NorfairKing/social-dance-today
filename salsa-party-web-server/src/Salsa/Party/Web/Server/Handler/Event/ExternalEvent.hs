@@ -11,4 +11,4 @@ externalEventPage externalEventEntity placeEntity mCASKey = selectRep $ do
   provideRep $ externalEventPageHtml externalEventEntity placeEntity mCASKey
   provideRep $ externalEventPageLD externalEventEntity placeEntity mCASKey
   provideRep $ externalEventPageICal externalEventEntity placeEntity
-  provideRep $ externalEventPageJSON externalEventEntity placeEntity
+  provideRep $ externalEventPageJSON externalEventEntity placeEntity mCASKey
