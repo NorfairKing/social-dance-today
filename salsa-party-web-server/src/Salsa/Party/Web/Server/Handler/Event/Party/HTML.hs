@@ -12,13 +12,16 @@ module Salsa.Party.Web.Server.Handler.Event.Party.HTML (partyPageHtml) where
 
 import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString.Lazy as LT
+import Data.Default (def)
 import qualified Data.Text.Encoding as TE
 import Google.Calendar
 import Google.Maps
 import Network.URI
 import Salsa.Party.Web.Server.Handler.Event.Party.Description
+import Salsa.Party.Web.Server.Handler.Event.Party.ICal
 import Salsa.Party.Web.Server.Handler.Event.Party.LD
 import Salsa.Party.Web.Server.Handler.Import
+import qualified Text.ICalendar.Printer as ICal
 
 partyPageHtml :: Entity Organiser -> Entity Party -> Handler Html
 partyPageHtml (Entity _ organiser@Organiser {..}) (Entity partyId party@Party {..}) = do

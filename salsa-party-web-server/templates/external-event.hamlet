@@ -139,3 +139,11 @@ $if development || isAdmin
 
               <pre>
                 #{TE.decodeUtf8 $ LT.toStrict $ JSON.encodePretty $ externalEventToLDEvent renderUrl externalEvent place mPosterKey}
+
+
+            <div .block>
+              <h5 .title .is-5>
+                Calendar Event
+
+              <pre>
+                #{TE.decodeUtf8 $ LT.toStrict $ ICal.printICalendar def $ externalEventCalendar renderUrl externalEvent place}
