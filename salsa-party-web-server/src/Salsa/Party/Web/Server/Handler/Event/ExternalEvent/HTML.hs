@@ -8,6 +8,8 @@
 
 module Salsa.Party.Web.Server.Handler.Event.ExternalEvent.HTML (externalEventPageHtml) where
 
+import Data.Aeson.Encode.Pretty as JSON
+import qualified Data.ByteString.Lazy as LT
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Google.Calendar

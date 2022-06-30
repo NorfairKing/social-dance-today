@@ -99,6 +99,7 @@ $if development || isAdmin
                 <a .button .is-danger href=#{externalEventOrigin}>
                   Origin
 
+
             <div .block>
               <h5 .title .is-5>
                 Summary
@@ -123,6 +124,7 @@ $if development || isAdmin
               <pre>
                 #{ppShow externalEvent}
 
+
             <div .block>
               <h5 .title .is-5>
                 Raw place data:
@@ -130,3 +132,10 @@ $if development || isAdmin
               <pre>
                 #{ppShow place}
 
+
+            <div .block>
+              <h5 .title .is-5>
+                LD Event
+
+              <pre>
+                #{TE.decodeUtf8 $ LT.toStrict $ JSON.encodePretty $ externalEventToLDEvent renderUrl externalEvent place mPosterKey}

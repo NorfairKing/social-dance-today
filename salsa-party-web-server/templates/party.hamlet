@@ -136,12 +136,14 @@ $if development || isAdmin
                 $nothing
                   No
 
+
             <div .block>
               <h5 .title .is-5>
                 Raw event data:
 
               <pre>
                 #{ppShow party}
+
 
             <div .block>
               <h5 .title .is-5>
@@ -150,6 +152,7 @@ $if development || isAdmin
               <pre>
                 #{ppShow place}
 
+
             <div .block>
               <h5 .title .is-5>
                 Raw organiser data
@@ -157,10 +160,18 @@ $if development || isAdmin
               <pre>
                 #{ppShow organiser}
 
+
             $maybe schedule <- mSchedule
               <div .block>
                 <h5 .title .is-5>
                   Raw schedule data
                 <pre>
                   #{ppShow schedule}
-        
+
+
+            <div .block>
+              <h5 .title .is-5>
+                LD Event
+
+              <pre>
+                #{TE.decodeUtf8 $ LT.toStrict $ JSON.encodePretty $ partyToLDEvent renderUrl party organiser place mPosterKey}
