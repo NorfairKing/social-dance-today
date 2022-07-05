@@ -47,7 +47,7 @@ danceusOrgImporter =
 func :: Import ()
 func =
   runConduit $
-    yield "https://www.danceus.org/events/"
+    yieldManyShuffled ("https://www.danceus.org/events/" : ["https://www.danceus.org/events/" <> dance <> "/" | dance <- dances])
       .| C.concatMap (parseRequest :: String -> Maybe HTTP.Request)
       .| doHttpRequestWith
       .| logRequestErrors
@@ -70,6 +70,13 @@ func =
       .| scrapImageIfStatic
       .| convertLDEventToExternalEvent eventUrlPrefix
       .| C.mapM_ importExternalEventWithMImage
+
+dances :: [String]
+dances =
+  [ "argentine-tango",
+    "salsa",
+    "swing"
+  ]
 
 scrapeLocationLinks :: MonadIO m => ConduitT (HTTP.Request, HTTP.Response LB.ByteString) URI m ()
 scrapeLocationLinks = awaitForever $ \(request, response) -> do
