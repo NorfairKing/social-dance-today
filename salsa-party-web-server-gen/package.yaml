@@ -27,7 +27,6 @@ library:
   - genvalidity-time
   - genvalidity-typed-uuid
   - http-client
-  - iCalendar
   - microlens
   - monad-logger
   - mtl
@@ -104,7 +103,7 @@ tests:
     - genvalidity-time
     - genvalidity-typed-uuid
     - http-client
-    - iCalendar
+    - ical
     - microlens
     - monad-logger
     - mtl

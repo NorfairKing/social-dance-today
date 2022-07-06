@@ -42,7 +42,6 @@ library
     , genvalidity-time
     , genvalidity-typed-uuid
     , http-client
-    , iCalendar
     , microlens
     , monad-logger
     , mtl
@@ -143,7 +142,7 @@ test-suite salsa-party-web-server-gen-test
     , genvalidity-time
     , genvalidity-typed-uuid
     , http-client
-    , iCalendar
+    , ical
     , microlens
     , monad-logger
     , mtl

@@ -24,7 +24,6 @@ import Control.Monad.Logger
 import Control.Monad.Reader
 import Data.Aeson as JSON
 import qualified Data.ByteString.Lazy as LB
-import Data.Default
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -35,6 +34,8 @@ import Data.Validity.Time ()
 import qualified Database.Esqueleto.Legacy as E
 import Database.Persist.Sql
 import Database.Persist.Sqlite
+import qualified ICal
+import qualified ICal.Component as ICal
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation.App
 import Salsa.Party.Web.Server.Foundation.Auth
@@ -46,7 +47,6 @@ import Salsa.Party.Web.Server.Widget
 import Text.Blaze.Html5 ((!))
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
-import qualified Text.ICalendar as ICal
 import Yesod
 import Yesod.AutoReload
 
@@ -168,13 +168,13 @@ typeLD = "application/ld+json"
 toJSONLDData :: ToJSON a => a -> JSONLDData
 toJSONLDData = JSONLDData . toJSON
 
-instance HasContentType ICal.VCalendar where
+instance HasContentType ICal.Calendar where
   getContentType _ = typeCalendar
 
-instance ToContent ICal.VCalendar where
-  toContent = toContent . ICal.printICalendar def
+instance ToContent ICal.Calendar where
+  toContent = toContent . ICal.renderICalendarByteString . (: [])
 
-instance ToTypedContent ICal.VCalendar where
+instance ToTypedContent ICal.Calendar where
   toTypedContent vCalendar = TypedContent typeCalendar $ toContent vCalendar
 
 typeCalendar :: ContentType

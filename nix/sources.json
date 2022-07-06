@@ -35,6 +35,18 @@
         "url": "https://github.com/NorfairKing/iCalendar/archive/e08c16dceaab4d15b0f00860512018bc64791f07.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "ical": {
+        "branch": "master",
+        "description": null,
+        "homepage": null,
+        "owner": "NorfairKing",
+        "repo": "ical",
+        "rev": "1d6554a12fc131199074a2aa09357d53d5da1f4c",
+        "sha256": "0xsc3kdfh65fwnb5azmq6h9d543zraavwaf1yi61dzzp82br58i4",
+        "type": "tarball",
+        "url": "https://github.com/NorfairKing/ical/archive/1d6554a12fc131199074a2aa09357d53d5da1f4c.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "linkcheck": {
         "branch": "master",
         "description": "A fast link checker for CI",
@@ -168,15 +180,15 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "validity": {
-        "branch": "master",
+        "branch": "development",
         "description": "Validity and validity-based testing",
         "homepage": "https://www.youtube.com/watch?v=eIs9qNh17SM",
         "owner": "NorfairKing",
         "repo": "validity",
-        "rev": "160e846cc5de8e92e6758172da341f5d81fe0374",
-        "sha256": "03a4s2gq1mjjd452xbhs0h1iycjpdidxprpvjiwy55hx0lzqfpli",
+        "rev": "4ce0cd2f4ccdfa9f552eedf0c656dbc53cd4fa86",
+        "sha256": "14s0i4zsm8f7gqhcf4kjg5ksqfxmxqxg0i2mkf7692sg78c22y2j",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/validity/archive/160e846cc5de8e92e6758172da341f5d81fe0374.tar.gz",
+        "url": "https://github.com/NorfairKing/validity/archive/4ce0cd2f4ccdfa9f552eedf0c656dbc53cd4fa86.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "yesod-autoreload": {

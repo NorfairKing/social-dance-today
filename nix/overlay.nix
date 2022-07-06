@@ -130,7 +130,6 @@ in
                   # Tests access the internet
                   yesod-static-remote = dontCheck (self.callCabal2nix "yesod-static-remote" sources.yesod-static-remote { });
                   token-limiter-concurrent = self.callCabal2nix "token-limiter-concurrent" sources.token-limiter-concurrent { };
-                  iCalendar = self.callCabal2nix "iCalendar" sources.iCalendar { };
                 }
             );
       }

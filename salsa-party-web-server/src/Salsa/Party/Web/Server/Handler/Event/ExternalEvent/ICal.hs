@@ -12,140 +12,70 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
+import qualified ICal
+import qualified ICal.Component as ICal
+import qualified ICal.Property as ICal
+import qualified ICal.PropertyType.Date as ICal
+import qualified ICal.PropertyType.DateTime as ICal
+import qualified ICal.PropertyType.Time as ICal
+import qualified ICal.PropertyType.URI as ICal
 import Network.URI
 import Salsa.Party.Web.Server.Handler.Import
-import qualified Text.ICalendar as ICal
 
-externalEventPageICal :: Entity ExternalEvent -> Entity Place -> Handler ICal.VCalendar
+externalEventPageICal :: Entity ExternalEvent -> Entity Place -> Handler ICal.Calendar
 externalEventPageICal (Entity _ externalEvent) (Entity _ place) = do
   renderUrl <- getUrlRender
   pure $ externalEventCalendar renderUrl externalEvent place
 
-externalEventCalendar :: (Route App -> Text) -> ExternalEvent -> Place -> ICal.VCalendar
+externalEventCalendar :: (Route App -> Text) -> ExternalEvent -> Place -> ICal.Calendar
 externalEventCalendar renderUrl externalEvent@ExternalEvent {..} place =
-  def
-    { ICal.vcProdId =
-        ICal.ProdId
-          { ICal.prodIdValue = LT.fromStrict $ renderUrl HomeR,
-            ICal.prodIdOther = def
-          },
-      ICal.vcEvents =
-        M.singleton
-          (LT.fromStrict $ uuidText externalEventUuid, Just dateTime)
-          (externalEventCalendarEvent renderUrl externalEvent place)
+  (ICal.makeCalendar (ICal.ProdId (renderUrl HomeR)))
+    { ICal.calendarEvents =
+        [ externalEventCalendarEvent renderUrl externalEvent place
+        ]
     }
-  where
-    dateTime = case externalEventStart of
-      Nothing -> Left $ ICal.Date externalEventDay
-      Just start -> Right $ ICal.FloatingDateTime (LocalTime externalEventDay start)
 
-externalEventCalendarEvent :: (Route App -> Text) -> ExternalEvent -> Place -> ICal.VEvent
+externalEventCalendarEvent :: (Route App -> Text) -> ExternalEvent -> Place -> ICal.Event
 externalEventCalendarEvent renderUrl externalEvent@ExternalEvent {..} Place {..} =
   let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
       noOther = def
-   in ICal.VEvent
-        { ICal.veDTStamp =
-            ICal.DTStamp
-              { ICal.dtStampValue =
-                  fromMaybe externalEventCreated externalEventModified,
-                ICal.dtStampOther = noOther
-              },
-          ICal.veUID =
-            ICal.UID
-              { ICal.uidValue = LT.fromStrict $ uuidText externalEventUuid,
-                ICal.uidOther = noOther
-              },
-          ICal.veClass =
-            ICal.Class
-              { ICal.classValue = ICal.Public,
-                ICal.classOther = noOther
-              },
-          ICal.veDTStart = Just $ case externalEventStart of
-            Nothing ->
-              ICal.DTStartDate
-                { ICal.dtStartDateValue = ICal.Date externalEventDay,
-                  dtStartOther = noOther
-                }
-            Just start ->
-              ICal.DTStartDateTime
-                { ICal.dtStartDateTimeValue = ICal.FloatingDateTime (LocalTime externalEventDay start),
-                  ICal.dtStartOther = noOther
-                },
-          ICal.veCreated =
+   in ( ICal.makeEvent
+          (ICal.UID (uuidText externalEventUuid))
+          ( ICal.DateTimeStamp
+              ( ICal.DateTimeUTC
+                  ( fromMaybe externalEventCreated externalEventModified
+                  )
+              )
+          )
+      )
+        { ICal.eventClassification = ICal.ClassificationPublic,
+          ICal.eventDateTimeStart = Just $ case externalEventStart of
+            Nothing -> ICal.DateTimeStartDate (ICal.Date externalEventDay)
+            Just start -> ICal.DateTimeStartDateTime (LocalTime externalEventDay start),
+          ICal.eventCreated = ICal.Created externalEventCreated,
+          ICal.eventDescription =
+            (\description -> ICal.Description description) <$> externalEventDescription,
+          ICal.eventGeographicPosition =
             Just $
-              ICal.Created
-                { ICal.createdValue = externalEventCreated,
-                  ICal.createdOther = noOther
+              ICal.GeographicPosition
+                { ICal.geographicPositionLat =
+                    latitudeToFloat placeLat,
+                  ICal.geographicPositionLon = longitudeToFloat placeLon
                 },
-          ICal.veDescription =
-            ( \description ->
-                ICal.Description
-                  { ICal.descriptionValue = LT.fromStrict description,
-                    ICal.descriptionAltRep = Nothing,
-                    ICal.descriptionLanguage = Nothing,
-                    ICal.descriptionOther = noOther
-                  }
-            )
-              <$> externalEventDescription,
-          ICal.veGeo =
-            Just $
-              ICal.Geo
-                { ICal.geoLat = latitudeToFloat placeLat,
-                  ICal.geoLong = longitudeToFloat placeLon,
-                  ICal.geoOther = noOther
-                },
-          ICal.veLastMod =
-            ( \modified ->
-                ICal.LastModified
-                  { ICal.lastModifiedValue = modified,
-                    ICal.lastModifiedOther = noOther
-                  }
-            )
+          ICal.eventLastModified =
+            (\modified -> ICal.LastModified modified)
               <$> externalEventModified,
-          ICal.veLocation =
-            Just $
-              ICal.Location
-                { ICal.locationValue = LT.fromStrict placeQuery,
-                  ICal.locationAltRep = Nothing,
-                  ICal.locationLanguage = Nothing,
-                  ICal.locationOther = noOther
-                },
-          ICal.veOrganizer = Nothing,
-          ICal.vePriority = def,
-          ICal.veSeq = def,
-          ICal.veStatus =
+          ICal.eventLocation = Just $ ICal.Location placeQuery,
+          ICal.eventStatus =
             ( \c ->
                 if c
-                  then ICal.CancelledEvent {eventStatusOther = noOther}
-                  else ICal.ConfirmedEvent {eventStatusOther = noOther}
+                  then ICal.StatusCancelled
+                  else ICal.StatusConfirmed
             )
               <$> externalEventCancelled,
-          ICal.veSummary =
-            Just $
-              ICal.Summary
-                { ICal.summaryValue = LT.fromStrict externalEventTitle,
-                  ICal.summaryAltRep = Nothing,
-                  ICal.summaryLanguage = Nothing,
-                  ICal.summaryOther = noOther
-                },
-          ICal.veTransp = ICal.Transparent {timeTransparencyOther = noOther},
-          ICal.veUrl = do
-            -- We go through uri to make sure it's a valid uri.
+          ICal.eventSummary = Just $ ICal.Summary externalEventTitle,
+          ICal.eventTransparency = Just ICal.TransparencyTransparent,
+          ICal.eventURL = do
             uri <- parseURI $ T.unpack $ renderUrl $ externalEventRoute externalEvent
-            pure $ ICal.URL {ICal.urlValue = LT.fromStrict $ T.pack $ show uri, ICal.urlOther = noOther},
-          ICal.veRecurId = Nothing,
-          ICal.veRRule = S.empty,
-          ICal.veDTEndDuration = Nothing,
-          ICal.veAttach = S.empty,
-          ICal.veAttendee = S.empty,
-          ICal.veCategories = S.empty,
-          ICal.veComment = S.empty,
-          ICal.veContact = S.empty,
-          ICal.veExDate = S.empty,
-          ICal.veRStatus = S.empty,
-          ICal.veRelated = S.empty,
-          ICal.veResources = S.empty,
-          ICal.veRDate = S.empty,
-          ICal.veAlarms = S.empty,
-          ICal.veOther = S.empty
+            pure $ ICal.URL $ ICal.URI uri
         }

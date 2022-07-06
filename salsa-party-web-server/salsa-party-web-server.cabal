@@ -167,7 +167,7 @@ library
     , http-client-tls
     , http-date
     , http-types
-    , iCalendar
+    , ical
     , looper
     , microlens
     , monad-logger
