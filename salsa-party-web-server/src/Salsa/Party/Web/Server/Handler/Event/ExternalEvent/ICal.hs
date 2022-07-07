@@ -7,17 +7,11 @@ module Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
   )
 where
 
-import Data.Default
-import qualified Data.Map as M
-import qualified Data.Set as S
 import qualified Data.Text as T
-import qualified Data.Text.Lazy as LT
-import qualified ICal
 import qualified ICal.Component as ICal
 import qualified ICal.Property as ICal
 import qualified ICal.PropertyType.Date as ICal
 import qualified ICal.PropertyType.DateTime as ICal
-import qualified ICal.PropertyType.Time as ICal
 import qualified ICal.PropertyType.URI as ICal
 import Network.URI
 import Salsa.Party.Web.Server.Handler.Import
@@ -28,7 +22,7 @@ externalEventPageICal (Entity _ externalEvent) (Entity _ place) = do
   pure $ externalEventCalendar renderUrl externalEvent place
 
 externalEventCalendar :: (Route App -> Text) -> ExternalEvent -> Place -> ICal.Calendar
-externalEventCalendar renderUrl externalEvent@ExternalEvent {..} place =
+externalEventCalendar renderUrl externalEvent place =
   (ICal.makeCalendar (ICal.ProdId (renderUrl HomeR)))
     { ICal.calendarEvents =
         [ externalEventCalendarEvent renderUrl externalEvent place
@@ -38,33 +32,23 @@ externalEventCalendar renderUrl externalEvent@ExternalEvent {..} place =
 externalEventCalendarEvent :: (Route App -> Text) -> ExternalEvent -> Place -> ICal.Event
 externalEventCalendarEvent renderUrl externalEvent@ExternalEvent {..} Place {..} =
   let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
-      noOther = def
    in ( ICal.makeEvent
           (ICal.UID (uuidText externalEventUuid))
-          ( ICal.DateTimeStamp
-              ( ICal.DateTimeUTC
-                  ( fromMaybe externalEventCreated externalEventModified
-                  )
-              )
-          )
+          (ICal.DateTimeStamp (ICal.DateTimeUTC (fromMaybe externalEventCreated externalEventModified)))
       )
-        { ICal.eventClassification = ICal.ClassificationPublic,
+        { ICal.eventClassification = Just ICal.ClassificationPublic,
           ICal.eventDateTimeStart = Just $ case externalEventStart of
             Nothing -> ICal.DateTimeStartDate (ICal.Date externalEventDay)
-            Just start -> ICal.DateTimeStartDateTime (LocalTime externalEventDay start),
-          ICal.eventCreated = ICal.Created externalEventCreated,
-          ICal.eventDescription =
-            (\description -> ICal.Description description) <$> externalEventDescription,
+            Just start -> ICal.DateTimeStartDateTime (ICal.DateTimeFloating (LocalTime externalEventDay start)),
+          ICal.eventCreated = Just $ ICal.Created externalEventCreated,
+          ICal.eventDescription = ICal.Description <$> externalEventDescription,
           ICal.eventGeographicPosition =
             Just $
               ICal.GeographicPosition
-                { ICal.geographicPositionLat =
-                    latitudeToFloat placeLat,
+                { ICal.geographicPositionLat = latitudeToFloat placeLat,
                   ICal.geographicPositionLon = longitudeToFloat placeLon
                 },
-          ICal.eventLastModified =
-            (\modified -> ICal.LastModified modified)
-              <$> externalEventModified,
+          ICal.eventLastModified = ICal.LastModified <$> externalEventModified,
           ICal.eventLocation = Just $ ICal.Location placeQuery,
           ICal.eventStatus =
             ( \c ->

@@ -10,17 +10,16 @@ module Salsa.Party.Web.Server.Handler.Event.ExternalEvent.HTML (externalEventPag
 
 import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString.Lazy as LT
-import Data.Default (def)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Google.Calendar
 import Google.Maps
+import qualified ICal
 import Network.URI
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Description
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
 import Salsa.Party.Web.Server.Handler.Import
-import qualified Text.ICalendar.Printer as ICal
 
 externalEventPageHtml :: Entity ExternalEvent -> Entity Place -> Maybe CASKey -> Handler Html
 externalEventPageHtml (Entity _ externalEvent@ExternalEvent {..}) (Entity _ place@Place {..}) mPosterKey = do

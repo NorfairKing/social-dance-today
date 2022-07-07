@@ -2,11 +2,14 @@
 
 module Salsa.Party.Web.Server.Handler.Organiser.ICalSpec (spec) where
 
-import Data.Default
+import qualified Data.ByteString.Lazy as LB
 import qualified Data.List.NonEmpty as NE
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Encoding.Error as TE
 import qualified Database.Persist as DB
+import qualified ICal
 import Salsa.Party.Web.Server.Handler.TestImport
-import qualified Text.ICalendar.Parser as ICal
 
 spec :: Spec
 spec = serverSpec $ do
@@ -38,12 +41,16 @@ spec = serverSpec $ do
                 Nothing -> liftIO $ expectationFailure "Should have had a response by now."
                 Just resp -> do
                   let cts = responseBody resp
-                  case ICal.parseICalendar def "response" cts of
+                  case ICal.parseICalendar $ LB.toStrict cts of
                     Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
-                    Right (cals, warnings) -> do
-                      case warnings of
+                    Right cals ->
+                      case cals of
                         [] ->
-                          case cals of
-                            [_] -> pure ()
-                            _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
-                        _ -> liftIO $ expectationFailure $ unlines $ "Warnings while parsing ical: " : warnings
+                          liftIO $
+                            expectationFailure $
+                              unlines
+                                [ "Succesfully parsed 0 calendars from this response:",
+                                  T.unpack $ TE.decodeUtf8With TE.lenientDecode $ LB.toStrict cts
+                                ]
+                        [_] -> pure ()
+                        _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals

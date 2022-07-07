@@ -182,4 +182,4 @@ $if development || isAdmin
                 Calendar Event
 
               <pre>
-                #{TE.decodeUtf8 $ LT.toStrict $ ICal.printICalendar def $ partyCalendar renderUrl organiser party place}
+                #{ICal.renderICalendarText [partyCalendar renderUrl organiser party place]}

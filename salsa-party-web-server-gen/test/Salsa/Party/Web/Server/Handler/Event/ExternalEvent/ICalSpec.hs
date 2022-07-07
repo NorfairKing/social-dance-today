@@ -3,15 +3,15 @@
 module Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICalSpec (spec) where
 
 import qualified Data.ByteString.Lazy as LB
-import Data.Default
 import Data.Text (Text)
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import qualified Data.UUID as UUID
 import qualified Data.UUID.Typed as Typed
 import qualified Database.Persist as DB
+import qualified ICal as ICal
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
 import Salsa.Party.Web.Server.Handler.TestImport
-import qualified Text.ICalendar.Parser as ICal
-import qualified Text.ICalendar.Printer as ICal
 import Yesod.Core
 
 spec :: Spec
@@ -32,15 +32,19 @@ spec = do
                 Nothing -> liftIO $ expectationFailure "Should have had a response by now."
                 Just resp -> do
                   let cts = responseBody resp
-                  case ICal.parseICalendar def "response" cts of
+                  case ICal.parseICalendar (LB.toStrict cts) of
                     Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
-                    Right (cals, warnings) -> do
-                      case warnings of
+                    Right cals -> do
+                      case cals of
                         [] ->
-                          case cals of
-                            [_] -> pure ()
-                            _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
-                        _ -> liftIO $ expectationFailure $ unlines $ "Warnings while parsing ical: " : warnings
+                          liftIO $
+                            expectationFailure $
+                              unlines
+                                [ "Succesfully parsed 0 calendars from this response:",
+                                  T.unpack $ TE.decodeUtf8 $ LB.toStrict cts
+                                ]
+                        [_] -> pure ()
+                        _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
 
       it "Can get the ical calendar for an existing external event via an accept header" $ \yc ->
         forAllValid $ \place ->
@@ -61,28 +65,32 @@ spec = do
                     Nothing -> liftIO $ expectationFailure "Should have had a response by now."
                     Just resp -> do
                       let cts = responseBody resp
-                      case ICal.parseICalendar def "response" cts of
+                      case ICal.parseICalendar (LB.toStrict cts) of
                         Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
-                        Right (cals, warnings) -> do
-                          case warnings of
+                        Right cals -> do
+                          case cals of
                             [] ->
-                              case cals of
-                                [_] -> pure ()
-                                _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
-                            _ -> liftIO $ expectationFailure $ unlines $ "Warnings while parsing ical: " : warnings
+                              liftIO $
+                                expectationFailure $
+                                  unlines
+                                    [ "Succesfully parsed 0 calendars from this response:",
+                                      T.unpack $ TE.decodeUtf8 $ LB.toStrict cts
+                                    ]
+                            [_] -> pure ()
+                            _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
 
   modifyMaxSuccess (`div` 20) $
     modifyMaxSize (* 10) $
       appSpec $
         describe "ICal" $ do
-          it "always outputs a valid bytestring (without crashing)" $ \app ->
+          it "always outputs a valid text (without crashing)" $ \app ->
             forAllValid $ \externalEvent ->
               forAllValid $ \place ->
                 let urlRender :: Route App -> Text
                     urlRender route = yesodRender app "https://social-dance.today" route []
 
                     cal = externalEventCalendar urlRender externalEvent place
-                 in shouldBeValid $ LB.toStrict $ ICal.printICalendar def cal
+                 in shouldBeValid $ ICal.renderICalendarText [cal]
 
           it "outputs the same event calendar as before" $ \app ->
             let exampleExternalEvent =
@@ -116,4 +124,4 @@ spec = do
                 urlRender route = yesodRender app "https://social-dance.today" route []
 
                 cal = externalEventCalendar urlRender exampleExternalEvent examplePlace
-             in pureGoldenByteStringFile "test_resources/ical/external-event.ics" $ LB.toStrict $ ICal.printICalendar def cal
+             in pureGoldenTextFile "test_resources/ical/external-event.ics" $ ICal.renderICalendarText [cal]

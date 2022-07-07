@@ -146,4 +146,4 @@ $if development || isAdmin
                 Calendar Event
 
               <pre>
-                #{TE.decodeUtf8 $ LT.toStrict $ ICal.printICalendar def $ externalEventCalendar renderUrl externalEvent place}
+                #{ICal.renderICalendarText [externalEventCalendar renderUrl externalEvent place]}
