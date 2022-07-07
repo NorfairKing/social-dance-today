@@ -6,10 +6,11 @@ import qualified Data.ByteString.Lazy as LB
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Encoding.Error as TE
 import qualified Data.UUID as UUID
 import qualified Data.UUID.Typed as Typed
 import qualified Database.Persist as DB
-import qualified ICal as ICal
+import qualified ICal
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
 import Salsa.Party.Web.Server.Handler.TestImport
 import Yesod.Core
@@ -32,7 +33,7 @@ spec = do
                 Nothing -> liftIO $ expectationFailure "Should have had a response by now."
                 Just resp -> do
                   let cts = responseBody resp
-                  case ICal.parseICalendar (LB.toStrict cts) of
+                  case ICal.parseICalendarByteString (LB.toStrict cts) of
                     Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
                     Right cals -> do
                       case cals of
@@ -41,7 +42,7 @@ spec = do
                             expectationFailure $
                               unlines
                                 [ "Succesfully parsed 0 calendars from this response:",
-                                  T.unpack $ TE.decodeUtf8 $ LB.toStrict cts
+                                  T.unpack $ TE.decodeUtf8With TE.lenientDecode $ LB.toStrict cts
                                 ]
                         [_] -> pure ()
                         _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
@@ -65,7 +66,7 @@ spec = do
                     Nothing -> liftIO $ expectationFailure "Should have had a response by now."
                     Just resp -> do
                       let cts = responseBody resp
-                      case ICal.parseICalendar (LB.toStrict cts) of
+                      case ICal.parseICalendarByteString (LB.toStrict cts) of
                         Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
                         Right cals -> do
                           case cals of
@@ -74,7 +75,7 @@ spec = do
                                 expectationFailure $
                                   unlines
                                     [ "Succesfully parsed 0 calendars from this response:",
-                                      T.unpack $ TE.decodeUtf8 $ LB.toStrict cts
+                                      T.unpack $ TE.decodeUtf8With TE.lenientDecode $ LB.toStrict cts
                                     ]
                             [_] -> pure ()
                             _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
@@ -90,7 +91,7 @@ spec = do
                     urlRender route = yesodRender app "https://social-dance.today" route []
 
                     cal = externalEventCalendar urlRender externalEvent place
-                 in shouldBeValid $ ICal.renderICalendarText [cal]
+                 in shouldBeValid $ ICal.renderVCalendar cal
 
           it "outputs the same event calendar as before" $ \app ->
             let exampleExternalEvent =
@@ -124,4 +125,4 @@ spec = do
                 urlRender route = yesodRender app "https://social-dance.today" route []
 
                 cal = externalEventCalendar urlRender exampleExternalEvent examplePlace
-             in pureGoldenTextFile "test_resources/ical/external-event.ics" $ ICal.renderICalendarText [cal]
+             in pureGoldenTextFile "test_resources/ical/external-event.ics" $ ICal.renderVCalendar cal

@@ -41,7 +41,7 @@ spec = do
                   Nothing -> liftIO $ expectationFailure "Should have had a response by now."
                   Just resp -> do
                     let cts = responseBody resp
-                    case ICal.parseICalendar $ LB.toStrict cts of
+                    case ICal.parseICalendarByteString $ LB.toStrict cts of
                       Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
                       Right cals ->
                         case cals of
@@ -76,7 +76,7 @@ spec = do
                       Nothing -> liftIO $ expectationFailure "Should have had a response by now."
                       Just resp -> do
                         let cts = responseBody resp
-                        case ICal.parseICalendar $ LB.toStrict cts of
+                        case ICal.parseICalendarByteString $ LB.toStrict cts of
                           Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
                           Right cals ->
                             case cals of
@@ -128,7 +128,7 @@ spec = do
                         Nothing -> liftIO $ expectationFailure "Should have had a response by now."
                         Just resp -> do
                           let cts = responseBody resp
-                          case ICal.parseICalendar $ LB.toStrict cts of
+                          case ICal.parseICalendarByteString $ LB.toStrict cts of
                             Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
                             Right cals ->
                               case cals of
@@ -154,7 +154,7 @@ spec = do
                       urlRender route = yesodRender app "https://social-dance.today" route []
 
                       cal = partyCalendar urlRender organiser party place
-                   in shouldBeValid $ ICal.renderICalendarText [cal]
+                   in shouldBeValid $ ICal.renderVCalendar cal
 
           it "outputs the same event calendar as before" $ \app ->
             let exampleOrganiser =
@@ -196,4 +196,4 @@ spec = do
                 urlRender route = yesodRender app "https://social-dance.today" route []
 
                 cal = partyCalendar urlRender exampleOrganiser exampleParty examplePlace
-             in pureGoldenTextFile "test_resources/ical/party.ics" $ ICal.renderICalendarText [cal]
+             in pureGoldenTextFile "test_resources/ical/party.ics" $ ICal.renderVCalendar cal

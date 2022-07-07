@@ -146,4 +146,4 @@ $if development || isAdmin
                 Calendar Event
 
               <pre>
-                #{ICal.renderICalendarText [externalEventCalendar renderUrl externalEvent place]}
+                #{ICal.renderVCalendar (externalEventCalendar renderUrl externalEvent place)}

@@ -182,4 +182,4 @@ $if development || isAdmin
                 Calendar Event
 
               <pre>
-                #{ICal.renderICalendarText [partyCalendar renderUrl organiser party place]}
+                #{ICal.renderVCalendar (partyCalendar renderUrl organiser party place)}

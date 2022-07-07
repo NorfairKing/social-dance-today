@@ -41,7 +41,7 @@ spec = serverSpec $ do
                 Nothing -> liftIO $ expectationFailure "Should have had a response by now."
                 Just resp -> do
                   let cts = responseBody resp
-                  case ICal.parseICalendar $ LB.toStrict cts of
+                  case ICal.parseICalendarByteString $ LB.toStrict cts of
                     Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
                     Right cals ->
                       case cals of
