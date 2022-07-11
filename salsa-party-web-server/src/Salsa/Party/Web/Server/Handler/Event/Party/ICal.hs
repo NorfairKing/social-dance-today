@@ -36,8 +36,7 @@ partyCalendarEvent renderUrl organiser party@Party {..} Place {..} =
           (ICal.UID (uuidText partyUuid))
           (ICal.DateTimeStamp (ICal.DateTimeUTC (fromMaybe partyCreated partyModified)))
       )
-        { ICal.eventClassification = Just ICal.ClassificationPublic,
-          ICal.eventDateTimeStart = Just $ case partyStart of
+        { ICal.eventDateTimeStart = Just $ case partyStart of
             Nothing -> ICal.DateTimeStartDate (ICal.Date partyDay)
             Just start -> ICal.DateTimeStartDateTime (ICal.DateTimeFloating (LocalTime partyDay start)),
           ICal.eventCreated = Just $ ICal.Created partyCreated,
@@ -56,7 +55,7 @@ partyCalendarEvent renderUrl organiser party@Party {..} Place {..} =
                 then ICal.StatusCancelled
                 else ICal.StatusConfirmed,
           ICal.eventSummary = Just $ ICal.Summary partyTitle,
-          ICal.eventTransparency = Just ICal.TransparencyTransparent,
+          ICal.eventTransparency = ICal.TransparencyTransparent,
           ICal.eventURL = do
             -- We go through uri to make sure it's a valid uri.
             uri <- parseURI $ T.unpack $ renderUrl $ partyRoute organiser party

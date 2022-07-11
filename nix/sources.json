@@ -23,18 +23,6 @@
         "url": "https://github.com/hercules-ci/gitignore.nix/archive/bff2832ec341cf30acb3a4d3e2e7f1f7b590116a.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
-    "iCalendar": {
-        "branch": "master",
-        "description": "iCalendar data types, parser, and printer.",
-        "homepage": null,
-        "owner": "NorfairKing",
-        "repo": "iCalendar",
-        "rev": "e08c16dceaab4d15b0f00860512018bc64791f07",
-        "sha256": "0skhxdni04kcg0xrrib3kz460qm0n03c2ydllbdxsbqlqcfddhy1",
-        "type": "tarball",
-        "url": "https://github.com/NorfairKing/iCalendar/archive/e08c16dceaab4d15b0f00860512018bc64791f07.tar.gz",
-        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
-    },
     "ical": {
         "branch": "master",
         "description": null,

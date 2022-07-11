@@ -36,8 +36,7 @@ externalEventCalendarEvent renderUrl externalEvent@ExternalEvent {..} Place {..}
           (ICal.UID (uuidText externalEventUuid))
           (ICal.DateTimeStamp (ICal.DateTimeUTC (fromMaybe externalEventCreated externalEventModified)))
       )
-        { ICal.eventClassification = Just ICal.ClassificationPublic,
-          ICal.eventDateTimeStart = Just $ case externalEventStart of
+        { ICal.eventDateTimeStart = Just $ case externalEventStart of
             Nothing -> ICal.DateTimeStartDate (ICal.Date externalEventDay)
             Just start -> ICal.DateTimeStartDateTime (ICal.DateTimeFloating (LocalTime externalEventDay start)),
           ICal.eventCreated = Just $ ICal.Created externalEventCreated,
@@ -58,7 +57,7 @@ externalEventCalendarEvent renderUrl externalEvent@ExternalEvent {..} Place {..}
             )
               <$> externalEventCancelled,
           ICal.eventSummary = Just $ ICal.Summary externalEventTitle,
-          ICal.eventTransparency = Just ICal.TransparencyTransparent,
+          ICal.eventTransparency = ICal.TransparencyTransparent,
           ICal.eventURL = do
             uri <- parseURI $ T.unpack $ renderUrl $ externalEventRoute externalEvent
             pure $ ICal.URL $ ICal.URI uri

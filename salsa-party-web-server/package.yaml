@@ -125,7 +125,6 @@ tests:
     - esqueleto
     - http-client
     - http-types
-    - iCalendar
     - microlens
     - monad-logger
     - mtl

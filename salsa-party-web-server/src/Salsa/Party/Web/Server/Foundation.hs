@@ -35,7 +35,6 @@ import qualified Database.Esqueleto.Legacy as E
 import Database.Persist.Sql
 import Database.Persist.Sqlite
 import qualified ICal
-import qualified ICal.Component as ICal
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation.App
 import Salsa.Party.Web.Server.Foundation.Auth

@@ -258,7 +258,6 @@ test-suite salsa-party-web-server-test
     , esqueleto
     , http-client
     , http-types
-    , iCalendar
     , microlens
     , monad-logger
     , mtl
