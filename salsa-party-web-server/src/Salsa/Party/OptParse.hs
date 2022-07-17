@@ -101,7 +101,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
         Nothing -> fail $ unwords ["No environment for data source", show dataSource]
         Just e -> pure e
       let mLConf = M.lookup dataSource (maybe M.empty confImporterConfigurations mConf)
-      pure (dataSource, deriveLooperSettings (minutes (3 + ix)) (hours 24) flags env mLConf)
+      pure (dataSource, deriveLooperSettings (minutes 3 + hours ix) (hours 24) flags env mLConf)
 
   pure Settings {..}
   where
