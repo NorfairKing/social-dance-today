@@ -5,9 +5,14 @@ module Salsa.Party.Web.Server.E2E where
 
 import Control.Monad
 import Control.Monad.Logger
+import qualified Data.ByteString.Lazy as LB
+import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Encoding.Error as TE
 import Data.Time
+import qualified ICal
 import LinkCheck (runLinkCheck)
 import qualified LinkCheck.OptParse.Types as LinkCheck (Settings (..))
 import Network.URI
@@ -19,7 +24,10 @@ import qualified SeoCheck.OptParse.Types as SeoCheck (Settings (..))
 import System.Environment
 import System.Exit
 import Test.Syd
+import Test.Syd.Validity hiding (Location)
 import Test.Syd.Yesod
+import Text.HTML.Scalpel
+import Text.HTML.Scalpel.Extended
 import Yesod.Auth
 
 main :: IO ()
@@ -43,7 +51,7 @@ spec uri = do
             LinkCheck.setFetchers = Nothing,
             LinkCheck.setExternal = False,
             LinkCheck.setCheckFragments = False,
-            LinkCheck.setMaxDepth = Just 4,
+            LinkCheck.setMaxDepth = Just 3,
             LinkCheck.setCacheSize = Nothing
           }
   sequential $
@@ -53,7 +61,7 @@ spec uri = do
           { SeoCheck.setUri = uri,
             SeoCheck.setLogLevel = LevelWarn,
             SeoCheck.setFetchers = Nothing,
-            SeoCheck.setMaxDepth = Just 4
+            SeoCheck.setMaxDepth = Just 3
           }
   yesodE2ESpec uri $ do
     pure () :: YesodSpec (E2E App)
@@ -106,6 +114,51 @@ spec uri = do
             it "SearchFromToR" $ do
               get $ SearchFromToR (placeQuery locationPlace) today (addDays 2 today)
               statusIs 200
+
+      describe "ICal" $ do
+        forM_ locations $ \Location {..} ->
+          describe (T.unpack (placeQuery locationPlace)) $ do
+            it "QueryR" $ do
+              request $ do
+                setUrl QueryR
+                setMethod methodGet
+                addGetParam "address" $ placeQuery locationPlace
+              statusIs 303
+              locationShouldBe $ SearchR $ placeQuery locationPlace
+              _ <- followRedirect
+              statusIs 200
+              mResponse <- getResponse
+              case mResponse of
+                Nothing -> liftIO $ expectationFailure "Should have gotten a response by now."
+                Just response -> do
+                  let links = fromMaybe [] $
+                        scrapeStringLike (TE.decodeUtf8With TE.lenientDecode (LB.toStrict (responseBody response))) $ do
+                          links <- attrs "href" "a"
+                          pure $ filter ("/party/" `T.isInfixOf`) links
+
+                  forM_ links $ \link -> do
+                    request $ do
+                      setUrl link
+                      addRequestHeader ("Accept", typeCalendar)
+                    statusIs 200
+                    mCalResponse <- getResponse
+                    case mCalResponse of
+                      Nothing -> liftIO $ expectationFailure "Should have gotten a response by now."
+                      Just calResponse -> do
+                        let cts = responseBody calResponse
+                        case ICal.parseICalendarByteString $ LB.toStrict cts of
+                          Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
+                          Right cals ->
+                            case cals of
+                              [] ->
+                                liftIO $
+                                  expectationFailure $
+                                    unlines
+                                      [ "Succesfully parsed 0 calendars from this response:",
+                                        T.unpack $ TE.decodeUtf8With TE.lenientDecode $ LB.toStrict cts
+                                      ]
+                              [cal] -> liftIO $ shouldBeValid cal
+                              _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
 
       doNotRandomiseExecutionOrder $
         sequential $ do

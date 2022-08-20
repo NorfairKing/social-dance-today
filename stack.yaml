@@ -42,7 +42,7 @@ extra-deps:
 - github: NorfairKing/yesod-autoreload
   commit: 7135e864c0d4a48efeae473ee2761f5168946e58
 - github: NorfairKing/validity
-  commit: 4ce0cd2f4ccdfa9f552eedf0c656dbc53cd4fa86
+  commit: 8373ac5f0f02ad66f1b83c9bf572290430e84062
   subdirs:
     - genvalidity
     - genvalidity-aeson

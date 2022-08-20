@@ -8,10 +8,14 @@ dependencies:
 library:
   source-dirs: src
   dependencies:
+  - bytestring
+  - genvalidity-sydtest
+  - ical
   - linkcheck
   - monad-logger
   - network-uri
   - salsa-party-web-server
+  - scalpel
   - seocheck
   - sydtest
   - sydtest-yesod
