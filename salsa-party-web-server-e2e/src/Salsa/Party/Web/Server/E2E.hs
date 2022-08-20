@@ -27,7 +27,6 @@ import Test.Syd
 import Test.Syd.Validity hiding (Location)
 import Test.Syd.Yesod
 import Text.HTML.Scalpel
-import Text.HTML.Scalpel.Extended
 import Yesod.Auth
 
 main :: IO ()
@@ -133,8 +132,8 @@ spec uri = do
                 Just response -> do
                   let links = fromMaybe [] $
                         scrapeStringLike (TE.decodeUtf8With TE.lenientDecode (LB.toStrict (responseBody response))) $ do
-                          links <- attrs "href" "a"
-                          pure $ filter ("/party/" `T.isInfixOf`) links
+                          ls <- attrs "href" "a"
+                          pure $ filter ("/party/" `T.isInfixOf`) ls
 
                   forM_ links $ \link -> do
                     request $ do

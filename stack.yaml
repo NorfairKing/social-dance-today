@@ -5,19 +5,16 @@ packages:
 - salsa-party-web-server-e2e
 - salsa-party-web-server-webdriver
 
-- /home/syd/src/ical/ical
-- /home/syd/src/ical/ical-gen
-
 # Extra GHC options
 ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef
 
 extra-deps:
-  # - github: NorfairKing/ical
-  #   commit: 1d6554a12fc131199074a2aa09357d53d5da1f4c
-  #   subdirs:
-  #     - ical
-  #     - ical-gen
+- github: NorfairKing/ical
+  commit: 55d9ebd7a00ae947a9fee59039702e387a79b045
+  subdirs:
+    - ical
+    - ical-gen
 - github: NorfairKing/token-limiter-concurrent
   commit: b6829d93a9daf4b9cbe73aae0edeef05597394f2
 - github: NorfairKing/looper

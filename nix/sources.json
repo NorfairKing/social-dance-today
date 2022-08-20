@@ -24,15 +24,15 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "ical": {
-        "branch": "master",
+        "branch": "development",
         "description": null,
         "homepage": null,
         "owner": "NorfairKing",
         "repo": "ical",
-        "rev": "1d6554a12fc131199074a2aa09357d53d5da1f4c",
-        "sha256": "0xsc3kdfh65fwnb5azmq6h9d543zraavwaf1yi61dzzp82br58i4",
+        "rev": "55d9ebd7a00ae947a9fee59039702e387a79b045",
+        "sha256": "0b993gf2ciip9pjq4spp0fy8vpajmx8w18l1lfnfi84f18ws0m75",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/ical/archive/1d6554a12fc131199074a2aa09357d53d5da1f4c.tar.gz",
+        "url": "https://github.com/NorfairKing/ical/archive/55d9ebd7a00ae947a9fee59039702e387a79b045.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "linkcheck": {
