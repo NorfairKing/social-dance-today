@@ -1,19 +1,18 @@
 BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:https://social-dance.today/
-CALSCALE:GREGORIAN
 BEGIN:VEVENT
 DTSTAMP:20210619T235977815Z
 UID:0000007b-0000-01c8-0000-031500018af8
 DTSTART;VALUE=DATE:20210615
 CREATED:20210619T235977815Z
 DESCRIPTION:aeou\naoseuntha\noeu
-GEO:46.948330;7.440000
+GEO:46.94833;7.44
 LOCATION:Spitalgasse 4\, 3011 Bern Bern
 STATUS:CANCELLED
 SUMMARY:Example party at Rhythmia
 TRANSP:TRANSPARENT
-URL:https://social-dance.today/party/cs-syd/example-party-at-rhythmia/2021-
- 06-15
+URL:https://social-dance.today/party/cs-syd/example-party-at-rhythmia/202
+ 1-06-15
 END:VEVENT
 END:VCALENDAR
