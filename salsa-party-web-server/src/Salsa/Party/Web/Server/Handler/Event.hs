@@ -7,6 +7,8 @@ module Salsa.Party.Web.Server.Handler.Event
   )
 where
 
+import Network.HTTP.Types
+import Network.Wai
 import Salsa.Party.Web.Server.Handler.Event.Export
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Query
@@ -28,18 +30,21 @@ getEventR eventUuid = do
         Just (externalEventEntity@(Entity _ externalEvent), placeEntity, mCASKey) -> case externalEventSlugRoute externalEvent of
           Nothing -> externalEventPage externalEventEntity placeEntity mCASKey
           Just route -> redirect route
-        Nothing -> notFound
+        Nothing -> gone
 
 getPartySlugR :: OrganiserSlug -> EventSlug -> Day -> Handler TypedContent
 getPartySlugR organiserSlug_ partySlug_ day = do
   mPartyTup <- runDB $ getPartyTupBySlug organiserSlug_ partySlug_ day
   case mPartyTup of
-    Nothing -> notFound
+    Nothing -> gone
     Just partyTup -> partyPage partyTup
 
 getExternalEventSlugR :: EventSlug -> Day -> Handler TypedContent
 getExternalEventSlugR externalEventSlug_ day = do
   mExternalEventTup <- runDB $ getExternalEventTupBySlug externalEventSlug_ day
   case mExternalEventTup of
-    Nothing -> notFound
+    Nothing -> gone
     Just (externalEventEntity, placeEntity, mCASKey) -> externalEventPage externalEventEntity placeEntity mCASKey
+
+gone :: Handler TypedContent
+gone = sendWaiResponse $ responseBuilder gone410 [] mempty
