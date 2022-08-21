@@ -12,9 +12,10 @@
                 <div .card-image .has-text-centered>
                   <figure .image .is-16by9>
                     <img 
+                      src="@{ExploreSkylineR (placeQuery location)}"
                       width=640
                       height=360
-                      src="@{ExploreSkylineR (placeQuery location)}"
+                      loading="lazy"
                       alt=_{MsgExploreSkylineAlt (placeQuery location)}>
                 <div .card-content>
                   <h2 .title .is-4 .has-text-centered>
