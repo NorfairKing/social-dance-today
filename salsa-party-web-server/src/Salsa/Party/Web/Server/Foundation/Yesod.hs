@@ -118,10 +118,13 @@ instance Yesod App where
               else notFound
       _ -> pure Authorized
 
-  yesodMiddleware handler = do
-    mLParam <- lookupGetParam languageQueryParameter
-    forM_ mLParam $ \l -> setLanguage l
-    defaultYesodMiddleware handler
+  yesodMiddleware = defaultYesodMiddleware . setLanguageMiddleware
+
+setLanguageMiddleware :: Handler a -> Handler a
+setLanguageMiddleware handler = do
+  mLParam <- lookupGetParam languageQueryParameter
+  forM_ mLParam $ \l -> setLanguage l
+  handler
 
 languageQueryParameter :: Text
 languageQueryParameter = "l"
