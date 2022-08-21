@@ -13,15 +13,11 @@ spec = do
         forAllValid $ \uuid ->
           runYesodClientM yc $ do
             get $ EventR uuid
-            mResponse <- getResponse
-            liftIO $ case mResponse of
-              Nothing -> expectationFailure "Should have gotten a response by now."
-              Just response ->
-                let c = statusCode (responseStatus response)
-                 in case c of
-                      404 -> pure ()
-                      410 -> pure ()
-                      _ -> expectationFailure $ show c
+            s <- requireStatus
+            case s of
+              404 -> pure ()
+              410 -> pure ()
+              _ -> liftIO $ expectationFailure $ show s
 
       it "Can get the party page for an existing external event by uuid" $ \yc ->
         forAllValid $ \place ->
@@ -39,15 +35,11 @@ spec = do
           forAllValid $ \day ->
             runYesodClientM yc $ do
               get $ ExternalEventSlugR slug day
-              mResponse <- getResponse
-              liftIO $ case mResponse of
-                Nothing -> expectationFailure "Should have gotten a response by now."
-                Just response ->
-                  let c = statusCode (responseStatus response)
-                   in case c of
-                        404 -> pure ()
-                        410 -> pure ()
-                        _ -> expectationFailure $ show c
+              s <- requireStatus
+              case s of
+                404 -> pure ()
+                410 -> pure ()
+                _ -> liftIO $ expectationFailure $ show s
 
       it "Can get the party page for an existing external event by slug" $ \yc ->
         forAllValid $ \place ->

@@ -11,15 +11,11 @@ spec = serverSpec $ do
     it "GETs a 404 or 410 for a nonexistent party by uuid" $ \yc ->
       forAllValid $ \uuid -> runYesodClientM yc $ do
         get $ EventR uuid
-        mResponse <- getResponse
-        liftIO $ case mResponse of
-          Nothing -> expectationFailure "Should have gotten a response by now."
-          Just response ->
-            let c = statusCode (responseStatus response)
-             in case c of
-                  404 -> pure ()
-                  410 -> pure ()
-                  _ -> expectationFailure $ show c
+        s <- requireStatus
+        case s of
+          404 -> pure ()
+          410 -> pure ()
+          _ -> liftIO $ expectationFailure $ show s
 
     it "Can get the party page for an existing party by uuid" $ \yc ->
       forAllValid $ \organiser ->
@@ -40,15 +36,11 @@ spec = serverSpec $ do
           forAllValid $ \day ->
             runYesodClientM yc $ do
               get $ PartySlugR organiserSlug_ partySlug_ day
-              mResponse <- getResponse
-              liftIO $ case mResponse of
-                Nothing -> expectationFailure "Should have gotten a response by now."
-                Just response ->
-                  let c = statusCode (responseStatus response)
-                   in case c of
-                        404 -> pure ()
-                        410 -> pure ()
-                        _ -> expectationFailure $ show c
+              s <- requireStatus
+              case s of
+                404 -> pure ()
+                410 -> pure ()
+                _ -> liftIO $ expectationFailure $ show s
 
     it "Can get the party page for an existing party by slugs" $ \yc ->
       forAllValid $ \organiser ->
