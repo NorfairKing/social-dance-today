@@ -90,7 +90,7 @@ runMyLoggingT func =
         fromLogStr $
           mconcat
             [ toLogStr $
-                renderChunks With24BitColours $
+                renderChunksUtf8BSBuilder With24BitColours $
                   map
                     (logLevelColour level)
                     [ "[",
