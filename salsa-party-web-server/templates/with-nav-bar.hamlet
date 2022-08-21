@@ -26,7 +26,7 @@
       
     <div .navbar-end>
       <div .navbar-item .has-dropdown .is-hoverable>
-        <a .navbar-link>
+        <div .navbar-link>
           $if lang == SupportedLangEnglish
             Language
           $else
