@@ -42,9 +42,9 @@ posterImageWidget Party {..} Organiser {..} posterKey = do
   let timeStr = formatTime timeLocale prettyDayFormat partyDay
   [whamlet|
     <img .poster
+      src=@{ImageR posterKey}
       width=#{desiredWidth}
       height=#{desiredHeight}
-      src=@{ImageR posterKey}
       alt=_{MsgPosterAltFull partyTitle timeStr organiserName}>
   |]
     <> posterCSS
@@ -71,9 +71,9 @@ schedulePosterImageWidget Schedule {..} Organiser {..} posterKey = do
   recurrenceDescription <- recurrenceDescriptionText scheduleRecurrence
   [whamlet|
     <img .poster
+      src=@{ImageR posterKey}
       width=#{desiredWidth}
       height=#{desiredHeight}
-      src=@{ImageR posterKey}
       alt=_{MsgPosterAltSchedule scheduleTitle recurrenceDescription organiserName}>
   |]
 
@@ -87,9 +87,10 @@ externalEventPosterImageWidget ExternalEvent {..} posterKey = do
         Just organiserName -> MsgPosterAltFull externalEventTitle timeStr organiserName
   [whamlet|
       <img .poster
+        src=@{ImageR posterKey}
         width=#{desiredWidth}
         height=#{desiredHeight}
-        src=@{ImageR posterKey}
+        loading="lazy"
         alt=_{altMsg}>
   |]
     <> posterCSS

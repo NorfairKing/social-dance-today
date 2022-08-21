@@ -24,6 +24,9 @@ $forall day <- days
                           <div .card-image .has-text-centered>
                             <img .poster
                               src=@{ImageR posterKey}
+                              width=#{desiredWidth}
+                              height=#{desiredHeight}
+                              loading="lazy"
                               alt=_{MsgSearchPosterAlt (partyTitle party) (formatTime timeLocale prettyDayFormat $ partyDay party)}>
 
                         <div .card-content>
@@ -41,6 +44,9 @@ $forall day <- days
                           <div .card-image .has-text-centered>
                             <img .poster
                               src=@{ImageR posterKey}
+                              width=#{desiredWidth}
+                              height=#{desiredHeight}
+                              loading="lazy"
                               alt=_{MsgSearchPosterAlt (externalEventTitle externalEvent) (formatTime timeLocale prettyDayFormat $ externalEventDay externalEvent)}>
                         <div .card-content>
                           <h2 .title .is-4>

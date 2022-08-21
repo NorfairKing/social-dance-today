@@ -1,5 +1,6 @@
 <img #mymap .pointer .poster
+  src=@{EventMapR eventUUID}
   width=#{mapsWidth}
   height=#{mapsHeight}
-  src=@{EventMapR eventUUID}
+  loading="lazy"
   alt=_{MsgGoogleMapAlt query}>
