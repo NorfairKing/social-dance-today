@@ -352,3 +352,4 @@ DayInMoreThanAYear: over meer dan een jaar
 
 # Errors
 NotFound: Pagina niet gevonden
+Gone: Pagina is verdwenen

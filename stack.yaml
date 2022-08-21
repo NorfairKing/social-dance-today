@@ -7,7 +7,7 @@ packages:
 
 # Extra GHC options
 ghc-options:
-  "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef
+  "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -O0 -Wunused-packages
 
 extra-deps:
 - github: NorfairKing/ical

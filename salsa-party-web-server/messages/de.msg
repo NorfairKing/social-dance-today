@@ -356,3 +356,4 @@ DayInMoreThanAYear: in mehr als einem Jahr
 
 # Errors
 NotFound: Seite nicht gefunden 
+Gone: Seite ist verschwunden

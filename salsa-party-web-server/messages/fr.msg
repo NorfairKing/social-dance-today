@@ -347,3 +347,4 @@ DayInMoreThanAYear: Plus qu’un an à partir de maintenant
 
 # Errors
 NotFound: Page non trouvée
+Gone: Page a disparu

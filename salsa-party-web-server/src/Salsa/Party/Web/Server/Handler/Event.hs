@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Salsa.Party.Web.Server.Handler.Event
   ( getEventR,
     getEventIcsR,
@@ -8,7 +10,6 @@ module Salsa.Party.Web.Server.Handler.Event
 where
 
 import Network.HTTP.Types
-import Network.Wai
 import Salsa.Party.Web.Server.Handler.Event.Export
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Query
@@ -47,4 +48,8 @@ getExternalEventSlugR externalEventSlug_ day = do
     Just (externalEventEntity, placeEntity, mCASKey) -> externalEventPage externalEventEntity placeEntity mCASKey
 
 gone :: Handler TypedContent
-gone = sendWaiResponse $ responseBuilder gone410 [] mempty
+gone = do
+  html <- withNavBar $ do
+    setTitleI MsgGone
+    $(widgetFile "error/410")
+  sendResponseStatus gone410 html
