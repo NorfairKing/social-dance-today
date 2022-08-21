@@ -26,7 +26,12 @@
                   $maybe posterKey <- mPosterKey
                     <div .card-image .has-text-centered>
                       <figure .image .is-16by9>
-                        ^{posterImageWidget party organiser posterKey}
+                        <img .poster
+                          src=@{ImageR posterKey}
+                          width=#{desiredWidth}
+                          height=#{desiredHeight}
+                          loading="lazy"
+                          alt=_{MsgPosterAltFull (partyTitle party) (formatTime timeLocale prettyDayFormat (partyDay party)) organiserName}>
                   <div .card-content>
                     <h3 .title .is-5>
                       $maybe start <- partyStart party

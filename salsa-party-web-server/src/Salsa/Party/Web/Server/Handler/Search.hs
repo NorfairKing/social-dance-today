@@ -310,7 +310,7 @@ searchResultsPage searchParameters@SearchParameters {..} = do
         prevDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = navPrevSearchDate today searchParameterDate}
         nextDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = navNextSearchDate today searchParameterDate}
         let pagination = $(widgetFile "search-pagination")
-        $(widgetFile "search")
+        $(widgetFile "search") <> posterCSS
 
 navPrevSearchDate :: Day -> SearchDate -> SearchDate
 navPrevSearchDate today = \case

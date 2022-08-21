@@ -13,6 +13,7 @@ import qualified Data.Text.Encoding as TE
 import qualified Database.Esqueleto.Legacy as E
 import Safe (maximumMay)
 import Salsa.Party.Web.Server.Handler.Import
+import Salsa.Party.Web.Server.Poster
 
 getOrganiserR :: OrganiserUUID -> Handler Html
 getOrganiserR uuid = do
@@ -45,7 +46,7 @@ organiserPage (Entity organiserId organiser@Organiser {..}) = do
     setTitleI $ MsgOrganiserTitle organiserName
     setDescriptionI $ MsgOrganiserDescription organiserName
     addHeader "Last-Modified" $ TE.decodeLatin1 $ formatHTTPDate $ utcToHTTPDate lastModified
-    $(widgetFile "organiser")
+    $(widgetFile "organiser") <> posterCSS
 
 getUpcomingPartiesOfOrganiser :: MonadIO m => OrganiserId -> SqlPersistT m [(Entity Party, Entity Place, Maybe CASKey)]
 getUpcomingPartiesOfOrganiser organiserId = do
