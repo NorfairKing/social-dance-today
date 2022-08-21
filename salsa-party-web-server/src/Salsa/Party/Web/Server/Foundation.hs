@@ -52,9 +52,6 @@ import Yesod.AutoReload
 getReloadR :: Handler ()
 getReloadR = getAutoReloadR
 
-getFaviconR :: Handler TypedContent
-getFaviconR = redirect $ StaticR favicon_ico
-
 instance Validity Textarea where
   validate = validate . unTextarea
 
