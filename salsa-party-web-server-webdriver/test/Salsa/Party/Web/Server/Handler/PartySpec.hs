@@ -1,3 +1,4 @@
+{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Salsa.Party.Web.Server.Handler.PartySpec (spec) where
@@ -106,6 +107,7 @@ partyScreenshotTest mPosterFilePath mMapFilePath = do
       setWindowSize (width, height)
       -- Go to the party page
       openRouteWithParams (PartySlugR organiserSlug_ partySlug_ day) [timeOverrideQueryParam moment]
+      liftIO $ threadDelay 1_000_000
       png <- screenshot
       let fp =
             concat
