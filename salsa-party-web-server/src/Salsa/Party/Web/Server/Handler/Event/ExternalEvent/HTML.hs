@@ -20,6 +20,7 @@ import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Description
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
 import Salsa.Party.Web.Server.Handler.Import
+import Salsa.Party.Web.Server.Handler.Search (daysToKeepParties)
 
 externalEventPageHtml :: Entity ExternalEvent -> Entity Place -> Maybe CASKey -> Handler Html
 externalEventPageHtml (Entity _ externalEvent@ExternalEvent {..}) (Entity _ place@Place {..}) mPosterKey = do
@@ -45,6 +46,7 @@ externalEventPageHtml (Entity _ externalEvent@ExternalEvent {..}) (Entity _ plac
     setDescription $ externalEventHtmlDescription messageRender timeLocale prettyDayFormat prettyTimeFormat externalEvent place
     toWidgetHead $ toJSONLDData $ externalEventToLDEvent renderUrl externalEvent place mPosterKey
     addHeader "Last-Modified" $ TE.decodeLatin1 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe externalEventCreated externalEventModified
+    addHeader "X-Robots-Tag" $ T.pack $ "unavailable_after: " <> formatTime timeLocale "%F" (addDays daysToKeepParties externalEventDay)
     let mAddToGoogleLink = addExternalEventToGoogleCalendarLink renderUrl externalEvent place
     let mHomepageLink = externalEventHomepage >>= (parseURILike . T.unpack)
     $(widgetFile "external-event")
