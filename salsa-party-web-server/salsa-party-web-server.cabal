@@ -49,6 +49,7 @@ library
       Salsa.Party.Importer.TanzagendaCh
       Salsa.Party.Importer.TanzeventsCh
       Salsa.Party.Importer.TribeCalendar
+      Salsa.Party.Importer.WannaDanceCom
       Salsa.Party.Importers
       Salsa.Party.Looper
       Salsa.Party.Looper.ExploreCachePopulator
