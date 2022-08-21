@@ -6,6 +6,7 @@ module Salsa.Party.Web.Server.Handler.Event
     getEventExportR,
     getPartySlugR,
     getExternalEventSlugR,
+    gone,
   )
 where
 

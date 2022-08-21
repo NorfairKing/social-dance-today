@@ -8,11 +8,11 @@ import Salsa.Party.Web.Server.Handler.TestImport
 spec :: Spec
 spec = serverSpec $ do
   describe "ImageR" $ do
-    it "GETS a 404 for a nonexistent image" $ \yc -> do
+    it "GETS a 410 for a nonexistent image" $ \yc -> do
       forAllValid $ \casKey ->
         runYesodClientM yc $ do
           get $ ImageR casKey
-          statusIs 404
+          statusIs 410
 
     it "Can GET the poster for an existent image" $ \yc ->
       forAllValid $ \image ->
