@@ -68,8 +68,8 @@ data Importer = Importer
 --
 --  * We try to fetch events at least a month in advance
 --  * There should be at least once day in a month where we don't deploy twice a day.
-runImporterWithDoubleCheck :: NominalDiffTime -> App -> LooperSettings -> Importer -> LoggingT IO ()
-runImporterWithDoubleCheck importerInterval app _ importer = addImporterNameToLog (importerName importer) $ do
+runImporterWithDoubleCheck :: NominalDiffTime -> TokenLimiter -> App -> LooperSettings -> Importer -> LoggingT IO ()
+runImporterWithDoubleCheck importerInterval globalLimiter app _ importer = addImporterNameToLog (importerName importer) $ do
   let runDBHere :: SqlPersistT (LoggingT IO) a -> LoggingT IO a
       runDBHere = flip runSqlPool (appConnectionPool app) . retryOnBusy
 
@@ -112,11 +112,11 @@ runImporterWithDoubleCheck importerInterval app _ importer = addImporterNameToLo
       pure shouldRun
   when shouldRun $ do
     logInfoN "Starting importer"
-    runImporter app importer
+    runImporter globalLimiter app importer
     logInfoN "Importer done"
 
-runImporter :: App -> Importer -> LoggingT IO ()
-runImporter a Importer {..} = do
+runImporter :: TokenLimiter -> App -> Importer -> LoggingT IO ()
+runImporter globalLimiter a Importer {..} = do
   let runDBHere :: SqlPersistT (LoggingT IO) a -> LoggingT IO a
       runDBHere = flip runSqlPool (appConnectionPool a) . retryOnBusy
 
@@ -145,14 +145,15 @@ runImporter a Importer {..} = do
             tokenLimitConfigInitialTokens = 0, -- Fetch almost-immediately at the start
             tokenLimitConfigTokensPerSecond = if development then 10 else 1
           }
-  tokenLimiter <- liftIO $ makeTokenLimiter tokenLimitConfig
+  specificLimiter <- liftIO $ makeTokenLimiter tokenLimitConfig
   let env =
         ImportEnv
           { importEnvApp = a,
             importEnvName = importerName,
             importEnvId = importerId,
             importEnvUserAgent = userAgent,
-            importEnvRateLimiter = tokenLimiter
+            importEnvSpecificRateLimiter = specificLimiter,
+            importEnvGlobalRateLimiter = globalLimiter
           }
 
   errOrUnit <-
@@ -225,7 +226,8 @@ data ImportEnv = ImportEnv
     importEnvName :: !Text,
     importEnvId :: !ImporterMetadataId,
     importEnvUserAgent :: !ByteString,
-    importEnvRateLimiter :: !TokenLimiter
+    importEnvSpecificRateLimiter :: !TokenLimiter,
+    importEnvGlobalRateLimiter :: !TokenLimiter
   }
 
 importDB :: SqlPersistT (LoggingT IO) a -> Import a
@@ -372,8 +374,10 @@ doHttpRequest requestPrototype = do
 waitToFetch :: String -> Import ()
 waitToFetch uri = do
   logDebugN $ T.pack $ "Waiting to fetch: " <> uri
-  tokenLimiter <- asks importEnvRateLimiter
-  liftIO $ waitDebit tokenLimiter 10 -- Need 10 tokens
+  globalLimiter <- asks importEnvGlobalRateLimiter
+  liftIO $ waitDebit globalLimiter 10 -- Need 10 tokens
+  specificLimiter <- asks importEnvSpecificRateLimiter
+  liftIO $ waitDebit specificLimiter 10 -- Need 10 tokens
 
 setUserAgent :: ByteString -> Request -> Request
 setUserAgent userAgent requestPrototype =
