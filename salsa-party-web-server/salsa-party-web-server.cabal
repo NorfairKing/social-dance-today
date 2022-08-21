@@ -114,6 +114,7 @@ library
       Salsa.Party.Web.Server.Handler.Home
       Salsa.Party.Web.Server.Handler.Image
       Salsa.Party.Web.Server.Handler.Import
+      Salsa.Party.Web.Server.Handler.Logo
       Salsa.Party.Web.Server.Handler.Organiser
       Salsa.Party.Web.Server.Handler.Organiser.HTML
       Salsa.Party.Web.Server.Handler.Organiser.ICal

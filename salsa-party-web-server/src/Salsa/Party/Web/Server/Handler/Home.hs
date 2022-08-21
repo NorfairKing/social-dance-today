@@ -58,7 +58,7 @@ socialDanceOrganisation renderUrl =
   LD.Organization
     { LD.organizationName = "Social Dance Today",
       LD.organizationUrl = Just $ renderUrl HomeR,
-      LD.organizationLogo = Just $ renderUrl (StaticR logo_svg),
+      LD.organizationLogo = Just $ renderUrl LogoR,
       LD.organizationFounder =
         Just
           Person

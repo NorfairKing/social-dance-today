@@ -102,6 +102,7 @@
   /test-organiser-reminder AdminTestOrganiserReminderR POST
 
 /favicon.ico FaviconR GET
+/logo.svg LogoR GET
 /sitemap.xml SitemapR GET
 /robots.txt RobotsR GET
 
