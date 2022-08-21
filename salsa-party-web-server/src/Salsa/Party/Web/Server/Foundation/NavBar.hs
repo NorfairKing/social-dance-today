@@ -12,7 +12,6 @@ import Salsa.Party.Web.Server.Foundation.Auth.Routes
 import Salsa.Party.Web.Server.Foundation.I18N.Messages
 import Salsa.Party.Web.Server.Foundation.I18N.SupportedLanguage
 import Salsa.Party.Web.Server.Foundation.Yesod.Data
-import Salsa.Party.Web.Server.Static
 import Salsa.Party.Web.Server.Widget
 import Yesod
 import Yesod.Auth

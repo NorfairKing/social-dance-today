@@ -41,7 +41,6 @@ import Salsa.Party.Web.Server.Foundation.Auth
 import Salsa.Party.Web.Server.Foundation.I18N
 import Salsa.Party.Web.Server.Foundation.NavBar
 import Salsa.Party.Web.Server.Foundation.Yesod
-import Salsa.Party.Web.Server.Static
 import Salsa.Party.Web.Server.Widget
 import Text.Blaze.Html5 ((!))
 import qualified Text.Blaze.Html5 as H
