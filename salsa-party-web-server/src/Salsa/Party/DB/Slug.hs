@@ -49,13 +49,13 @@ validateSlugChar :: Char -> Validation
 validateSlugChar c
   | c == replacementChar = valid
   | otherwise =
-      mconcat
-        [ declare "The character is printable" $ Char.isPrint c,
-          declare "The character is not upper-case" $ not $ Char.isUpper c,
-          declare "The character is not a space character" $ not $ Char.isSpace c,
-          declare "The character is alphanumeric" $ Char.isAlphaNum c,
-          declare "The character is in Latin1" $ Char.isAscii c
-        ]
+    mconcat
+      [ declare "The character is printable" $ Char.isPrint c,
+        declare "The character is not upper-case" $ not $ Char.isUpper c,
+        declare "The character is not a space character" $ not $ Char.isSpace c,
+        declare "The character is alphanumeric" $ Char.isAlphaNum c,
+        declare "The character is in Latin1" $ Char.isAscii c
+      ]
 
 instance Show (Slug a) where
   show = T.unpack . unSlug
@@ -120,9 +120,9 @@ mkSlugChar :: Char -> Maybe Char
 mkSlugChar c
   | Char.isSpace c = Just replacementChar
   | otherwise =
-      if validationIsValid (validateSlugChar c)
-        then Just c
-        else Nothing
+    if validationIsValid (validateSlugChar c)
+      then Just c
+      else Nothing
 
 replacementChar :: Char
 replacementChar = '-'

@@ -61,8 +61,8 @@ findDel predicate = go
     go (a : as)
       | predicate a = Just (a, as)
       | otherwise = do
-          (f, rest) <- go as
-          pure (f, a : rest)
+        (f, rest) <- go as
+        pure (f, a : rest)
 
 externalEventIsSimilarEnoughTo :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Bool
 externalEventIsSimilarEnoughTo trip1 trip2 = similarEnough 0.748 $ computeSimilarityFormula $ similarityScoreExternalToExternal trip1 trip2
@@ -98,7 +98,7 @@ similarityScoreExternalToExternal ::
   SimilarityFormula
 similarityScoreExternalToExternal (Entity _ externalEvent1, Entity _ place1, _) (Entity _ externalEvent2, Entity _ place2, _) =
   let simVia simFunc fieldFunc = simFunc (fieldFunc externalEvent1) (fieldFunc externalEvent2)
-      mSim f s simFunc fieldFunc = mSimFunc f (\v1 v2 -> Factor s (simFunc v1 v2)) fieldFunc
+      mSim f s simFunc = mSimFunc f (\v1 v2 -> Factor s (simFunc v1 v2))
       mSimFunc f simFunc fieldFunc =
         [ (f, simFunc v1 v2)
           | v1 <- maybeToList $ fieldFunc externalEvent1,
@@ -125,7 +125,7 @@ similarityScoreExternalToInternal ::
   SimilarityFormula
 similarityScoreExternalToInternal (Entity _ externalEvent, Entity _ place1, _) (Entity _ organiser, Entity _ party, Entity _ place2, _) =
   let sim simFunc fieldFunc1 fieldFunc2 = simFunc (fieldFunc1 externalEvent) (fieldFunc2 party)
-      mSim f s simFunc fieldFunc1 fieldFunc2 = mSimFunc f (\v1 v2 -> Factor s (simFunc v1 v2)) fieldFunc1 fieldFunc2
+      mSim f s simFunc = mSimFunc f (\v1 v2 -> Factor s (simFunc v1 v2))
       mSimFunc f simFunc fieldFunc1 fieldFunc2 =
         [ (f, simFunc v1 v2)
           | v1 <- maybeToList $ fieldFunc1 externalEvent,

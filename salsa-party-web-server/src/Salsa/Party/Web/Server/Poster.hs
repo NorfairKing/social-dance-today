@@ -103,9 +103,9 @@ reduceUntilSmallEnough image = go 100 -- It makes sense to start at 100% because
   where
     go currentQuality
       | currentQuality > 0 =
-          let candidate = LB.toStrict $ encodeJpegAtQuality currentQuality image
-           in if SB.length candidate <= desiredSize
-                then pure candidate
-                else go $ currentQuality - stepSize
+        let candidate = LB.toStrict $ encodeJpegAtQuality currentQuality image
+         in if SB.length candidate <= desiredSize
+              then pure candidate
+              else go $ currentQuality - stepSize
       | otherwise = Left "Failed to produce a small enough image by reducing the size"
     stepSize = 5

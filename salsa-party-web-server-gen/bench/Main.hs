@@ -111,10 +111,10 @@ genUniques func n gen = go [] n
     go acc i
       | i <= 0 = pure acc
       | otherwise = do
-          a <- gen
-          if func a `elem` map func acc
-            then go acc i
-            else go (a : acc) (pred i)
+        a <- gen
+        if func a `elem` map func acc
+          then go acc i
+          else go (a : acc) (pred i)
 
 -- We generate days within a year, there's no point in looking accross centuries.
 genDay :: Gen Day

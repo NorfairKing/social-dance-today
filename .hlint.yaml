@@ -7,6 +7,8 @@
 - ignore:
     name: "Use tuple-section"
 - ignore:
+    name: "Use underscore"
+- ignore:
     name: "Use ++"
 - ignore:
     name: "Use ||"
@@ -20,6 +22,8 @@
     name: "Use const"
 - ignore:
     name: "Use lambda"
+- ignore:
+    name: "Use void"
 - ignore:
     name: "Use record patterns"
 - ignore:
