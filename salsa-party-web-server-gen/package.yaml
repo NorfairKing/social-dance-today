@@ -9,20 +9,13 @@ library:
   source-dirs: src
   dependencies:
   - QuickCheck
-  - aeson
-  - aeson-pretty
   - bytestring
   - cache
-  - containers
-  - data-default
-  - deepseq
   - filepath
   - genvalidity
   - genvalidity-bytestring
   - genvalidity-persistent
   - genvalidity-sydtest
-  - genvalidity-sydtest-aeson
-  - genvalidity-sydtest-persistent
   - genvalidity-text
   - genvalidity-time
   - genvalidity-typed-uuid
@@ -32,26 +25,18 @@ library:
   - mtl
   - password
   - path-io
-  - path-pieces
   - persistent
   - persistent-sqlite
   - pretty-show
   - salsa-party-web-server
-  - shakespeare
   - sydtest
-  - sydtest-aeson
-  - sydtest-persistent
   - sydtest-persistent-sqlite
   - sydtest-wai
   - sydtest-yesod
   - text
   - time
-  - typed-uuid
-  - unliftio
-  - uuid
   - yesod
   - yesod-auth
-  - yesod-core
 
 
 benchmarks:
@@ -65,7 +50,6 @@ benchmarks:
     - cache
     - criterion
     - genvalidity
-    - genvalidity-criterion
     - monad-logger
     - persistent
     - salsa-party-web-server
@@ -90,21 +74,15 @@ tests:
     - bytestring
     - cache
     - containers
-    - data-default
     - esqueleto
-    - filepath
     - genvalidity
-    - genvalidity-bytestring
-    - genvalidity-persistent
     - genvalidity-sydtest
     - genvalidity-sydtest-aeson
     - genvalidity-sydtest-persistent
     - genvalidity-text
     - genvalidity-time
-    - genvalidity-typed-uuid
     - http-client
     - ical
-    - microlens
     - monad-logger
     - mtl
     - password
@@ -113,7 +91,6 @@ tests:
     - path-io
     - path-pieces
     - persistent
-    - persistent-sqlite
     - pretty-show
     - salsa-party-web-server
     - salsa-party-web-server-gen
@@ -122,7 +99,6 @@ tests:
     - sydtest-aeson
     - sydtest-persistent
     - sydtest-persistent-sqlite
-    - sydtest-wai
     - sydtest-yesod
     - text
     - time

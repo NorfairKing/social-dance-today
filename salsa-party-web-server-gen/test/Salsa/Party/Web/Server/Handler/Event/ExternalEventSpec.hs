@@ -9,11 +9,19 @@ spec :: Spec
 spec = do
   serverSpec $ do
     describe "EventR" $ do
-      it "Gets a 410 for a nonexistent external event by uuid" $ \yc ->
+      it "Gets a 404 or 410 for a nonexistent external event by uuid" $ \yc ->
         forAllValid $ \uuid ->
           runYesodClientM yc $ do
             get $ EventR uuid
-            statusIs 410
+            mResponse <- getResponse
+            liftIO $ case mResponse of
+              Nothing -> expectationFailure "Should have gotten a response by now."
+              Just response ->
+                let c = statusCode (responseStatus response)
+                 in case c of
+                      404 -> pure ()
+                      410 -> pure ()
+                      _ -> expectationFailure $ show c
 
       it "Can get the party page for an existing external event by uuid" $ \yc ->
         forAllValid $ \place ->
@@ -26,12 +34,20 @@ spec = do
               _ <- followRedirect
               statusIs 200
 
-      it "Gets a 410 for a nonexistent external event by slug" $ \yc ->
+      it "Gets a 404 or 410 for a nonexistent external event by slug" $ \yc ->
         forAllValid $ \slug ->
           forAllValid $ \day ->
             runYesodClientM yc $ do
               get $ ExternalEventSlugR slug day
-              statusIs 410
+              mResponse <- getResponse
+              liftIO $ case mResponse of
+                Nothing -> expectationFailure "Should have gotten a response by now."
+                Just response ->
+                  let c = statusCode (responseStatus response)
+                   in case c of
+                        404 -> pure ()
+                        410 -> pure ()
+                        _ -> expectationFailure $ show c
 
       it "Can get the party page for an existing external event by slug" $ \yc ->
         forAllValid $ \place ->

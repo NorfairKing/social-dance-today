@@ -8,10 +8,18 @@ import Salsa.Party.Web.Server.Handler.TestImport
 spec :: Spec
 spec = serverSpec $ do
   describe "EventR" $ do
-    it "GETs a 410 for a nonexistent party by uuid" $ \yc ->
+    it "GETs a 404 or 410 for a nonexistent party by uuid" $ \yc ->
       forAllValid $ \uuid -> runYesodClientM yc $ do
         get $ EventR uuid
-        statusIs 410
+        mResponse <- getResponse
+        liftIO $ case mResponse of
+          Nothing -> expectationFailure "Should have gotten a response by now."
+          Just response ->
+            let c = statusCode (responseStatus response)
+             in case c of
+                  404 -> pure ()
+                  410 -> pure ()
+                  _ -> expectationFailure $ show c
 
     it "Can get the party page for an existing party by uuid" $ \yc ->
       forAllValid $ \organiser ->
@@ -26,13 +34,21 @@ spec = serverSpec $ do
               _ <- followRedirect -- We may end up on a slug-based route, but that's fine.
               statusIs 200
 
-    it "GETs a 410 for a nonexistent party by slugs" $ \yc ->
+    it "GETs a 404 or 410 for a nonexistent party by slugs" $ \yc ->
       forAllValid $ \organiserSlug_ ->
         forAllValid $ \partySlug_ ->
           forAllValid $ \day ->
             runYesodClientM yc $ do
               get $ PartySlugR organiserSlug_ partySlug_ day
-              statusIs 410
+              mResponse <- getResponse
+              liftIO $ case mResponse of
+                Nothing -> expectationFailure "Should have gotten a response by now."
+                Just response ->
+                  let c = statusCode (responseStatus response)
+                   in case c of
+                        404 -> pure ()
+                        410 -> pure ()
+                        _ -> expectationFailure $ show c
 
     it "Can get the party page for an existing party by slugs" $ \yc ->
       forAllValid $ \organiser ->
