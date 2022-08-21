@@ -14,6 +14,7 @@ import qualified Database.Esqueleto.Legacy as E
 import Google.Maps
 import Network.HTTP.Client
 import Network.HTTP.Client.Retry
+import Salsa.Party.Web.Server.Handler.Image (getImageR)
 import Salsa.Party.Web.Server.Handler.Import
 
 -- | Serve a static map of the area around a given place
@@ -62,7 +63,7 @@ getEventMapR eventUUID = do
       logDebugN $ T.pack $ "Static map not in cache, fetching it first." <> show (uuidString eventUUID)
       loadAndCacheMapImage placeId
 
-  redirect (ImageR imageKey)
+  getImageR imageKey
 
 loadAndCacheMapImage :: PlaceId -> Handler CASKey
 loadAndCacheMapImage placeId = do
