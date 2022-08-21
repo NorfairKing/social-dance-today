@@ -30,8 +30,8 @@ import Salsa.Party.Web.Server.Handler.Import
 -- * We serve it under a EventUUID Key instead of a PlaceId, so the maps are
 --   not enumerable (and our service not as easily exploitable).
 --
--- * We redirect to ImageR instead of serving the image here directly so that
---   the image can still be cached.
+-- * We use use the 'getImageR' handler to benefit from all the caching
+--   mechanisms that that implements.
 getEventMapR :: EventUUID -> Handler TypedContent
 getEventMapR eventUUID = do
   partyOrExternalEvent <-
