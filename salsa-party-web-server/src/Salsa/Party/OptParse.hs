@@ -267,7 +267,7 @@ importerEnvironments =
       dataSources
 
 dataSourceEnvVar :: Text -> String
-dataSourceEnvVar = (<> "_IMPORTER") . T.unpack . T.toUpper . T.replace "." "_"
+dataSourceEnvVar = (<> "_IMPORTER") . T.unpack . T.toUpper . T.replace "-" "_" . T.replace "." "_"
 
 sentryEnvironmentParser :: Env.Parser Env.Error SentryEnvironment
 sentryEnvironmentParser =
@@ -539,7 +539,8 @@ instance HasCodec LogLevel where
 
 dataSources :: [Text]
 dataSources =
-  [ "tanzevents.ch",
+  [ "salsa-berlin.de",
+    "tanzevents.ch",
     "danceus.org",
     "events.info",
     "golatindance.com",

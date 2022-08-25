@@ -41,6 +41,7 @@ library
       Salsa.Party.Importer.LondonSalsaEventsCom
       Salsa.Party.Importer.MapdanceCom
       Salsa.Party.Importer.SalsaBe
+      Salsa.Party.Importer.SalsaBerlinDe
       Salsa.Party.Importer.SalsachicagoCom
       Salsa.Party.Importer.SalsaLoversBe
       Salsa.Party.Importer.Selenium
