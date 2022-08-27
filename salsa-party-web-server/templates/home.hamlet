@@ -17,7 +17,7 @@
                     id=#{queryId}
                     type=text
                     name="address"
-                    placeholder="Zürich"
+                    placeholder="_{MsgLocateMePlaceholder}"
                     required>
                 <p .control>
                   <div .button

@@ -19,6 +19,7 @@ AdvancedSearchFormEndLabel: To
 AdvancedSearchFormSubmit: Search
 
 # Locate me button
+LocateMePlaceholder: Enter location
 LocateMeLocation: My location
 LocateMeUnable: Unable to retrieve your location.
 LocateMeInProgress: Locating…
