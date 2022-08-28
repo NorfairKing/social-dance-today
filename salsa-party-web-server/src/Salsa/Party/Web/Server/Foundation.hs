@@ -28,6 +28,7 @@ import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import Data.Time
 import Data.Validity
 import Data.Validity.Text ()
 import Data.Validity.Time ()
@@ -45,8 +46,21 @@ import Salsa.Party.Web.Server.Widget
 import Text.Blaze.Html5 ((!))
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
+import Text.Read (readMaybe)
 import Yesod
 import Yesod.AutoReload
+
+getClientToday :: Handler Day
+getClientToday = do
+  now <- liftIO getCurrentTime
+  let todayUTC = utctDay now
+  mOffsetCookie <- lookupCookie "utcoffset"
+  case mOffsetCookie >>= (readMaybe . T.unpack) of
+    Nothing -> pure todayUTC
+    Just offset -> do
+      let tz = minutesToTimeZone $ negate offset
+      let nowLocal = utcToLocalTime tz now
+      pure $ localDay nowLocal
 
 getReloadR :: Handler ()
 getReloadR = getAutoReloadR

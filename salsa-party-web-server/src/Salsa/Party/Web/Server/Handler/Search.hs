@@ -249,7 +249,7 @@ searchParameterDateParameters = \case
 
 searchResultsPage :: SearchParameters -> Handler Html
 searchResultsPage searchParameters@SearchParameters {..} = do
-  today <- liftIO $ utctDay <$> getCurrentTime -- today
+  today <- getClientToday
 
   -- Resolve begin day
   let begin = case searchParameterDate of
