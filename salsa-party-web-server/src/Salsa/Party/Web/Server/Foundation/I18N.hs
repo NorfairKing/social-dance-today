@@ -332,7 +332,7 @@ htmlDescriptionMaxLength = 160
 currentTimeOverrideParam :: Text
 currentTimeOverrideParam = "CURRENT_TIME_OVERRIDE"
 
-getCurrentTimeH :: Handler UTCTime
+getCurrentTimeH :: MonadHandler m => m UTCTime
 getCurrentTimeH = do
   mContents <- lookupGetParam currentTimeOverrideParam
   case mContents of

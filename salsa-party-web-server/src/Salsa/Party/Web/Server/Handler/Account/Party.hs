@@ -195,7 +195,7 @@ getAccountPartyR partyUuid_ = do
       Place {..} <- runDB $ get404 partyPlace
       mSchedule <- runDB $ getScheduleForParty partyId
       mPosterKey <- runDB $ getPosterForParty partyId
-      today <- liftIO $ utctDay <$> getCurrentTime
+      today <- getClientToday
       token <- genToken
       withNavBar $ do
         timeLocale <- getTimeLocale

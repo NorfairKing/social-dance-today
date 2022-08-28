@@ -25,7 +25,7 @@ import Text.Printf
 
 getAdminChartsR :: Handler Html
 getAdminChartsR = do
-  today <- liftIO $ utctDay <$> getCurrentTime
+  today <- getClientToday
   acqExternalEventsSource <- runDB $ selectSourceRes [] [Asc ExternalEventId]
   acqPartiesSource <- runDB $ selectSourceRes [] [Asc PartyId]
 
@@ -75,7 +75,7 @@ getAdminChartsR = do
 
 currentAndLastMonthCountWidget :: Map Day Word64 -> Widget
 currentAndLastMonthCountWidget m = do
-  today <- liftIO $ utctDay <$> getCurrentTime
+  today <- getClientToday
   let nowCount :: Word64
       nowCount = fromMaybe 0 $ M.lookup today m
   let lastMonthCount :: Word64

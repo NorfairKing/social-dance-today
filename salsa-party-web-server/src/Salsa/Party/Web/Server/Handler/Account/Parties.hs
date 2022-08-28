@@ -26,5 +26,5 @@ getAccountPartiesR = do
       schedules <- runDB $ selectList [ScheduleOrganiser ==. organiserId] [Desc ScheduleCreated]
       timeLocale <- getTimeLocale
       prettyDayFormat <- getPrettyDayFormat
-      today <- liftIO $ utctDay <$> getCurrentTime
+      today <- getClientToday
       withNavBar $(widgetFile "account/parties")

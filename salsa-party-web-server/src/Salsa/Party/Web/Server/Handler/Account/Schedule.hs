@@ -45,8 +45,7 @@ getAccountScheduleR scheduleUuid_ = do
       Place {..} <- runDB $ get404 schedulePlace
       mPosterKey <- runDB $ getPosterForSchedule scheduleId
       parties <- runDB $ getPartiesOfSchedule scheduleId
-      now <- liftIO getCurrentTime
-      let today = utctDay now
+      today <- getClientToday
 
       withNavBar $ do
         timeLocale <- getTimeLocale
@@ -298,7 +297,7 @@ editSchedule ::
   Handler Html
 editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
   now <- liftIO getCurrentTime
-  let today = utctDay now
+  today <- getClientToday
   -- This place lookup relies on the caching for geocoding to be fast if nothing has changed.
   Entity placeId _ <- lookupPlace (editScheduleFormAddress form)
   let EditScheduleForm _ _ _ _ _ _ _ = undefined

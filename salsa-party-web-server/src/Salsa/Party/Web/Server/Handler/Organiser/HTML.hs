@@ -33,9 +33,8 @@ getOrganiserSlugR slug = do
 
 organiserPage :: Entity Organiser -> Handler Html
 organiserPage (Entity organiserId organiser@Organiser {..}) = do
-  now <- liftIO getCurrentTime
-  let today = utctDay now
-  parties <- runDB $ getUpcomingPartiesOfOrganiser organiserId
+  today <- getClientToday
+  parties <- runDB $ getUpcomingPartiesOfOrganiser today organiserId
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
   prettyDateTimeFormat <- getPrettyDateTimeFormat
@@ -48,10 +47,8 @@ organiserPage (Entity organiserId organiser@Organiser {..}) = do
     addHeader "Last-Modified" $ TE.decodeLatin1 $ formatHTTPDate $ utcToHTTPDate lastModified
     $(widgetFile "organiser") <> posterCSS
 
-getUpcomingPartiesOfOrganiser :: MonadIO m => OrganiserId -> SqlPersistT m [(Entity Party, Entity Place, Maybe CASKey)]
-getUpcomingPartiesOfOrganiser organiserId = do
-  now <- liftIO getCurrentTime
-  let today = utctDay now
+getUpcomingPartiesOfOrganiser :: MonadIO m => Day -> OrganiserId -> SqlPersistT m [(Entity Party, Entity Place, Maybe CASKey)]
+getUpcomingPartiesOfOrganiser today organiserId = do
   partyTups <- E.select $
     E.from $ \(party `E.InnerJoin` p) -> do
       E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)

@@ -50,17 +50,17 @@ import Text.Read (readMaybe)
 import Yesod
 import Yesod.AutoReload
 
-getClientToday :: Handler Day
-getClientToday = do
-  now <- liftIO getCurrentTime
-  let todayUTC = utctDay now
+getClientToday :: MonadHandler m => m Day
+getClientToday = localDay <$> getClientNow
+
+getClientNow :: MonadHandler m => m LocalTime
+getClientNow = do
+  now <- getCurrentTimeH
   mOffsetCookie <- lookupCookie "utcoffset"
-  case mOffsetCookie >>= (readMaybe . T.unpack) of
-    Nothing -> pure todayUTC
-    Just offset -> do
-      let tz = minutesToTimeZone $ negate offset
-      let nowLocal = utcToLocalTime tz now
-      pure $ localDay nowLocal
+  let tz = case mOffsetCookie >>= (readMaybe . T.unpack) of
+        Nothing -> utc
+        Just offset -> minutesToTimeZone $ negate offset
+  pure $ utcToLocalTime tz now
 
 getReloadR :: Handler ()
 getReloadR = getAutoReloadR
