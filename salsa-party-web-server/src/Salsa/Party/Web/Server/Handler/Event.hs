@@ -63,8 +63,8 @@ getExternalEventSlugR externalEventSlug_ day = do
 goneOrNotFound :: Day -> Handler TypedContent
 goneOrNotFound d = do
   today <- liftIO $ utctDay <$> getCurrentTime
-  if d < today
-    then -- If the day is in the past then either:
+  if d < addDays (-2) today
+    then -- If the day is definitely in the past then either:
     -- There was a party, in which case it's definitely not coming back because it's in the past.
     -- There was no party, in which case there also won't be any.
       gone
