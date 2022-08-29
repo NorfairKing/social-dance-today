@@ -33,6 +33,7 @@ import Salsa.Party.Web.Server.Foundation.I18N.SupportedLanguage
 import Salsa.Party.Web.Server.Foundation.Yesod.Data
 import Salsa.Party.Web.Server.Poster
 import Text.Hamlet
+import Text.Read
 import Yesod
 
 posterImageWidget :: Party -> Organiser -> CASKey -> Widget
@@ -340,3 +341,19 @@ getCurrentTimeH = do
     Just contents -> case JSON.eitherDecode (LB.fromStrict (TE.encodeUtf8 contents)) of
       Left err -> invalidArgs [T.pack err]
       Right t -> pure t
+
+getClientNow :: MonadHandler m => m LocalTime
+getClientNow = do
+  now <- getCurrentTimeH
+  mOffsetCookie <- lookupCookie "utcoffset"
+  let tz = case mOffsetCookie >>= (readMaybe . T.unpack) of
+        Nothing -> utc
+        Just offset ->
+          minutesToTimeZone $
+            -- It's not clear why negate is necessary here.
+            -- Apparently javascript gives you the opposite of the UTC offset.
+            negate offset
+  pure $ utcToLocalTime tz now
+
+getClientToday :: MonadHandler m => m Day
+getClientToday = localDay <$> getClientNow
