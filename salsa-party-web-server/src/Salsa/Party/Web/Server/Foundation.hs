@@ -46,10 +46,6 @@ import Text.Blaze.Html5 ((!))
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 import Yesod
-import Yesod.AutoReload
-
-getReloadR :: Handler ()
-getReloadR = getAutoReloadR
 
 instance Validity Textarea where
   validate = validate . unTextarea

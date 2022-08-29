@@ -118,6 +118,7 @@ library
       Salsa.Party.Web.Server.Handler.Organiser
       Salsa.Party.Web.Server.Handler.Organiser.HTML
       Salsa.Party.Web.Server.Handler.Organiser.ICal
+      Salsa.Party.Web.Server.Handler.Reload
       Salsa.Party.Web.Server.Handler.Reminder
       Salsa.Party.Web.Server.Handler.Search
       Salsa.Party.Web.Server.Handler.Search.Deduplication
