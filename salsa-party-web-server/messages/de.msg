@@ -8,6 +8,7 @@ Logo title@Text: #{title} Logo
 HomeDescription title@Text: #{title}: Wo kann ich tanzen gehen? Finde heute Social Dance Partys. Egal ob Du nach Salsa, Bachata, Kizomba, Mambo, Cha-Cha-Cha, Tango, Zouk, Swng, Kindy Hop oder einen anderen Tanz suchst, Du findest sie hier.
 HomeSubtitleQuestion: Wo kann ich tanzen gehen?
 HomeFormSearch: Suche
+HomeAdvancedLabel: Erweitert
 
 # Advanced search
 AdvancedSearchTitle: Erweiterte Suchen

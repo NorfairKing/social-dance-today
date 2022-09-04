@@ -8,6 +8,7 @@ Logo title@Text: #{title} Logo
 HomeDescription title@Text: #{title}: Waar kan ik gaan dansen? Vind vandaag sociale dans feesten. Ongeacht of u zoekt naar Salsa, Bachata, Kizomba, Mambo, Cha-Cha-Cha, Tango, Zouk, Swing, Lindy Hop, of nog een andere dans, u vindt het hier.
 HomeSubtitleQuestion: Waar kan ik gaan dansen?
 HomeFormSearch: Zoeken
+HomeAdvancedLabel: Geavanceerd
 
 # Advanced search
 AdvancedSearchTitle: Geavanceerd zoeken

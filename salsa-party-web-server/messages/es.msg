@@ -8,6 +8,7 @@ Logo title@Text: #{title} Logo
 HomeDescription title@Text: #{title}: ¿Dónde puedo bailar? Encuentra fiestas baile social hoy, ya sea que estés buscando Salsa, Bachata, Kizomba, Mambo, Cha-Cha-Cha, Tango, Zouk, Swing, Lindy Hop u otro baile, puedes encontrarlo aquí.
 HomeSubtitleQuestion: ¿Dónde puedo bailar?
 HomeFormSearch: Buscar
+HomeAdvancedLabel: Avanzada
 
 # Advanced search
 AdvancedSearchTitle: Búsqueda Avanzada

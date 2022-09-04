@@ -8,6 +8,7 @@ Logo title@Text: #{title} Logo
 HomeDescription title@Text: #{title}: Où puis-j’aller danser? Trouvez des soirées de danse aujourd'hui. Si vous cherchez à danser la Salsa, Bachata, Kizomba, Mambo, Cha-Cha-Cha, Tango, Zouk, Swing, Lindy Hop ou une autre danse, vous la trouverez ici.
 HomeSubtitleQuestion: Où puis-j'aller danser?
 HomeFormSearch: Recherche
+HomeAdvancedLabel: Appprofondie
 
 # Advanced search
 AdvancedSearchTitle: Recherche appprofondie

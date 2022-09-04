@@ -136,7 +136,7 @@ languagePrettyDayFormat = \case
   SupportedLangGerman -> "%A, %e %B" -- Freitag, 16 juli
   SupportedLangDutch -> "%A, %e %B" -- vrijdag, 16 juli
   SupportedLangFrench -> "%A %e %B" -- vendredi, 16 juli
-  SupportedLangSpanish -> "%A, %e de %B" -- viernes, 16 de julio
+  SupportedLangSpanish -> "%A %e de %B" -- Viernes 16 de julio
 
 getPrettyDateTimeFormat :: MonadHandler m => m String
 getPrettyDateTimeFormat = languagePrettyDateTimeFormat <$> getFirstMatchingSupportedLanguage
@@ -147,7 +147,7 @@ languagePrettyDateTimeFormat = \case
   SupportedLangGerman -> "%A, %e %B - %H:%M" -- Freitag, 16 juli - 18:30
   SupportedLangDutch -> "%A, %e %B - %H:%M" -- vrijdag, 16 juli - 18:30
   SupportedLangFrench -> "%A %e %B - %H:%M" -- vendredi, 16 juli - 18:30
-  SupportedLangSpanish -> "%A, %e de %B - %H:%M" -- viernes, 16 de julio - 18:30
+  SupportedLangSpanish -> "%A %e de %B - %H:%M" -- Viernes 16 de julio - 18:30
 
 getPrettyTimeFormat :: MonadHandler m => m String
 getPrettyTimeFormat = languagePrettyTimeFormat <$> getFirstMatchingSupportedLanguage
@@ -269,27 +269,27 @@ spanishTimeLocale :: TimeLocale
 spanishTimeLocale =
   TimeLocale
     { wDays =
-        [ ("domingo", "do"),
-          ("lunes", "lu"),
-          ("martes", "ma"),
-          ("miércoles", "mi"),
-          ("jueves", "ju"),
-          ("viernes", "vi"),
-          ("sábado", "sá")
+        [ ("Domingo", "Do"),
+          ("Lunes", "Lu"),
+          ("Martes", "Ma"),
+          ("Miércoles", "Mi"),
+          ("Jueves", "Ju"),
+          ("Viernes", "Vi"),
+          ("Sábado", "Sá")
         ],
       months =
-        [ ("enero", "ene"),
-          ("febrero", "feb"),
-          ("marzo", "mar"),
-          ("abril", "abr"),
-          ("mayo", "May"),
-          ("junio", "jun"),
+        [ ("Enero", "Ene"),
+          ("Febrero", "Feb"),
+          ("Marzo", "Mar"),
+          ("Abril", "Abr"),
+          ("Mayo", "May"),
+          ("Junio", "Jun"),
           ("Julio", "Jul"),
-          ("agosto", "ago"),
-          ("septiembre", "sie"),
-          ("Octubre", "oct"),
-          ("noviembre", "nov"),
-          ("diciembre", "dic")
+          ("Agosto", "Ago"),
+          ("Septiembre", "Sie"),
+          ("Octubre", "Oct"),
+          ("Noviembre", "Nov"),
+          ("Diciembre", "Dic")
         ],
       amPm = ("AM", "PM"), -- Not used.
       dateTimeFmt = "%a %b %e %H:%M:%S %Z %Y",
