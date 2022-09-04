@@ -125,6 +125,7 @@ languageTimeLocale = \case
   SupportedLangGerman -> germanTimeLocale
   SupportedLangDutch -> dutchTimeLocale
   SupportedLangFrench -> frenchTimeLocale
+  SupportedLangSpanish -> spanishTimeLocale
 
 getPrettyDayFormat :: MonadHandler m => m String
 getPrettyDayFormat = languagePrettyDayFormat <$> getFirstMatchingSupportedLanguage
@@ -135,6 +136,7 @@ languagePrettyDayFormat = \case
   SupportedLangGerman -> "%A, %e %B" -- Freitag, 16 juli
   SupportedLangDutch -> "%A, %e %B" -- vrijdag, 16 juli
   SupportedLangFrench -> "%A %e %B" -- vendredi, 16 juli
+  SupportedLangSpanish -> "%A, %e de %B" -- viernes, 16 de julio
 
 getPrettyDateTimeFormat :: MonadHandler m => m String
 getPrettyDateTimeFormat = languagePrettyDateTimeFormat <$> getFirstMatchingSupportedLanguage
@@ -145,6 +147,7 @@ languagePrettyDateTimeFormat = \case
   SupportedLangGerman -> "%A, %e %B - %H:%M" -- Freitag, 16 juli - 18:30
   SupportedLangDutch -> "%A, %e %B - %H:%M" -- vrijdag, 16 juli - 18:30
   SupportedLangFrench -> "%A %e %B - %H:%M" -- vendredi, 16 juli - 18:30
+  SupportedLangSpanish -> "%A, %e de %B - %H:%M" -- viernes, 16 de julio - 18:30
 
 getPrettyTimeFormat :: MonadHandler m => m String
 getPrettyTimeFormat = languagePrettyTimeFormat <$> getFirstMatchingSupportedLanguage
@@ -156,6 +159,7 @@ languagePrettyTimeFormat = \case
   SupportedLangGerman -> "%H:%M" -- 18:30
   SupportedLangDutch -> "%H:%M" -- 18:30
   SupportedLangFrench -> "%H:%M" -- 18:30
+  SupportedLangSpanish -> "%H:%M" -- 18:30
 
 -- | Locale representing German usage.
 germanTimeLocale :: TimeLocale
@@ -256,6 +260,40 @@ frenchTimeLocale =
       amPm = ("AM", "PM"), -- Not used.
       dateTimeFmt = "%a %b %e %H:%M:%S %Z %Y",
       dateFmt = "%d-%m-%y",
+      timeFmt = "%H:%M:%S",
+      time12Fmt = "%I:%M:%S %p", -- Not used.
+      knownTimeZones = [] -- Don't need it.
+    }
+
+spanishTimeLocale :: TimeLocale
+spanishTimeLocale =
+  TimeLocale
+    { wDays =
+        [ ("domingo", "do"),
+          ("lunes", "lu"),
+          ("martes", "ma"),
+          ("miércoles", "mi"),
+          ("jueves", "ju"),
+          ("viernes", "vi"),
+          ("sábado", "sá")
+        ],
+      months =
+        [ ("enero", "ene"),
+          ("febrero", "feb"),
+          ("marzo", "mar"),
+          ("abril", "abr"),
+          ("mayo", "May"),
+          ("junio", "jun"),
+          ("Julio", "Jul"),
+          ("agosto", "ago"),
+          ("septiembre", "sie"),
+          ("Octubre", "oct"),
+          ("noviembre", "nov"),
+          ("diciembre", "dic")
+        ],
+      amPm = ("AM", "PM"), -- Not used.
+      dateTimeFmt = "%a %b %e %H:%M:%S %Z %Y",
+      dateFmt = "%d/%m/%y",
       timeFmt = "%H:%M:%S",
       time12Fmt = "%I:%M:%S %p", -- Not used.
       knownTimeZones = [] -- Don't need it.
