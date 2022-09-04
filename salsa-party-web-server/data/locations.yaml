@@ -38,6 +38,18 @@
 - query: "Berlin"
   lat: 52.501521700
   lon: 13.402549800
+- query: "Cologne"
+  lat: 50.936389
+  lon: 6.952778
+- query: "Aachen"
+  lat: 50.775556
+  lon: 6.083611
+- query: "Hamburg"
+  lat: 53.55
+  lon: 10.00
+- query: "Munich"
+  lat: 48.1375
+  lon: 11.575
   ## France
 - query: "Paris"
   lat: 48.858889700
@@ -46,6 +58,9 @@
 - query: "London"
   lat: 51.5073219
   lon: -0.1276474
+- query: "Birmingham"
+  lat: 52.48
+  lon: -1.9025
   ## Spain
 - query: "Barcelona"
   lat: 41.3948976
@@ -152,6 +167,9 @@
 - query: "Rome"
   lat: 41.8519772
   lon: 12.2347302
+- query: "Milan"
+  lat: 45.466944
+  lon: 9.19
   ## Latvia
 - query: "Riga"
   lat: 56.9715833
@@ -204,10 +222,41 @@
 - query: "Moscow"
   lat: 55.5815245
   lon: 36.825139
+- query: "Saint Petersburg"
+  lat: 59.9375
+  lon: 30.308611
+- query: "Kazan"
+  lat: 55.796389
+  lon: 49.108889
+- query: "Nizhny Novgorod"
+  lat: 56.326944
+  lon: 44.0075
+- query: "Samara"
+  lat: 53.202778
+  lon: 50.140833
+- query: "Rostov-on-Don"
+  lat: 47.233333
+  lon: 39.7
+- query: "Ufa"
+  lat: 54.726111
+  lon: 55.9475
+- query: "Voronezh"
+  lat: 51.671667
+  lon: 39.210556
+- query: "Perm"
+  lat: 58
+  lon: 56.316667
+- query: "Volgograd"
+  lat: 48.708611
+  lon: 44.514722
   ## San Marino
 - query: "San Marino"
   lat: 43.9429344
   lon: 12.4250739
+  ## Georgia
+- query: "Tbilisi"
+  lat: 41.7225
+  lon: 44.7925
   ## Serbia
 - query: "Belgrade"
   lat: 44.8154033
@@ -221,9 +270,13 @@
   lat: 46.0662151
   lon: 14.4620596
   ## Ukraine
-- query: "Kiev"
+- query: "Kyiv"
   lat: 50.4021702
   lon: 30.3926087
+  ## Turkey
+- query: Istanbul
+  lat: 41.013611
+  lon: 28.955
   # North America
   ## Canada
 - query: "Toronto"
@@ -305,6 +358,54 @@
 - query: "Kansas City"
   lat: 39.100105000
   lon: -94.578141600
+- query: "San Jose"
+  lat: 37.336111
+  lon: -121.890556
+- query: "Jacksonville"
+  lat: 30.336944
+  lon: -81.661389
+- query: "Fort Worth"
+  lat: 32.75
+  lon: -97.333333
+- query: "Columbus"
+  lat: 39.962222
+  lon: -83.000556
+- query: "Indianapolis"
+  lat: 39.768611
+  lon: -86.158056
+- query: "Charlotte"
+  lat: 35.227222
+  lon: -80.843056
+- query: "Oklahoma City"
+  lat: 35.468611
+  lon: -97.521389
+- query: "Nashville"
+  lat: 36.162222
+  lon: -86.774444
+- query: "El Paso"
+  lat: 31.759167
+  lon: -106.488611
+- query: "Las Vegas"
+  lat: 36.175
+  lon: -115.136389
+- query: "Louisville"
+  lat: 38.256111
+  lon: -85.751389
+- query: "Memphis"
+  lat: 35.1175
+  lon: -89.971111
+- query: "Baltimore"
+  lat: 39.289444
+  lon: -76.615278
+- query: "Milwuakee"
+  lat: 43.05
+  lon: -87.95
+- query: "Albuquerque"
+  lat: 35.110833
+  lon: -106.61
+- query: "Fresno"
+  lat: 36.75
+  lon: -119.766667
   # Latin America
 - query: "San Juan"
   lat: 18.3892246
