@@ -78,8 +78,8 @@ in
           sha256 = "0nbwcsa1gi36f2aq9y96bap7glkp40k3g2bjb9s1vmg0011sri1v";
         };
         "static/sentry.js" = builtins.fetchurl {
-          url = "https://browser.sentry-cdn.com/6.19.6/bundle.tracing.min.js";
-          sha256 = "sha256:1wzf3l06y5xj56k5p8a0h2yzavkqpz107cxkkmyif86c2qm5sqkr";
+          url = "https://browser.sentry-cdn.com/7.12.1/bundle.tracing.min.js";
+          sha256 = "sha256:08i3w728xdlzyvq4j9k1sm3ydfc6ch61cgs0wxvxqhc002vph5fa";
         };
         "static/instantpage.js" = builtins.fetchurl {
           url = "https://instant.page/5.1.0";
