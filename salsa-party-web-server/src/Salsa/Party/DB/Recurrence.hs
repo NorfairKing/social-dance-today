@@ -15,9 +15,23 @@ import Database.Persist
 import Database.Persist.Sql
 import GHC.Generics (Generic)
 
+data DayOfWeekIndex
+  = First
+  | Second
+  | Third
+  | Fourth
+  | Last
+  | SecondToLast
+  | ThirdToLast
+  | FourthToLast
+  deriving (Show, Eq, Generic)
+
+instance Validity DayOfWeekIndex
+
 data Recurrence
   = -- | Every week on the given day
-    WeeklyRecurrence DayOfWeek
+    WeeklyRecurrence !DayOfWeek
+  | MonthlyRecurrence !DayOfWeekIndex !DayOfWeek
   deriving (Show, Eq, Generic)
 
 instance Validity Recurrence
