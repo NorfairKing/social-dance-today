@@ -28,6 +28,39 @@ data DayOfWeekIndex
 
 instance Validity DayOfWeekIndex
 
+instance FromJSON DayOfWeekIndex where
+  parseJSON v = do
+    i <- parseJSON v
+    case intToDayOfWeekIndex i of
+      Nothing -> fail "Invalid DayOfWeekIndex"
+      Just ix -> pure ix
+
+instance ToJSON DayOfWeekIndex where
+  toJSON = toJSON . dayOfWeekIndexToInt
+
+dayOfWeekIndexToInt :: DayOfWeekIndex -> Int
+dayOfWeekIndexToInt = \case
+  FourthToLast -> -4
+  ThirdToLast -> -3
+  SecondToLast -> -2
+  Last -> -1
+  First -> 1
+  Second -> 2
+  Third -> 3
+  Fourth -> 4
+
+intToDayOfWeekIndex :: Int -> Maybe DayOfWeekIndex
+intToDayOfWeekIndex = \case
+  -4 -> Just FourthToLast
+  -3 -> Just ThirdToLast
+  -2 -> Just SecondToLast
+  -1 -> Just Last
+  1 -> Just First
+  2 -> Just Second
+  3 -> Just Third
+  4 -> Just Fourth
+  _ -> Nothing
+
 data Recurrence
   = -- | Every week on the given day
     WeeklyRecurrence !DayOfWeek
@@ -41,6 +74,7 @@ instance FromJSON Recurrence where
     recurrenceType <- o .: "type"
     case recurrenceType of
       "weekly" -> WeeklyRecurrence <$> o .: "day"
+      "monthly" -> MonthlyRecurrence <$> o .: "index" <*> o .: "day"
       _ -> fail $ "Unknown recurrence type: " <> recurrenceType
 
 instance ToJSON Recurrence where
@@ -48,6 +82,7 @@ instance ToJSON Recurrence where
     object
       . \case
         WeeklyRecurrence dow -> [("type", "weekly"), "day" .= dow]
+        MonthlyRecurrence ix dow -> [("type", "monthly"), "index" .= ix, "day" .= dow]
 
 instance PersistField Recurrence where
   fromPersistValue = fromPersistValueJSON
@@ -71,6 +106,7 @@ nextOccurrences limitDay recurrence = go
 nextOccurrence :: Recurrence -> Day -> Day
 nextOccurrence = \case
   WeeklyRecurrence dow -> nextWeeklyOccurrence dow
+  MonthlyRecurrence ix dow -> nextMonthlyRecurrence ix dow
 
 nextWeeklyOccurrence :: DayOfWeek -> Day -> Day
 nextWeeklyOccurrence dow today = firstDayOfWeekOnAfter dow (addDays 1 today)
@@ -85,3 +121,6 @@ dayOfWeekDiff a b = mod' (fromEnum a - fromEnum b) 7
 -- | The first day-of-week on or after some day
 firstDayOfWeekOnAfter :: DayOfWeek -> Day -> Day
 firstDayOfWeekOnAfter dw d = addDays (toInteger $ dayOfWeekDiff dw $ dayOfWeek d) d
+
+nextMonthlyRecurrence :: DayOfWeekIndex -> DayOfWeek -> Day -> Day
+nextMonthlyRecurrence = undefined

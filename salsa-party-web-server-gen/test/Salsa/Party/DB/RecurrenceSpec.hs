@@ -26,7 +26,8 @@ spec = do
         forAllValid $ \recurrence ->
           forAllValid $ \day ->
             nextOccurrences (addDays limit day) recurrence day `shouldSatisfy` all (> day)
-    it "works for this specific example" $
+
+    it "works for this specific example of weekly recurrence" $
       let recurrence = WeeklyRecurrence Friday
           start = fromGregorian 2021 08 02
        in nextOccurrences (addDays 45 start) recurrence start
@@ -37,15 +38,37 @@ spec = do
                          fromGregorian 2021 09 03,
                          fromGregorian 2021 09 10
                        ]
+
+    it "works for this specific example of monthly recurrence" $
+      let recurrence = MonthlyRecurrence Second Friday
+          start = fromGregorian 2022 08 12
+       in nextOccurrences (addDays 99 start) recurrence start
+            `shouldBe` [ fromGregorian 2022 09 06,
+                         fromGregorian 2022 10 14,
+                         fromGregorian 2022 11 11
+                       ]
+
   describe "nextOccurrence" $ do
     it "is always different from the current day" $
       forAllValid $ \recurrence ->
         forAllValid $ \day ->
           nextOccurrence recurrence day `shouldSatisfy` (> day)
+
   describe "nextWeeklyOccurrence" $ do
     it "works for this friday party" $
       nextWeeklyOccurrence Friday (fromGregorian 2021 08 02) `shouldBe` fromGregorian 2021 08 06
-    it "is always no the given day" $
+
+    it "is always on the given day" $
       forAllValid $ \day ->
         forAllValid $ \dow ->
           dayOfWeek (nextWeeklyOccurrence dow day) `shouldBe` dow
+
+  describe "nextMonthlyOccurrence" $ do
+    it "works for this every third friday party" $
+      nextMonthlyOccurrence Third Friday (fromGregorian 2022 08 19) `shouldBe` fromGregorian 2022 09 16
+
+    it "is always on the given day" $
+      forAllValid $ \day ->
+        forAllValid $ \ix ->
+          forAllValid $ \dow ->
+            dayOfWeek (nextWeeklyOccurrence ix dow day) `shouldBe` dow

@@ -142,6 +142,10 @@ instance GenValid Image where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
+instance GenValid DayOfWeekIndex where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
 instance GenValid Recurrence where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
