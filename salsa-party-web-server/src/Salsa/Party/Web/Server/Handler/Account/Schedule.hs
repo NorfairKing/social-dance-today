@@ -92,8 +92,7 @@ addScheduleForm =
 recurrenceForm :: FormInput Handler Recurrence
 recurrenceForm =
   postProcess
-    <$> ireq hiddenField "recurrence-type"
-    <*> ireq
+    <$> ireq
       ( selectField $
           pure $
             mkOptionList
@@ -109,18 +108,52 @@ recurrenceForm =
               )
       )
       "recurrence-day-of-week"
+    <*> ireq
+      ( selectField $
+          pure $
+            mkOptionList
+              ( Option
+                  { optionDisplay = "Every",
+                    optionInternalValue = Nothing,
+                    optionExternalValue = "0"
+                  } :
+                map
+                  ( \ix ->
+                      Option
+                        { optionDisplay = T.pack $ show ix,
+                          optionInternalValue = Just ix,
+                          optionExternalValue = T.pack $ show $ dayOfWeekIndexToInt ix
+                        }
+                  )
+                  [minBound .. maxBound]
+              )
+      )
+      "recurrence-index"
   where
-    postProcess :: Text -> DayOfWeek -> Recurrence
-    postProcess typ dow = case typ of
-      "weekly" -> WeeklyRecurrence dow
-      _ -> WeeklyRecurrence dow -- TODO We will really need a way to fail, I guess?
+    postProcess :: DayOfWeek -> Maybe DayOfWeekIndex -> Recurrence
+    postProcess dow mIx = case mIx of
+      Nothing -> WeeklyRecurrence dow
+      Just ix -> MonthlyRecurrence ix dow
 
 recurrenceFormFields :: Maybe Recurrence -> Widget
 recurrenceFormFields mRecurrence = do
   timeLocale <- getTimeLocale
-  let daysOfWeek = [Monday .. Sunday]
-  let dowSelected dow = case mRecurrence of
+  let indices :: [DayOfWeekIndex]
+      indices = [minBound .. maxBound]
+  let daysOfWeek :: [DayOfWeek]
+      daysOfWeek = [Monday .. Sunday]
+  let isWeekly :: Bool
+      isWeekly = case mRecurrence of
+        Just (WeeklyRecurrence _) -> True
+        _ -> False
+  let indexSelected :: DayOfWeekIndex -> Bool
+      indexSelected ix = case mRecurrence of
+        Just (MonthlyRecurrence ix' _) -> ix' == ix
+        _ -> False
+  let dowSelected :: DayOfWeek -> Bool
+      dowSelected dow = case mRecurrence of
         Just (WeeklyRecurrence dow') -> dow == dow'
+        Just (MonthlyRecurrence _ dow') -> dow == dow'
         _ -> False
   $(widgetFile "recurrence-form")
 

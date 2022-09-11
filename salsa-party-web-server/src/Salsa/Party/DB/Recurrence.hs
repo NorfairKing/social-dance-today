@@ -25,7 +25,7 @@ data DayOfWeekIndex
   | SecondToLast
   | ThirdToLast
   | FourthToLast
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Enum, Bounded, Generic)
 
 instance Validity DayOfWeekIndex
 

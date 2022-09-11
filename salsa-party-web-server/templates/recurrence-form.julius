@@ -1,8 +1,0 @@
-document.addEventListener("DOMContentLoaded", function(event) { 
-  document.querySelectorAll('.dow-option').forEach(function (element) {
-    element.addEventListener("click", function (thing) {
-      var description = element.getAttribute('description');
-      document.getElementById("dow-help").innerText = description;
-    });
-  });
-});

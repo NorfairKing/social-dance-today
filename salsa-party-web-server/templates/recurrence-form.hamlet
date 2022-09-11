@@ -1,14 +1,20 @@
   <div .control>
-    <input .input
-      type=hidden
-      name="recurrence-type"
-      value="weekly">
+    <div .select>
+      <select name="recurrence-index">
+        <option .ix-option value="0" :isWeekly:selected>
+          Every
+        $forall ix <- indices
+          <option .ix-option value=#{dayOfWeekIndexToInt ix} :indexSelected ix:selected>
+            _{dayOfWeekIndexMessage ix}
 
     <div .select>
       <select name="recurrence-day-of-week">
         $forall dow <- daysOfWeek
-          <option .dow-option value=#{show dow} description=_{MsgRecurrenceWeeklyDescription $ formatTime timeLocale "%A" dow} :dowSelected dow:selected>
+          <option .dow-option value=#{show dow} :dowSelected dow:selected>
             #{formatTime timeLocale "%A" dow}
+
+        
+
     <p #dow-help .help>
       $maybe recurrence <- mRecurrence
         ^{recurrenceDescriptionWidget recurrence}

@@ -69,15 +69,26 @@ recurrenceDescriptionMessage recurrence = do
     MonthlyRecurrence ix dow ->
       let dowStr = formatTime timeLocale "%A" dow
           func = case ix of
-            First -> MsgRecurrenceMonthlyDescriptionFirst
-            Second -> MsgRecurrenceMonthlyDescriptionSecond
-            Third -> MsgRecurrenceMonthlyDescriptionThird
-            Fourth -> MsgRecurrenceMonthlyDescriptionFourth
-            Last -> MsgRecurrenceMonthlyDescriptionLast
-            SecondToLast -> MsgRecurrenceMonthlyDescriptionSecondToLast
-            ThirdToLast -> MsgRecurrenceMonthlyDescriptionThirdToLast
-            FourthToLast -> MsgRecurrenceMonthlyDescriptionFourthToLast
+            First -> MsgRecurrenceMonthlyDescriptionDayOfWeekFirst
+            Second -> MsgRecurrenceMonthlyDescriptionDayOfWeekSecond
+            Third -> MsgRecurrenceMonthlyDescriptionDayOfWeekThird
+            Fourth -> MsgRecurrenceMonthlyDescriptionDayOfWeekFourth
+            Last -> MsgRecurrenceMonthlyDescriptionDayOfWeekLast
+            SecondToLast -> MsgRecurrenceMonthlyDescriptionDayOfWeekSecondToLast
+            ThirdToLast -> MsgRecurrenceMonthlyDescriptionDayOfWeekThirdToLast
+            FourthToLast -> MsgRecurrenceMonthlyDescriptionDayOfWeekFourthToLast
        in func dowStr
+
+dayOfWeekIndexMessage :: DayOfWeekIndex -> AppMessage
+dayOfWeekIndexMessage = \case
+  First -> MsgRecurrenceMonthlyDescriptionFirst
+  Second -> MsgRecurrenceMonthlyDescriptionSecond
+  Third -> MsgRecurrenceMonthlyDescriptionThird
+  Fourth -> MsgRecurrenceMonthlyDescriptionFourth
+  Last -> MsgRecurrenceMonthlyDescriptionLast
+  SecondToLast -> MsgRecurrenceMonthlyDescriptionSecondToLast
+  ThirdToLast -> MsgRecurrenceMonthlyDescriptionThirdToLast
+  FourthToLast -> MsgRecurrenceMonthlyDescriptionFourthToLast
 
 schedulePosterImageWidget :: Schedule -> Organiser -> CASKey -> Widget
 schedulePosterImageWidget Schedule {..} Organiser {..} posterKey = do

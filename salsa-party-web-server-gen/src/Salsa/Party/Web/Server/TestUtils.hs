@@ -136,10 +136,9 @@ insertTestFileImage TestFile {..} = do
 addRecurrenceParams :: Recurrence -> RequestBuilder App ()
 addRecurrenceParams = \case
   WeeklyRecurrence dow -> do
-    addPostParam "recurrence-type" "weekly"
+    addPostParam "recurrence-index" "0"
     addPostParam "recurrence-day-of-week" $ T.pack $ show dow
   MonthlyRecurrence ix dow -> do
-    addPostParam "recurrence-type" "monthlY"
     addPostParam "recurrence-index" $ T.pack $ show $ dayOfWeekIndexToInt ix
     addPostParam "recurrence-day-of-week" $ T.pack $ show dow
 
