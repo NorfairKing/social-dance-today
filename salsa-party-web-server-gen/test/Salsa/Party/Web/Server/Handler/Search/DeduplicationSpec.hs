@@ -40,22 +40,19 @@ spec = do
       eventsDir <- liftIO $ resolveDir deduplicationDir "event"
       eventExports <- liftIO $ readEventsMap eventsDir
 
-      describe "positives" $
+      it "recognises positives correctly" $ \pool ->
         forM_ (M.toList eventExports) $ \(dayDir, eventExportsPerDay) ->
-          describe (fromRelDir dayDir) $
-            forM_ (M.toList eventExportsPerDay) $ \(eventName, externalEventExports) ->
-              describe (fromRelDir eventName) $
-                forM_ (tuples (M.toList externalEventExports)) $ \(t1, t2) ->
-                  positiveTest (eventsDir </> dayDir </> eventName) t1 t2
+          forM_ (M.toList eventExportsPerDay) $ \(eventName, externalEventExports) ->
+            forM_ (tuples (M.toList externalEventExports)) $ \(t1, t2) ->
+              runPersistentTest pool $
+                positiveTest (eventsDir </> dayDir </> eventName) t1 t2
 
-      describe "negatives" $
+      it "recognises negatives correctly" $ \pool ->
         forM_ (M.toList eventExports) $ \(dayDir, eventExportsPerDay) ->
-          describe (fromRelDir dayDir) $
-            forM_ (tuples (M.toList eventExportsPerDay)) $ \((exportDir1, filesMap1), (exportDir2, filesMap2)) -> do
-              let description1 = unwords [fromRelDir exportDir1, "and", fromRelDir exportDir2]
-              describe description1 $
-                forM_ ((,) <$> M.toList filesMap1 <*> M.toList filesMap2) $ \(t1, t2) ->
-                  negativeTest (eventsDir </> dayDir </> exportDir1) (eventsDir </> dayDir </> exportDir2) t1 t2
+          forM_ (tuples (M.toList eventExportsPerDay)) $ \((exportDir1, filesMap1), (exportDir2, filesMap2)) -> do
+            forM_ ((,) <$> M.toList filesMap1 <*> M.toList filesMap2) $ \(t1, t2) ->
+              runPersistentTest pool $
+                negativeTest (eventsDir </> dayDir </> exportDir1) (eventsDir </> dayDir </> exportDir2) t1 t2
 
 data AnyExport
   = InternalExport PartyExport
@@ -110,118 +107,89 @@ importExternalEvent export = do
   mCasKey <- getPosterForExternalEvent externalEventId
   pure (externalEventEntity, placeEntity, mCasKey)
 
-positiveTest :: Path Abs Dir -> (Path Rel File, AnyExport) -> (Path Rel File, AnyExport) -> TestDef outers DB.ConnectionPool
-positiveTest rootDir t1@(exportFile1, export1) t2@(exportFile2, export2) = do
-  let itDescription =
-        unwords
-          [ "says that",
-            descHelper export1,
-            fromRelFile exportFile1,
-            "and",
-            descHelper export2,
-            fromRelFile exportFile2,
-            "_are_ duplicates"
-          ]
+positiveTest :: Path Abs Dir -> (Path Rel File, AnyExport) -> (Path Rel File, AnyExport) -> DB.SqlPersistM ()
+positiveTest rootDir t1@(exportFile1, export1) t2@(exportFile2, export2) =
   case (export1, export2) of
     (InternalExport _, ExternalExport _) -> positiveTest rootDir t2 t1 -- Assuming that duplicateness is symmetric
     (InternalExport _, InternalExport _) -> pure () -- Nothing to test yet.
-    (ExternalExport externalEventExport1, InternalExport partyExport2) ->
-      it itDescription $ \pool -> runPersistentTest pool $ do
-        tup1 <- importExternalEvent externalEventExport1
-        tup2 <- importParty partyExport2
-        let similar = externalEventIsSimilarEnoughToParty tup1 tup2
-        if similar
-          then pure ()
-          else
-            liftIO $
-              expectationFailure $
-                unlines
-                  [ "This external event was not considered a duplicate of this party but it should have been:",
-                    fromAbsFile (rootDir </> exportFile1),
-                    ppShow externalEventExport1,
-                    fromAbsFile (rootDir </> exportFile2),
-                    ppShow partyExport2,
-                    ppShow $ similarityScoreExternalToInternal tup1 tup2,
-                    ppShow $ computeSimilarityFormula $ similarityScoreExternalToInternal tup1 tup2
-                  ]
-    (ExternalExport externalEventExport1, ExternalExport externalEventExport2) ->
-      it itDescription $ \pool -> runPersistentTest pool $ do
-        tup1 <- importExternalEvent externalEventExport1
-        tup2 <- importExternalEvent externalEventExport2
-        let similar = externalEventIsSimilarEnoughTo tup1 tup2
-        if similar
-          then pure ()
-          else
-            liftIO $
-              expectationFailure $
-                unlines
-                  [ "These external events were not considered duplicates but they should have been:",
-                    fromAbsFile (rootDir </> exportFile1),
-                    ppShow externalEventExport1,
-                    fromAbsFile (rootDir </> exportFile2),
-                    ppShow externalEventExport2,
-                    ppShow $ similarityScoreExternalToExternal tup1 tup2,
-                    ppShow $ computeSimilarityFormula $ similarityScoreExternalToExternal tup1 tup2
-                  ]
+    (ExternalExport externalEventExport1, InternalExport partyExport2) -> do
+      tup1 <- importExternalEvent externalEventExport1
+      tup2 <- importParty partyExport2
+      let similar = externalEventIsSimilarEnoughToParty tup1 tup2
+      if similar
+        then pure ()
+        else
+          liftIO $
+            expectationFailure $
+              unlines
+                [ "This external event was not considered a duplicate of this party but it should have been:",
+                  fromAbsFile (rootDir </> exportFile1),
+                  ppShow externalEventExport1,
+                  fromAbsFile (rootDir </> exportFile2),
+                  ppShow partyExport2,
+                  ppShow $ similarityScoreExternalToInternal tup1 tup2,
+                  ppShow $ computeSimilarityFormula $ similarityScoreExternalToInternal tup1 tup2
+                ]
+    (ExternalExport externalEventExport1, ExternalExport externalEventExport2) -> do
+      tup1 <- importExternalEvent externalEventExport1
+      tup2 <- importExternalEvent externalEventExport2
+      let similar = externalEventIsSimilarEnoughTo tup1 tup2
+      if similar
+        then pure ()
+        else
+          liftIO $
+            expectationFailure $
+              unlines
+                [ "These external events were not considered duplicates but they should have been:",
+                  fromAbsFile (rootDir </> exportFile1),
+                  ppShow externalEventExport1,
+                  fromAbsFile (rootDir </> exportFile2),
+                  ppShow externalEventExport2,
+                  ppShow $ similarityScoreExternalToExternal tup1 tup2,
+                  ppShow $ computeSimilarityFormula $ similarityScoreExternalToExternal tup1 tup2
+                ]
 
-negativeTest :: Path Abs Dir -> Path Abs Dir -> (Path Rel File, AnyExport) -> (Path Rel File, AnyExport) -> TestDef outers DB.ConnectionPool
+negativeTest :: Path Abs Dir -> Path Abs Dir -> (Path Rel File, AnyExport) -> (Path Rel File, AnyExport) -> DB.SqlPersistM ()
 negativeTest rootDir1 rootDir2 t1@(exportFile1, export1) t2@(exportFile2, export2) = do
-  let itDescription =
-        unwords
-          [ "says that",
-            descHelper export1,
-            fromRelFile exportFile1,
-            "and",
-            descHelper export2,
-            fromRelFile exportFile2,
-            "_are not_ duplicates"
-          ]
   case (export1, export2) of
     (InternalExport _, ExternalExport _) -> negativeTest rootDir2 rootDir1 t2 t1 -- Assuming that duplicateness is symmetric
     (InternalExport _, InternalExport _) -> pure () -- Nothing to test yet.
-    (ExternalExport externalEventExport1, InternalExport partyExport2) ->
-      it itDescription $ \pool -> runPersistentTest pool $ do
-        tup1 <- importExternalEvent externalEventExport1
-        tup2 <- importParty partyExport2
-        let similar = externalEventIsSimilarEnoughToParty tup1 tup2
-        if similar
-          then
-            liftIO $
-              expectationFailure $
-                unlines
-                  [ "These external events were considered duplicates but they should not have been:",
-                    fromAbsFile (rootDir1 </> exportFile1),
-                    ppShow externalEventExport1,
-                    fromAbsFile (rootDir2 </> exportFile2),
-                    ppShow partyExport2,
-                    ppShow $ similarityScoreExternalToInternal tup1 tup2,
-                    ppShow $ computeSimilarityFormula $ similarityScoreExternalToInternal tup1 tup2
-                  ]
-          else pure ()
-    (ExternalExport externalEventExport1, ExternalExport externalEventExport2) ->
-      it itDescription $ \pool -> runPersistentTest pool $ do
-        tup1 <- importExternalEvent externalEventExport1
-        tup2 <- importExternalEvent externalEventExport2
-        let similar = externalEventIsSimilarEnoughTo tup1 tup2
-        if similar
-          then
-            liftIO $
-              expectationFailure $
-                unlines
-                  [ "These external events were considered duplicates but they should not have been:",
-                    fromAbsFile (rootDir1 </> exportFile1),
-                    ppShow externalEventExport1,
-                    fromAbsFile (rootDir2 </> exportFile2),
-                    ppShow externalEventExport2,
-                    ppShow $ similarityScoreExternalToExternal tup1 tup2,
-                    ppShow $ computeSimilarityFormula $ similarityScoreExternalToExternal tup1 tup2
-                  ]
-          else pure ()
-
-descHelper :: AnyExport -> String
-descHelper = \case
-  InternalExport _ -> "party"
-  ExternalExport _ -> "external event"
+    (ExternalExport externalEventExport1, InternalExport partyExport2) -> do
+      tup1 <- importExternalEvent externalEventExport1
+      tup2 <- importParty partyExport2
+      let similar = externalEventIsSimilarEnoughToParty tup1 tup2
+      if similar
+        then
+          liftIO $
+            expectationFailure $
+              unlines
+                [ "These external events were considered duplicates but they should not have been:",
+                  fromAbsFile (rootDir1 </> exportFile1),
+                  ppShow externalEventExport1,
+                  fromAbsFile (rootDir2 </> exportFile2),
+                  ppShow partyExport2,
+                  ppShow $ similarityScoreExternalToInternal tup1 tup2,
+                  ppShow $ computeSimilarityFormula $ similarityScoreExternalToInternal tup1 tup2
+                ]
+        else pure ()
+    (ExternalExport externalEventExport1, ExternalExport externalEventExport2) -> do
+      tup1 <- importExternalEvent externalEventExport1
+      tup2 <- importExternalEvent externalEventExport2
+      let similar = externalEventIsSimilarEnoughTo tup1 tup2
+      if similar
+        then
+          liftIO $
+            expectationFailure $
+              unlines
+                [ "These external events were considered duplicates but they should not have been:",
+                  fromAbsFile (rootDir1 </> exportFile1),
+                  ppShow externalEventExport1,
+                  fromAbsFile (rootDir2 </> exportFile2),
+                  ppShow externalEventExport2,
+                  ppShow $ similarityScoreExternalToExternal tup1 tup2,
+                  ppShow $ computeSimilarityFormula $ similarityScoreExternalToExternal tup1 tup2
+                ]
+        else pure ()
 
 similarityFormulaFunctionSpec :: (Show a, GenValid a) => (a -> a -> SimilarityFormula) -> Spec
 similarityFormulaFunctionSpec func = similarityFunctionSpec (\a1 a2 -> computeSimilarityFormula (func a1 a2))
