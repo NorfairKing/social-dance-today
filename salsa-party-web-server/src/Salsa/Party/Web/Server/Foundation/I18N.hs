@@ -66,6 +66,18 @@ recurrenceDescriptionMessage recurrence = do
   timeLocale <- getTimeLocale
   pure $ case recurrence of
     WeeklyRecurrence dow -> MsgRecurrenceWeeklyDescription $ formatTime timeLocale "%A" dow
+    MonthlyRecurrence ix dow ->
+      let dowStr = formatTime timeLocale "%A" dow
+          func = case ix of
+            First -> MsgRecurrenceMonthlyDescriptionFirst
+            Second -> MsgRecurrenceMonthlyDescriptionSecond
+            Third -> MsgRecurrenceMonthlyDescriptionThird
+            Fourth -> MsgRecurrenceMonthlyDescriptionFourth
+            Last -> MsgRecurrenceMonthlyDescriptionLast
+            SecondToLast -> MsgRecurrenceMonthlyDescriptionSecondToLast
+            ThirdToLast -> MsgRecurrenceMonthlyDescriptionThirdToLast
+            FourthToLast -> MsgRecurrenceMonthlyDescriptionFourthToLast
+       in func dowStr
 
 schedulePosterImageWidget :: Schedule -> Organiser -> CASKey -> Widget
 schedulePosterImageWidget Schedule {..} Organiser {..} posterKey = do

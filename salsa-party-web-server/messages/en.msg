@@ -260,6 +260,14 @@ ScheduleFormBackButton: Back
 ## Recurrence
 RecurrenceWeeklyType: Weekly
 RecurrenceWeeklyDescription weekday@String: Every week on #{weekday}
+RecurrenceMonthlyDescriptionFirst weekday@String: Every first #{weekday} of the month
+RecurrenceMonthlyDescriptionSecond weekday@String: Every second #{weekday} of the month
+RecurrenceMonthlyDescriptionThird weekday@String: Every third #{weekday} of the month
+RecurrenceMonthlyDescriptionFourth weekday@String: Every fourth #{weekday} of the month
+RecurrenceMonthlyDescriptionLast weekday@String: Every last #{weekday} of the month
+RecurrenceMonthlyDescriptionSecondToLast weekday@String: Every second to last #{weekday} of the month
+RecurrenceMonthlyDescriptionThirdToLast weekday@String: Every third to last #{weekday} of the month
+RecurrenceMonthlyDescriptionFourthToLast weekday@String: Every fourth to last #{weekday} of the month
 
 # Submit Schedule
 SubmitScheduleTitle: Submit Schedule

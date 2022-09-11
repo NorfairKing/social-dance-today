@@ -106,7 +106,7 @@ nextOccurrences limitDay recurrence = go
 nextOccurrence :: Recurrence -> Day -> Day
 nextOccurrence = \case
   WeeklyRecurrence dow -> nextWeeklyOccurrence dow
-  MonthlyRecurrence ix dow -> nextMonthlyRecurrence ix dow
+  MonthlyRecurrence ix dow -> nextMonthlyOccurrence ix dow
 
 nextWeeklyOccurrence :: DayOfWeek -> Day -> Day
 nextWeeklyOccurrence dow today = firstDayOfWeekOnAfter dow (addDays 1 today)
@@ -122,5 +122,5 @@ dayOfWeekDiff a b = mod' (fromEnum a - fromEnum b) 7
 firstDayOfWeekOnAfter :: DayOfWeek -> Day -> Day
 firstDayOfWeekOnAfter dw d = addDays (toInteger $ dayOfWeekDiff dw $ dayOfWeek d) d
 
-nextMonthlyRecurrence :: DayOfWeekIndex -> DayOfWeek -> Day -> Day
-nextMonthlyRecurrence = undefined
+nextMonthlyOccurrence :: DayOfWeekIndex -> DayOfWeek -> Day -> Day
+nextMonthlyOccurrence = undefined

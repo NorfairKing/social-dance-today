@@ -71,4 +71,4 @@ spec = do
       forAllValid $ \day ->
         forAllValid $ \ix ->
           forAllValid $ \dow ->
-            dayOfWeek (nextWeeklyOccurrence ix dow day) `shouldBe` dow
+            dayOfWeek (nextMonthlyOccurrence ix dow day) `shouldBe` dow
