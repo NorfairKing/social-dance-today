@@ -1,3 +1,4 @@
+{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Salsa.Party.Web.Server.Handler.ExternalEventSpec (spec) where
@@ -76,6 +77,7 @@ spec = do
       setWindowSize (width, height)
       -- Go to the party page
       openRouteWithParams (ExternalEventSlugR slug day) [timeOverrideQueryParam moment]
+      liftIO $ threadDelay 1_000_000
       png <- screenshot
       let fp = concat ["test_resources/external-event/", show width <> "x", show height, ".png"]
       pure $ pureGoldenScreenshot fp png
