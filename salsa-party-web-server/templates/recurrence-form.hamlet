@@ -13,10 +13,6 @@
           <option .dow-option value=#{show dow} :dowSelected dow:selected>
             #{formatTime timeLocale "%A" dow}
 
-        
-
     <p #dow-help .help>
       $maybe recurrence <- mRecurrence
         ^{recurrenceDescriptionWidget recurrence}
-      $nothing
-        _{MsgRecurrenceWeeklyType}

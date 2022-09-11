@@ -260,14 +260,14 @@ ScheduleFormBackButton: Back
 ## Recurrence
 RecurrenceWeeklyType: Weekly
 RecurrenceWeeklyDescription weekday@String: Every week on #{weekday}
-RecurrenceMonthlyDescriptionFirst: first
-RecurrenceMonthlyDescriptionSecond: second
-RecurrenceMonthlyDescriptionThird: third
-RecurrenceMonthlyDescriptionFourth: fourth
-RecurrenceMonthlyDescriptionLast: last
-RecurrenceMonthlyDescriptionSecondToLast: second to last
-RecurrenceMonthlyDescriptionThirdToLast: third to last
-RecurrenceMonthlyDescriptionFourthToLast: fourth to last
+RecurrenceMonthlyDescriptionEveryFirst: Every first
+RecurrenceMonthlyDescriptionEverySecond: Every second
+RecurrenceMonthlyDescriptionEveryThird: Every third
+RecurrenceMonthlyDescriptionEveryFourth: Every fourth
+RecurrenceMonthlyDescriptionEveryLast: Every last
+RecurrenceMonthlyDescriptionEverySecondToLast: Every second to last
+RecurrenceMonthlyDescriptionEveryThirdToLast: Every third to last
+RecurrenceMonthlyDescriptionEveryFourthToLast: Every fourth to last
 RecurrenceMonthlyDescriptionDayOfWeekFirst weekday@String: Every first #{weekday} of the month
 RecurrenceMonthlyDescriptionDayOfWeekSecond weekday@String: Every second #{weekday} of the month
 RecurrenceMonthlyDescriptionDayOfWeekThird weekday@String: Every third #{weekday} of the month

@@ -81,14 +81,14 @@ recurrenceDescriptionMessage recurrence = do
 
 dayOfWeekIndexMessage :: DayOfWeekIndex -> AppMessage
 dayOfWeekIndexMessage = \case
-  First -> MsgRecurrenceMonthlyDescriptionFirst
-  Second -> MsgRecurrenceMonthlyDescriptionSecond
-  Third -> MsgRecurrenceMonthlyDescriptionThird
-  Fourth -> MsgRecurrenceMonthlyDescriptionFourth
-  Last -> MsgRecurrenceMonthlyDescriptionLast
-  SecondToLast -> MsgRecurrenceMonthlyDescriptionSecondToLast
-  ThirdToLast -> MsgRecurrenceMonthlyDescriptionThirdToLast
-  FourthToLast -> MsgRecurrenceMonthlyDescriptionFourthToLast
+  First -> MsgRecurrenceMonthlyDescriptionEveryFirst
+  Second -> MsgRecurrenceMonthlyDescriptionEverySecond
+  Third -> MsgRecurrenceMonthlyDescriptionEveryThird
+  Fourth -> MsgRecurrenceMonthlyDescriptionEveryFourth
+  Last -> MsgRecurrenceMonthlyDescriptionEveryLast
+  SecondToLast -> MsgRecurrenceMonthlyDescriptionEverySecondToLast
+  ThirdToLast -> MsgRecurrenceMonthlyDescriptionEveryThirdToLast
+  FourthToLast -> MsgRecurrenceMonthlyDescriptionEveryFourthToLast
 
 schedulePosterImageWidget :: Schedule -> Organiser -> CASKey -> Widget
 schedulePosterImageWidget Schedule {..} Organiser {..} posterKey = do
