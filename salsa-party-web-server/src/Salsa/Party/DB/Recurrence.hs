@@ -5,8 +5,9 @@
 module Salsa.Party.DB.Recurrence where
 
 import Data.Aeson
-import Data.ByteString
+import Data.ByteString (ByteString)
 import Data.Fixed
+import Data.Maybe
 import Data.Proxy
 import Data.Time
 import Data.Validity
@@ -123,4 +124,107 @@ firstDayOfWeekOnAfter :: DayOfWeek -> Day -> Day
 firstDayOfWeekOnAfter dw d = addDays (toInteger $ dayOfWeekDiff dw $ dayOfWeek d) d
 
 nextMonthlyOccurrence :: DayOfWeekIndex -> DayOfWeek -> Day -> Day
-nextMonthlyOccurrence = undefined
+nextMonthlyOccurrence ix dow d =
+  let (y_, m_, _) = toGregorian d
+      nextInThisMonth = monthSpecificDayOfWeek y_ (indexToMonthOfYear m_) ix dow
+      nextInNextMonth =
+        let (y_', m_') =
+              if m_ >= 12
+                then (succ y_, 1)
+                else (y_, succ m_)
+         in monthSpecificDayOfWeek y_' (indexToMonthOfYear m_') ix dow
+   in if d < nextInThisMonth
+        then nextInThisMonth
+        else nextInNextMonth
+
+monthSpecificDayOfWeek :: Year -> MonthOfYear -> DayOfWeekIndex -> DayOfWeek -> Day
+monthSpecificDayOfWeek y moy ix dow =
+  let firstDayOfThatMonth = fromGregorian y (monthOfYearIndex moy) 1
+      dowOfFirstDay = dayOfWeek firstDayOfThatMonth
+      shift = dayOfWeekIndex dow - dayOfWeekIndex dowOfFirstDay
+      -- If the first day of the month is a wednesday, then the first friday is
+      -- on the third.
+      -- That is two days later (index of friday minus index of wednesday)
+      -- The next fridays are seven days later
+      relevantDows :: [Day]
+      relevantDows =
+        catMaybes
+          [ fromGregorianValid y (monthOfYearIndex moy) (1 + shift + 7 * i)
+            | i <- [0 .. 5]
+          ]
+   in case (ix, relevantDows) of
+        (First, d : _) -> d
+        (Second, _ : d : _) -> d
+        (Third, _ : _ : d : _) -> d
+        (Fourth, _ : _ : _ : d : _) -> d
+        (Last, [_, _, _, d]) -> d
+        (Last, [_, _, _, _, d]) -> d
+        (SecondToLast, [_, _, d, _]) -> d
+        (SecondToLast, [_, _, _, d, _]) -> d
+        (ThirdToLast, [_, d, _, _]) -> d
+        (ThirdToLast, [_, _, d, _, _]) -> d
+        (FourthToLast, [d, _, _, _]) -> d
+        (FourthToLast, [_, d, _, _, _]) -> d
+        -- Cannot happen.
+        -- This clause will make tests fail if it's evaluated.
+        _ -> firstDayOfThatMonth
+
+type Year = Integer
+
+data MonthOfYear
+  = January
+  | February
+  | March
+  | April
+  | May
+  | June
+  | July
+  | August
+  | September
+  | October
+  | November
+  | December
+  deriving (Show, Eq, Generic)
+
+monthOfYearIndex :: MonthOfYear -> Int
+monthOfYearIndex = \case
+  January -> 1
+  February -> 2
+  March -> 3
+  April -> 4
+  May -> 5
+  June -> 6
+  July -> 7
+  August -> 8
+  September -> 9
+  October -> 10
+  November -> 11
+  December -> 12
+
+indexToMonthOfYear :: Int -> MonthOfYear
+indexToMonthOfYear = \case
+  1 -> January
+  2 -> February
+  3 -> March
+  4 -> April
+  5 -> May
+  6 -> June
+  7 -> July
+  8 -> August
+  9 -> September
+  10 -> October
+  11 -> November
+  12 -> December
+  i -- These two should not be necessary but ok
+    | i > 12 -> indexToMonthOfYear (i `mod` 12)
+    | otherwise -> indexToMonthOfYear (i + ((abs i + 1) `div` 12))
+
+dayOfWeekIndex :: DayOfWeek -> Int
+dayOfWeekIndex = \case
+  Monday -> 1
+  Tuesday -> 2
+  Wednesday -> 3
+  Thursday -> 4
+  Friday -> 5
+  Saturday -> 6
+  Sunday -> 7

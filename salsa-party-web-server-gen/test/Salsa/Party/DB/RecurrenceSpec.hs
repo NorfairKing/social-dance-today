@@ -43,7 +43,7 @@ spec = do
       let recurrence = MonthlyRecurrence Second Friday
           start = fromGregorian 2022 08 12
        in nextOccurrences (addDays 99 start) recurrence start
-            `shouldBe` [ fromGregorian 2022 09 06,
+            `shouldBe` [ fromGregorian 2022 09 09,
                          fromGregorian 2022 10 14,
                          fromGregorian 2022 11 11
                        ]
@@ -63,6 +63,11 @@ spec = do
         forAllValid $ \dow ->
           dayOfWeek (nextWeeklyOccurrence dow day) `shouldBe` dow
 
+    it "is always on a later day" $
+      forAllValid $ \day ->
+        forAllValid $ \dow ->
+          nextWeeklyOccurrence dow day `shouldSatisfy` (> day)
+
   describe "nextMonthlyOccurrence" $ do
     it "works for this every third friday party" $
       nextMonthlyOccurrence Third Friday (fromGregorian 2022 08 19) `shouldBe` fromGregorian 2022 09 16
@@ -72,3 +77,9 @@ spec = do
         forAllValid $ \ix ->
           forAllValid $ \dow ->
             dayOfWeek (nextMonthlyOccurrence ix dow day) `shouldBe` dow
+
+    it "is always on a later day" $
+      forAllValid $ \day ->
+        forAllValid $ \ix ->
+          forAllValid $ \dow ->
+            nextMonthlyOccurrence ix dow day `shouldSatisfy` (> day)
