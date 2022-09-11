@@ -260,21 +260,21 @@ ScheduleFormBackButton: Atras
 ## Recurrence
 RecurrenceWeeklyDescription weekday@String: Cada semana los #{weekday}
 RecurrenceMonthlyDescriptionEvery: Cada
-RecurrenceMonthlyDescriptionEveryFirst: Cada primero
+RecurrenceMonthlyDescriptionEveryFirst: Cada primer
 RecurrenceMonthlyDescriptionEverySecond: Cada segundo
 RecurrenceMonthlyDescriptionEveryThird: Cada tercer
 RecurrenceMonthlyDescriptionEveryFourth: Cada cuarto
 RecurrenceMonthlyDescriptionEveryLast: Cada último
-RecurrenceMonthlyDescriptionEverySecondToLast: Cada segundo hasta el último
-RecurrenceMonthlyDescriptionEveryThirdToLast: Cada tercer hasta el último
+RecurrenceMonthlyDescriptionEverySecondToLast: Cada penúltimo
+RecurrenceMonthlyDescriptionEveryThirdToLast: Cada antepenúltimo
 RecurrenceMonthlyDescriptionEveryFourthToLast: Cada cuarto hasta el último
-RecurrenceMonthlyDescriptionDayOfWeekFirst weekday@String: Cada primero #{weekday} del mes
+RecurrenceMonthlyDescriptionDayOfWeekFirst weekday@String: Cada primer #{weekday} del mes
 RecurrenceMonthlyDescriptionDayOfWeekSecond weekday@String: Cada segundo #{weekday} del mes
 RecurrenceMonthlyDescriptionDayOfWeekThird weekday@String: Cada tercer #{weekday} del mes
 RecurrenceMonthlyDescriptionDayOfWeekFourth weekday@String: Cada cuarto #{weekday} del mes
 RecurrenceMonthlyDescriptionDayOfWeekLast weekday@String: Cada último #{weekday} del mes
-RecurrenceMonthlyDescriptionDayOfWeekSecondToLast weekday@String: Cada segundo hasta el último #{weekday} del mes
-RecurrenceMonthlyDescriptionDayOfWeekThirdToLast weekday@String: Cada tercer hasta el último #{weekday} del mes
+RecurrenceMonthlyDescriptionDayOfWeekSecondToLast weekday@String: Cada penúltimo #{weekday} del mes
+RecurrenceMonthlyDescriptionDayOfWeekThirdToLast weekday@String: Cada antepenúltimo #{weekday} del mes
 RecurrenceMonthlyDescriptionDayOfWeekFourthToLast weekday@String: Cada cuarto hasta el último #{weekday} del mes
 
 # Submit Schedule
