@@ -298,9 +298,27 @@ driveAddSchedule AddScheduleForm {..} = do
   findElem (ById "submit-schedule") >>= click
   findElem (ByName "title") >>= sendKeys addScheduleFormTitle
   findElem (ByName "address") >>= sendKeys addScheduleFormAddress
+  let selectDow dow = findElem (ByName "recurrence-day-of-week") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%A" dow))
+      selectIndex mIx = do
+        selectE <- findElem (ByName "recurrence-index")
+        case mIx of
+          Nothing -> do
+            findElemFrom selectE (ByCSS "option[value=\"0\"]") >>= click
+          Just ix -> do
+            let selector =
+                  concat
+                    [ "option[value=\"",
+                      show (dayOfWeekIndexToInt ix),
+                      "\"]"
+                    ]
+            findElemFrom selectE (ByCSS $ T.pack selector) >>= click
   case addScheduleFormRecurrence of
-    WeeklyRecurrence dow ->
-      findElem (ByName "recurrence-day-of-week") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%A" dow))
+    WeeklyRecurrence dow -> do
+      selectIndex Nothing
+      selectDow dow
+    MonthlyRecurrence ix dow -> do
+      selectIndex (Just ix)
+      selectDow dow
   forM_ addScheduleFormDescription $ \description -> findElem (ByName "description") >>= sendKeys (Yesod.unTextarea description)
   forM_ addScheduleFormStart $ \start -> findElem (ByName "start") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%I%M%p" start))
   forM_ addScheduleFormHomepage $ \homepage -> findElem (ByName "homepage") >>= sendKeys homepage
@@ -332,9 +350,27 @@ driveEditSchedule title EditScheduleForm {..} = do
   findElem (ByName "title") >>= sendKeys editScheduleFormTitle
   findElem (ByName "address") >>= clearInput
   findElem (ByName "address") >>= sendKeys editScheduleFormAddress
+  let selectDow dow = findElem (ByName "recurrence-day-of-week") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%A" dow))
+      selectIndex mIx = do
+        selectE <- findElem (ByName "recurrence-index")
+        case mIx of
+          Nothing -> do
+            findElemFrom selectE (ByCSS "option[value=\"0\"]") >>= click
+          Just ix -> do
+            let selector =
+                  concat
+                    [ "option[value=\"",
+                      show (dayOfWeekIndexToInt ix),
+                      "\"]"
+                    ]
+            findElemFrom selectE (ByCSS $ T.pack selector) >>= click
   case editScheduleFormRecurrence of
-    WeeklyRecurrence dow ->
-      findElem (ByName "recurrence-day-of-week") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%A" dow))
+    WeeklyRecurrence dow -> do
+      selectIndex Nothing
+      selectDow dow
+    MonthlyRecurrence ix dow -> do
+      selectIndex (Just ix)
+      selectDow dow
   findElem (ByName "description") >>= clearInput
   forM_ editScheduleFormDescription $ \description -> findElem (ByName "description") >>= sendKeys (Yesod.unTextarea description)
   findElem (ByName "start") >>= clearInput

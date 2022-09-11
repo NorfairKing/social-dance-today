@@ -260,6 +260,7 @@ ScheduleFormBackButton: Back
 ## Recurrence
 RecurrenceWeeklyType: Weekly
 RecurrenceWeeklyDescription weekday@String: Every week on #{weekday}
+RecurrenceMonthlyDescriptionEvery: Every
 RecurrenceMonthlyDescriptionEveryFirst: Every first
 RecurrenceMonthlyDescriptionEverySecond: Every second
 RecurrenceMonthlyDescriptionEveryThird: Every third

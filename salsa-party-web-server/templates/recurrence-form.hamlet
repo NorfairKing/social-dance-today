@@ -2,7 +2,7 @@
     <div .select>
       <select name="recurrence-index">
         <option .ix-option value="0" :isWeekly:selected>
-          Every
+          _{MsgRecurrenceMonthlyDescriptionEvery}
         $forall ix <- indices
           <option .ix-option value=#{dayOfWeekIndexToInt ix} :indexSelected ix:selected>
             _{dayOfWeekIndexMessage ix}
