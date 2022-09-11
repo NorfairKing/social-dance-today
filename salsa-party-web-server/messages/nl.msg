@@ -262,8 +262,24 @@ ScheduleFormBackButton: Terug
 
 
 ## Recurrence
-RecurrenceWeeklyType: Wekelijks
 RecurrenceWeeklyDescription weekday@String: Elke week op #{weekday}
+RecurrenceMonthlyDescriptionEvery: Elke
+RecurrenceMonthlyDescriptionEveryFirst: Elke eerste
+RecurrenceMonthlyDescriptionEverySecond: Elke tweede
+RecurrenceMonthlyDescriptionEveryThird: Elke derde
+RecurrenceMonthlyDescriptionEveryFourth: Elke vierde
+RecurrenceMonthlyDescriptionEveryLast: Elke laatste
+RecurrenceMonthlyDescriptionEverySecondToLast: Elke tweede laatste
+RecurrenceMonthlyDescriptionEveryThirdToLast: Elke derde laatste
+RecurrenceMonthlyDescriptionEveryFourthToLast: Elke vierde laatste
+RecurrenceMonthlyDescriptionDayOfWeekFirst weekday@String: Elke eerste #{weekday} van de maand
+RecurrenceMonthlyDescriptionDayOfWeekSecond weekday@String: Elke tweede #{weekday} van de maand
+RecurrenceMonthlyDescriptionDayOfWeekThird weekday@String: Elke derde #{weekday} van de maand
+RecurrenceMonthlyDescriptionDayOfWeekFourth weekday@String: Elke vierde #{weekday} van de maand
+RecurrenceMonthlyDescriptionDayOfWeekLast weekday@String: Elke laatste #{weekday} van de maand
+RecurrenceMonthlyDescriptionDayOfWeekSecondToLast weekday@String: Elke tweede laatste #{weekday} van de maand
+RecurrenceMonthlyDescriptionDayOfWeekThirdToLast weekday@String: Elke derde laatste #{weekday} van de maand
+RecurrenceMonthlyDescriptionDayOfWeekFourthToLast weekday@String: Elke vierde laatste #{weekday} van de maand
 
 # Submit Schedule
 SubmitScheduleTitle: Herhaaldelijk feest

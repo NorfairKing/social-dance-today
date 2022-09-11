@@ -269,8 +269,25 @@ ScheduleFormBackButton: Zurück
 AccountScheduleParties: Generierte Parties
 
 ## Recurrence
-RecurrenceWeeklyType: wöchentlich
-RecurrenceWeeklyDescription weekday@String: jede Woche am #{weekday}
+RecurrenceWeeklyDescription weekday@String: Jede Woche am #{weekday}
+RecurrenceMonthlyDescriptionEvery: Jede
+RecurrenceMonthlyDescriptionEveryFirst: Jede erste
+RecurrenceMonthlyDescriptionEverySecond: Jede zweite
+RecurrenceMonthlyDescriptionEveryThird: Jede dritte
+RecurrenceMonthlyDescriptionEveryFourth: Jede vierte
+RecurrenceMonthlyDescriptionEveryLast: Jede letzte
+RecurrenceMonthlyDescriptionEverySecondToLast: Jede zweite bis letzte
+RecurrenceMonthlyDescriptionEveryThirdToLast: Jede dritte bis letzte
+RecurrenceMonthlyDescriptionEveryFourthToLast: Jede vierte bis letzte
+RecurrenceMonthlyDescriptionDayOfWeekFirst weekday@String: Jede erste #{weekday} im Monat
+RecurrenceMonthlyDescriptionDayOfWeekSecond weekday@String: Jede zweite #{weekday} im Monat
+RecurrenceMonthlyDescriptionDayOfWeekThird weekday@String: Jede dritte #{weekday} im Monat
+RecurrenceMonthlyDescriptionDayOfWeekFourth weekday@String: Jede vierte #{weekday} im Monat
+RecurrenceMonthlyDescriptionDayOfWeekLast weekday@String: Jede letzte #{weekday} im Monat
+RecurrenceMonthlyDescriptionDayOfWeekSecondToLast weekday@String: Jede zweite bis letzte #{weekday} im Monat
+RecurrenceMonthlyDescriptionDayOfWeekThirdToLast weekday@String: Jede dritte bis letzte #{weekday} im Monat
+RecurrenceMonthlyDescriptionDayOfWeekFourthToLast weekday@String: Jede vierte bis letzte #{weekday} im Monat
+
 
 # Submit Schedule
 SubmitScheduleTitle: Partyplan erstellen

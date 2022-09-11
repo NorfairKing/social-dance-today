@@ -258,8 +258,24 @@ ScheduleFormPosterNoPoster: Ningún póster seleccionado
 ScheduleFormBackButton: Atras
 
 ## Recurrence
-RecurrenceWeeklyType: Semanalmente
 RecurrenceWeeklyDescription weekday@String: Cada semana los #{weekday}
+RecurrenceMonthlyDescriptionEvery: Cada
+RecurrenceMonthlyDescriptionEveryFirst: Cada primero
+RecurrenceMonthlyDescriptionEverySecond: Cada segundo
+RecurrenceMonthlyDescriptionEveryThird: Cada tercer
+RecurrenceMonthlyDescriptionEveryFourth: Cada cuarto
+RecurrenceMonthlyDescriptionEveryLast: Cada último
+RecurrenceMonthlyDescriptionEverySecondToLast: Cada segundo hasta el último
+RecurrenceMonthlyDescriptionEveryThirdToLast: Cada tercer hasta el último
+RecurrenceMonthlyDescriptionEveryFourthToLast: Cada cuarto hasta el último
+RecurrenceMonthlyDescriptionDayOfWeekFirst weekday@String: Cada primero #{weekday} del mes
+RecurrenceMonthlyDescriptionDayOfWeekSecond weekday@String: Cada segundo #{weekday} del mes
+RecurrenceMonthlyDescriptionDayOfWeekThird weekday@String: Cada tercer #{weekday} del mes
+RecurrenceMonthlyDescriptionDayOfWeekFourth weekday@String: Cada cuarto #{weekday} del mes
+RecurrenceMonthlyDescriptionDayOfWeekLast weekday@String: Cada último #{weekday} del mes
+RecurrenceMonthlyDescriptionDayOfWeekSecondToLast weekday@String: Cada segundo hasta el último #{weekday} del mes
+RecurrenceMonthlyDescriptionDayOfWeekThirdToLast weekday@String: Cada tercer hasta el último #{weekday} del mes
+RecurrenceMonthlyDescriptionDayOfWeekFourthToLast weekday@String: Cada cuarto hasta el último #{weekday} del mes
 
 # Submit Schedule
 SubmitScheduleTitle: Agregar programa
