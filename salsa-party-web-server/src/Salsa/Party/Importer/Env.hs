@@ -624,7 +624,15 @@ yieldManyShuffled list = do
   yieldMany shuffledList
 
 convertLDEventToExternalEvent :: Text -> ConduitT (HTTP.Request, HTTP.Response LB.ByteString, LD.Event) (ExternalEvent, Maybe URI) Import ()
-convertLDEventToExternalEvent keyPrefix = awaitForever $ \(request, _, ldEvent) -> do
+convertLDEventToExternalEvent keyPrefix = convertLDEventToExternalEventWith $ \request _ ->
+  let uriText = T.pack $ show $ getUri request
+   in case T.stripPrefix keyPrefix uriText of
+        Nothing -> uriText
+        Just suffix -> suffix
+
+convertLDEventToExternalEventWith ::
+  (HTTP.Request -> LD.Event -> Text) -> ConduitT (HTTP.Request, HTTP.Response LB.ByteString, LD.Event) (ExternalEvent, Maybe URI) Import ()
+convertLDEventToExternalEventWith makeKey = awaitForever $ \(request, _, ldEvent) -> do
   let (externalEventDay, externalEventStart) = case LD.eventStartDate ldEvent of
         LD.EventStartDate d -> (LD.dateDay d, Nothing)
         LD.EventStartDateTime dateTime ->
@@ -640,11 +648,7 @@ convertLDEventToExternalEvent keyPrefix = awaitForever $ \(request, _, ldEvent) 
       Nothing -> logWarnN "Place not found."
       Just (Entity externalEventPlace _) -> do
         externalEventUuid <- nextRandomUUID
-        let externalEventKey =
-              let uriText = T.pack $ show $ getUri request
-               in case T.stripPrefix keyPrefix uriText of
-                    Nothing -> uriText
-                    Just suffix -> suffix
+        let externalEventKey = makeKey request ldEvent
         let externalEventTitle = unescapeHtml $ LD.eventName ldEvent
         let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
         let externalEventDescription = unescapeHtml <$> LD.eventDescription ldEvent

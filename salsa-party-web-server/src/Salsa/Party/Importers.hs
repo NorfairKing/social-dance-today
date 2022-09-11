@@ -45,5 +45,6 @@ importerLoopers Settings {..} app = do
           londonSalsaEventsComImporter,
           salsaLoversBeImporter,
           tanzeventsChImporter,
-          danceusOrgImporter
+          danceusOrgImporter,
+          mueveteChImporter
         ]
