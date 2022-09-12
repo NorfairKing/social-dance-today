@@ -47,7 +47,7 @@
             _{MsgOrganiserSubmitButton}
 
           $maybe Entity _ organiser <- mOrganiser
-            <a .button .is-light
+            <a #public-organiser .button .is-light
               href=@{organiserRoute organiser}>
               _{MsgOrganiserViewPublicProfileButton}
 
