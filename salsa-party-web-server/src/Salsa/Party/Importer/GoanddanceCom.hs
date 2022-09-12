@@ -134,8 +134,8 @@ scrapeLDEvents = awaitForever $ \(request, response) -> do
                       readOrFail t = case readMaybe (T.unpack t) of
                         Nothing -> fail "failed to parse."
                         Just a -> pure a
-                  geoCoordinatesLatitude <- text ("meta" @: ["itemprop" @= "latitude"]) >>= readOrFail
-                  geoCoordinatesLongitude <- text ("meta" @: ["itemprop" @= "longitude"]) >>= readOrFail
+                  geoCoordinatesLatitude <- attr "content" ("meta" @: ["itemprop" @= "latitude"]) >>= readOrFail
+                  geoCoordinatesLongitude <- attr "content" ("meta" @: ["itemprop" @= "longitude"]) >>= readOrFail
                   pure $ LD.PlaceGeoCoordinates LD.GeoCoordinates {..}
               pure $ LD.EventLocationPlace LD.Place {..}
             eventStartDate <- do
