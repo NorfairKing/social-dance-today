@@ -350,6 +350,11 @@ jsonRequestConduitWith = awaitForever $ \(c, request) -> do
                   ]
             Right a -> yield (c, a)
 
+debugConduit :: (Show a, MonadIO m) => ConduitT a a m ()
+debugConduit = C.mapM $ \a -> do
+  liftIO $ pPrint a
+  pure a
+
 doHttpRequestWith :: ConduitT HTTP.Request (HTTP.Request, Either HttpException (HTTP.Response LB.ByteString)) Import ()
 doHttpRequestWith = C.mapM (\req -> (,) req <$> doHttpRequest req)
 
@@ -620,8 +625,11 @@ daysToImportAhead = 45
 
 yieldManyShuffled :: MonadIO m => [a] -> ConduitT void a m ()
 yieldManyShuffled list = do
-  shuffledList <- liftIO $ shuffleM list
+  shuffledList <- shuffleList list
   yieldMany shuffledList
+
+shuffleList :: MonadIO m => [a] -> m [a]
+shuffleList = liftIO . shuffleM
 
 convertLDEventToExternalEvent :: Text -> ConduitT (HTTP.Request, HTTP.Response LB.ByteString, LD.Event) (ExternalEvent, Maybe URI) Import ()
 convertLDEventToExternalEvent keyPrefix = convertLDEventToExternalEventWith $ \request _ ->

@@ -539,7 +539,8 @@ instance HasCodec LogLevel where
 
 dataSources :: [Text]
 dataSources =
-  [ "muevete.ch",
+  [ "goanddance.com",
+    "muevete.ch",
     "tanzevents.ch",
     "danceus.org",
     "events.info",

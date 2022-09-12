@@ -313,31 +313,34 @@ instance Eq DateTime where
               ]
 
 instance FromJSON DateTime where
-  parseJSON = withText "DateTime" $ \t ->
-    ( ( \localTime ->
-          DateTime
-            { dateTimeLocalTime = localTime,
-              dateTimeTimeZone = Nothing
-            }
-      )
-        <$> iso8601ParseM (T.unpack t)
+  parseJSON = withText "DateTime" parseDateTime
+
+parseDateTime :: (Alternative m, MonadFail m) => Text -> m DateTime
+parseDateTime t =
+  ( ( \localTime ->
+        DateTime
+          { dateTimeLocalTime = localTime,
+            dateTimeTimeZone = Nothing
+          }
     )
-      <|> ( ( \ZonedTime {..} ->
-                DateTime
-                  { dateTimeLocalTime = zonedTimeToLocalTime,
-                    dateTimeTimeZone = Just zonedTimeZone
-                  }
-            )
-              <$> iso8601ParseM (T.unpack t)
+      <$> iso8601ParseM (T.unpack t)
+  )
+    <|> ( ( \ZonedTime {..} ->
+              DateTime
+                { dateTimeLocalTime = zonedTimeToLocalTime,
+                  dateTimeTimeZone = Just zonedTimeZone
+                }
           )
-      <|> ( ( \localTime ->
-                DateTime
-                  { dateTimeLocalTime = localTime,
-                    dateTimeTimeZone = Nothing
-                  }
-            )
-              <$> parseTimeM False defaultTimeLocale "%F %H:%M:%S" (T.unpack t)
+            <$> iso8601ParseM (T.unpack t)
+        )
+    <|> ( ( \localTime ->
+              DateTime
+                { dateTimeLocalTime = localTime,
+                  dateTimeTimeZone = Nothing
+                }
           )
+            <$> parseTimeM False defaultTimeLocale "%F %H:%M:%S" (T.unpack t)
+        )
 
 instance ToJSON DateTime where
   toJSON DateTime {..} = toJSON $ case dateTimeTimeZone of

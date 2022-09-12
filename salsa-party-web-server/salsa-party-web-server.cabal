@@ -35,6 +35,7 @@ library
       Salsa.Party.Importer.DanceusOrg
       Salsa.Party.Importer.Env
       Salsa.Party.Importer.EventsInfo
+      Salsa.Party.Importer.GoanddanceCom
       Salsa.Party.Importer.GolatindanceCom
       Salsa.Party.Importer.Import
       Salsa.Party.Importer.LatinworldNl
