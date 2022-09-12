@@ -71,6 +71,9 @@
 - query: "Madrid"
   lat: 40.4381311
   lon: -3.8196194
+- query: "Málaga"
+  lat: 36.719444
+  lon: -4.42
   ## The Netherlands
 - query: "Amsterdam"
   lat: 52.374540300
@@ -135,6 +138,9 @@
 - query: "Zagreb"
   lat: 45.8402941
   lon: 15.894292
+- query: "Rovinj"
+  lat: 45.083333
+  lon: 13.633333
   ## Czechia
 - query: "Prague"
   lat: 50.0598058
