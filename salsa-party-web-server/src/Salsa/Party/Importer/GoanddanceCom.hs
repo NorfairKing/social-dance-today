@@ -88,6 +88,21 @@ looksLikeAnEventPage = T.isPrefixOf eventPagePrefix
 
 notDefinitelyInThePast :: Day -> Text -> Bool
 notDefinitelyInThePast today t =
+  accordingToNum t
+    && accordingToYearNum today t
+
+accordingToNum :: Text -> Bool
+accordingToNum t =
+  case T.stripPrefix eventPagePrefix t of
+    Just rest -> case T.splitOn "-" rest of
+      (numText : _) -> case readMaybe (T.unpack numText) of
+        Nothing -> True
+        Just n -> (n :: Int) > 5000 -- The first 5000 are in the past anyway.
+      _ -> True
+    Nothing -> False
+
+accordingToYearNum :: Day -> Text -> Bool
+accordingToYearNum today t =
   let (currentYear, _, _) = toGregorian today
       lastYear = pred currentYear
       lastYears = take 10 [lastYear, pred lastYear ..] -- Last ten years is fine.
