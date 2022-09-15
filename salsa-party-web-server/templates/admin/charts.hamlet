@@ -6,33 +6,33 @@
     <div .columns .is-multiline .is-centered>
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
-          Upcoming events (30 days): ^{currentAndLastMonthCountWidget dayCountMapOfTotal30Days}
-        ^{lineChart minPartyDay curDay [("Parties", dayCountMapOfParties30Days), ("External events", dayCountMapOfExternalEvents30Days), ("Total", dayCountMapOfTotal30Days)]}
+          Upcoming events (30 days): ^{currentAndLastMonthStackedCountWidget dayCountMapOfTotal30Days}
+        ^{stackedLineChart minPartyDay curDay dayCountMapOfTotal30Days}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
-          Upcoming parties (30 days): ^{currentAndLastMonthCountWidget dayCountMapOfParties30Days}
-        ^{lineChart minDay curDay [("parties", dayCountMapOfParties30Days)]}
+          Upcoming parties (30 days): ^{currentAndLastMonthStackedCountWidget dayCountMapOfParties30Days}
+        ^{stackedLineChart minDay curDay dayCountMapOfParties30Days}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
-          ⭐ Upcoming events (7 days): ^{currentAndLastMonthCountWidget dayCountMapOfTotal7Days}
-        ^{lineChart minPartyDay curDay [("Parties", dayCountMapOfParties7Days), ("External events", dayCountMapOfExternalEvents7Days), ("Total", dayCountMapOfTotal7Days)]}
+          ⭐ Upcoming events (7 days): ^{currentAndLastMonthStackedCountWidget dayCountMapOfTotal7Days}
+        ^{stackedLineChart minPartyDay curDay dayCountMapOfTotal7Days}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
-          Upcoming parties (7 days): ^{currentAndLastMonthCountWidget dayCountMapOfParties7Days}
-        ^{lineChart minDay curDay [("parties", dayCountMapOfParties7Days)]}
+          Upcoming parties (7 days): ^{currentAndLastMonthStackedCountWidget dayCountMapOfParties7Days}
+        ^{stackedLineChart minDay curDay dayCountMapOfParties7Days}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
-          Upcoming events: ^{currentAndLastMonthCountWidget dayCountMapOfTotal}
-        ^{lineChart minPartyDay curDay [("Parties", dayCountMapOfParties), ("External events", dayCountMapOfExternalEvents), ("Total", dayCountMapOfTotal)]}
+          Upcoming events: ^{currentAndLastMonthStackedCountWidget dayCountMapOfTotal}
+        ^{stackedLineChart minPartyDay curDay dayCountMapOfTotal}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>
-          Upcoming parties: ^{currentAndLastMonthCountWidget dayCountMapOfParties}
-        ^{lineChart minDay curDay [("Parties", dayCountMapOfParties)]}
+          Upcoming parties: ^{currentAndLastMonthStackedCountWidget dayCountMapOfParties}
+        ^{stackedLineChart minDay curDay dayCountMapOfParties}
 
       <div .column .is-full-mobile .is-three-quarters-tablet .is-half-desktop>
         <h2 .title .is-4>

@@ -9,6 +9,7 @@ const config#{rawJS classIdent} = {
     indexAxis: 'x',
     scales: {
       y: {
+        stacked: true,
         beginAtZero: true
       }
     }
