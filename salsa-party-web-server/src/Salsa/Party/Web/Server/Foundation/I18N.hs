@@ -129,7 +129,7 @@ posterCSS =
     width: 100%;
     height: 100%;
     object-fit: scale-down;
-    object-position:left;
+    object-position: center;
   }
   |]
 
