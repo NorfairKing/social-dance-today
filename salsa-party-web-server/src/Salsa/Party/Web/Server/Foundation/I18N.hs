@@ -42,11 +42,18 @@ posterImageWidget Party {..} Organiser {..} posterKey = do
   prettyDayFormat <- getPrettyDayFormat
   let timeStr = formatTime timeLocale prettyDayFormat partyDay
   [whamlet|
-    <img .poster
-      src=@{ImageR posterKey}
-      width=#{desiredWidth}
-      height=#{desiredHeight}
-      alt=_{MsgPosterAltFull partyTitle timeStr organiserName}>
+    <div .poster-container>
+      <img .poster .poster-background
+        src=@{ImageR posterKey}
+        width=#{desiredWidth}
+        height=#{desiredHeight}
+        role="none"
+        alt="">
+      <img .poster
+        src=@{ImageR posterKey}
+        width=#{desiredWidth}
+        height=#{desiredHeight}
+        alt=_{MsgPosterAltFull partyTitle timeStr organiserName}>
   |]
     <> posterCSS
 
@@ -94,12 +101,20 @@ schedulePosterImageWidget :: Schedule -> Organiser -> CASKey -> Widget
 schedulePosterImageWidget Schedule {..} Organiser {..} posterKey = do
   recurrenceDescription <- recurrenceDescriptionText scheduleRecurrence
   [whamlet|
-    <img .poster
-      src=@{ImageR posterKey}
-      width=#{desiredWidth}
-      height=#{desiredHeight}
-      alt=_{MsgPosterAltSchedule scheduleTitle recurrenceDescription organiserName}>
+    <div .poster-container>
+      <img .poster .poster-background
+        src=@{ImageR posterKey}
+        width=#{desiredWidth}
+        height=#{desiredHeight}
+        role="none"
+        alt="">
+      <img .poster
+        src=@{ImageR posterKey}
+        width=#{desiredWidth}
+        height=#{desiredHeight}
+        alt=_{MsgPosterAltSchedule scheduleTitle recurrenceDescription organiserName}>
   |]
+    <> posterCSS
 
 externalEventPosterImageWidget :: ExternalEvent -> CASKey -> Widget
 externalEventPosterImageWidget ExternalEvent {..} posterKey = do
@@ -110,11 +125,17 @@ externalEventPosterImageWidget ExternalEvent {..} posterKey = do
         Nothing -> MsgPosterAltTitle externalEventTitle timeStr
         Just organiserName -> MsgPosterAltFull externalEventTitle timeStr organiserName
   [whamlet|
+    <div .poster-container>
+      <img .poster .poster-background
+        src=@{ImageR posterKey}
+        width=#{desiredWidth}
+        height=#{desiredHeight}
+        role="none">
+        alt="">
       <img .poster
         src=@{ImageR posterKey}
         width=#{desiredWidth}
         height=#{desiredHeight}
-        loading="lazy"
         alt=_{altMsg}>
   |]
     <> posterCSS
@@ -123,13 +144,37 @@ posterCSS :: Widget
 posterCSS =
   toWidget
     [lucius|
-  .poster {
+  .poster-container {
     max-width: #{show desiredWidth}px;
     max-height: #{show desiredHeight}px;
+    overflow: hidden;
+    background: grey;
+    position: relative;
+    line-height: 0;
+    aspect-ratio: 390/400;
+  }
+  @media (orientation: landscape) {
+    .poster-container {
+      aspect-ratio: 1920/1080;
+    }
+  }
+  .poster {
     width: 100%;
     height: 100%;
     object-fit: scale-down;
-    object-position: center;
+    object-position: center center;
+    z-index: 1;
+    position: relative;
+  }
+  .poster-background {
+    position: absolute;
+    background: black;
+    top: 0;
+    left: 0;
+    object-fit: cover;
+    z-index: 0;
+    filter: blur(12px);
+    opacity: .8;
   }
   |]
 

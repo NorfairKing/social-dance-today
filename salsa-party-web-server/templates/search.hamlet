@@ -22,12 +22,20 @@ $forall day <- days
                       <div .card id=#{uuidText $ partyUuid party}>
                         $maybe posterKey <- mPosterVal
                           <div .card-image .has-text-centered>
-                            <img .poster
-                              src=@{ImageR posterKey}
-                              width=#{desiredWidth}
-                              height=#{desiredHeight}
-                              loading="lazy"
-                              alt=_{MsgSearchPosterAlt (partyTitle party) (formatTime timeLocale prettyDayFormat $ partyDay party)}>
+                            <div .poster-container>
+                              <img .poster .poster-background
+                                src=@{ImageR posterKey}
+                                width=#{desiredWidth}
+                                height=#{desiredHeight}
+                                loading="lazy"
+                                role="none"
+                                alt="">
+                              <img .poster
+                                src=@{ImageR posterKey}
+                                width=#{desiredWidth}
+                                height=#{desiredHeight}
+                                loading="lazy"
+                                alt=_{MsgSearchPosterAlt (partyTitle party) (formatTime timeLocale prettyDayFormat $ partyDay party)}>
 
                         <div .card-content>
                           <h2 .title .is-4>
@@ -42,12 +50,20 @@ $forall day <- days
                       <div .card id=#{uuidText $ externalEventUuid externalEvent}>
                         $maybe posterKey <- mPosterVal
                           <div .card-image .has-text-centered>
-                            <img .poster
-                              src=@{ImageR posterKey}
-                              width=#{desiredWidth}
-                              height=#{desiredHeight}
-                              loading="lazy"
-                              alt=_{MsgSearchPosterAlt (externalEventTitle externalEvent) (formatTime timeLocale prettyDayFormat $ externalEventDay externalEvent)}>
+                            <div .poster-container>
+                              <img .poster .poster-background
+                                src=@{ImageR posterKey}
+                                width=#{desiredWidth}
+                                height=#{desiredHeight}
+                                loading="lazy"
+                                role="none"
+                                alt="">
+                              <img .poster
+                                src=@{ImageR posterKey}
+                                width=#{desiredWidth}
+                                height=#{desiredHeight}
+                                loading="lazy"
+                                alt=_{MsgSearchPosterAlt (externalEventTitle externalEvent) (formatTime timeLocale prettyDayFormat $ externalEventDay externalEvent)}>
                         <div .card-content>
                           <h2 .title .is-4>
                             _{externalEventTitleMessage externalEvent}

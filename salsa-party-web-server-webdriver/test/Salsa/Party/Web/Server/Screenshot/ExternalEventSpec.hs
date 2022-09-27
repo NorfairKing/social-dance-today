@@ -1,7 +1,6 @@
-{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Salsa.Party.Web.Server.Handler.ExternalEventSpec (spec) where
+module Salsa.Party.Web.Server.Screenshot.ExternalEventSpec (spec) where
 
 import Data.UUID as UUID
 import Data.UUID.Typed as Typed
@@ -10,21 +9,36 @@ import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Handler.TestImport hiding (Image)
 
 spec :: WebdriverSpec App
-spec = do
+spec =
+  sequence_ $ do
+    mPosterFilePath <- [Nothing, Just "landscape", Just "portrait"]
+    pure $ externalEventScreenshotTest mPosterFilePath
+
+externalEventScreenshotTest :: Maybe String -> WebdriverSpec App
+externalEventScreenshotTest mPosterName = do
   -- The most common window sizings we deal with.
   let day = fromGregorian 2021 09 02
       moment = UTCTime day 0
   forM_ screenSizes $ \(width, height) -> do
+    let testCaseDescription =
+          concat
+            [ "an external event",
+              case mPosterName of
+                Nothing -> ""
+                Just _ -> " with a poster"
+            ]
+
     let description =
           concat
-            [ "Shows an external event in the same way on screens of size ",
+            [ "Shows ",
+              testCaseDescription,
+              " in the same way on screens of size ",
               show width,
               "x",
               show height
             ]
     it description $ do
       let address = "Bürkliplatz, 8001 Zürich"
-      posterFile <- readTestFile "test_resources/posters/bachata-community.jpg"
       mapFile <- readTestFile "test_resources/maps/bachata-community.jpg"
       let slug = Slug "bachata-community-zurich-mondays"
       driveDB $ do
@@ -65,19 +79,27 @@ spec = do
                   externalEventOrigin = "https://example.com"
                 }
         externalEventId <- DB.insert externalEvent
-        posterId <- insertTestFileImage posterFile
-        DB.insert_
-          ExternalEventPoster
-            { externalEventPosterExternalEvent = externalEventId,
-              externalEventPosterImage = posterId,
-              externalEventPosterCreated = moment,
-              externalEventPosterModified = Nothing
-            }
+        forM_ mPosterName $ \posterName -> do
+          posterFile <- readTestFile $ "test_resources/posters/" <> posterName <> ".jpg"
+          posterId <- insertTestFileImage posterFile
+          DB.insert_
+            ExternalEventPoster
+              { externalEventPosterExternalEvent = externalEventId,
+                externalEventPosterImage = posterId,
+                externalEventPosterCreated = moment,
+                externalEventPosterModified = Nothing
+              }
       -- Set the window size and orientation
       setWindowSize (width, height)
       -- Go to the party page
       openRouteWithParams (ExternalEventSlugR slug day) [timeOverrideQueryParam moment]
-      liftIO $ threadDelay 1_000_000
-      png <- screenshot
-      let fp = concat ["test_resources/external-event/", show width <> "x", show height, ".png"]
-      pure $ pureGoldenScreenshot fp png
+      screenshotGoldenTest $
+        concat
+          [ "test_resources/external-event/",
+            case mPosterName of
+              Nothing -> ""
+              Just name -> "poster-" <> name <> "-",
+            show width <> "x",
+            show height,
+            ".png"
+          ]

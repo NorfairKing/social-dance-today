@@ -18,18 +18,20 @@
             #{formatTime timeLocale prettyDayFormat partyDay} 
           (_{autoDayMsg today partyDay})
 
-        $maybe posterKey <- mPosterKey
-          ^{posterImageWidget party organiser posterKey}
-
         <h4 .title .is-6>
           <a
             href=@{organiserRoute organiser}
             title=_{MsgPartyOrganiserTitle organiserName}
             rel="author">
             _{MsgPartyOrganiser organiserName}
+
         $maybe Entity _ schedule <- mSchedule
           <h4 .subtitle .is-6>
             ^{recurrenceDescriptionWidget (scheduleRecurrence schedule)}
+
+        $maybe posterKey <- mPosterKey
+          <div .content>
+            ^{posterImageWidget party organiser posterKey}
         
 
         $maybe description <- partyDescription
@@ -89,26 +91,7 @@
           <meta name="twitter:card" content="summary_large_image">
           <meta name="twitter:image" content=@{ImageR posterKey}>
         
-        $if development
-          <details>
-            <summary>
-              Debug info
-
-            <a .button .is-warning href=@{EventExportR partyUuid} download="#{uuidText partyUuid}.json">
-              Export
-
-            <pre>
-              #{ppShow party}
-            <pre>
-              #{ppShow place}
-            <pre>
-              #{ppShow organiser}
-            $maybe schedule <- mSchedule
-              <pre>
-                #{ppShow schedule}
-        
-
-$if development || isAdmin
+$if isAdmin
   <section .section>
     <div .container>
       <div .columns .is-centered>

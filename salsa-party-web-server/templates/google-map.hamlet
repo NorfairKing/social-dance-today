@@ -1,4 +1,4 @@
-<img #mymap .pointer .poster
+<img #mymap .pointer .map
   src=@{EventMapR eventUUID}
   width=#{mapsWidth}
   height=#{mapsHeight}

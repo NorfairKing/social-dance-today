@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -13,6 +14,7 @@
 
 module Salsa.Party.Web.Server.TestUtils.Selenium where
 
+import Control.Concurrent (threadDelay)
 import Control.Monad.Reader
 import Data.Aeson as JSON
 import qualified Data.ByteString.Lazy as LB
@@ -34,6 +36,7 @@ import Salsa.Party.Web.Server.Handler.Search
 import Salsa.Party.Web.Server.TestUtils
 import Test.Syd
 import Test.Syd.Webdriver
+import Test.Syd.Webdriver.Screenshot
 import Test.Syd.Webdriver.Yesod
 import Test.WebDriver as WD hiding (setWindowSize)
 import Test.WebDriver.Commands.Wait as WD
@@ -402,8 +405,14 @@ driveDB func = do
 screenSizes :: [(Word, Word)]
 screenSizes =
   [ (1920, 1080),
-    (414, 896)
+    (390, 844)
   ]
 
 timeOverrideQueryParam :: UTCTime -> (Text, Text)
 timeOverrideQueryParam moment = (currentTimeOverrideParam, TE.decodeLatin1 $ LB.toStrict $ JSON.encode moment)
+
+screenshotGoldenTest :: FilePath -> WebdriverTestM App (GoldenTest Screenshot)
+screenshotGoldenTest fp = do
+  liftIO $ threadDelay 1_000_000
+  png <- screenshot
+  pure $ pureGoldenScreenshot fp png

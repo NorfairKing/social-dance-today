@@ -1,7 +1,6 @@
-{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Salsa.Party.Web.Server.Handler.PartySpec (spec) where
+module Salsa.Party.Web.Server.Screenshot.PartySpec (spec) where
 
 import Data.Password.Bcrypt as Password
 import Data.UUID as UUID
@@ -11,21 +10,24 @@ import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Handler.TestImport hiding (Image)
 
 spec :: WebdriverSpec App
-spec = do
-  partyScreenshotTest Nothing Nothing
-  partyScreenshotTest Nothing (Just "test_resources/maps/bachata-community.jpg")
-  partyScreenshotTest (Just "test_resources/posters/bachata-community.jpg") Nothing
-  partyScreenshotTest (Just "test_resources/posters/bachata-community.jpg") (Just "test_resources/maps/bachata-community.jpg")
+spec =
+  sequence_ $ do
+    mPosterFilePath <- [Nothing, Just "landscape", Just "portrait"]
+    mMapFilePath <- [Nothing, Just "test_resources/maps/bachata-community.jpg"]
+    mRecurrence <- [Nothing, Just (MonthlyRecurrence Second Friday)]
+    pure $ partyScreenshotTest mPosterFilePath mMapFilePath mRecurrence
 
-partyScreenshotTest :: Maybe FilePath -> Maybe FilePath -> WebdriverSpec App
-partyScreenshotTest mPosterFilePath mMapFilePath = do
+partyScreenshotTest :: Maybe String -> Maybe FilePath -> Maybe Recurrence -> WebdriverSpec App
+partyScreenshotTest mPosterName mMapFilePath mRecurrence = do
   let day = fromGregorian 2021 09 02
       moment = UTCTime day 0
   forM_ screenSizes $ \(width, height) -> do
     let testCaseDescription =
           concat
-            [ "a party",
-              case (mPosterFilePath, mMapFilePath) of
+            [ case mRecurrence of
+                Nothing -> "a party"
+                Just _ -> "a recurring party",
+              case (mPosterName, mMapFilePath) of
                 (Nothing, Nothing) -> ""
                 (Just _, Nothing) -> " with a poster"
                 (Nothing, Just _) -> " with a map"
@@ -93,8 +95,8 @@ partyScreenshotTest mPosterFilePath mMapFilePath = do
                   partyPlace = placeId
                 }
         partyId <- DB.insert party
-        forM_ mPosterFilePath $ \posterFilePath -> do
-          posterFile <- readTestFile posterFilePath
+        mPosterId <- forM mPosterName $ \posterName -> do
+          posterFile <- readTestFile $ "test_resources/posters/" <> posterName <> ".jpg"
           posterId <- insertTestFileImage posterFile
           DB.insert_
             PartyPoster
@@ -103,23 +105,54 @@ partyScreenshotTest mPosterFilePath mMapFilePath = do
                 partyPosterCreated = moment,
                 partyPosterModified = Nothing
               }
+          pure posterId
+        forM_ mRecurrence $ \recurrence -> do
+          scheduleId <-
+            DB.insert
+              Schedule
+                { scheduleUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112, -- Dummy
+                  scheduleOrganiser = organiserId,
+                  scheduleRecurrence = recurrence,
+                  scheduleTitle = partyTitle party,
+                  scheduleDescription = partyDescription party,
+                  scheduleStart = partyStart party,
+                  scheduleHomepage = partyHomepage party,
+                  schedulePrice = partyPrice party,
+                  scheduleCreated = moment,
+                  scheduleModified = Nothing,
+                  schedulePlace = placeId
+                }
+          forM_ mPosterId $ \posterId ->
+            DB.insert_
+              SchedulePoster
+                { schedulePosterSchedule = scheduleId,
+                  schedulePosterImage = posterId,
+                  schedulePosterCreated = moment,
+                  schedulePosterModified = Nothing
+                }
+          DB.insert_
+            ScheduleParty
+              { schedulePartySchedule = scheduleId,
+                schedulePartyParty = partyId,
+                schedulePartyScheduled = moment
+              }
       -- Set the window size and orientation
       setWindowSize (width, height)
       -- Go to the party page
       openRouteWithParams (PartySlugR organiserSlug_ partySlug_ day) [timeOverrideQueryParam moment]
-      liftIO $ threadDelay 1_000_000
-      png <- screenshot
-      let fp =
-            concat
-              [ "test_resources/party/",
-                case mPosterFilePath of
-                  Nothing -> ""
-                  Just _ -> "poster-",
-                case mMapFilePath of
-                  Nothing -> ""
-                  Just _ -> "map-",
-                show width <> "x",
-                show height,
-                ".png"
-              ]
-      pure $ pureGoldenScreenshot fp png
+      screenshotGoldenTest $
+        concat
+          [ "test_resources/party/",
+            case mRecurrence of
+              Nothing -> ""
+              Just _ -> "recurring-",
+            case mPosterName of
+              Nothing -> ""
+              Just name -> "poster-" <> name <> "-",
+            case mMapFilePath of
+              Nothing -> ""
+              Just _ -> "map-",
+            show width <> "x",
+            show height,
+            ".png"
+          ]

@@ -16,6 +16,7 @@ library:
   - salsa-party-web-server-gen
   - sydtest
   - sydtest-webdriver
+  - sydtest-webdriver-screenshot
   - sydtest-webdriver-yesod
   - text
   - time

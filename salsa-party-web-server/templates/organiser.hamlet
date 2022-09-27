@@ -19,13 +19,20 @@
     $else
       <div .columns .is-multiline .is-centered>
         $forall (Entity _ party, Entity _ p, mPosterKey) <- parties
-          <div .column .is-three-quarters-mobile .is-two-thirds-tablet .is-half-desktop>
+          <div .column .is-full-mobile .is-two-thirds-tablet .is-half-desktop>
             <div .zoom-without-container>
               <a href=@{partyRoute organiser party}>
                 <div .card>
                   $maybe posterKey <- mPosterKey
                     <div .card-image .has-text-centered>
-                      <figure .image .is-16by9>
+                      <div .poster-container>
+                        <img .poster .poster-background
+                          src=@{ImageR posterKey}
+                          width=#{desiredWidth}
+                          height=#{desiredHeight}
+                          loading="lazy"
+                          role="none"
+                          alt="">
                         <img .poster
                           src=@{ImageR posterKey}
                           width=#{desiredWidth}

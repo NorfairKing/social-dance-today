@@ -26,6 +26,7 @@ library
     , salsa-party-web-server-gen
     , sydtest
     , sydtest-webdriver
+    , sydtest-webdriver-screenshot
     , sydtest-webdriver-yesod
     , text
     , time
@@ -41,12 +42,14 @@ test-suite salsa-party-web-server-webdriver-test
       Salsa.Party.Web.Server.Handler.Account.PartySpec
       Salsa.Party.Web.Server.Handler.Account.ScheduleSpec
       Salsa.Party.Web.Server.Handler.AuthSpec
-      Salsa.Party.Web.Server.Handler.ExternalEventSpec
       Salsa.Party.Web.Server.Handler.HomeSpec
-      Salsa.Party.Web.Server.Handler.PartySpec
       Salsa.Party.Web.Server.Handler.SearchSpec
       Salsa.Party.Web.Server.Handler.TestImport
       Salsa.Party.Web.Server.Onboarding.OrganiserSpec
+      Salsa.Party.Web.Server.Screenshot.ExternalEventSpec
+      Salsa.Party.Web.Server.Screenshot.OrganiserSpec
+      Salsa.Party.Web.Server.Screenshot.PartySpec
+      Salsa.Party.Web.Server.Screenshot.SearchSpec
       Spec
       Paths_salsa_party_web_server_webdriver
   hs-source-dirs:

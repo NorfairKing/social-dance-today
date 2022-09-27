@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
@@ -55,4 +56,4 @@ makeGoogleMapsWidget eventUUID query = do
   let replaceScript = case mGoogleAPIKey of
         Nothing -> mempty
         Just apiKey -> $(widgetFile "google-map-replace")
-  pure $ $(widgetFile "google-map") <> replaceScript <> posterCSS
+  pure $ $(widgetFile "google-map") <> replaceScript

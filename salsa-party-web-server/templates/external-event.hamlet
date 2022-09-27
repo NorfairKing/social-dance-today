@@ -15,12 +15,12 @@
             #{formatTime timeLocale prettyDayFormat externalEventDay} 
           (_{autoDayMsg today externalEventDay})
 
-        $maybe posterKey <- mPosterKey
-          ^{externalEventPosterImageWidget externalEvent posterKey}
-
         $maybe organiserName <- externalEventOrganiser
           <h4 .title .is-6>
             _{MsgPartyOrganiser organiserName}
+
+        $maybe posterKey <- mPosterKey
+          ^{externalEventPosterImageWidget externalEvent posterKey}
 
 
         $maybe description <- externalEventDescription
@@ -82,7 +82,7 @@
           <meta name="twitter:image" content=@{ImageR posterKey}>
         
               
-$if development || isAdmin
+$if isAdmin
   <section .section>
     <div .container>
       <div .columns .is-centered>
