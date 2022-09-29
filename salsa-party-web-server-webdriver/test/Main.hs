@@ -5,4 +5,4 @@ import Spec
 import Test.Syd
 
 main :: IO ()
-main = sydTest $ salsaWebdriverSpec spec
+main = sydTest $ flaky 3 $ salsaWebdriverSpec spec
