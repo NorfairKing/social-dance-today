@@ -132,9 +132,9 @@ setSecurityHeaders :: Handler a -> Handler a
 setSecurityHeaders handler = do
   -- https://infosec.mozilla.org/guidelines/web_security#content-security-policy
   -- TODO: unsafe inline
-  addHeader
-    "Content-Security-Policy"
-    "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'"
+  -- addHeader
+  --   "Content-Security-Policy"
+  --   "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'"
 
   -- https://infosec.mozilla.org/guidelines/web_security#http-strict-transport-security
   addHeader
