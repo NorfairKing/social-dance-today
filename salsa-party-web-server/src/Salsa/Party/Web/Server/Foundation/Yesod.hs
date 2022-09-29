@@ -75,9 +75,10 @@ instance Yesod App where
               Just (AdminR _) -> id
               _ -> (<> sentryWidget sentrySettings)
 
-    let withTimezoneCookie = (<> $(widgetFile "set-utcoffset"))
-
-    let body = withSentry $ withAutoReload $ withTimezoneCookie $(widgetFile "default-body")
+    let body = withSentry $
+          withAutoReload $ do
+            addScript $ StaticR set_utcoffset_js
+            $(widgetFile "default-body")
 
     pageContent <- widgetToPageContent body
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
