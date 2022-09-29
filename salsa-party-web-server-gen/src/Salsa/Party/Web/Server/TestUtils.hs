@@ -65,6 +65,7 @@ serverSetupFunc man = do
         appHTTPManager = man,
         appConnectionPool = pool,
         appSessionKeyFile = sessionKeyFile,
+        appSecureOnly = False,
         appSendEmails = False,
         appSendAddress = Nothing,
         appSearchResultCache = searchResultCache,

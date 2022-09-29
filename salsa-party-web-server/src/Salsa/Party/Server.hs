@@ -60,6 +60,7 @@ runSalsaPartyServer settings@Settings {..} = do
                   appConnectionPool = pool,
                   appHTTPManager = man,
                   appSessionKeyFile = sessionKeyFile,
+                  appSecureOnly = True,
                   appSendEmails = settingSendEmails,
                   appSendAddress = settingSendAddress,
                   appSearchResultCache = searchResultCache,

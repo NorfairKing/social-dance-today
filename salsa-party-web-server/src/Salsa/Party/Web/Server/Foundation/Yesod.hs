@@ -84,12 +84,17 @@ instance Yesod App where
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
 
   makeSessionBackend a =
-    sslOnlySessions -- Secure
-      . strictSameSiteSessions -- SameSite=strict
-      $ Just
-        <$> defaultClientSessionBackend
-          (60 * 24 * 365 * 10)
-          (fromAbsFile (appSessionKeyFile a))
+    ( if appSecureOnly a
+        then
+          sslOnlySessions -- Secure
+            . strictSameSiteSessions -- SameSite=strict
+        else id
+    )
+      ( Just
+          <$> defaultClientSessionBackend
+            (60 * 24 * 365 * 10)
+            (fromAbsFile (appSessionKeyFile a))
+      )
 
   shouldLogIO app _ ll = pure $ ll >= appLogLevel app
 

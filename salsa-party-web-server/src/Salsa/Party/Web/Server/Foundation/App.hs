@@ -22,6 +22,7 @@ data App = App
     appHTTPManager :: !HTTP.Manager,
     appConnectionPool :: !ConnectionPool,
     appSessionKeyFile :: !(Path Abs File),
+    appSecureOnly :: !Bool,
     appSendEmails :: !Bool,
     appSendAddress :: !(Maybe Text),
     appSearchResultCache :: !SearchResultCache,
