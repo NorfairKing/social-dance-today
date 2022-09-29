@@ -12,6 +12,7 @@ import Salsa.Party.Web.Server.Foundation.Auth.Routes
 import Salsa.Party.Web.Server.Foundation.I18N.Messages
 import Salsa.Party.Web.Server.Foundation.I18N.SupportedLanguage
 import Salsa.Party.Web.Server.Foundation.Yesod.Data
+import Salsa.Party.Web.Server.Static
 import Salsa.Party.Web.Server.Widget
 import Yesod
 import Yesod.Auth
@@ -72,4 +73,6 @@ withFormFailureNavBar errorMessages body = do
         Nothing -> False
         Just (Entity _ user) -> Just (userEmailAddress user) == mAdmin
   lang <- getFirstMatchingSupportedLanguage
-  defaultLayout $(widgetFile "with-nav-bar")
+  defaultLayout $ do
+    addScript (StaticR navbar_js)
+    $(widgetFile "with-nav-bar")
