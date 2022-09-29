@@ -36,6 +36,7 @@ getExploreR = do
   withNavBar $ do
     setTitleI MsgExploreTitle
     setDescriptionI MsgExploreDescription
+    addStylesheet $ StaticR zoom_without_container_css
     $(widgetFile "explore")
 
 minimumUpcomingParties :: Word

@@ -306,6 +306,7 @@ searchResultsPage searchParameters@SearchParameters {..} = do
         prevDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = navPrevSearchDate today searchParameterDate}
         nextDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = navNextSearchDate today searchParameterDate}
         let pagination = $(widgetFile "search-pagination")
+        addStylesheet $ StaticR zoom_without_container_css
         $(widgetFile "search") <> posterCSS
 
 navPrevSearchDate :: Day -> SearchDate -> SearchDate

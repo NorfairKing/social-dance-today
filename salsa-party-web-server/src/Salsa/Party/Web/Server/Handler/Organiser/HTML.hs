@@ -45,6 +45,7 @@ organiserPage (Entity organiserId organiser@Organiser {..}) = do
     setTitleI $ MsgOrganiserTitle organiserName
     setDescriptionI $ MsgOrganiserDescription organiserName
     addHeader "Last-Modified" $ TE.decodeLatin1 $ formatHTTPDate $ utcToHTTPDate lastModified
+    addStylesheet $ StaticR zoom_without_container_css
     $(widgetFile "organiser") <> posterCSS
 
 getUpcomingPartiesOfOrganiser :: MonadIO m => Day -> OrganiserId -> SqlPersistT m [(Entity Party, Entity Place, Maybe CASKey)]

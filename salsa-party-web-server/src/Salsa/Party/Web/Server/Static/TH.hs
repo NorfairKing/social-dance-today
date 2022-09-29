@@ -25,7 +25,8 @@ mkStatic = do
     [ remoteStatic "bulma.css" "https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css",
       remoteStatic "sentry.js" "https://browser.sentry-cdn.com/7.12.1/bundle.tracing.min.js",
       remoteStatic "instantpage.js" "https://instant.page/5.1.0",
-      embedFileAt "navbar.js" "assets/navbar.js"
+      embedFileAt "navbar.js" "assets/navbar.js",
+      embedFileAt "zoom-without-container.css" "assets/zoom-without-container.css"
     ]
 
 mkRuntimeStaticDir :: Q [Dec]
