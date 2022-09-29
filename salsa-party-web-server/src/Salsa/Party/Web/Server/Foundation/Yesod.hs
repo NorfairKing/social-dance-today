@@ -79,6 +79,10 @@ instance Yesod App where
 
     let body = withSentry $ withAutoReload $ withTimezoneCookie $(widgetFile "default-body")
 
+    addHeader
+      "Content-Security-Policy"
+      "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'"
+
     pageContent <- widgetToPageContent body
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
 
