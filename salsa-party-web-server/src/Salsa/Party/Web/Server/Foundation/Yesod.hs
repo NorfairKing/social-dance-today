@@ -82,7 +82,13 @@ instance Yesod App where
     pageContent <- widgetToPageContent body
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
 
-  makeSessionBackend a = Just <$> defaultClientSessionBackend (60 * 24 * 365 * 10) (fromAbsFile (appSessionKeyFile a))
+  makeSessionBackend a =
+    sslOnlySessions -- Secure
+      . strictSameSiteSessions -- SameSite=strict
+      $ Just
+        <$> defaultClientSessionBackend
+          (60 * 24 * 365 * 10)
+          (fromAbsFile (appSessionKeyFile a))
 
   shouldLogIO app _ ll = pure $ ll >= appLogLevel app
 
@@ -120,7 +126,13 @@ instance Yesod App where
               else notFound
       _ -> pure Authorized
 
-  yesodMiddleware = defaultYesodMiddleware . setLanguageMiddleware . setSecurityHeaders
+  yesodMiddleware =
+    defaultYesodMiddleware
+      . setLanguageMiddleware
+      -- https://infosec.mozilla.org/guidelines/web_security#http-strict-transport-security
+      -- Strict-Transport-Security
+      . sslOnlyMiddleware (2 * 365 * 24 * 60) -- Two years in minutes
+      . setSecurityHeaders
 
 setLanguageMiddleware :: Handler a -> Handler a
 setLanguageMiddleware handler = do
@@ -135,11 +147,6 @@ setSecurityHeaders handler = do
   -- addHeader
   --   "Content-Security-Policy"
   --   "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'"
-
-  -- https://infosec.mozilla.org/guidelines/web_security#http-strict-transport-security
-  addHeader
-    "Strict-Transport-Security"
-    "max-age=63072000" -- Two years
 
   -- https://infosec.mozilla.org/guidelines/web_security#x-content-type-options
   addHeader "X-Content-Type-Options" "nosniff"
