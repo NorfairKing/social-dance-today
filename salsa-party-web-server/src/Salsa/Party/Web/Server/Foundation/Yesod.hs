@@ -79,10 +79,6 @@ instance Yesod App where
 
     let body = withSentry $ withAutoReload $ withTimezoneCookie $(widgetFile "default-body")
 
-    addHeader
-      "Content-Security-Policy"
-      "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'"
-
     pageContent <- widgetToPageContent body
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
 
@@ -124,12 +120,32 @@ instance Yesod App where
               else notFound
       _ -> pure Authorized
 
-  yesodMiddleware = defaultYesodMiddleware . setLanguageMiddleware
+  yesodMiddleware = defaultYesodMiddleware . setLanguageMiddleware . setSecurityHeaders
 
 setLanguageMiddleware :: Handler a -> Handler a
 setLanguageMiddleware handler = do
   mLParam <- lookupGetParam languageQueryParameter
   forM_ mLParam $ \l -> setLanguage l
+  handler
+
+setSecurityHeaders :: Handler a -> Handler a
+setSecurityHeaders handler = do
+  -- https://infosec.mozilla.org/guidelines/web_security#content-security-policy
+  -- TODO: unsafe inline
+  addHeader
+    "Content-Security-Policy"
+    "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'"
+
+  -- https://infosec.mozilla.org/guidelines/web_security#http-strict-transport-security
+  addHeader
+    "Strict-Transport-Security"
+    "max-age=63072000" -- Two years
+
+  -- https://infosec.mozilla.org/guidelines/web_security#x-content-type-options
+  addHeader "X-Content-Type-Options" "nosniff"
+
+  -- https://infosec.mozilla.org/guidelines/web_security#x-frame-options
+  addHeader "X-Frame-Options" "DENY"
   handler
 
 languageQueryParameter :: Text
