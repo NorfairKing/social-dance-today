@@ -8,5 +8,5 @@
       _{MsgExploreTitle}
 
     <div .field .has-text-centered>
-      <a .button .is-dark href=${ExploreR}>
+      <a .button .is-dark href=@{ExploreR}>
         _{MsgExploreButton}
