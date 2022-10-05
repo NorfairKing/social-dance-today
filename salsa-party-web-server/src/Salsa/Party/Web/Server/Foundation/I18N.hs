@@ -145,8 +145,6 @@ posterCSS =
   toWidget
     [lucius|
   .poster-container {
-    max-width: #{show desiredWidth}px;
-    max-height: #{show desiredHeight}px;
     overflow: hidden;
     background: grey;
     position: relative;
