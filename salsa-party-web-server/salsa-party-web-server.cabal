@@ -21,6 +21,7 @@ library
       Salsa.Party.DB
       Salsa.Party.DB.CASKey
       Salsa.Party.DB.Coordinates
+      Salsa.Party.DB.DanceStyle
       Salsa.Party.DB.EmailAddress
       Salsa.Party.DB.Migration
       Salsa.Party.DB.Password
@@ -154,6 +155,7 @@ library
     , blaze-html
     , bytestring
     , cache
+    , case-insensitive
     , clock
     , conduit
     , containers

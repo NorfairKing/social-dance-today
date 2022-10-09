@@ -20,6 +20,7 @@ library:
   - blaze-html
   - bytestring
   - cache
+  - case-insensitive
   - clock
   - conduit
   - containers

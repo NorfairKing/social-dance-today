@@ -114,5 +114,5 @@
 -- These routes have to be at the end so that they can be a catch-all
 !/#Text/#Day/#Day SearchFromToR GET
 !/#Text/#Day SearchDayR GET
-!/#Text/#Text SearchDanceStyleR GET
+!/#Text/#DanceStyle SearchDanceStyleR GET
 !/#Text SearchR GET

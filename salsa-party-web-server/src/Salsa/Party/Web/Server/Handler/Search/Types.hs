@@ -11,7 +11,6 @@ import Data.Cache
 import Data.Hashable
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
-import Data.Text (Text)
 import Data.Time
 import Database.Persist
 import GHC.Generics (Generic)
@@ -22,7 +21,7 @@ data SearchQuery = SearchQuery
     searchQueryMEnd :: !(Maybe Day), -- Nothing means no end.
     searchQueryCoordinates :: !Coordinates,
     searchQueryDistance :: !(Maybe Word), -- Nothing means unlimited distance.
-    searchQuerySubstring :: !(Maybe Text) -- Nothing means no substring
+    searchQuerySubstring :: !(Maybe DanceStyle) -- Nothing means all
   }
   deriving (Show, Eq, Generic)
 

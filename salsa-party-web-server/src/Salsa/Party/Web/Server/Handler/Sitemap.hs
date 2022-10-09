@@ -56,6 +56,15 @@ getSitemapR = do
             sitemapChangeFreq = Just Daily,
             sitemapPriority = Just 0.6
           }
+    forM_ locations $ \location -> do
+      forM_ allDanceStyles $ \danceStyle ->
+        yield
+          SitemapUrl
+            { sitemapLoc = SearchDanceStyleR (placeQuery $ locationPlace location) danceStyle,
+              sitemapLastMod = Just $ UTCTime today 0, -- At the beginning of the day
+              sitemapChangeFreq = Just Daily,
+              sitemapPriority = Just 0.5
+            }
     let dbAcq ::
           Acquire (ConduitM () a Handler ()) ->
           (a -> SitemapUrl (Route App)) ->
@@ -72,7 +81,7 @@ getSitemapR = do
             { sitemapLoc = organiserRoute organiser,
               sitemapLastMod = Just $ fromMaybe organiserCreated organiserModified,
               sitemapChangeFreq = Nothing,
-              sitemapPriority = Just 0.5
+              sitemapPriority = Just 0.4
             }
       )
     C.transPipe
@@ -91,7 +100,7 @@ getSitemapR = do
               { sitemapLoc = partyRoute organiser party,
                 sitemapLastMod = Just $ fromMaybe partyCreated partyModified,
                 sitemapChangeFreq = Nothing,
-                sitemapPriority = Just 0.4
+                sitemapPriority = Just 0.3
               }
         )
     dbAcq
@@ -101,7 +110,7 @@ getSitemapR = do
             { sitemapLoc = externalEventRoute externalEvent,
               sitemapLastMod = Just $ fromMaybe externalEventCreated externalEventModified,
               sitemapChangeFreq = Nothing,
-              sitemapPriority = Just 0.3
+              sitemapPriority = Just 0.2
             }
       )
 

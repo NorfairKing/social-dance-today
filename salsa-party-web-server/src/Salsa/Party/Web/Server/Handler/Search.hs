@@ -53,7 +53,7 @@ data QueryForm = QueryForm
     queryFormEnd :: !(Maybe Day),
     queryFormOn :: !(Maybe Day),
     queryFormDistance :: !(Maybe Word),
-    queryFormDanceStyle :: !(Maybe Text)
+    queryFormDanceStyle :: !(Maybe DanceStyle)
   }
   deriving (Show, Eq, Generic)
 
@@ -94,7 +94,14 @@ queryForm =
     <*> iopt dayField onParameter
     <*> iopt distanceField distanceParameter
     -- TODO turn this into multiple checkboxes
-    <*> iopt textField danceStyleParameter
+    <*> iopt
+      ( selectFieldList
+          ( map
+              (\danceStyle -> (T.pack (show danceStyle), danceStyle))
+              allDanceStyles
+          )
+      )
+      danceStyleParameter
 
 latitudeField :: Field Handler Latitude
 latitudeField =
@@ -145,7 +152,7 @@ queryFormToSearchParameters QueryForm {..} = do
                     then invalidArgsI [MsgEndTooFarAhead]
                     else pure $ SearchFromTo begin end
   let searchParameterDistance = queryFormDistance
-  let searchParameterSubstring = queryFormDanceStyle
+  let searchParameterDanceStyle = queryFormDanceStyle
   pure SearchParameters {..}
 
 getQueryR :: Handler Html
@@ -169,7 +176,7 @@ getSearchR query = do
       { searchParameterLocation = SearchAddress query,
         searchParameterDate = SearchFromToday,
         searchParameterDistance = Nothing,
-        searchParameterSubstring = Nothing
+        searchParameterDanceStyle = Nothing
       }
 
 getSearchDayR :: Text -> Day -> Handler Html
@@ -179,17 +186,17 @@ getSearchDayR query day =
       { searchParameterLocation = SearchAddress query,
         searchParameterDate = SearchExactlyOn day,
         searchParameterDistance = Nothing,
-        searchParameterSubstring = Nothing
+        searchParameterDanceStyle = Nothing
       }
 
-getSearchDanceStyleR :: Text -> Text -> Handler Html
-getSearchDanceStyleR query style =
+getSearchDanceStyleR :: Text -> DanceStyle -> Handler Html
+getSearchDanceStyleR query danceStyle =
   searchResultsPage
     SearchParameters
       { searchParameterLocation = SearchAddress query,
         searchParameterDate = SearchFromToday,
         searchParameterDistance = Nothing,
-        searchParameterSubstring = Just style
+        searchParameterDanceStyle = Just danceStyle
       }
 
 getSearchFromToR :: Text -> Day -> Day -> Handler Html
@@ -199,7 +206,7 @@ getSearchFromToR query begin end =
       { searchParameterLocation = SearchAddress query,
         searchParameterDate = SearchFromTo begin end,
         searchParameterDistance = Nothing,
-        searchParameterSubstring = Nothing
+        searchParameterDanceStyle = Nothing
       }
 
 searchParametersQueryRoute :: (MonadHandler m, HandlerSite m ~ App) => SearchParameters -> m Text
@@ -215,7 +222,7 @@ data SearchParameters = SearchParameters
   { searchParameterLocation :: !SearchLocation,
     searchParameterDate :: !SearchDate,
     searchParameterDistance :: !(Maybe Word), -- Nothing means unspecified
-    searchParameterSubstring :: !(Maybe Text) -- Nothing means no substring
+    searchParameterDanceStyle :: !(Maybe DanceStyle) -- Nothing means all
   }
   deriving (Show, Eq, Generic)
 
@@ -296,7 +303,7 @@ searchResultsPage searchParameters@SearchParameters {..} = do
             searchQueryMEnd = Just end,
             searchQueryCoordinates = coordinates,
             searchQueryDistance = Just $ fromMaybe defaultMaximumDistance searchParameterDistance,
-            searchQuerySubstring = searchParameterSubstring
+            searchQuerySubstring = searchParameterDanceStyle
           }
 
   -- Do the actual search

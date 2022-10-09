@@ -218,22 +218,22 @@ roughMaxLatDistance maximumDistance = fixedToCoord $ fromIntegral maximumDistanc
 roughMaxLonDistance :: Word -> Coord
 roughMaxLonDistance maximumDistance = fixedToCoord $ 5 * fromIntegral maximumDistance / 111_000
 
-partySubstringQuery :: Maybe Text -> E.SqlExpr (Entity Party) -> E.SqlQuery ()
+partySubstringQuery :: Maybe DanceStyle -> E.SqlExpr (Entity Party) -> E.SqlQuery ()
 partySubstringQuery = substringQueryHelper PartyTitle PartyDescription
 
-externalEventSubstringQuery :: Maybe Text -> E.SqlExpr (Entity ExternalEvent) -> E.SqlQuery ()
+externalEventSubstringQuery :: Maybe DanceStyle -> E.SqlExpr (Entity ExternalEvent) -> E.SqlQuery ()
 externalEventSubstringQuery = substringQueryHelper ExternalEventTitle ExternalEventDescription
 
 substringQueryHelper ::
   PersistEntity entity =>
   EntityField entity Text ->
   EntityField entity (Maybe Text) ->
-  Maybe Text ->
+  Maybe DanceStyle ->
   E.SqlExpr (Entity entity) ->
   E.SqlQuery ()
-substringQueryHelper entityTitle entityDescription mSubstring entity =
-  forM_ mSubstring $ \substring ->
-    let substringVal = E.val ("%" <> substring <> "%")
+substringQueryHelper entityTitle entityDescription mDanceStyle entity =
+  forM_ mDanceStyle $ \danceStyle ->
+    let substringVal = E.val ("%" <> danceStyleQueryString danceStyle <> "%")
      in E.where_ $
           (E.||.)
             (E.like (entity E.^. entityTitle) substringVal)
