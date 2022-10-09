@@ -53,7 +53,7 @@ data QueryForm = QueryForm
     queryFormEnd :: !(Maybe Day),
     queryFormOn :: !(Maybe Day),
     queryFormDistance :: !(Maybe Word),
-    queryFormStyle :: !(Maybe Text)
+    queryFormDanceStyle :: !(Maybe Text)
   }
   deriving (Show, Eq, Generic)
 
@@ -78,8 +78,8 @@ onParameter = "on"
 distanceParameter :: Text
 distanceParameter = "distance"
 
-styleParameter :: Text
-styleParameter = "style"
+danceStyleParameter :: Text
+danceStyleParameter = "style"
 
 queryForm :: FormInput Handler QueryForm
 queryForm =
@@ -94,7 +94,7 @@ queryForm =
     <*> iopt dayField onParameter
     <*> iopt distanceField distanceParameter
     -- TODO turn this into multiple checkboxes
-    <*> iopt textField styleParameter
+    <*> iopt textField danceStyleParameter
 
 latitudeField :: Field Handler Latitude
 latitudeField =
@@ -145,7 +145,7 @@ queryFormToSearchParameters QueryForm {..} = do
                     then invalidArgsI [MsgEndTooFarAhead]
                     else pure $ SearchFromTo begin end
   let searchParameterDistance = queryFormDistance
-  let searchParameterSubstring = queryFormStyle
+  let searchParameterSubstring = queryFormDanceStyle
   pure SearchParameters {..}
 
 getQueryR :: Handler Html
@@ -182,8 +182,8 @@ getSearchDayR query day =
         searchParameterSubstring = Nothing
       }
 
-getSearchStyleR :: Text -> Text -> Handler Html
-getSearchStyleR query style =
+getSearchDanceStyleR :: Text -> Text -> Handler Html
+getSearchDanceStyleR query style =
   searchResultsPage
     SearchParameters
       { searchParameterLocation = SearchAddress query,
@@ -295,7 +295,8 @@ searchResultsPage searchParameters@SearchParameters {..} = do
           { searchQueryBegin = begin,
             searchQueryMEnd = Just end,
             searchQueryCoordinates = coordinates,
-            searchQueryDistance = Just $ fromMaybe defaultMaximumDistance searchParameterDistance
+            searchQueryDistance = Just $ fromMaybe defaultMaximumDistance searchParameterDistance,
+            searchQuerySubstring = searchParameterSubstring
           }
 
   -- Do the actual search

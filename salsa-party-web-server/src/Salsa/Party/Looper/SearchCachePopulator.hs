@@ -30,7 +30,8 @@ runSearchCachePopulator = do
             { searchQueryBegin = today,
               searchQueryMEnd = Just $ addDays (defaultDaysAhead - 1) today,
               searchQueryCoordinates = coordinates,
-              searchQueryDistance = Just defaultMaximumDistance
+              searchQueryDistance = Just defaultMaximumDistance,
+              searchQuerySubstring = Nothing
             }
     mResult <- liftIO $ Cache.lookup searchResultCache query
     case mResult of

@@ -73,6 +73,7 @@ runUncachedSearchQueryForResults SearchQuery {..} = do
       E.on (party E.^. PartyPlace E.==. place E.^. PlaceId)
       E.where_ $ dayLimit (party E.^. PartyDay) searchQueryBegin searchQueryMEnd
       forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
+      partySubstringQuery searchQuerySubstring party
       pure (organiser, party, place)
 
   -- Post-process the distance before we fetch images so we don't fetch too many images.
@@ -87,6 +88,7 @@ runUncachedSearchQueryForResults SearchQuery {..} = do
       E.on (externalEvent E.^. ExternalEventPlace E.==. place E.^. PlaceId)
       E.where_ $ dayLimit (externalEvent E.^. ExternalEventDay) searchQueryBegin searchQueryMEnd
       forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
+      externalEventSubstringQuery searchQuerySubstring externalEvent
       pure (externalEvent, place)
 
   -- Post-process the distance before we fetch images so we don't fetch too many images.
@@ -216,6 +218,33 @@ roughMaxLatDistance maximumDistance = fixedToCoord $ fromIntegral maximumDistanc
 roughMaxLonDistance :: Word -> Coord
 roughMaxLonDistance maximumDistance = fixedToCoord $ 5 * fromIntegral maximumDistance / 111_000
 
+partySubstringQuery :: Maybe Text -> E.SqlExpr (Entity Party) -> E.SqlQuery ()
+partySubstringQuery = substringQueryHelper PartyTitle PartyDescription
+
+externalEventSubstringQuery :: Maybe Text -> E.SqlExpr (Entity ExternalEvent) -> E.SqlQuery ()
+externalEventSubstringQuery = substringQueryHelper ExternalEventTitle ExternalEventDescription
+
+substringQueryHelper ::
+  PersistEntity entity =>
+  EntityField entity Text ->
+  EntityField entity (Maybe Text) ->
+  Maybe Text ->
+  E.SqlExpr (Entity entity) ->
+  E.SqlQuery ()
+substringQueryHelper entityTitle entityDescription mSubstring entity =
+  forM_ mSubstring $ \substring ->
+    let substringVal = E.val ("%" <> substring <> "%")
+     in E.where_ $
+          (E.||.)
+            (E.like (entity E.^. entityTitle) substringVal)
+            ( E.like
+                ( E.coalesceDefault
+                    [entity E.^. entityDescription]
+                    (E.val "")
+                )
+                substringVal
+            )
+
 postProcessParties ::
   Word ->
   Coordinates ->
@@ -291,5 +320,6 @@ noDataQuery searchResultCache coordinates maximumDistance = do
         { searchQueryBegin = today,
           searchQueryMEnd = Nothing,
           searchQueryCoordinates = coordinates,
-          searchQueryDistance = Just maximumDistance
+          searchQueryDistance = Just maximumDistance,
+          searchQuerySubstring = Nothing
         }

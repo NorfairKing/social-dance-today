@@ -120,7 +120,8 @@ spec = do
                       { searchQueryBegin = begin,
                         searchQueryMEnd = mEnd,
                         searchQueryCoordinates = coordinates,
-                        searchQueryDistance = Just defaultMaximumDistance
+                        searchQueryDistance = Just defaultMaximumDistance,
+                        searchQuerySubstring = Nothing
                       }
                 liftIO $ sr `shouldBe` M.empty
 
@@ -150,7 +151,8 @@ spec = do
                         { searchQueryBegin = day,
                           searchQueryMEnd = Just day,
                           searchQueryCoordinates = placeCoordinates queryPlace,
-                          searchQueryDistance = Just defaultMaximumDistance
+                          searchQueryDistance = Just defaultMaximumDistance,
+                          searchQuerySubstring = Nothing
                         }
                   liftIO $ sr `shouldBe` NoDataYet
 
@@ -198,7 +200,8 @@ spec = do
                           { searchQueryBegin = day,
                             searchQueryMEnd = Just day,
                             searchQueryCoordinates = placeCoordinates queryPlace,
-                            searchQueryDistance = Just defaultMaximumDistance
+                            searchQueryDistance = Just defaultMaximumDistance,
+                            searchQuerySubstring = Nothing
                           }
                     liftIO $
                       sr
@@ -254,7 +257,8 @@ spec = do
                           { searchQueryBegin = day,
                             searchQueryMEnd = Just day,
                             searchQueryCoordinates = placeCoordinates queryPlace,
-                            searchQueryDistance = Just defaultMaximumDistance
+                            searchQueryDistance = Just defaultMaximumDistance,
+                            searchQuerySubstring = Nothing
                           }
                     liftIO $
                       sr
@@ -307,7 +311,8 @@ spec = do
                                 { searchQueryBegin = day,
                                   searchQueryMEnd = Just day,
                                   searchQueryCoordinates = placeCoordinates queryPlace,
-                                  searchQueryDistance = Just defaultMaximumDistance
+                                  searchQueryDistance = Just defaultMaximumDistance,
+                                  searchQuerySubstring = Nothing
                                 }
                           liftIO $
                             sr
@@ -430,7 +435,8 @@ spec = do
                                       { searchQueryBegin = day,
                                         searchQueryMEnd = Just day,
                                         searchQueryCoordinates = placeCoordinates queryPlace,
-                                        searchQueryDistance = Just defaultMaximumDistance
+                                        searchQueryDistance = Just defaultMaximumDistance,
+                                        searchQuerySubstring = Nothing
                                       }
                                 liftIO $
                                   sr

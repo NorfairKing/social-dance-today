@@ -76,7 +76,8 @@ genQuery = do
       { searchQueryBegin = day,
         searchQueryMEnd = Just $ addDays daysAhead day,
         searchQueryCoordinates = coordinates,
-        searchQueryDistance = Just distance
+        searchQueryDistance = Just distance,
+        searchQuerySubstring = Nothing
       }
 
 genPrototypes :: [PlaceId] -> Gen ([Party], [ExternalEvent])

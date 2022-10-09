@@ -15,7 +15,8 @@ query =
       queryFormBegin = Nothing,
       queryFormEnd = Nothing,
       queryFormOn = Nothing,
-      queryFormDistance = Nothing
+      queryFormDistance = Nothing,
+      queryFormDanceStyle = Nothing
     }
 
 queryFormRequestBuilder :: QueryForm -> RequestBuilder App ()
@@ -30,6 +31,7 @@ queryFormRequestBuilder QueryForm {..} = do
   forM_ queryFormEnd $ \end -> addGetParam endParameter $ T.pack $ formatTime defaultTimeLocale "%F" end
   forM_ queryFormOn $ \on -> addGetParam onParameter $ T.pack $ formatTime defaultTimeLocale "%F" on
   forM_ queryFormDistance $ \distance -> addGetParam distanceParameter $ T.pack $ show distance
+  forM_ queryFormDanceStyle $ \danceStyle -> addGetParam danceStyleParameter danceStyle
 
 doSearch :: QueryForm -> YesodClientM App ()
 doSearch = request . queryFormRequestBuilder
