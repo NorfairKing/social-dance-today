@@ -376,33 +376,61 @@ searchParametersHtmlTitle :: SearchParameters -> WidgetFor App AppMessage
 searchParametersHtmlTitle SearchParameters {..} = do
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
-  pure $ case searchParameterLocation of
-    SearchCoordinates _ -> case searchParameterDate of
-      SearchFromToday -> MsgSearchTitleAroundYourLocationToday
-      SearchFromOn day -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
-      SearchFromTo begin end -> MsgSearchTitleAroundYourLocationFromTo (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
-      SearchExactlyOn day -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
-    SearchAddress address -> case searchParameterDate of
-      SearchFromToday -> MsgSearchTitleAroundAddressToday address
-      SearchFromOn day -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
-      SearchFromTo begin end -> MsgSearchTitleAroundAddressFromTo address (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
-      SearchExactlyOn day -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
+  pure $ case searchParameterDanceStyle of
+    Nothing -> case searchParameterLocation of
+      SearchCoordinates _ -> case searchParameterDate of
+        SearchFromToday -> MsgSearchTitleAroundYourLocationToday
+        SearchFromOn day -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
+        SearchFromTo begin end -> MsgSearchTitleAroundYourLocationFromTo (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
+        SearchExactlyOn day -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
+      SearchAddress address -> case searchParameterDate of
+        SearchFromToday -> MsgSearchTitleAroundAddressToday address
+        SearchFromOn day -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
+        SearchFromTo begin end -> MsgSearchTitleAroundAddressFromTo address (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
+        SearchExactlyOn day -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
+    Just danceStyle ->
+      let danceStyleText = renderDanceStyleInText danceStyle
+       in case searchParameterLocation of
+            SearchCoordinates _ -> case searchParameterDate of
+              SearchFromToday -> MsgSearchTitleDanceStyleAroundYourLocationToday danceStyleText
+              SearchFromOn day -> MsgSearchTitleDanceStyleAroundYourLocationOnDay danceStyleText $ formatTime timeLocale prettyDayFormat day
+              SearchFromTo begin end -> MsgSearchTitleDanceStyleAroundYourLocationFromTo danceStyleText (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
+              SearchExactlyOn day -> MsgSearchTitleDanceStyleAroundYourLocationOnDay danceStyleText $ formatTime timeLocale prettyDayFormat day
+            SearchAddress address -> case searchParameterDate of
+              SearchFromToday -> MsgSearchTitleDanceStyleAroundAddressToday danceStyleText address
+              SearchFromOn day -> MsgSearchTitleDanceStyleAroundAddressOnDay danceStyleText address $ formatTime timeLocale prettyDayFormat day
+              SearchFromTo begin end -> MsgSearchTitleDanceStyleAroundAddressFromTo danceStyleText address (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
+              SearchExactlyOn day -> MsgSearchTitleDanceStyleAroundAddressOnDay danceStyleText address $ formatTime timeLocale prettyDayFormat day
 
 searchParametersHtmlDescription :: SearchParameters -> WidgetFor App AppMessage
 searchParametersHtmlDescription SearchParameters {..} = do
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
-  pure $ case searchParameterLocation of
-    SearchCoordinates _ -> case searchParameterDate of
-      SearchFromToday -> MsgSearchDescriptionAroundYourLocationToday
-      SearchFromOn day -> MsgSearchDescriptionAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
-      SearchFromTo begin end -> MsgSearchDescriptionAroundYourLocationFromTo (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
-      SearchExactlyOn day -> MsgSearchDescriptionAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
-    SearchAddress address -> case searchParameterDate of
-      SearchFromToday -> MsgSearchDescriptionAroundAddressToday address
-      SearchFromOn day -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
-      SearchFromTo begin end -> MsgSearchDescriptionAroundAddressFromTo address (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
-      SearchExactlyOn day -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
+  pure $ case searchParameterDanceStyle of
+    Nothing -> case searchParameterLocation of
+      SearchCoordinates _ -> case searchParameterDate of
+        SearchFromToday -> MsgSearchDescriptionAroundYourLocationToday
+        SearchFromOn day -> MsgSearchDescriptionAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
+        SearchFromTo begin end -> MsgSearchDescriptionAroundYourLocationFromTo (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
+        SearchExactlyOn day -> MsgSearchDescriptionAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
+      SearchAddress address -> case searchParameterDate of
+        SearchFromToday -> MsgSearchDescriptionAroundAddressToday address
+        SearchFromOn day -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
+        SearchFromTo begin end -> MsgSearchDescriptionAroundAddressFromTo address (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
+        SearchExactlyOn day -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
+    Just danceStyle ->
+      let danceStyleText = renderDanceStyleInText danceStyle
+       in case searchParameterLocation of
+            SearchCoordinates _ -> case searchParameterDate of
+              SearchFromToday -> MsgSearchDescriptionDanceStyleAroundYourLocationToday danceStyleText
+              SearchFromOn day -> MsgSearchDescriptionDanceStyleAroundYourLocationOnDay danceStyleText $ formatTime timeLocale prettyDayFormat day
+              SearchFromTo begin end -> MsgSearchDescriptionDanceStyleAroundYourLocationFromTo danceStyleText (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
+              SearchExactlyOn day -> MsgSearchDescriptionDanceStyleAroundYourLocationOnDay danceStyleText $ formatTime timeLocale prettyDayFormat day
+            SearchAddress address -> case searchParameterDate of
+              SearchFromToday -> MsgSearchDescriptionDanceStyleAroundAddressToday danceStyleText address
+              SearchFromOn day -> MsgSearchDescriptionDanceStyleAroundAddressOnDay danceStyleText address $ formatTime timeLocale prettyDayFormat day
+              SearchFromTo begin end -> MsgSearchDescriptionDanceStyleAroundAddressFromTo danceStyleText address (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
+              SearchExactlyOn day -> MsgSearchDescriptionDanceStyleAroundAddressOnDay danceStyleText address $ formatTime timeLocale prettyDayFormat day
 
 searchParametersTitle :: SearchParameters -> AppMessage
 searchParametersTitle SearchParameters {..} = case searchParameterLocation of

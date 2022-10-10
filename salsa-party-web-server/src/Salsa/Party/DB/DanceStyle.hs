@@ -19,6 +19,7 @@ import Web.PathPieces
 data DanceStyle
   = Salsa
   | Bachata
+  | ChaChaCha
   | Kizomba
   | Zouk
   | LindyHop
@@ -36,6 +37,7 @@ danceStyleQueryStrings :: DanceStyle -> [Text]
 danceStyleQueryStrings = \case
   Salsa -> ["salsa", "mambo"]
   Bachata -> ["bachata"]
+  ChaChaCha -> ["cha-cha", "cha cha", "chacha"]
   Kizomba -> ["kizomba", "kiz", "urban kiz"]
   Zouk -> ["zouk"]
   LindyHop -> ["lindy hop", "swing"]
@@ -47,6 +49,7 @@ parseDanceStyleInUrl =
   ( \case
       "salsa" -> Just Salsa
       "bachata" -> Just Bachata
+      "cha-cha-cha" -> Just ChaChaCha
       "kizomba" -> Just Kizomba
       "zouk" -> Just Zouk
       "lindy hop" -> Just LindyHop
@@ -60,6 +63,18 @@ renderDanceStyleInUrl :: DanceStyle -> Text
 renderDanceStyleInUrl = \case
   Salsa -> "Salsa"
   Bachata -> "Bachata"
+  ChaChaCha -> "Cha-Cha-Cha"
+  Kizomba -> "Kizomba"
+  Zouk -> "Zouk"
+  LindyHop -> "Lindy Hop"
+  Tango -> "Tango"
+  WestCoastSwing -> "West Coast Swing"
+
+renderDanceStyleInText :: DanceStyle -> Text
+renderDanceStyleInText = \case
+  Salsa -> "Salsa"
+  Bachata -> "Bachata"
+  ChaChaCha -> "Cha-Cha-Cha"
   Kizomba -> "Kizomba"
   Zouk -> "Zouk"
   LindyHop -> "Lindy Hop"

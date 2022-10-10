@@ -60,25 +60,54 @@ EndTooFarAhead: Search date range too big.
 AddressOrCoordinates: You must supply either an address or coordinates.
 
 # Search Results
+
+## Title
+
+### Without dance style
 SearchTitleAroundYourLocationToday: Social dance parties near your location today
 SearchTitleAroundYourLocationOnDay day@String: Social dance parties near your location on #{day}
 SearchTitleAroundYourLocationFromTo begin@String end@String: Social dance parties near your location between #{begin} and #{end}
 SearchTitleAroundAddressToday address@Text: Social dance parties near #{address} today
 SearchTitleAroundAddressOnDay address@Text day@String: Social dance parties near #{address} on #{day}
 SearchTitleAroundAddressFromTo address@Text begin@String end@String: Social dance parties near #{address} between #{begin} and #{end}
-SearchDescriptionAroundYourLocationToday: A List of social dance parties near your location oday
+SearchPartiesAroundAddress address@Text: Social dance parties near #{address}
+SearchPartiesAroundYourLocation: Social dance parties near your location
+
+### With dance style
+SearchTitleDanceStyleAroundYourLocationToday danceStyle@Text: #{danceStyle} parties near your location today
+SearchTitleDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: #{danceStyle} parties near your location on #{day}
+SearchTitleDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: #{danceStyle} parties near your location between #{begin} and #{end}
+SearchTitleDanceStyleAroundAddressToday danceStyle@Text address@Text: #{danceStyle} parties near #{address} today
+SearchTitleDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: #{danceStyle} parties near #{address} on #{day}
+SearchTitleDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: #{danceStyle} parties near #{address} between #{begin} and #{end}
+SearchDanceStylePartiesAroundAddress danceStyle@Text address@Text: #{danceStyle} parties near #{address}
+SearchDanceStylePartiesAroundYourLocation danceStyle@Text: #{danceStyle} parties near your location
+
+## Description
+
+### Without dance style
+SearchDescriptionAroundYourLocationToday: A List of social dance parties near your location today
 SearchDescriptionAroundYourLocationOnDay day@String: A List of social dance parties near your location on #{day}
 SearchDescriptionAroundYourLocationFromTo begin@String end@String: A List of social dance parties near your location between #{begin} and #{end}
 SearchDescriptionAroundAddressToday address@Text: A List of social dance parties near #{address} today
 SearchDescriptionAroundAddressOnDay address@Text day@String: A List of social dance parties near #{address} on #{day}
 SearchDescriptionAroundAddressFromTo address@Text begin@String end@String: A List of social dance parties near #{address} between #{begin} and #{end}
-SearchPartiesAroundAddress address@Text: Social dance parties near #{address}
-SearchPartiesAroundYourLocation: Social dance parties near your location
+
+### With dance style
+SearchDescriptionDanceStyleAroundYourLocationToday danceStyle@Text: A List of #{danceStyle} parties near your location today
+SearchDescriptionDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: A List of #{danceStyle} parties near your location on #{day}
+SearchDescriptionDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: A List of #{danceStyle} parties near your location between #{begin} and #{end}
+SearchDescriptionDanceStyleAroundAddressToday danceStyle@Text address@Text: A List of #{danceStyle} parties near #{address} today
+SearchDescriptionDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: A List of #{danceStyle} parties near #{address} on #{day}
+SearchDescriptionDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: A List of #{danceStyle} parties near #{address} between #{begin} and #{end}
+
+## Search Errors
 SearchNoParties: No parties found for this day.
 SearchPosterAlt title@Text day@String: Poster for #{title} on #{day}.
 SearchNoResults: We do not have any data about this area yet.
 SearchNoResultsHelp: We need your help to gather more data about this area. Please get in touch with party organisers and tell them about this page. If you organise parties in this area, please sign up and advertise your parties here for free.
 
+## Search Navigation
 SearchNavEarlier: Earlier
 SearchNavLater: Later
 
