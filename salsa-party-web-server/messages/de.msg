@@ -17,7 +17,7 @@ AdvancedSearchFormLocationLabel: Ort
 AdvancedSearchFormDistanceLabel: Entfernung
 AdvancedSearchFormBeginLabel: Von
 AdvancedSearchFormEndLabel: Bis
-AdvancedSearchFormDanceStyleLabel: TODO
+AdvancedSearchFormDanceStyleLabel: Tanzstil
 AdvancedSearchFormSubmit: Suchen
 
 # Locate me button 
@@ -76,12 +76,12 @@ SearchTitleAroundAddressFromTo address@Text begin@String end@String: Social Danc
 
 ### With dance style
 
-SearchTitleDanceStyleAroundYourLocationToday danceStyle@Text: TODO Social Dance Parties in Deiner Umgebung heute
-SearchTitleDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: TODO Social Dance Parties in der Nähe am #{day}
-SearchTitleDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: TODO Social Dance Parties in der Nähe zwischen #{begin} und #{end}
-SearchTitleDanceStyleAroundAddressToday danceStyle@Text address@Text: TODO Social Dance Parties in der Nähe von #{address} heute
-SearchTitleDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: TODO Social Dance Parties in der Nähe von #{address} am #{day}
-SearchTitleDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: TODO Social Dance Parties in der Nähe von #{address} zwischen #{begin} und #{end}
+SearchTitleDanceStyleAroundYourLocationToday danceStyle@Text: #{danceStyle} Parties in Deiner Umgebung heute
+SearchTitleDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: #{danceStyle} Parties in der Nähe am #{day}
+SearchTitleDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: #{danceStyle} Parties in der Nähe zwischen #{begin} und #{end}
+SearchTitleDanceStyleAroundAddressToday danceStyle@Text address@Text: #{danceStyle} Parties in der Nähe von #{address} heute
+SearchTitleDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: #{danceStyle} Parties in der Nähe von #{address} am #{day}
+SearchTitleDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: #{danceStyle} Parties in der Nähe von #{address} zwischen #{begin} und #{end}
 
 ## Description
 
@@ -94,12 +94,12 @@ SearchDescriptionAroundAddressOnDay address@Text day@String: Eine Liste von alle
 SearchDescriptionAroundAddressFromTo address@Text begin@String end@String: Eine Liste von allen Social Dance Parties in der Nähe von #{address} zwischen #{begin} und #{end}
 
 ### With dance style
-SearchDescriptionDanceStyleAroundYourLocationToday danceStyle@Text: TODO Eine Liste von allen Social Dance Parties in Deiner Umgebung heute
-SearchDescriptionDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: TODO Eine Liste von allen Social Dance Parties in der Nähe am #{day}
-SearchDescriptionDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: TODO Eine Liste von allen Social Dance Parties in der Nähe zwischen #{begin} und #{end}
-SearchDescriptionDanceStyleAroundAddressToday danceStyle@Text address@Text: TODO  Eine Liste von allen Social Dance Parties in der Nähe von #{address} today
-SearchDescriptionDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: TODO Eine Liste von allen Social Dance Parties in der Nähe  von #{address} am #{day}
-SearchDescriptionDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: TODO Eine Liste von allen Social Dance Parties in der Nähe von #{address} zwischen #{begin} und #{end}
+SearchDescriptionDanceStyleAroundYourLocationToday danceStyle@Text: Eine Liste von allen #{danceStyle} Parties in Deiner Umgebung heute
+SearchDescriptionDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: Eine Liste von allen #{danceStyle} Parties in der Nähe am #{day}
+SearchDescriptionDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: Eine Liste von allen #{danceStyle} Parties in der Nähe zwischen #{begin} und #{end}
+SearchDescriptionDanceStyleAroundAddressToday danceStyle@Text address@Text:  Eine Liste von allen #{danceStyle} Parties in der Nähe von #{address} today
+SearchDescriptionDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: Eine Liste von allen #{danceStyle} Parties in der Nähe  von #{address} am #{day}
+SearchDescriptionDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: Eine Liste von allen #{danceStyle} Parties in der Nähe von #{address} zwischen #{begin} und #{end}
 
 ## Search Errors
 SearchNoParties: Es wurden keine Parties gefunden.
