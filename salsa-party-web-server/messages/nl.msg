@@ -17,7 +17,7 @@ AdvancedSearchFormLocationLabel: Locatie
 AdvancedSearchFormDistanceLabel: Afstand
 AdvancedSearchFormBeginLabel: Van
 AdvancedSearchFormEndLabel: Tot
-AdvancedSearchFormDanceStyleLabel: TODO
+AdvancedSearchFormDanceStyleLabel: Dansstijl
 AdvancedSearchFormSubmit: Zoeken
 
 # Locate me button
@@ -73,12 +73,12 @@ SearchTitleAroundAddressOnDay address@Text day@String: Socialedansfeesten op #{d
 SearchTitleAroundAddressFromTo address@Text begin@String end@String: Socialedansfeesten tussen #{begin} en #{end} bij in de buurt van #{address}
 
 ### With dance style
-SearchTitleDanceStyleAroundYourLocationToday danceStyle@Text: TODO Socialedansfeesten vandaag bij jou in de buurt
-SearchTitleDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: TODO Socialedansfeesten op #{day} bij jou in de buurt
-SearchTitleDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: TODO Socialedansfeesten tussen #{begin} en #{end} bij jou in de buurt
-SearchTitleDanceStyleAroundAddressToday danceStyle@Text address@Text: TODO Socialedansfeesten vandaag in de buurt van #{address}
-SearchTitleDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: TODO Socialedansfeesten op #{day} in de buurt van #{address}
-SearchTitleDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: TODO Socialedansfeesten tussen #{begin} en #{end} bij in de buurt van #{address}
+SearchTitleDanceStyleAroundYourLocationToday danceStyle@Text: #{danceStyle} feesten vandaag bij jou in de buurt
+SearchTitleDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: #{danceStyle} feesten op #{day} bij jou in de buurt
+SearchTitleDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: #{danceStyle} feesten tussen #{begin} en #{end} bij jou in de buurt
+SearchTitleDanceStyleAroundAddressToday danceStyle@Text address@Text: #{danceStyle} feesten vandaag in de buurt van #{address}
+SearchTitleDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: #{danceStyle} feesten op #{day} in de buurt van #{address}
+SearchTitleDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: #{danceStyle} feesten tussen #{begin} en #{end} bij in de buurt van #{address}
 
 ## Description
 
@@ -91,12 +91,12 @@ SearchDescriptionAroundAddressOnDay address@Text day@String: Een lijst van socia
 SearchDescriptionAroundAddressFromTo address@Text begin@String end@String: Een lijst van socialedansfeesten tussen #{begin} en #{end} in de buurt van #{address}
 
 ### With dance style
-SearchDescriptionDanceStyleAroundYourLocationToday danceStyle@Text: TODO Een lijst van socialedansfeesten vandaag bij jou in de buurt
-SearchDescriptionDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: TODO Een lijst van socialedansfeesten op #{day} bij jou in de buurt
-SearchDescriptionDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: TODO Een lijst van socialedansfeesten tussen #{begin} en #{end} bij jou in de buurt
-SearchDescriptionDanceStyleAroundAddressToday danceStyle@Text address@Text: TODO Een lijst van socialedansfeesten vandaag in de buurt van #{address}
-SearchDescriptionDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: TODO Een lijst van socialedansfeesten op #{day} in de buurt van #{address}
-SearchDescriptionDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: TODO Een lijst van socialedansfeesten tussen #{begin} en #{end} in de buurt van #{address}
+SearchDescriptionDanceStyleAroundYourLocationToday danceStyle@Text: Een lijst van #{danceStyle} feesten vandaag bij jou in de buurt
+SearchDescriptionDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: Een lijst van #{danceStyle} feesten op #{day} bij jou in de buurt
+SearchDescriptionDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: Een lijst van #{danceStyle} feesten tussen #{begin} en #{end} bij jou in de buurt
+SearchDescriptionDanceStyleAroundAddressToday danceStyle@Text address@Text: Een lijst van #{danceStyle} feesten vandaag in de buurt van #{address}
+SearchDescriptionDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: Een lijst van #{danceStyle} feesten op #{day} in de buurt van #{address}
+SearchDescriptionDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: Een lijst van #{danceStyle} feesten tussen #{begin} en #{end} in de buurt van #{address}
 
 ## Search Errors
 SearchNoParties: Geen feesten gevonden voor deze dag.
