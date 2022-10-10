@@ -104,6 +104,17 @@ spec =
                 setUrl $ SearchR address
               statusIs 200
 
+      it "Can GET a 200 place page for a place and dance style" $ \yc ->
+        forAll (genValid `suchThat` (not . T.null)) $ \address ->
+          forAllValid $ \danceStyle ->
+            forAllValid $ \location ->
+              runYesodClientM yc $ do
+                testDB $ insertPlace_ address location
+                request $ do
+                  setMethod methodGet
+                  setUrl $ SearchDanceStyleR address danceStyle
+                statusIs 200
+
     describe "SearchDayR" $ do
       it "Can GET a 200 place page for a place and begin date" $ \yc ->
         forAll (genValid `suchThat` (not . T.null)) $ \address ->
@@ -116,7 +127,20 @@ spec =
                   setUrl $ SearchDayR address day
                 statusIs 200
 
-    describe "SearchDayR" $ do
+    describe "SearchDayDanceStyleR" $ do
+      it "Can GET a 200 place page for a place, dance style, and begin date" $ \yc ->
+        forAll (genValid `suchThat` (not . T.null)) $ \address ->
+          forAllValid $ \day ->
+            forAllValid $ \danceStyle ->
+              forAllValid $ \location ->
+                runYesodClientM yc $ do
+                  testDB $ insertPlace_ address location
+                  request $ do
+                    setMethod methodGet
+                    setUrl $ SearchDayDanceStyleR address day danceStyle
+                  statusIs 200
+
+    describe "SearchFromToR" $ do
       it "Can GET a 200 place page for a place and begin+end date" $ \yc ->
         forAll (genValid `suchThat` (not . T.null)) $ \address ->
           forAllValid $ \begin ->
@@ -128,3 +152,17 @@ spec =
                     setMethod methodGet
                     setUrl $ SearchFromToR address begin end
                   statusIs 200
+
+    describe "SearchFromToDanceStyleR" $ do
+      it "Can GET a 200 place page for a place, dance style, and begin+end date" $ \yc ->
+        forAll (genValid `suchThat` (not . T.null)) $ \address ->
+          forAllValid $ \begin ->
+            forAllValid $ \end ->
+              forAllValid $ \danceStyle ->
+                forAllValid $ \location ->
+                  runYesodClientM yc $ do
+                    testDB $ insertPlace_ address location
+                    request $ do
+                      setMethod methodGet
+                      setUrl $ SearchFromToDanceStyleR address begin end danceStyle
+                    statusIs 200

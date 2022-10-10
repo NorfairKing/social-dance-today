@@ -19,6 +19,7 @@ import Network.URI
 import Salsa.Party.DB
 import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Foundation
+import Salsa.Party.Web.Server.Gen ()
 import SeoCheck (runSeoCheck)
 import qualified SeoCheck.OptParse.Types as SeoCheck (Settings (..))
 import System.Environment
@@ -62,7 +63,7 @@ spec uri = do
             SeoCheck.setFetchers = Nothing,
             SeoCheck.setMaxDepth = Just 3
           }
-  yesodE2ESpec uri $ do
+  yesodE2ESpec uri . modifyMaxSuccess (`div` 20) $ do
     pure () :: YesodSpec (E2E App)
     describe "E2E yesod" $ do
       it "HomeR" $ do
@@ -106,13 +107,31 @@ spec uri = do
               get $ SearchR (placeQuery locationPlace)
               statusIs 200
 
+            it "SearchDanceStyleR" $ \yc ->
+              forAllValid $ \danceStyle ->
+                runYesodClientM yc $ do
+                  get $ SearchDanceStyleR (placeQuery locationPlace) danceStyle
+                  statusIs 200
+
             it "SearchDayR" $ do
               get $ SearchDayR (placeQuery locationPlace) today
               statusIs 200
 
+            it "SearchDayDanceStyleR" $ \yc ->
+              forAllValid $ \danceStyle ->
+                runYesodClientM yc $ do
+                  get $ SearchDayDanceStyleR (placeQuery locationPlace) today danceStyle
+                  statusIs 200
+
             it "SearchFromToR" $ do
               get $ SearchFromToR (placeQuery locationPlace) today (addDays 2 today)
               statusIs 200
+
+            it "SearchFromToDanceStyleR" $ \yc ->
+              forAllValid $ \danceStyle ->
+                runYesodClientM yc $ do
+                  get $ SearchFromToDanceStyleR (placeQuery locationPlace) today (addDays 2 today) danceStyle
+                  statusIs 200
 
       describe "ICal" $ do
         forM_ locations $ \Location {..} ->

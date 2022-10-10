@@ -15,6 +15,7 @@ library:
   - monad-logger
   - network-uri
   - salsa-party-web-server
+  - salsa-party-web-server-gen
   - scalpel
   - seocheck
   - sydtest

@@ -40,6 +40,10 @@ instance GenValid Textarea where
   genValid = Textarea <$> genValid
   shrinkValid = fmap Textarea . shrinkValid . unTextarea
 
+instance GenValid DanceStyle where
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+
 instance GenValid EmailAddress where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
