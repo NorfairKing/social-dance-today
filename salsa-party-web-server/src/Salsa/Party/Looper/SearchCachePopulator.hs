@@ -18,41 +18,68 @@ import Salsa.Party.Web.Server.Handler.Search.Types
 
 runSearchCachePopulator :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => m ()
 runSearchCachePopulator = do
-  pool <- asks appConnectionPool
   today <- liftIO $ utctDay <$> getCurrentTime
-  searchResultCache <- asks appSearchResultCache
-  let runDBHere func = runSqlPool (retryOnBusy func) pool
   forM_ locations $ \location -> do
-    let placeName = placeQuery $ locationPlace location
     let coordinates = placeCoordinates $ locationPlace location
-    let query =
-          SearchQuery
-            { searchQueryBegin = today,
-              searchQueryMEnd = Just $ addDays (defaultDaysAhead - 1) today,
-              searchQueryCoordinates = coordinates,
-              searchQueryDistance = Just defaultMaximumDistance,
-              searchQuerySubstring = Nothing
-            }
-    mResult <- liftIO $ Cache.lookup searchResultCache query
-    case mResult of
-      Nothing ->
+
+    -- Without dance style:
+    populateCacheForQuery
+      SearchQuery
+        { searchQueryBegin = today,
+          searchQueryMEnd = Just $ addDays (defaultDaysAhead - 1) today,
+          searchQueryCoordinates = coordinates,
+          searchQueryDistance = Just defaultMaximumDistance,
+          searchQuerySubstring = Nothing
+        }
+
+    -- Per dance-style too:
+    forM allDanceStyles $ \danceStyle -> do
+      populateCacheForQuery
+        SearchQuery
+          { searchQueryBegin = today,
+            searchQueryMEnd = Just $ addDays (defaultDaysAhead - 1) today,
+            searchQueryCoordinates = coordinates,
+            searchQueryDistance = Just defaultMaximumDistance,
+            searchQuerySubstring = Just danceStyle
+          }
+
+populateCacheForQuery :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => SearchQuery -> m ()
+populateCacheForQuery query = do
+  searchResultCache <- asks appSearchResultCache
+  mResult <- liftIO $ Cache.lookup searchResultCache query
+  case mResult of
+    Nothing ->
+      logDebugN $
+        T.pack $
+          unlines
+            [ "No results for this query yet, populate it asap:",
+              ppShow query
+            ]
+    Just _ ->
+      when (not development) $ do
         logDebugN $
           T.pack $
-            unwords
-              [ "No results in search cache for this place yet, populate it asap:",
-                show placeName
+            unlines
+              [ "Waiting a bit to populate the search cache for this query to not overload the server with the sudden amount of queries:",
+                ppShow query
               ]
-      Just _ ->
-        when (not development) $ do
-          logDebugN $
-            T.pack $
-              unwords
-                [ "Waiting a bit to populate the search cache for",
-                  show placeName,
-                  "to not overload the server with the sudden amount of queries"
-                ]
-          liftIO $ threadDelay 5_000_000
+        liftIO $ threadDelay 5_000_000
 
-    logInfoN $ T.pack $ unwords ["Populating search cache for", show placeName]
-    queryResults <- runDBHere $ runUncachedSearchQueryForResults query
-    liftIO $ Cache.insert' searchResultCache Nothing query queryResults
+  logInfoN $
+    T.pack $
+      unwords
+        [ "Populating search cache for query",
+          ppShow query
+        ]
+  pool <- asks appConnectionPool
+  let runDBHere func = runSqlPool (retryOnBusy func) pool
+  queryResults <- runDBHere $ runUncachedSearchQueryForResults query
+
+  logDebugN $
+    T.pack $
+      unlines
+        [ "Inserting search results for query:",
+          ppShow query,
+          ppShow queryResults
+        ]
+  liftIO $ Cache.insert' searchResultCache Nothing query queryResults
