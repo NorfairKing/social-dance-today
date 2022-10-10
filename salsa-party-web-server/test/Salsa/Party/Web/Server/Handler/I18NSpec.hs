@@ -44,10 +44,10 @@ spec =
               contents <- SB.readFile $ fromAbsFile file
               pure $ usageMapFor mainMessages contents
 
-        forM_ mainMessages $ \mainMessage ->
-          it (show mainMessage <> " is used") $ case M.lookup mainMessage usageMap of
-            Just n | n > 0 -> pure ()
-            _ -> expectationFailure $ unwords ["Message is unused:", show mainMessage]
+        specify "All messages are used" $ do
+          let unusedMessages = filter ((== 0) . fromMaybe 0 . (`M.lookup` usageMap)) (S.toList mainMessages)
+          when (not (null unusedMessages)) $
+            expectationFailure $ unlines ("Unused messages: " : map show unusedMessages)
 
         -- For each translation
         scenarioDir "messages" $ \fp -> do
@@ -55,22 +55,31 @@ spec =
           case TE.decodeUtf8' otherFileContents of
             Left _ -> pure () -- Probably a .swp file, let's just ignore it.
             Right otherContents -> do
-              it (fp <> " has no more TODOs") $ do
-                when ("TODO" `T.isInfixOf` otherContents) $ expectationFailure $ unwords [fp, "still contains TODOs"]
-              describe (fp <> " has translations for every string") $ do
+              specify (fp <> " has no more TODOs") $ do
+                let otherLines = T.lines otherContents
+                    linesWithTODOs = catMaybes $ pythonLikeIterate (\ix line -> if "TODO" `T.isInfixOf` line then Just (ix, line) else Nothing) otherLines
+                when (not (null linesWithTODOs)) $
+                  expectationFailure $
+                    unlines
+                      ( "Lines with TODO:" :
+                        map
+                          ( \(ix, line) ->
+                              unwords
+                                [ show ix <> ":",
+                                  T.unpack line
+                                ]
+                          )
+                          linesWithTODOs
+                      )
+
+              specify (fp <> " has translations for every string") $ do
                 let otherMessages = messagesIn (T.unpack otherContents)
-                forM_ mainMessages $ \mainMessage ->
-                  it ("Has a translation for " <> show mainMessage) $
-                    if S.member mainMessage otherMessages
-                      then pure ()
-                      else
-                        expectationFailure $
-                          unwords
-                            [ "Translation for",
-                              show mainMessage,
-                              "not found in",
-                              fp
-                            ]
+                let untranslatedMessages = filter (not . (`S.member` otherMessages)) (S.toList mainMessages)
+                when (not (null untranslatedMessages)) $
+                  expectationFailure $ unlines ("Untranslated messages:" : map show untranslatedMessages)
+
+pythonLikeIterate :: (Int -> a -> b) -> [a] -> [b]
+pythonLikeIterate func = zipWith func [0 ..]
 
 usageMapFor :: Set Text -> ByteString -> Map Text Word
 usageMapFor messages contents = case TE.decodeUtf8' contents of

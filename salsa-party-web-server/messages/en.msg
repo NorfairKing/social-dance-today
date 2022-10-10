@@ -17,6 +17,7 @@ AdvancedSearchFormLocationLabel: Location
 AdvancedSearchFormDistanceLabel: Distance
 AdvancedSearchFormBeginLabel: From
 AdvancedSearchFormEndLabel: To
+AdvancedSearchFormDanceStyleLabel: Dance style
 AdvancedSearchFormSubmit: Search
 
 # Locate me button
@@ -70,8 +71,6 @@ SearchTitleAroundYourLocationFromTo begin@String end@String: Social dance partie
 SearchTitleAroundAddressToday address@Text: Social dance parties near #{address} today
 SearchTitleAroundAddressOnDay address@Text day@String: Social dance parties near #{address} on #{day}
 SearchTitleAroundAddressFromTo address@Text begin@String end@String: Social dance parties near #{address} between #{begin} and #{end}
-SearchPartiesAroundAddress address@Text: Social dance parties near #{address}
-SearchPartiesAroundYourLocation: Social dance parties near your location
 
 ### With dance style
 SearchTitleDanceStyleAroundYourLocationToday danceStyle@Text: #{danceStyle} parties near your location today
@@ -80,8 +79,6 @@ SearchTitleDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@S
 SearchTitleDanceStyleAroundAddressToday danceStyle@Text address@Text: #{danceStyle} parties near #{address} today
 SearchTitleDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: #{danceStyle} parties near #{address} on #{day}
 SearchTitleDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: #{danceStyle} parties near #{address} between #{begin} and #{end}
-SearchDanceStylePartiesAroundAddress danceStyle@Text address@Text: #{danceStyle} parties near #{address}
-SearchDanceStylePartiesAroundYourLocation danceStyle@Text: #{danceStyle} parties near your location
 
 ## Description
 

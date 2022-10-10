@@ -17,6 +17,7 @@ AdvancedSearchFormLocationLabel: Lieu
 AdvancedSearchFormDistanceLabel: Distance
 AdvancedSearchFormBeginLabel: Du
 AdvancedSearchFormEndLabel: Au
+AdvancedSearchFormDanceStyleLabel: TODO
 AdvancedSearchFormSubmit: Cherchez
 
 # Locate me button
@@ -60,20 +61,44 @@ EndTooFarAhead: Search date range too big. Recherche période trop longue.
 AddressOrCoordinates: Vous devez introduire une période ou des coordonnées.
 
 # Search Results
+
+## Title
+
+### Without dance style
 SearchTitleAroundYourLocationToday: Soirées de danse près de votre lieu aujourd’hui
 SearchTitleAroundYourLocationOnDay day@String: Soirées de danse près de votre lieu le #{day}
 SearchTitleAroundYourLocationFromTo begin@String end@String: Soirées de danse près de votre lieu à partir de #{begin} jusqu'à #{end}
 SearchTitleAroundAddressToday address@Text: Soirées de danse près de #{address} aujourd’hui
 SearchTitleAroundAddressOnDay address@Text day@String: Soirées de danse près de #{address} le #{day}
 SearchTitleAroundAddressFromTo address@Text begin@String end@String: Soirées de danse près de #{address} entre #{begin} et #{end}
+
+### With dance style
+SearchTitleDanceStyleAroundYourLocationToday danceStyle@Text: TODO Soirées de danse près de votre lieu aujourd’hui
+SearchTitleDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: TODO Soirées de danse près de votre lieu le #{day}
+SearchTitleDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: TODO Soirées de danse près de votre lieu à partir de #{begin} jusqu'à #{end}
+SearchTitleDanceStyleAroundAddressToday danceStyle@Text address@Text: TODO Soirées de danse près de #{address} aujourd’hui
+SearchTitleDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: TODO Soirées de danse près de #{address} le #{day}
+SearchTitleDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: TODO Soirées de danse près de #{address} entre #{begin} et #{end}
+
+## Description
+
+### Without dance style
 SearchDescriptionAroundYourLocationToday: Une liste de soirées de danse près de chez vous
 SearchDescriptionAroundYourLocationOnDay day@String: Une liste de soirées de danse près de votre lieu le #{day}
 SearchDescriptionAroundYourLocationFromTo begin@String end@String: Une liste de soirées de danse près de votre lieu entre #{begin} et #{end}
 SearchDescriptionAroundAddressToday address@Text: Une liste de soirées de danse près de #{address}
 SearchDescriptionAroundAddressOnDay address@Text day@String: Une liste de soirées de danse près #{address} le #{day}
 SearchDescriptionAroundAddressFromTo address@Text begin@String end@String: Une liste de soirées de danse près de #{address} entre #{begin} et #{end}
-SearchPartiesAroundAddress address@Text: Soirées de danse près de #{address}
-SearchPartiesAroundYourLocation: Soirée de danse près de votre lieu
+
+### With dance style
+SearchDescriptionDanceStyleAroundYourLocationToday danceStyle@Text: TODO Une liste de soirées de danse près de chez vous
+SearchDescriptionDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: TODO Une liste de soirées de danse près de votre lieu le #{day}
+SearchDescriptionDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: TODO Une liste de soirées de danse près de votre lieu entre #{begin} et #{end}
+SearchDescriptionDanceStyleAroundAddressToday danceStyle@Text address@Text: TODO Une liste de soirées de danse près de #{address}
+SearchDescriptionDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: TODO Une liste de soirées de danse près #{address} le #{day}
+SearchDescriptionDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: TODO Une liste de soirées de danse près de #{address} entre #{begin} et #{end}
+
+## Search Errors
 SearchNoParties: Pas de soirées de danse pour cette date.
 SearchPosterAlt title@Text day@String: Affiche pour #{title} le #{day}
 SearchNoResults: Nous n’avons pas d’information concernant cette region en ce moment.

@@ -17,6 +17,7 @@ AdvancedSearchFormLocationLabel: Ort
 AdvancedSearchFormDistanceLabel: Entfernung
 AdvancedSearchFormBeginLabel: Von
 AdvancedSearchFormEndLabel: Bis
+AdvancedSearchFormDanceStyleLabel: TODO
 AdvancedSearchFormSubmit: Suchen
 
 # Locate me button 
@@ -61,22 +62,46 @@ EndTooFarAhead: Suchzeitraum zu groß.
 AddressOrCoordinates: Geben Sie entweder eine Adresse oder Koordinate ein.
 
 # Search Results
+
+## Title
+
+### Without dance style
+
 SearchTitleAroundYourLocationToday: Social Dance Parties in Deiner Umgebung heute
 SearchTitleAroundYourLocationOnDay day@String: Social Dance Parties in der Nähe am #{day}
 SearchTitleAroundYourLocationFromTo begin@String end@String: Social Dance Parties in der Nähe zwischen #{begin} und #{end}
 SearchTitleAroundAddressToday address@Text: Social Dance Parties in der Nähe von #{address} heute
 SearchTitleAroundAddressOnDay address@Text day@String: Social Dance Parties in der Nähe von #{address} am #{day}
 SearchTitleAroundAddressFromTo address@Text begin@String end@String: Social Dance Parties in der Nähe von #{address} zwischen #{begin} und #{end}
+
+### With dance style
+
+SearchTitleDanceStyleAroundYourLocationToday danceStyle@Text: TODO Social Dance Parties in Deiner Umgebung heute
+SearchTitleDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: TODO Social Dance Parties in der Nähe am #{day}
+SearchTitleDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: TODO Social Dance Parties in der Nähe zwischen #{begin} und #{end}
+SearchTitleDanceStyleAroundAddressToday danceStyle@Text address@Text: TODO Social Dance Parties in der Nähe von #{address} heute
+SearchTitleDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: TODO Social Dance Parties in der Nähe von #{address} am #{day}
+SearchTitleDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: TODO Social Dance Parties in der Nähe von #{address} zwischen #{begin} und #{end}
+
+## Description
+
+### Without dance style
 SearchDescriptionAroundYourLocationToday: Eine Liste von allen Social Dance Parties in Deiner Umgebung heute
 SearchDescriptionAroundYourLocationOnDay day@String: Eine Liste von allen Social Dance Parties in der Nähe am #{day}
 SearchDescriptionAroundYourLocationFromTo begin@String end@String: Eine Liste von allen Social Dance Parties in der Nähe zwischen #{begin} und #{end}
-
 SearchDescriptionAroundAddressToday address@Text:  Eine Liste von allen Social Dance Parties in der Nähe von #{address} today
 SearchDescriptionAroundAddressOnDay address@Text day@String: Eine Liste von allen Social Dance Parties in der Nähe  von #{address} am #{day}
 SearchDescriptionAroundAddressFromTo address@Text begin@String end@String: Eine Liste von allen Social Dance Parties in der Nähe von #{address} zwischen #{begin} und #{end}
 
-SearchPartiesAroundAddress address@Text: Social Dance Parties in der Nähe von #{address}
-SearchPartiesAroundYourLocation: Social Dance Parties in deiner Umgebung
+### With dance style
+SearchDescriptionDanceStyleAroundYourLocationToday danceStyle@Text: TODO Eine Liste von allen Social Dance Parties in Deiner Umgebung heute
+SearchDescriptionDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: TODO Eine Liste von allen Social Dance Parties in der Nähe am #{day}
+SearchDescriptionDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: TODO Eine Liste von allen Social Dance Parties in der Nähe zwischen #{begin} und #{end}
+SearchDescriptionDanceStyleAroundAddressToday danceStyle@Text address@Text: TODO  Eine Liste von allen Social Dance Parties in der Nähe von #{address} today
+SearchDescriptionDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: TODO Eine Liste von allen Social Dance Parties in der Nähe  von #{address} am #{day}
+SearchDescriptionDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: TODO Eine Liste von allen Social Dance Parties in der Nähe von #{address} zwischen #{begin} und #{end}
+
+## Search Errors
 SearchNoParties: Es wurden keine Parties gefunden.
 SearchPosterAlt title@Text day@String: Poster für #{title} am #{day}.
 SearchNoResults: Wir haben noch keine Daten zu dieser Gegend.

@@ -432,11 +432,6 @@ searchParametersHtmlDescription SearchParameters {..} = do
               SearchFromTo begin end -> MsgSearchDescriptionDanceStyleAroundAddressFromTo danceStyleText address (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
               SearchExactlyOn day -> MsgSearchDescriptionDanceStyleAroundAddressOnDay danceStyleText address $ formatTime timeLocale prettyDayFormat day
 
-searchParametersTitle :: SearchParameters -> AppMessage
-searchParametersTitle SearchParameters {..} = case searchParameterLocation of
-  SearchAddress address -> MsgSearchPartiesAroundAddress address
-  SearchCoordinates _ -> MsgSearchPartiesAroundYourLocation
-
 defaultDaysAhead :: Integer
 defaultDaysAhead = 7
 

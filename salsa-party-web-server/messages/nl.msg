@@ -17,6 +17,7 @@ AdvancedSearchFormLocationLabel: Locatie
 AdvancedSearchFormDistanceLabel: Afstand
 AdvancedSearchFormBeginLabel: Van
 AdvancedSearchFormEndLabel: Tot
+AdvancedSearchFormDanceStyleLabel: TODO
 AdvancedSearchFormSubmit: Zoeken
 
 # Locate me button
@@ -60,20 +61,44 @@ EndTooFarAhead: Het zoekdatumbereik was te groot.
 AddressOrCoordinates: Voer ofwel een adres, ofwel coördinaten in.
 
 # Search Results
+
+## Title
+
+### Without dance style
 SearchTitleAroundYourLocationToday: Socialedansfeesten vandaag bij jou in de buurt
 SearchTitleAroundYourLocationOnDay day@String: Socialedansfeesten op #{day} bij jou in de buurt
 SearchTitleAroundYourLocationFromTo begin@String end@String: Socialedansfeesten tussen #{begin} en #{end} bij jou in de buurt
 SearchTitleAroundAddressToday address@Text: Socialedansfeesten vandaag in de buurt van #{address}
 SearchTitleAroundAddressOnDay address@Text day@String: Socialedansfeesten op #{day} in de buurt van #{address}
 SearchTitleAroundAddressFromTo address@Text begin@String end@String: Socialedansfeesten tussen #{begin} en #{end} bij in de buurt van #{address}
+
+### With dance style
+SearchTitleDanceStyleAroundYourLocationToday danceStyle@Text: TODO Socialedansfeesten vandaag bij jou in de buurt
+SearchTitleDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: TODO Socialedansfeesten op #{day} bij jou in de buurt
+SearchTitleDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: TODO Socialedansfeesten tussen #{begin} en #{end} bij jou in de buurt
+SearchTitleDanceStyleAroundAddressToday danceStyle@Text address@Text: TODO Socialedansfeesten vandaag in de buurt van #{address}
+SearchTitleDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: TODO Socialedansfeesten op #{day} in de buurt van #{address}
+SearchTitleDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: TODO Socialedansfeesten tussen #{begin} en #{end} bij in de buurt van #{address}
+
+## Description
+
+### Without dance style
 SearchDescriptionAroundYourLocationToday: Een lijst van socialedansfeesten vandaag bij jou in de buurt
 SearchDescriptionAroundYourLocationOnDay day@String: Een lijst van socialedansfeesten op #{day} bij jou in de buurt
 SearchDescriptionAroundYourLocationFromTo begin@String end@String: Een lijst van socialedansfeesten tussen #{begin} en #{end} bij jou in de buurt
 SearchDescriptionAroundAddressToday address@Text: Een lijst van socialedansfeesten vandaag in de buurt van #{address}
 SearchDescriptionAroundAddressOnDay address@Text day@String: Een lijst van socialedansfeesten op #{day} in de buurt van #{address}
 SearchDescriptionAroundAddressFromTo address@Text begin@String end@String: Een lijst van socialedansfeesten tussen #{begin} en #{end} in de buurt van #{address}
-SearchPartiesAroundAddress address@Text: Feesten in de buurt van #{address}
-SearchPartiesAroundYourLocation: Feesten bij jou in de buurt
+
+### With dance style
+SearchDescriptionDanceStyleAroundYourLocationToday danceStyle@Text: TODO Een lijst van socialedansfeesten vandaag bij jou in de buurt
+SearchDescriptionDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: TODO Een lijst van socialedansfeesten op #{day} bij jou in de buurt
+SearchDescriptionDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: TODO Een lijst van socialedansfeesten tussen #{begin} en #{end} bij jou in de buurt
+SearchDescriptionDanceStyleAroundAddressToday danceStyle@Text address@Text: TODO Een lijst van socialedansfeesten vandaag in de buurt van #{address}
+SearchDescriptionDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: TODO Een lijst van socialedansfeesten op #{day} in de buurt van #{address}
+SearchDescriptionDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: TODO Een lijst van socialedansfeesten tussen #{begin} en #{end} in de buurt van #{address}
+
+## Search Errors
 SearchNoParties: Geen feesten gevonden voor deze dag.
 SearchPosterAlt title@Text day@String: Poster voor #{title} op #{day}.
 SearchNoResults: We hebben nog geen informatie over deze locatie.
