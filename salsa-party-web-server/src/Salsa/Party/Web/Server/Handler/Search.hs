@@ -179,6 +179,16 @@ getSearchR query = do
         searchParameterDanceStyle = Nothing
       }
 
+getSearchDanceStyleR :: Text -> DanceStyle -> Handler Html
+getSearchDanceStyleR query danceStyle =
+  searchResultsPage
+    SearchParameters
+      { searchParameterLocation = SearchAddress query,
+        searchParameterDate = SearchFromToday,
+        searchParameterDistance = Nothing,
+        searchParameterDanceStyle = Just danceStyle
+      }
+
 getSearchDayR :: Text -> Day -> Handler Html
 getSearchDayR query day =
   searchResultsPage
@@ -189,12 +199,12 @@ getSearchDayR query day =
         searchParameterDanceStyle = Nothing
       }
 
-getSearchDanceStyleR :: Text -> DanceStyle -> Handler Html
-getSearchDanceStyleR query danceStyle =
+getSearchDayDanceStyleR :: Text -> Day -> DanceStyle -> Handler Html
+getSearchDayDanceStyleR query day danceStyle =
   searchResultsPage
     SearchParameters
       { searchParameterLocation = SearchAddress query,
-        searchParameterDate = SearchFromToday,
+        searchParameterDate = SearchExactlyOn day,
         searchParameterDistance = Nothing,
         searchParameterDanceStyle = Just danceStyle
       }
@@ -207,6 +217,16 @@ getSearchFromToR query begin end =
         searchParameterDate = SearchFromTo begin end,
         searchParameterDistance = Nothing,
         searchParameterDanceStyle = Nothing
+      }
+
+getSearchFromToDanceStyleR :: Text -> Day -> Day -> DanceStyle -> Handler Html
+getSearchFromToDanceStyleR query begin end danceStyle =
+  searchResultsPage
+    SearchParameters
+      { searchParameterLocation = SearchAddress query,
+        searchParameterDate = SearchFromTo begin end,
+        searchParameterDistance = Nothing,
+        searchParameterDanceStyle = Just danceStyle
       }
 
 searchParametersQueryRoute :: (MonadHandler m, HandlerSite m ~ App) => SearchParameters -> m Text
