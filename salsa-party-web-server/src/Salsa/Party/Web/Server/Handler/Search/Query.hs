@@ -233,17 +233,25 @@ substringQueryHelper ::
   E.SqlQuery ()
 substringQueryHelper entityTitle entityDescription mDanceStyle entity =
   forM_ mDanceStyle $ \danceStyle ->
-    let substringVal = E.val ("%" <> danceStyleQueryString danceStyle <> "%")
-     in E.where_ $
-          (E.||.)
-            (E.like (entity E.^. entityTitle) substringVal)
-            ( E.like
-                ( E.coalesceDefault
-                    [entity E.^. entityDescription]
-                    (E.val "")
+    E.where_ $
+      orExpr $
+        flip map (danceStyleQueryStrings danceStyle) $ \danceStyleQueryString ->
+          let substringVal = E.val ("%" <> danceStyleQueryString <> "%")
+           in (E.||.)
+                (E.like (entity E.^. entityTitle) substringVal)
+                ( E.like
+                    ( E.coalesceDefault
+                        [entity E.^. entityDescription]
+                        (E.val "")
+                    )
+                    substringVal
                 )
-                substringVal
-            )
+
+orExpr :: [E.SqlExpr (E.Value Bool)] -> E.SqlExpr (E.Value Bool)
+orExpr = \case
+  [] -> E.val True
+  [e] -> e
+  (e : es) -> e E.||. orExpr es
 
 postProcessParties ::
   Word ->

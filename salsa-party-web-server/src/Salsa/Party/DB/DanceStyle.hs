@@ -32,15 +32,15 @@ instance NFData DanceStyle
 
 instance Hashable DanceStyle
 
-danceStyleQueryString :: DanceStyle -> Text
-danceStyleQueryString = \case
-  Salsa -> "salsa"
-  Bachata -> "bachata"
-  Kizomba -> "kizomba"
-  Zouk -> "zouk"
-  LindyHop -> "lindy hop"
-  Tango -> "tango"
-  WestCoastSwing -> "west coast swing"
+danceStyleQueryStrings :: DanceStyle -> [Text]
+danceStyleQueryStrings = \case
+  Salsa -> ["salsa", "mambo"]
+  Bachata -> ["bachata"]
+  Kizomba -> ["kizomba", "kiz", "urban kiz"]
+  Zouk -> ["zouk"]
+  LindyHop -> ["lindy hop", "swing"]
+  Tango -> ["tango", "milonga"]
+  WestCoastSwing -> ["west coast swing"]
 
 parseDanceStyleInUrl :: Text -> Maybe DanceStyle
 parseDanceStyleInUrl =
