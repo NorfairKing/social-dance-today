@@ -30,7 +30,8 @@ spec = do
             queryFormBegin = Just $ fromGregorian 2021 09 18,
             queryFormEnd = Just $ fromGregorian 2021 09 21,
             queryFormOn = Nothing,
-            queryFormDistance = Just 20
+            queryFormDistance = Just 20,
+            queryFormDanceStyle = Nothing
           }
       route <- getCurrentRoute
       liftIO $ case route of
