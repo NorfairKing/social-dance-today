@@ -86,20 +86,20 @@ SearchTitleDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@Stri
 ## Description
 
 ### Without dance style
-SearchDescriptionAroundYourLocationToday: Eine Liste von allen Social Dance Parties in Deiner Umgebung heute
-SearchDescriptionAroundYourLocationOnDay day@String: Eine Liste von allen Social Dance Parties in der Nähe am #{day}
-SearchDescriptionAroundYourLocationFromTo begin@String end@String: Eine Liste von allen Social Dance Parties in der Nähe zwischen #{begin} und #{end}
-SearchDescriptionAroundAddressToday address@Text:  Eine Liste von allen Social Dance Parties in der Nähe von #{address} today
-SearchDescriptionAroundAddressOnDay address@Text day@String: Eine Liste von allen Social Dance Parties in der Nähe  von #{address} am #{day}
-SearchDescriptionAroundAddressFromTo address@Text begin@String end@String: Eine Liste von allen Social Dance Parties in der Nähe von #{address} zwischen #{begin} und #{end}
+SearchDescriptionAroundYourLocationToday: Eine Liste aller Social Dance Parties in Deiner Umgebung heute
+SearchDescriptionAroundYourLocationOnDay day@String: Eine Liste aller Social Dance Parties in der Nähe am #{day}
+SearchDescriptionAroundYourLocationFromTo begin@String end@String: Eine Liste aller Social Dance Parties in der Nähe zwischen #{begin} und #{end}
+SearchDescriptionAroundAddressToday address@Text:  Eine Liste aller Social Dance Parties in der Nähe von #{address} today
+SearchDescriptionAroundAddressOnDay address@Text day@String: Eine Liste aller Social Dance Parties in der Nähe  von #{address} am #{day}
+SearchDescriptionAroundAddressFromTo address@Text begin@String end@String: Eine Liste aller Social Dance Parties in der Nähe von #{address} zwischen #{begin} und #{end}
 
 ### With dance style
-SearchDescriptionDanceStyleAroundYourLocationToday danceStyle@Text: Eine Liste von allen #{danceStyle} Parties in Deiner Umgebung heute
-SearchDescriptionDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: Eine Liste von allen #{danceStyle} Parties in der Nähe am #{day}
-SearchDescriptionDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: Eine Liste von allen #{danceStyle} Parties in der Nähe zwischen #{begin} und #{end}
-SearchDescriptionDanceStyleAroundAddressToday danceStyle@Text address@Text:  Eine Liste von allen #{danceStyle} Parties in der Nähe von #{address} today
-SearchDescriptionDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: Eine Liste von allen #{danceStyle} Parties in der Nähe  von #{address} am #{day}
-SearchDescriptionDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: Eine Liste von allen #{danceStyle} Parties in der Nähe von #{address} zwischen #{begin} und #{end}
+SearchDescriptionDanceStyleAroundYourLocationToday danceStyle@Text: Eine Liste aller #{danceStyle} Parties in Deiner Umgebung heute
+SearchDescriptionDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: Eine Liste aller #{danceStyle} Parties in der Nähe am #{day}
+SearchDescriptionDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: Eine Liste aller #{danceStyle} Parties in der Nähe zwischen #{begin} und #{end}
+SearchDescriptionDanceStyleAroundAddressToday danceStyle@Text address@Text:  Eine Liste aller #{danceStyle} Parties in der Nähe von #{address} today
+SearchDescriptionDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: Eine Liste aller #{danceStyle} Parties in der Nähe  von #{address} am #{day}
+SearchDescriptionDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: Eine Liste aller #{danceStyle} Parties in der Nähe von #{address} zwischen #{begin} und #{end}
 
 ## Search Errors
 SearchNoParties: Es wurden keine Parties gefunden.
