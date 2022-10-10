@@ -83,7 +83,7 @@ SearchTitleDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@Stri
 ## Description
 
 ### Without dance style
-SearchDescriptionAroundYourLocationToday: Une liste de soirées de danse près de chez vous
+SearchDescriptionAroundYourLocationToday: Une liste de soirées de danse près de vous
 SearchDescriptionAroundYourLocationOnDay day@String: Une liste de soirées de danse près de votre lieu le #{day}
 SearchDescriptionAroundYourLocationFromTo begin@String end@String: Une liste de soirées de danse près de votre lieu entre #{begin} et #{end}
 SearchDescriptionAroundAddressToday address@Text: Une liste de soirées de danse près de #{address}
@@ -91,7 +91,7 @@ SearchDescriptionAroundAddressOnDay address@Text day@String: Une liste de soiré
 SearchDescriptionAroundAddressFromTo address@Text begin@String end@String: Une liste de soirées de danse près de #{address} entre #{begin} et #{end}
 
 ### With dance style
-SearchDescriptionDanceStyleAroundYourLocationToday danceStyle@Text:  Une liste de soirées #{danceStyle} près de chez vous
+SearchDescriptionDanceStyleAroundYourLocationToday danceStyle@Text:  Une liste de soirées #{danceStyle} près de vous
 SearchDescriptionDanceStyleAroundYourLocationOnDay danceStyle@Text day@String:  Une liste de soirées #{danceStyle} près de votre lieu le #{day}
 SearchDescriptionDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String:  Une liste de soirées #{danceStyle} près de votre lieu entre #{begin} et #{end}
 SearchDescriptionDanceStyleAroundAddressToday danceStyle@Text address@Text:  Une liste de soirées #{danceStyle} près de #{address}
