@@ -56,39 +56,38 @@ spec = do
                           _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
 
       it "Can get the ical calendar for an existing party via an accept header" $ \yc ->
-        forAllValid $ \organiser ->
-          forAllValid $ \place ->
-            forAllValid $ \party ->
-              case partySlugRoute organiser party of
-                Nothing -> pure ()
-                Just route ->
-                  runYesodClientM yc $ do
-                    testDB $ do
-                      organiserId <- DB.insert organiser
-                      placeId <- DB.insert place
-                      DB.insert_ $ party {partyOrganiser = organiserId, partyPlace = placeId}
-                    request $ do
-                      setUrl route
-                      addRequestHeader ("Accept", typeCalendar)
-                    statusIs 200
-                    mResp <- getResponse
-                    case mResp of
-                      Nothing -> liftIO $ expectationFailure "Should have had a response by now."
-                      Just resp -> do
-                        let cts = responseBody resp
-                        case ICal.parseICalendarByteString $ LB.toStrict cts of
-                          Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
-                          Right cals ->
-                            case cals of
-                              [] ->
-                                liftIO $
-                                  expectationFailure $
-                                    unlines
-                                      [ "Succesfully parsed 0 calendars from this response:",
-                                        T.unpack $ TE.decodeUtf8With TE.lenientDecode $ LB.toStrict cts
-                                      ]
-                              [_] -> pure ()
-                              _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
+        forAllValid $ \place ->
+          forAll (genValid `suchThat` (\(organiser, party) -> isJust (partySlugRoute organiser party))) $ \(organiser, party) ->
+            case partySlugRoute organiser party of
+              Nothing -> pure ()
+              Just route ->
+                runYesodClientM yc $ do
+                  testDB $ do
+                    organiserId <- DB.insert organiser
+                    placeId <- DB.insert place
+                    DB.insert_ $ party {partyOrganiser = organiserId, partyPlace = placeId}
+                  request $ do
+                    setUrl route
+                    addRequestHeader ("Accept", typeCalendar)
+                  statusIs 200
+                  mResp <- getResponse
+                  case mResp of
+                    Nothing -> liftIO $ expectationFailure "Should have had a response by now."
+                    Just resp -> do
+                      let cts = responseBody resp
+                      case ICal.parseICalendarByteString $ LB.toStrict cts of
+                        Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
+                        Right cals ->
+                          case cals of
+                            [] ->
+                              liftIO $
+                                expectationFailure $
+                                  unlines
+                                    [ "Succesfully parsed 0 calendars from this response:",
+                                      T.unpack $ TE.decodeUtf8With TE.lenientDecode $ LB.toStrict cts
+                                    ]
+                            [_] -> pure ()
+                            _ -> liftIO $ expectationFailure $ unlines $ "Expected exactly one calendar, but got:" : map ppShow cals
 
       let genAnnoyingText =
             genTextBy $

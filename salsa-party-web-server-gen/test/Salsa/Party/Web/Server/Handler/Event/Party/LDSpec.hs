@@ -19,30 +19,29 @@ import Yesod.Core
 spec :: Spec
 spec = do
   serverSpec $
-    it "Can get the party page for an existing party in application/ld+json format" $ \yc ->
-      forAllValid $ \organiser ->
-        forAllValid $ \place ->
-          forAllValid $ \party ->
-            case partySlugRoute organiser party of
-              Nothing -> pure ()
-              Just route -> do
-                runYesodClientM yc $ do
-                  testDB $ do
-                    organiserId <- DB.insert organiser
-                    placeId <- DB.insert place
-                    DB.insert_ $ party {partyOrganiser = organiserId, partyPlace = placeId}
-                  request $ do
-                    setUrl route
-                    addRequestHeader ("Accept", "application/ld+json")
-                  statusIs 200
-                  mResp <- getResponse
-                  case mResp of
-                    Nothing -> liftIO $ expectationFailure "Should have had a response by now."
-                    Just resp -> do
-                      let cts = responseBody resp
-                      liftIO $ case JSON.eitherDecode cts of
-                        Left err -> expectationFailure err
-                        Right ldEvent -> shouldBeValid (ldEvent :: LD.Event)
+    it "Can get the party page for an existing party in application/ld+json format via an accept header" $ \yc ->
+      forAllValid $ \place ->
+        forAll (genValid `suchThat` (\(organiser, party) -> isJust (partySlugRoute organiser party))) $ \(organiser, party) ->
+          case partySlugRoute organiser party of
+            Nothing -> pure ()
+            Just route -> do
+              runYesodClientM yc $ do
+                testDB $ do
+                  organiserId <- DB.insert organiser
+                  placeId <- DB.insert place
+                  DB.insert_ $ party {partyOrganiser = organiserId, partyPlace = placeId}
+                request $ do
+                  setUrl route
+                  addRequestHeader ("Accept", "application/ld+json")
+                statusIs 200
+                mResp <- getResponse
+                case mResp of
+                  Nothing -> liftIO $ expectationFailure "Should have had a response by now."
+                  Just resp -> do
+                    let cts = responseBody resp
+                    liftIO $ case JSON.eitherDecode cts of
+                      Left err -> expectationFailure err
+                      Right ldEvent -> shouldBeValid (ldEvent :: LD.Event)
 
   modifyMaxSuccess (`div` 20) $
     modifyMaxSize (* 10) $
