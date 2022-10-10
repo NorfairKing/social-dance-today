@@ -17,7 +17,7 @@ AdvancedSearchFormLocationLabel: Ubicación
 AdvancedSearchFormDistanceLabel: Distancia
 AdvancedSearchFormBeginLabel: Desde
 AdvancedSearchFormEndLabel: Hasta
-AdvancedSearchFormDanceStyleLabel: TODO
+AdvancedSearchFormDanceStyleLabel: Estilo de baile
 AdvancedSearchFormSubmit: Buscar
 
 # Locate me button
@@ -73,12 +73,12 @@ SearchTitleAroundAddressOnDay address@Text day@String: Fiestas de baile social c
 SearchTitleAroundAddressFromTo address@Text begin@String end@String: Fiestas de baile social cerca de #{address} entre el #{begin} y el #{end}
 
 ### With dance style
-SearchTitleDanceStyleAroundYourLocationToday danceStyle@Text: TODO Fiestas de baile social cerca de su ubicación hoy
-SearchTitleDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: TODO Fiestas de baile social cerca de tu ubicación el #{day}
-SearchTitleDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: TODO Fiestas de baile social cerca de tu ubicación entre el #{begin} y el #{end}
-SearchTitleDanceStyleAroundAddressToday danceStyle@Text address@Text: TODO Fiestas de baile social cerca de #{address} hoy
-SearchTitleDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: TODO Fiestas de baile social cerca de #{address} el #{day}
-SearchTitleDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: TODO Fiestas de baile social cerca de #{address} entre el #{begin} y el #{end}
+SearchTitleDanceStyleAroundYourLocationToday danceStyle@Text: Fiestas de #{danceStyle} cerca de su ubicación hoy
+SearchTitleDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: Fiestas de #{danceStyle} cerca de tu ubicación el #{day}
+SearchTitleDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: Fiestas de #{danceStyle} cerca de tu ubicación entre el #{begin} y el #{end}
+SearchTitleDanceStyleAroundAddressToday danceStyle@Text address@Text: Fiestas de #{danceStyle} cerca de #{address} hoy
+SearchTitleDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: Fiestas de #{danceStyle} cerca de #{address} el #{day}
+SearchTitleDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: Fiestas de #{danceStyle} cerca de #{address} entre el #{begin} y el #{end}
 
 ## Description
 
@@ -91,12 +91,12 @@ SearchDescriptionAroundAddressOnDay address@Text day@String: Una lista de fiesta
 SearchDescriptionAroundAddressFromTo address@Text begin@String end@String: Una lista de fiestas de baile social cerca de #{address} entre el #{begin} y el #{end}
 
 ### With dance style
-SearchDescriptionDanceStyleAroundYourLocationToday danceStyle@Text: TODO Una lista de fiestas de baile social cerca de tu ubicación hoy
-SearchDescriptionDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: TODO Una lista de fiestas de baile social cerca de tu ubicación el #{day}
-SearchDescriptionDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: TODO Una lista de fiestas de baile social cerca de tu ubicación entre el #{begin} y el #{end}
-SearchDescriptionDanceStyleAroundAddressToday danceStyle@Text address@Text: TODO Una lista de fiestas de baile social cerca de #{address} hoy
-SearchDescriptionDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: TODO Una lista de fiestas de baile social cerca de #{address} el #{day}
-SearchDescriptionDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: TODO Una lista de fiestas de baile social cerca de #{address} entre el #{begin} y el #{end}
+SearchDescriptionDanceStyleAroundYourLocationToday danceStyle@Text: Una lista de fiestas de #{danceStyle} cerca de tu ubicación hoy
+SearchDescriptionDanceStyleAroundYourLocationOnDay danceStyle@Text day@String: Una lista de fiestas de #{danceStyle} cerca de tu ubicación el #{day}
+SearchDescriptionDanceStyleAroundYourLocationFromTo danceStyle@Text begin@String end@String: Una lista de fiestas de #{danceStyle} cerca de tu ubicación entre el #{begin} y el #{end}
+SearchDescriptionDanceStyleAroundAddressToday danceStyle@Text address@Text: Una lista de fiestas de #{danceStyle} cerca de #{address} hoy
+SearchDescriptionDanceStyleAroundAddressOnDay danceStyle@Text address@Text day@String: Una lista de fiestas de #{danceStyle} cerca de #{address} el #{day}
+SearchDescriptionDanceStyleAroundAddressFromTo danceStyle@Text address@Text begin@String end@String: Una lista de fiestas de #{danceStyle} cerca de #{address} entre el #{begin} y el #{end}
 
 ## Search Errors
 SearchNoParties: No se encontraron fiestas para este día.
