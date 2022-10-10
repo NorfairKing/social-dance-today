@@ -73,7 +73,7 @@ runUncachedSearchQueryForResults SearchQuery {..} = do
       E.on (party E.^. PartyPlace E.==. place E.^. PlaceId)
       E.where_ $ dayLimit (party E.^. PartyDay) searchQueryBegin searchQueryMEnd
       forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
-      partySubstringQuery searchQuerySubstring party
+      partySubstringQuery searchQueryDanceStyle party
       pure (organiser, party, place)
 
   -- Post-process the distance before we fetch images so we don't fetch too many images.
@@ -88,7 +88,7 @@ runUncachedSearchQueryForResults SearchQuery {..} = do
       E.on (externalEvent E.^. ExternalEventPlace E.==. place E.^. PlaceId)
       E.where_ $ dayLimit (externalEvent E.^. ExternalEventDay) searchQueryBegin searchQueryMEnd
       forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
-      externalEventSubstringQuery searchQuerySubstring externalEvent
+      externalEventSubstringQuery searchQueryDanceStyle externalEvent
       pure (externalEvent, place)
 
   -- Post-process the distance before we fetch images so we don't fetch too many images.
@@ -329,5 +329,5 @@ noDataQuery searchResultCache coordinates maximumDistance = do
           searchQueryMEnd = Nothing,
           searchQueryCoordinates = coordinates,
           searchQueryDistance = Just maximumDistance,
-          searchQuerySubstring = Nothing
+          searchQueryDanceStyle = Nothing
         }

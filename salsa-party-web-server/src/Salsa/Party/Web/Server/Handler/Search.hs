@@ -6,6 +6,8 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
+-- Undefined trick
+{-# OPTIONS_GHC -Wno-unused-pattern-binds #-}
 
 -- This module contains all the routes that lead to a search results page.
 --
@@ -93,12 +95,23 @@ queryForm =
     <*> iopt dayField endParameter
     <*> iopt dayField onParameter
     <*> iopt distanceField distanceParameter
-    -- TODO turn this into multiple checkboxes
     <*> iopt
-      ( selectFieldList
-          ( map
-              (\danceStyle -> (T.pack (show danceStyle), danceStyle))
-              allDanceStyles
+      ( selectField
+          ( pure
+              ( OptionList
+                  { olOptions =
+                      map
+                        ( \danceStyle ->
+                            Option
+                              { optionDisplay = renderDanceStyleInText danceStyle,
+                                optionInternalValue = danceStyle,
+                                optionExternalValue = renderDanceStyleInUrl danceStyle
+                              }
+                        )
+                        allDanceStyles,
+                    olReadExternal = parseDanceStyleInUrl
+                  }
+              )
           )
       )
       danceStyleParameter
@@ -131,6 +144,7 @@ distanceField =
 
 queryFormToSearchParameters :: QueryForm -> Handler SearchParameters
 queryFormToSearchParameters QueryForm {..} = do
+  let QueryForm _ _ _ _ _ _ _ = undefined
   searchParameterLocation <-
     case queryFormAddress of
       Just address -> pure $ SearchAddress address
@@ -164,9 +178,15 @@ getQueryR = do
       case searchParameterLocation of
         SearchCoordinates _ -> searchResultsPage searchParameters
         SearchAddress address -> case searchParameterDate of
-          SearchFromToday -> redirect $ SearchR address
-          SearchExactlyOn day -> redirect $ SearchDayR address day
-          SearchFromTo begin end -> redirect $ SearchFromToR address begin end
+          SearchFromToday -> case searchParameterDanceStyle of
+            Nothing -> redirect $ SearchR address
+            Just danceStyle -> redirect $ SearchDanceStyleR address danceStyle
+          SearchExactlyOn day -> case searchParameterDanceStyle of
+            Nothing -> redirect $ SearchDayR address day
+            Just danceStyle -> redirect $ SearchDayDanceStyleR address day danceStyle
+          SearchFromTo begin end -> case searchParameterDanceStyle of
+            Nothing -> redirect $ SearchFromToR address begin end
+            Just danceStyle -> redirect $ SearchFromToDanceStyleR address begin end danceStyle
           SearchFromOn _ -> searchResultsPage searchParameters
 
 getSearchR :: Text -> Handler Html
@@ -323,7 +343,7 @@ searchResultsPage searchParameters@SearchParameters {..} = do
             searchQueryMEnd = Just end,
             searchQueryCoordinates = coordinates,
             searchQueryDistance = Just $ fromMaybe defaultMaximumDistance searchParameterDistance,
-            searchQuerySubstring = searchParameterDanceStyle
+            searchQueryDanceStyle = searchParameterDanceStyle
           }
 
   -- Do the actual search

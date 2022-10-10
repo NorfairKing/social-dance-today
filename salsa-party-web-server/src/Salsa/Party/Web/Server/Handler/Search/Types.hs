@@ -21,7 +21,7 @@ data SearchQuery = SearchQuery
     searchQueryMEnd :: !(Maybe Day), -- Nothing means no end.
     searchQueryCoordinates :: !Coordinates,
     searchQueryDistance :: !(Maybe Word), -- Nothing means unlimited distance.
-    searchQuerySubstring :: !(Maybe DanceStyle) -- Nothing means all
+    searchQueryDanceStyle :: !(Maybe DanceStyle) -- Nothing means all
   }
   deriving (Show, Eq, Generic)
 

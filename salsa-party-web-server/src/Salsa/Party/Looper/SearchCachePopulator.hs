@@ -29,7 +29,7 @@ runSearchCachePopulator = do
           searchQueryMEnd = Just $ addDays (defaultDaysAhead - 1) today,
           searchQueryCoordinates = coordinates,
           searchQueryDistance = Just defaultMaximumDistance,
-          searchQuerySubstring = Nothing
+          searchQueryDanceStyle = Nothing
         }
 
     -- Per dance-style too:
@@ -40,7 +40,7 @@ runSearchCachePopulator = do
             searchQueryMEnd = Just $ addDays (defaultDaysAhead - 1) today,
             searchQueryCoordinates = coordinates,
             searchQueryDistance = Just defaultMaximumDistance,
-            searchQuerySubstring = Just danceStyle
+            searchQueryDanceStyle = Just danceStyle
           }
 
 populateCacheForQuery :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => SearchQuery -> m ()

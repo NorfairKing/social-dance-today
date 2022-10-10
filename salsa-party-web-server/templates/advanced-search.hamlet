@@ -66,6 +66,18 @@
                 name=#{endParameter}
                 type=date>
                 
+          <div .field>
+            <label .label>
+              _{MsgAdvancedSearchFormDanceStyleLabel}
+            <div .control>
+              <div .select>
+                <select
+                  #dancestyle
+                  name=#{danceStyleParameter}>
+                  <option selected value="">
+                  $forall danceStyle <- allDanceStyles
+                    <option value=#{renderDanceStyleInUrl danceStyle}>
+                      #{renderDanceStyleInText danceStyle}
 
           <div .field>
             <div .control>
