@@ -60,13 +60,13 @@ setupSearchDataQuery = do
     uuid <- nextRandomUUID
     insert $ externalEventPrototype {externalEventUuid = uuid}
 
-  pure $ runGen $ replicateM 100 genQuery
+  pure $ runGen $ replicateM 1000 genQuery
 
 genQuery :: Gen SearchQuery
 genQuery = do
   -- Make a query
   day <- genDay
-  daysAhead <- choose (0, 30)
+  daysAhead <- choose (0, 10)
   coordinates <- do
     location <- elements locations
     genCoordinatesAround (placeCoordinates (locationPlace location))
@@ -117,13 +117,15 @@ genUniques func n gen = go [] n
           then go acc i
           else go (a : acc) (pred i)
 
--- We generate days within a year, there's no point in looking accross centuries.
+-- We generate days within a month, there's no point in looking accross centuries.
 genDay :: Gen Day
-genDay = fromGregorian 2021 <$> choose (1, 12) <*> choose (1, 31)
+genDay = fromGregorian 2021 06 <$> choose (1, 31)
 
 doSearchAtBenchmark :: ConnectionPool -> [SearchQuery] -> Benchmark
 doSearchAtBenchmark pool query = bench "search" $
   whnfIO $ do
+    -- Make a new cache every time,
+    -- so we benchmark the uncached performance.
     cache <- newCache Nothing
     doSearchAt cache pool query
 
