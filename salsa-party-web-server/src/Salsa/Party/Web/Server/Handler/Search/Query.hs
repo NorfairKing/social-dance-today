@@ -70,15 +70,16 @@ runSearchQueryForResults searchResultCache searchQuery = do
 runUncachedSearchQueryForResults :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
 runUncachedSearchQueryForResults searchQuery@SearchQuery {..} = do
   rawPartyResults <- select $ do
-    (organiser :& party :& place) <-
+    (place :& (organiser :& party)) <-
       from $
-        table @Organiser
-          `innerJoin` table @Party
-          `on` ( \(organiser :& party) ->
-                   organiser ^. OrganiserId ==. party ^. PartyOrganiser
-               )
-          `innerJoin` table @Place
-          `on` ( \(_ :& party :& place) ->
+        table @Place
+          `innerJoin` ( table @Organiser
+                          `innerJoin` table @Party
+                          `on` ( \(organiser :& party) ->
+                                   organiser ^. OrganiserId ==. party ^. PartyOrganiser
+                               )
+                      )
+          `on` ( \(place :& (_ :& party)) ->
                    party ^. PartyPlace ==. place ^. PlaceId
                )
     where_ $ dayLimit (party ^. PartyDay) searchQueryBegin searchQueryMEnd
