@@ -94,12 +94,19 @@ runUncachedSearchQueryForResults SearchQuery {..} = do
       pure (partyDay party, (organiserEntity, partyEntity, placeEntity, mKey))
 
   rawExternalEventResults <- select $ do
-    (externalEvent :& place) <-
+    ((place :& externalEvent) :& (externalEventPoster :: SqlExpr (Maybe (Entity ExternalEventPoster)))) <-
       from $
-        table @ExternalEvent `innerJoin` table @Place
-          `on` ( \(externalEvent :& place) ->
-                   externalEvent ^. ExternalEventPlace ==. place ^. PlaceId
-               )
+        ( table @Place
+            `innerJoin` table @ExternalEvent
+              `on` ( \(place :& externalEvent) ->
+                       place ^. PlaceId ==. externalEvent ^. ExternalEventPlace
+                   )
+        )
+          `leftJoin` table @ExternalEventPoster
+            `on` ( \((_ :& externalEvent) :& externalEventPoster) ->
+                     just (externalEvent ^. ExternalEventId)
+                       ==. externalEventPoster ?. ExternalEventPosterExternalEvent
+                 )
     where_ $ dayLimit (externalEvent ^. ExternalEventDay) searchQueryBegin searchQueryMEnd
     forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
     externalEventSubstringQuery searchQueryDanceStyle externalEvent
