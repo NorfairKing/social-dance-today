@@ -3,6 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Salsa.Party.Web.Server.Handler.Search.Query where
 
@@ -16,7 +17,7 @@ import qualified Data.Map.Strict as M
 import Data.Ord
 import qualified Data.Text as T
 import Data.Time
-import qualified Database.Esqueleto.Legacy as E
+import qualified Database.Esqueleto.Experimental as E
 import Database.Persist
 import Database.Persist.Sql
 import Salsa.Party.DB
@@ -67,14 +68,22 @@ runSearchQueryForResults searchResultCache searchQuery = do
 
 runUncachedSearchQueryForResults :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
 runUncachedSearchQueryForResults SearchQuery {..} = do
-  rawPartyResults <- E.select $
-    E.from $ \((organiser `E.InnerJoin` party `E.InnerJoin` place)) -> do
-      E.on (organiser E.^. OrganiserId E.==. party E.^. PartyOrganiser)
-      E.on (party E.^. PartyPlace E.==. place E.^. PlaceId)
-      E.where_ $ dayLimit (party E.^. PartyDay) searchQueryBegin searchQueryMEnd
-      forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
-      partySubstringQuery searchQueryDanceStyle party
-      pure (organiser, party, place)
+  rawPartyResults <- E.select $ do
+    (organiser E.:& party E.:& place) <-
+      E.from $
+        E.table @Organiser
+          `E.innerJoin` E.table @Party
+          `E.on` ( \(organiser E.:& party) ->
+                     organiser E.^. OrganiserId E.==. party E.^. PartyOrganiser
+                 )
+          `E.innerJoin` E.table @Place
+          `E.on` ( \(_ E.:& party E.:& place) ->
+                     party E.^. PartyPlace E.==. place E.^. PlaceId
+                 )
+    E.where_ $ dayLimit (party E.^. PartyDay) searchQueryBegin searchQueryMEnd
+    forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
+    partySubstringQuery searchQueryDanceStyle party
+    pure (organiser, party, place)
 
   -- Post-process the distance before we fetch images so we don't fetch too many images.
   let partyResultsWithoutImages = maybe rawPartyResults (\dist -> postProcessParties dist searchQueryCoordinates rawPartyResults) searchQueryDistance
@@ -83,13 +92,17 @@ runUncachedSearchQueryForResults SearchQuery {..} = do
       mKey <- getPosterForParty partyId
       pure (partyDay party, (organiserEntity, partyEntity, placeEntity, mKey))
 
-  rawExternalEventResults <- E.select $
-    E.from $ \(externalEvent `E.InnerJoin` place) -> do
-      E.on (externalEvent E.^. ExternalEventPlace E.==. place E.^. PlaceId)
-      E.where_ $ dayLimit (externalEvent E.^. ExternalEventDay) searchQueryBegin searchQueryMEnd
-      forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
-      externalEventSubstringQuery searchQueryDanceStyle externalEvent
-      pure (externalEvent, place)
+  rawExternalEventResults <- E.select $ do
+    (externalEvent E.:& place) <-
+      E.from $
+        E.table @ExternalEvent `E.innerJoin` E.table @Place
+          `E.on` ( \(externalEvent E.:& place) ->
+                     externalEvent E.^. ExternalEventPlace E.==. place E.^. PlaceId
+                 )
+    E.where_ $ dayLimit (externalEvent E.^. ExternalEventDay) searchQueryBegin searchQueryMEnd
+    forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
+    externalEventSubstringQuery searchQueryDanceStyle externalEvent
+    pure (externalEvent, place)
 
   -- Post-process the distance before we fetch images so we don't fetch too many images.
   let externalEventResultsWithoutImages = maybe rawExternalEventResults (\dist -> postProcessExternalEvents dist searchQueryCoordinates rawExternalEventResults) searchQueryDistance
