@@ -20,6 +20,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
 import Database.Esqueleto.Experimental
+import Database.Esqueleto.Internal.Internal (unsafeSqlBinOp)
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Handler.Search.Deduplication
 import Salsa.Party.Web.Server.Handler.Search.Types
@@ -190,24 +191,24 @@ distanceEstimationQuery :: Word -> Coordinates -> SqlExpr (Entity Place) -> SqlQ
 distanceEstimationQuery maximumDistance Coordinates {..} p = do
   let lat = p ^. PlaceLat
   let lon = p ^. PlaceLon
-  -- We want a very rough filter of parties by distance.
-  -- What follows here is a rough estimate
-  latitudeBetweenQuery maximumDistance lat coordinatesLat
-  longitudeBetweenQuery maximumDistance lon coordinatesLon
+  -- -- We want a very rough filter of parties by distance.
+  -- -- What follows here is a rough estimate
+  -- latitudeBetweenQuery maximumDistance lat coordinatesLat
+  -- longitudeBetweenQuery maximumDistance lon coordinatesLon
 
   -- We used to have the following sorting function to sort by distance here.
   -- It turns out that we prefer to do this in Haskell, after deduplication, instead.
   --
-  -- let latDiff = lat -. val coordinatesLat
-  -- let lonDiff = lon -. val coordinatesLon
-  -- let latDiffSquared = latDiff *. latDiff
-  -- let lonDiffSquared = lonDiff *. lonDiff
-  -- -- Luckily the square function is monotone so we don't need to sqrt here
-  -- -- We need to use 'unsafeSqlBinOp " + "' because the two values are of different types.
-  -- let distSquared :: SqlExpr (Value Coord)
-  --     distSquared = unsafeSqlBinOp " + " latDiffSquared lonDiffSquared
-  -- orderBy [asc distSquared]
-  pure ()
+  let latDiff = lat -. val coordinatesLat
+  let lonDiff = lon -. val coordinatesLon
+  let latDiffSquared = latDiff *. latDiff
+  let lonDiffSquared = lonDiff *. lonDiff
+  -- Luckily the square function is monotone so we don't need to sqrt here
+  -- We need to use 'unsafeSqlBinOp " + "' because the two values are of different types.
+  let distSquared :: SqlExpr (Value Double)
+      distSquared = unsafeSqlBinOp " + " latDiffSquared lonDiffSquared
+  where_ $ distSquared <. val (fromIntegral maximumDistance ^ (2 :: Int))
+  orderBy [asc distSquared]
 
 latitudeBetweenQuery :: Word -> SqlExpr (Value Latitude) -> Latitude -> SqlQuery ()
 latitudeBetweenQuery maximumDistance latExpr coordinatesLat =
