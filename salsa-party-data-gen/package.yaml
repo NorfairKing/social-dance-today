@@ -1,0 +1,53 @@
+name:                salsa-party-data-gen
+version:             0.0.0.0
+license:             AllRightsReserved
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  dependencies:
+  - QuickCheck
+  - genvalidity
+  - genvalidity-bytestring
+  - genvalidity-persistent
+  - genvalidity-text
+  - genvalidity-time
+  - genvalidity-typed-uuid
+  - microlens
+  - monad-logger
+  - password
+  - persistent
+  - persistent-sqlite
+  - salsa-party-data
+  - sydtest
+  - text
+  - yesod-form
+
+tests:
+  salsa-party-data-gen-test:
+    main: Spec.hs
+    source-dirs: test
+    build-tools: sydtest-discover
+    ghc-options:
+    - -Wall
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - QuickCheck
+    - genvalidity
+    - genvalidity-sydtest
+    - genvalidity-sydtest-aeson
+    - genvalidity-sydtest-persistent
+    - path-pieces
+    - persistent
+    - salsa-party-data
+    - salsa-party-data-gen
+    - sydtest
+    - sydtest-aeson
+    - sydtest-persistent
+    - sydtest-persistent-sqlite
+    - time
+    - unliftio

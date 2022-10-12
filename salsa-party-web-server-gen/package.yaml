@@ -16,7 +16,6 @@ library:
   - genvalidity-bytestring
   - genvalidity-persistent
   - genvalidity-sydtest
-  - genvalidity-text
   - genvalidity-time
   - genvalidity-typed-uuid
   - http-client
@@ -28,6 +27,8 @@ library:
   - persistent
   - persistent-sqlite
   - pretty-show
+  - salsa-party-data
+  - salsa-party-data-gen
   - salsa-party-web-server
   - sydtest
   - sydtest-persistent-sqlite
@@ -40,7 +41,7 @@ library:
 
 
 benchmarks:
-  smos-api-bench:
+  salsa-party-web-server-bench:
     main: Main.hs
     source-dirs: bench/
     ghc-options:
@@ -52,6 +53,8 @@ benchmarks:
     - genvalidity
     - monad-logger
     - persistent
+    - salsa-party-data
+    - salsa-party-data-gen
     - salsa-party-web-server
     - salsa-party-web-server-gen
     - sydtest
@@ -92,6 +95,8 @@ tests:
     - path-pieces
     - persistent
     - pretty-show
+    - salsa-party-data
+    - salsa-party-data-gen
     - salsa-party-web-server
     - salsa-party-web-server-gen
     - shakespeare

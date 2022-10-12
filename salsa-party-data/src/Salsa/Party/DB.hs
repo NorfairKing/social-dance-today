@@ -343,6 +343,9 @@ StaticMap
     deriving Generic
 |]
 
+instance Validity Textarea where
+  validate = delve "Textarea" . unTextarea
+
 instance Validity User
 
 instance Validity Place where

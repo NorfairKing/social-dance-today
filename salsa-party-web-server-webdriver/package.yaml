@@ -12,6 +12,7 @@ library:
   - bytestring
   - mtl
   - persistent
+  - salsa-party-data
   - salsa-party-web-server
   - salsa-party-web-server-gen
   - sydtest
@@ -40,6 +41,7 @@ tests:
     - password
     - persistent
     - pretty-show
+    - salsa-party-data
     - salsa-party-web-server
     - salsa-party-web-server-gen
     - salsa-party-web-server-webdriver

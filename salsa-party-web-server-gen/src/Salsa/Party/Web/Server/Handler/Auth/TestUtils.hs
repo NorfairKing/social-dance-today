@@ -16,9 +16,10 @@ import qualified Database.Persist as DB
 import Database.Persist.Sql (SqlPersistT)
 import GHC.Generics (Generic)
 import Salsa.Party.DB
+import Salsa.Party.DB.Gen
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
-import Salsa.Party.Web.Server.Gen
+import Salsa.Party.Web.Server.Gen ()
 import Salsa.Party.Web.Server.TestUtils
 import Test.QuickCheck
 import Test.Syd

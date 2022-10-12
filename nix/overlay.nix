@@ -72,6 +72,8 @@ in
             '';
         }
       );
+      salsa-party-data = salsaPartyPkg "salsa-party-data";
+      salsa-party-data-gen = salsaPartyPkg "salsa-party-data-gen";
       salsa-party-web-server = withRemoteStaticResources (salsaPartyPkg "salsa-party-web-server") {
         "static/bulma.css" = builtins.fetchurl {
           url = "https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css";
@@ -91,6 +93,8 @@ in
       salsa-party-web-server-webdriver = final.haskellPackages.sydtest-webdriver.enableWebdriver (salsaPartyPkg "salsa-party-web-server-webdriver");
     in
     {
+      inherit salsa-party-data;
+      inherit salsa-party-data-gen;
       inherit salsa-party-web-server;
       inherit salsa-party-web-server-e2e;
       inherit salsa-party-web-server-gen;

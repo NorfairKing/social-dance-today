@@ -6,9 +6,9 @@
     "location": {
         "address": "Spitalgasse 4, 3011 Bern Bern",
         "geo": {
-            "latitude": 46.948335899,
+            "latitude": 46.94833,
             "@type": "GeoCoordinates",
-            "longitude": 7.4430784
+            "longitude": 7.44307
         },
         "@type": "Place"
     },

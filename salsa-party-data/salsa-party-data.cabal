@@ -1,0 +1,69 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           salsa-party-data
+version:        0.0.0.0
+license:        AllRightsReserved
+build-type:     Simple
+
+library
+  exposed-modules:
+      Salsa.Party.DB
+      Salsa.Party.DB.CASKey
+      Salsa.Party.DB.Coordinates
+      Salsa.Party.DB.DanceStyle
+      Salsa.Party.DB.EmailAddress
+      Salsa.Party.DB.Migration
+      Salsa.Party.DB.Password
+      Salsa.Party.DB.Recurrence
+      Salsa.Party.DB.Slug
+      Salsa.Party.DB.URI
+      Salsa.Party.DB.UUID
+  other-modules:
+      Paths_salsa_party_data
+  hs-source-dirs:
+      src
+  build-depends:
+      aeson
+    , autodocodec
+    , base >=4.7 && <5
+    , base64-bytestring
+    , bytestring
+    , case-insensitive
+    , conduit
+    , containers
+    , cryptohash-sha256
+    , deepseq
+    , file-embed
+    , hashable
+    , http-api-data
+    , http-types
+    , monad-logger
+    , network-uri
+    , password
+    , path-pieces
+    , persistent
+    , random
+    , resourcet
+    , scientific
+    , shakespeare
+    , template-haskell
+    , text
+    , text-icu
+    , time
+    , typed-uuid
+    , unliftio
+    , uuid
+    , validity
+    , validity-bytestring
+    , validity-persistent
+    , validity-text
+    , validity-time
+    , yaml
+    , yesod
+    , yesod-core
+    , yesod-form
+  default-language: Haskell2010

@@ -1,0 +1,48 @@
+name:                salsa-party-data
+version:             0.0.0.0
+license:             AllRightsReserved
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  dependencies:
+  - aeson
+  - autodocodec
+  - base64-bytestring
+  - bytestring
+  - case-insensitive
+  - conduit
+  - containers
+  - cryptohash-sha256
+  - deepseq
+  - file-embed
+  - hashable
+  - http-api-data
+  - http-types
+  - monad-logger
+  - network-uri
+  - password
+  - path-pieces
+  - persistent
+  - random
+  - resourcet
+  - scientific
+  - shakespeare
+  - template-haskell
+  - text
+  - text-icu
+  - time
+  - typed-uuid
+  - unliftio
+  - uuid
+  - validity
+  - validity-bytestring
+  - validity-persistent
+  - validity-text
+  - validity-time
+  - yaml
+  - yesod
+  - yesod-core
+  - yesod-form

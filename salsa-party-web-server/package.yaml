@@ -24,7 +24,6 @@ library:
   - clock
   - conduit
   - containers
-  - cryptohash-sha256
   - data-default
   - deepseq
   - edit-distance
@@ -33,7 +32,6 @@ library:
   - fast-logger
   - file-embed
   - hashable
-  - http-api-data
   - http-client
   - http-client-tls
   - http-date
@@ -59,6 +57,7 @@ library:
   - retry
   - safe
   - safe-coloured-text
+  - salsa-party-data
   - scalpel
   - scientific
   - shakespeare
@@ -71,7 +70,6 @@ library:
   - typed-process
   - typed-uuid
   - unliftio
-  - uuid
   - validity
   - validity-bytestring
   - validity-persistent
@@ -82,7 +80,6 @@ library:
   - warp
   - webdriver
   - xml-conduit
-  - yaml
   - yesod
   - yesod-auth
   - yesod-autoreload

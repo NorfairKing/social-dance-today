@@ -28,7 +28,6 @@ import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import Data.Validity
 import Data.Validity.Text ()
 import Data.Validity.Time ()
 import qualified Database.Esqueleto.Legacy as E
@@ -46,9 +45,6 @@ import Text.Blaze.Html5 ((!))
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as HA
 import Yesod
-
-instance Validity Textarea where
-  validate = validate . unTextarea
 
 insertPlace_ :: MonadIO m => Text -> Coordinates -> SqlPersistT m ()
 insertPlace_ address coordinates = void $ insertPlace address coordinates

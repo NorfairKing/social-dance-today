@@ -1,90 +1,31 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE NumericUnderscores #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Salsa.Party.Web.Server.Gen where
 
-import Control.Monad
-import Data.Fixed
 import Data.GenValidity
 import Data.GenValidity.ByteString ()
 import Data.GenValidity.Persist ()
-import Data.GenValidity.Text
 import Data.GenValidity.Time ()
 import Data.GenValidity.UUID.Typed ()
-import Data.Password.Bcrypt
-import qualified Data.Text as T
-import Salsa.Party.DB
+import Salsa.Party.DB.Gen ()
 import Salsa.Party.Web.Server.Handler.Account.Organiser
 import Salsa.Party.Web.Server.Handler.Account.Party
 import Salsa.Party.Web.Server.Handler.Account.Schedule
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Export
 import Salsa.Party.Web.Server.Handler.Event.JSON.Place
 import Salsa.Party.Web.Server.Handler.Event.Party.Export
-import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Deduplication
 import Test.QuickCheck
-
-instance GenValid Password where
-  genValid = mkPassword <$> genValid
-  shrinkValid _ = [] -- No point.
-
-instance GenValid (PasswordHash Bcrypt) where
-  -- This is technically more than necessary, but we can't do any better because hashPassword runs in IO.
-  genValid = PasswordHash <$> genValid
-  shrinkValid _ = [] -- No point.
-
-instance GenValid Textarea where
-  genValid = Textarea <$> genValid
-  shrinkValid = fmap Textarea . shrinkValid . unTextarea
-
-instance GenValid DanceStyle where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenValid EmailAddress where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenValid (Slug a) where
-  genValid =
-    let charGen = choose ('\0', '\127') `suchThat` (validationIsValid . validateSlugChar)
-     in (Slug <$> (genTextBy charGen `suchThat` (not . T.null))) `suchThat` isValid
-  shrinkValid = filter isValid . map Slug . shrinkValid . unSlug
-
-instance GenValid User where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid UserExport where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
-instance GenValid CASKey where
-  shrinkValid _ = [] -- No point, it's a hash.
-  genValid = mkCASKey <$> genValid <*> genValid
-
 instance GenValid OrganiserForm where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
-
-instance GenValid Coord where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenValid Latitude where
-  genValid = choose (-90_00000, 90_00000) `suchThatMap` (mkLatitude . fixedToCoord . MkFixed)
-  shrinkValid = shrinkValidStructurally
-
-instance GenValid Longitude where
-  genValid = choose (-180_00000, 180_00000 - 1) `suchThatMap` (mkLongitude . fixedToCoord . MkFixed)
-  shrinkValid = shrinkValidStructurally
-
-instance GenValid Coordinates where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid AddPartyForm where
   genValid = genValidStructurally
@@ -94,19 +35,7 @@ instance GenValid EditPartyForm where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
-instance GenValid Place where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
-
 instance GenValid PlaceExport where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenValid Organiser where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenValid OrganiserReminder where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
@@ -114,55 +43,11 @@ instance GenValid OrganiserExport where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
-instance GenValid Party where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
-
 instance GenValid PartyExport where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
-instance GenValid ImporterMetadata where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenValid ExternalEvent where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenValid ExternalEventPoster where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
 instance GenValid ExternalEventExport where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenValid PartyPoster where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenValid Image where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenValid DayOfWeekIndex where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenValid Recurrence where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenValid Schedule where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenValid SchedulePoster where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenValid ScheduleParty where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
@@ -173,10 +58,6 @@ instance GenValid AddScheduleForm where
 instance GenValid EditScheduleForm where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
-
-instance GenValid StaticMap where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Similarity where
   genValid = Similarity <$> choose (0, 1)
@@ -192,36 +73,3 @@ instance GenValid SimilarityFormula where
           [ Factor <$> genValid <*> genValid,
             Terms <$> genValid <*> genValid
           ]
-
--- This isn't very general, but that's probably fine.
-genValidEmailAddress :: Gen EmailAddress
-genValidEmailAddress = do
-  userLen <- upTo 10
-  user <- replicateM (max 1 userLen) $ choose ('a', 'z')
-  domainLen <- upTo 10
-  domain <- replicateM (max 1 domainLen) $ choose ('a', 'z')
-  tldLen <- upTo 10
-  tld <- replicateM (max 1 tldLen) $ choose ('a', 'z')
-  pure $ EmailAddress $ T.pack $ concat [user, "@", domain, ".", tld]
-
-genValidPassword :: Gen Text
-genValidPassword = genValid `suchThat` (not . T.null)
-
-genPlaceAroundLocation :: Place -> Gen Place
-genPlaceAroundLocation locationPlace = genPlaceAround (placeCoordinates locationPlace)
-
-genPlaceAround :: Coordinates -> Gen Place
-genPlaceAround coordinates = do
-  Coordinates {..} <- genCoordinatesAround coordinates
-  placeQuery <- genValid
-  let placeLat = coordinatesLat
-  let placeLon = coordinatesLon
-  pure Place {..}
-
-genCoordinatesAround :: Coordinates -> Gen Coordinates
-genCoordinatesAround Coordinates {..} =
-  let Latitude latCoord = coordinatesLat
-      Longitude lonCoord = coordinatesLon
-   in Coordinates
-        <$> (((+) latCoord <$> sized (pure . fixedToCoord . MkFixed . fromIntegral . (* 100))) `suchThatMap` mkLatitude)
-        <*> (((+) lonCoord <$> sized (pure . fixedToCoord . MkFixed . fromIntegral . (* 100))) `suchThatMap` mkLongitude)

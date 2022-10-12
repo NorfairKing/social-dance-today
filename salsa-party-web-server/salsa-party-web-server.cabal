@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.7.
+-- This file has been generated from package.yaml by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -18,17 +18,6 @@ library
       OpenStreetMaps.Geocoding
       Salsa.Party.AdminNotification
       Salsa.Party.AWS
-      Salsa.Party.DB
-      Salsa.Party.DB.CASKey
-      Salsa.Party.DB.Coordinates
-      Salsa.Party.DB.DanceStyle
-      Salsa.Party.DB.EmailAddress
-      Salsa.Party.DB.Migration
-      Salsa.Party.DB.Password
-      Salsa.Party.DB.Recurrence
-      Salsa.Party.DB.Slug
-      Salsa.Party.DB.URI
-      Salsa.Party.DB.UUID
       Salsa.Party.Email
       Salsa.Party.Importer
       Salsa.Party.Importer.DancefloorfinderCom
@@ -159,7 +148,6 @@ library
     , clock
     , conduit
     , containers
-    , cryptohash-sha256
     , data-default
     , deepseq
     , edit-distance
@@ -168,7 +156,6 @@ library
     , fast-logger
     , file-embed
     , hashable
-    , http-api-data
     , http-client
     , http-client-tls
     , http-date
@@ -194,6 +181,7 @@ library
     , retry
     , safe
     , safe-coloured-text
+    , salsa-party-data
     , scalpel
     , scientific
     , shakespeare
@@ -206,7 +194,6 @@ library
     , typed-process
     , typed-uuid
     , unliftio
-    , uuid
     , validity
     , validity-bytestring
     , validity-persistent
@@ -217,7 +204,6 @@ library
     , warp
     , webdriver
     , xml-conduit
-    , yaml
     , yesod
     , yesod-auth
     , yesod-autoreload

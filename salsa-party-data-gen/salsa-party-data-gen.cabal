@@ -1,0 +1,71 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           salsa-party-data-gen
+version:        0.0.0.0
+license:        AllRightsReserved
+build-type:     Simple
+
+library
+  exposed-modules:
+      Salsa.Party.DB.Gen
+      Salsa.Party.DB.TestUtils
+  other-modules:
+      Paths_salsa_party_data_gen
+  hs-source-dirs:
+      src
+  build-depends:
+      QuickCheck
+    , base >=4.7 && <5
+    , genvalidity
+    , genvalidity-bytestring
+    , genvalidity-persistent
+    , genvalidity-text
+    , genvalidity-time
+    , genvalidity-typed-uuid
+    , microlens
+    , monad-logger
+    , password
+    , persistent
+    , persistent-sqlite
+    , salsa-party-data
+    , sydtest
+    , text
+    , yesod-form
+  default-language: Haskell2010
+
+test-suite salsa-party-data-gen-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Salsa.Party.DB.CoordinatesSpec
+      Salsa.Party.DB.RecurrenceSpec
+      Salsa.Party.DB.SlugSpec
+      Salsa.Party.DBSpec
+      Paths_salsa_party_data_gen
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+  build-tool-depends:
+      sydtest-discover:sydtest-discover
+  build-depends:
+      QuickCheck
+    , base >=4.7 && <5
+    , genvalidity
+    , genvalidity-sydtest
+    , genvalidity-sydtest-aeson
+    , genvalidity-sydtest-persistent
+    , path-pieces
+    , persistent
+    , salsa-party-data
+    , salsa-party-data-gen
+    , sydtest
+    , sydtest-aeson
+    , sydtest-persistent
+    , sydtest-persistent-sqlite
+    , time
+    , unliftio
+  default-language: Haskell2010
