@@ -21,7 +21,7 @@ import qualified Data.Text as T
 import Data.Time
 import Database.Esqueleto.Experimental
 import Salsa.Party.DB
-import Salsa.Party.Web.Server.Foundation (getPosterForExternalEvent, getPosterForParty)
+import Salsa.Party.Web.Server.Foundation (getPosterForParty)
 import Salsa.Party.Web.Server.Handler.Search.Deduplication
 import Salsa.Party.Web.Server.Handler.Search.Types
 import Text.Show.Pretty (ppShow)
@@ -93,39 +93,47 @@ runUncachedSearchQueryForResults SearchQuery {..} = do
       mKey <- getPosterForParty partyId
       pure (partyDay party, (organiserEntity, partyEntity, placeEntity, mKey))
 
-  rawExternalEventResults <- select $ do
-    ((place :& externalEvent) :& (externalEventPoster :: SqlExpr (Maybe (Entity ExternalEventPoster)))) <-
-      from $
-        ( table @Place
-            `innerJoin` table @ExternalEvent
-              `on` ( \(place :& externalEvent) ->
-                       place ^. PlaceId ==. externalEvent ^. ExternalEventPlace
-                   )
-        )
-          `leftJoin` table @ExternalEventPoster
-            `on` ( \((_ :& externalEvent) :& externalEventPoster) ->
-                     just (externalEvent ^. ExternalEventId)
-                       ==. externalEventPoster ?. ExternalEventPosterExternalEvent
-                 )
-    where_ $ dayLimit (externalEvent ^. ExternalEventDay) searchQueryBegin searchQueryMEnd
-    forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
-    externalEventSubstringQuery searchQueryDanceStyle externalEvent
-    pure (externalEvent, place)
+  rawExternalEventResults <-
+    fmap (map (\(a, b, vc) -> (a, b, unValue vc))) $
+      select $ do
+        ((place :& externalEvent) :& (_ :& image)) <-
+          from $
+            ( table @Place
+                `innerJoin` table @ExternalEvent
+                  `on` ( \(place :& externalEvent) ->
+                           place ^. PlaceId ==. externalEvent ^. ExternalEventPlace
+                       )
+            )
+              `leftJoin` ( table @ExternalEventPoster
+                             `innerJoin` table @Image
+                               `on` ( \(externalEventPoster :& image) ->
+                                        externalEventPoster ^. ExternalEventPosterImage ==. image ^. ImageId
+                                    )
+                         )
+                `on` ( \((_ :& externalEvent) :& (externalEventPoster :& _)) ->
+                         just (externalEvent ^. ExternalEventId)
+                           ==. externalEventPoster ?. ExternalEventPosterExternalEvent
+                     )
+        where_ $ dayLimit (externalEvent ^. ExternalEventDay) searchQueryBegin searchQueryMEnd
+        forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
+        externalEventSubstringQuery searchQueryDanceStyle externalEvent
+        pure (externalEvent, place, image ?. ImageKey)
 
-  -- Post-process the distance before we fetch images so we don't fetch too many images.
-  let externalEventResultsWithoutImages = maybe rawExternalEventResults (\dist -> postProcessExternalEvents dist searchQueryCoordinates rawExternalEventResults) searchQueryDistance
-
-  externalEventResultsWithImages <-
-    forM externalEventResultsWithoutImages $ \(externalEventEntity@(Entity externalEventId externalEvent), placeEntity) -> do
-      mKey <- getPosterForExternalEvent externalEventId
-      pure (externalEventDay externalEvent, (externalEventEntity, placeEntity, mKey))
+  -- Post-process the distance before we do anything else so the set is as small as possible
+  let externalEventResultsWithAccurateDistance =
+        maybe
+          rawExternalEventResults
+          (\dist -> postProcessExternalEvents dist searchQueryCoordinates rawExternalEventResults)
+          searchQueryDistance
 
   let internalResults = makeGroupedByDay partyResultsWithImages
       -- TODO deduplicate external events before fetching posters
       externalResults =
         deduplicateExternalEvents internalResults $
           deduplicateExternalEventsExternally $
-            makeGroupedByDay externalEventResultsWithImages
+            makeGroupedByDay $
+              flip map externalEventResultsWithAccurateDistance $ \trip@(Entity _ externalEvent, _, _) ->
+                (externalEventDay externalEvent, trip)
 
   pure $
     M.map (sortResults searchQueryCoordinates) $
@@ -290,12 +298,12 @@ makeInternalResult (organiser, party, place, mCasKey) = Internal organiser party
 postProcessExternalEvents ::
   Word ->
   Coordinates ->
-  [(Entity ExternalEvent, Entity Place)] ->
-  [(Entity ExternalEvent, Entity Place)]
+  [(Entity ExternalEvent, Entity Place, Maybe CASKey)] ->
+  [(Entity ExternalEvent, Entity Place, Maybe CASKey)]
 postProcessExternalEvents maximumDistance coordinates =
-  mapMaybe $ \(externalEvent, place) -> do
+  mapMaybe $ \(externalEvent, place, mImageKey) -> do
     guard $ coordinates `distanceTo` placeCoordinates (entityVal place) <= maximumDistance
-    pure (externalEvent, place)
+    pure (externalEvent, place, mImageKey)
 
 makeExternalResult :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Result
 makeExternalResult (externalEvent, place, mCasKey) = External externalEvent place mCasKey
