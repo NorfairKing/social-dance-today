@@ -68,7 +68,7 @@ runSearchQueryForResults searchResultCache searchQuery = do
       pure results
 
 runUncachedSearchQueryForResults :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
-runUncachedSearchQueryForResults SearchQuery {..} = do
+runUncachedSearchQueryForResults searchQuery@SearchQuery {..} = do
   rawPartyResults <- select $ do
     (organiser :& party :& place) <-
       from $
@@ -93,6 +93,24 @@ runUncachedSearchQueryForResults SearchQuery {..} = do
       mKey <- getPosterForParty partyId
       pure (partyDay party, (organiserEntity, partyEntity, placeEntity, mKey))
 
+  let internalResults = makeGroupedByDay partyResultsWithImages
+
+  rawExternalEventResults <- runExternalEventSearchQuery searchQuery
+
+  let externalResults =
+        deduplicateExternalEvents internalResults rawExternalEventResults
+
+  pure $
+    M.map (sortResults searchQueryCoordinates) $
+      M.filter (not . null) $
+        M.unionsWith
+          (++)
+          [ M.map (map makeInternalResult) internalResults,
+            M.map (map makeExternalResult) externalResults
+          ]
+
+runExternalEventSearchQuery :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [(Entity ExternalEvent, Entity Place, Maybe CASKey)])
+runExternalEventSearchQuery SearchQuery {..} = do
   rawExternalEventResults <-
     fmap (map (\(a, b, vc) -> (a, b, unValue vc))) $
       select $ do
@@ -126,23 +144,11 @@ runUncachedSearchQueryForResults SearchQuery {..} = do
           (\dist -> postProcessExternalEvents dist searchQueryCoordinates rawExternalEventResults)
           searchQueryDistance
 
-  let internalResults = makeGroupedByDay partyResultsWithImages
-      -- TODO deduplicate external events before fetching posters
-      externalResults =
-        deduplicateExternalEvents internalResults $
-          deduplicateExternalEventsExternally $
-            makeGroupedByDay $
-              flip map externalEventResultsWithAccurateDistance $ \trip@(Entity _ externalEvent, _, _) ->
-                (externalEventDay externalEvent, trip)
-
   pure $
-    M.map (sortResults searchQueryCoordinates) $
-      M.filter (not . null) $
-        M.unionsWith
-          (++)
-          [ M.map (map makeInternalResult) internalResults,
-            M.map (map makeExternalResult) externalResults
-          ]
+    deduplicateExternalEventsExternally $
+      makeGroupedByDay $
+        flip map externalEventResultsWithAccurateDistance $ \trip@(Entity _ externalEvent, _, _) ->
+          (externalEventDay externalEvent, trip)
 
 dayLimit :: SqlExpr (Value Day) -> Day -> Maybe Day -> SqlExpr (Value Bool)
 dayLimit dayExp begin mEnd =
