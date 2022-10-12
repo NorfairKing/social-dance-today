@@ -24,8 +24,9 @@ import Salsa.Party.DB
 import Salsa.Party.Web.Server.Handler.Search.Deduplication
 import Salsa.Party.Web.Server.Handler.Search.Types
 import Text.Show.Pretty (ppShow)
+import UnliftIO
 
-runSearchQuery :: (MonadIO m, MonadLogger m) => SearchResultCache -> SearchQuery -> SqlPersistT m SearchResult
+runSearchQuery :: (MonadUnliftIO m, MonadLogger m) => SearchResultCache -> SearchQuery -> SqlPersistT m SearchResult
 runSearchQuery searchResultCache searchQuery@SearchQuery {..} = do
   results <- runSearchQueryForResults searchResultCache searchQuery
   if nullSearchResults results
@@ -41,7 +42,7 @@ runSearchQuery searchResultCache searchQuery@SearchQuery {..} = do
 
 -- For a begin day end day (inclusive) and a given place, find all parties per
 -- day sorted by distance, and with external parties at the end in any case.
-runSearchQueryForResults :: (MonadIO m, MonadLogger m) => SearchResultCache -> SearchQuery -> SqlPersistT m (Map Day [Result])
+runSearchQueryForResults :: (MonadUnliftIO m, MonadLogger m) => SearchResultCache -> SearchQuery -> SqlPersistT m (Map Day [Result])
 runSearchQueryForResults searchResultCache searchQuery = do
   mCachedResults <- liftIO $ Cache.lookup searchResultCache searchQuery
   case mCachedResults of
@@ -66,14 +67,14 @@ runSearchQueryForResults searchResultCache searchQuery = do
       liftIO $ Cache.insert' searchResultCache Nothing searchQuery results
       pure results
 
-runUncachedSearchQueryForResults :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
+runUncachedSearchQueryForResults :: MonadUnliftIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
 runUncachedSearchQueryForResults searchQuery@SearchQuery {..} = do
-  internalResults <- runPartySearchQuery searchQuery
+  (internalResults, rawExternalEventResults) <-
+    concurrently
+      (runPartySearchQuery searchQuery)
+      (runExternalEventSearchQuery searchQuery)
 
-  rawExternalEventResults <- runExternalEventSearchQuery searchQuery
-
-  let externalResults =
-        deduplicateExternalEvents internalResults rawExternalEventResults
+  let externalResults = deduplicateExternalEvents internalResults rawExternalEventResults
 
   pure $
     M.map (sortResults searchQueryCoordinates) $
@@ -374,7 +375,7 @@ makeGroupedByDay = foldr go M.empty -- This could be falter with a fold
 
 -- TODO this can be optimised
 -- We can probably use a count query, and there's definitely no need to fetch the posters for example
-noDataQuery :: (MonadIO m, MonadLogger m) => SearchResultCache -> Coordinates -> Word -> SqlPersistT m Bool -- True means no data
+noDataQuery :: (MonadUnliftIO m, MonadLogger m) => SearchResultCache -> Coordinates -> Word -> SqlPersistT m Bool -- True means no data
 noDataQuery searchResultCache coordinates maximumDistance = do
   today <- liftIO $ utctDay <$> getCurrentTime
   nullSearchResults
