@@ -14,16 +14,17 @@ import qualified Data.Cache as Cache
 import Data.List
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
+import Data.Maybe
 import Data.Ord
+import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
-import qualified Database.Esqueleto.Experimental as E
-import Database.Persist
-import Database.Persist.Sql
+import Database.Esqueleto.Experimental
 import Salsa.Party.DB
-import Salsa.Party.Web.Server.Handler.Import
+import Salsa.Party.Web.Server.Foundation (getPosterForExternalEvent, getPosterForParty)
 import Salsa.Party.Web.Server.Handler.Search.Deduplication
 import Salsa.Party.Web.Server.Handler.Search.Types
+import Text.Show.Pretty (ppShow)
 
 runSearchQuery :: (MonadIO m, MonadLogger m) => SearchResultCache -> SearchQuery -> SqlPersistT m SearchResult
 runSearchQuery searchResultCache searchQuery@SearchQuery {..} = do
@@ -68,19 +69,19 @@ runSearchQueryForResults searchResultCache searchQuery = do
 
 runUncachedSearchQueryForResults :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
 runUncachedSearchQueryForResults SearchQuery {..} = do
-  rawPartyResults <- E.select $ do
-    (organiser E.:& party E.:& place) <-
-      E.from $
-        E.table @Organiser
-          `E.innerJoin` E.table @Party
-          `E.on` ( \(organiser E.:& party) ->
-                     organiser E.^. OrganiserId E.==. party E.^. PartyOrganiser
-                 )
-          `E.innerJoin` E.table @Place
-          `E.on` ( \(_ E.:& party E.:& place) ->
-                     party E.^. PartyPlace E.==. place E.^. PlaceId
-                 )
-    E.where_ $ dayLimit (party E.^. PartyDay) searchQueryBegin searchQueryMEnd
+  rawPartyResults <- select $ do
+    (organiser :& party :& place) <-
+      from $
+        table @Organiser
+          `innerJoin` table @Party
+          `on` ( \(organiser :& party) ->
+                   organiser ^. OrganiserId ==. party ^. PartyOrganiser
+               )
+          `innerJoin` table @Place
+          `on` ( \(_ :& party :& place) ->
+                   party ^. PartyPlace ==. place ^. PlaceId
+               )
+    where_ $ dayLimit (party ^. PartyDay) searchQueryBegin searchQueryMEnd
     forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
     partySubstringQuery searchQueryDanceStyle party
     pure (organiser, party, place)
@@ -92,14 +93,14 @@ runUncachedSearchQueryForResults SearchQuery {..} = do
       mKey <- getPosterForParty partyId
       pure (partyDay party, (organiserEntity, partyEntity, placeEntity, mKey))
 
-  rawExternalEventResults <- E.select $ do
-    (externalEvent E.:& place) <-
-      E.from $
-        E.table @ExternalEvent `E.innerJoin` E.table @Place
-          `E.on` ( \(externalEvent E.:& place) ->
-                     externalEvent E.^. ExternalEventPlace E.==. place E.^. PlaceId
-                 )
-    E.where_ $ dayLimit (externalEvent E.^. ExternalEventDay) searchQueryBegin searchQueryMEnd
+  rawExternalEventResults <- select $ do
+    (externalEvent :& place) <-
+      from $
+        table @ExternalEvent `innerJoin` table @Place
+          `on` ( \(externalEvent :& place) ->
+                   externalEvent ^. ExternalEventPlace ==. place ^. PlaceId
+               )
+    where_ $ dayLimit (externalEvent ^. ExternalEventDay) searchQueryBegin searchQueryMEnd
     forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
     externalEventSubstringQuery searchQueryDanceStyle externalEvent
     pure (externalEvent, place)
@@ -128,24 +129,24 @@ runUncachedSearchQueryForResults SearchQuery {..} = do
             M.map (map makeExternalResult) externalResults
           ]
 
-dayLimit :: E.SqlExpr (E.Value Day) -> Day -> Maybe Day -> E.SqlExpr (E.Value Bool)
+dayLimit :: SqlExpr (Value Day) -> Day -> Maybe Day -> SqlExpr (Value Bool)
 dayLimit dayExp begin mEnd =
   case mEnd of
-    Nothing -> dayExp E.>=. E.val begin
+    Nothing -> dayExp >=. val begin
     Just end ->
       if begin == end
-        then dayExp E.==. E.val begin
+        then dayExp ==. val begin
         else
-          E.between
+          between
             dayExp
-            ( E.val begin,
-              E.val end
+            ( val begin,
+              val end
             )
 
-distanceEstimationQuery :: Word -> Coordinates -> E.SqlExpr (Entity Place) -> E.SqlQuery ()
+distanceEstimationQuery :: Word -> Coordinates -> SqlExpr (Entity Place) -> SqlQuery ()
 distanceEstimationQuery maximumDistance Coordinates {..} p = do
-  let lat = p E.^. PlaceLat
-  let lon = p E.^. PlaceLon
+  let lat = p ^. PlaceLat
+  let lon = p ^. PlaceLon
   -- We want a very rough filter of parties by distance.
   -- What follows here is a rough estimate
   latitudeBetweenQuery maximumDistance lat coordinatesLat
@@ -154,18 +155,18 @@ distanceEstimationQuery maximumDistance Coordinates {..} p = do
   -- We used to have the following sorting function to sort by distance here.
   -- It turns out that we prefer to do this in Haskell, after deduplication, instead.
   --
-  -- let latDiff = lat E.-. E.val coordinatesLat
-  -- let lonDiff = lon E.-. E.val coordinatesLon
-  -- let latDiffSquared = latDiff E.*. latDiff
-  -- let lonDiffSquared = lonDiff E.*. lonDiff
+  -- let latDiff = lat -. val coordinatesLat
+  -- let lonDiff = lon -. val coordinatesLon
+  -- let latDiffSquared = latDiff *. latDiff
+  -- let lonDiffSquared = lonDiff *. lonDiff
   -- -- Luckily the square function is monotone so we don't need to sqrt here
   -- -- We need to use 'unsafeSqlBinOp " + "' because the two values are of different types.
-  -- let distSquared :: E.SqlExpr (E.Value Coord)
+  -- let distSquared :: SqlExpr (Value Coord)
   --     distSquared = unsafeSqlBinOp " + " latDiffSquared lonDiffSquared
-  -- E.orderBy [E.asc distSquared]
+  -- orderBy [asc distSquared]
   pure ()
 
-latitudeBetweenQuery :: Word -> E.SqlExpr (E.Value Latitude) -> Latitude -> E.SqlQuery ()
+latitudeBetweenQuery :: Word -> SqlExpr (Value Latitude) -> Latitude -> SqlQuery ()
 latitudeBetweenQuery maximumDistance latExpr coordinatesLat =
   let mUpperBound = mkLatitude (unLatitude coordinatesLat + roughMaxLatDistance maximumDistance)
       mLowerBound = mkLatitude (unLatitude coordinatesLat - roughMaxLatDistance maximumDistance)
@@ -173,13 +174,13 @@ latitudeBetweenQuery maximumDistance latExpr coordinatesLat =
         -- Both the upper bound was too high AND the lower bound was too low, that means we want everything.
         (Nothing, Nothing) -> pure ()
         -- Both upper bound and lower bound are within range, we need only one between
-        (Just lower, Just upper) -> E.where_ $ E.between latExpr (E.val lower, E.val upper)
+        (Just lower, Just upper) -> where_ $ between latExpr (val lower, val upper)
         -- FIXME: This is wrong on the south pole.
-        (Nothing, Just upper) -> E.where_ $ E.between latExpr (E.val minBound, E.val upper)
+        (Nothing, Just upper) -> where_ $ between latExpr (val minBound, val upper)
         -- FIXME: This is wrong on the north pole.
-        (Just lower, Nothing) -> E.where_ $ E.between latExpr (E.val lower, E.val maxBound)
+        (Just lower, Nothing) -> where_ $ between latExpr (val lower, val maxBound)
 
-longitudeBetweenQuery :: Word -> E.SqlExpr (E.Value Longitude) -> Longitude -> E.SqlQuery ()
+longitudeBetweenQuery :: Word -> SqlExpr (Value Longitude) -> Longitude -> SqlQuery ()
 longitudeBetweenQuery maximumDistance lonExpr coordinatesLon =
   let westLimit = unLongitude coordinatesLon + roughMaxLonDistance maximumDistance
       eastLimit = unLongitude coordinatesLon - roughMaxLonDistance maximumDistance
@@ -189,7 +190,7 @@ longitudeBetweenQuery maximumDistance lonExpr coordinatesLon =
         -- Both the upper bound was too high AND the lower bound was too low, that means we want everything.
         (Nothing, Nothing) -> pure ()
         -- Both upper bound and lower bound are within range, we need only one between
-        (Just lower, Just upper) -> E.where_ $ E.between lonExpr (E.val lower, E.val upper)
+        (Just lower, Just upper) -> where_ $ between lonExpr (val lower, val upper)
         -- The lower bound didn't exist.
         -- That means we're on the western boundary of the longitude wrap-around line.
         -- We'll need an 'or' condition.
@@ -197,15 +198,15 @@ longitudeBetweenQuery maximumDistance lonExpr coordinatesLon =
         -- and one that goes from the west to the eastern boundary.
         (Nothing, Just upper) -> do
           -- This is the eastern half of the condition.
-          let easternHalfCondition = E.between lonExpr (E.val minBound, E.val upper)
+          let easternHalfCondition = between lonExpr (val minBound, val upper)
           let diff = abs $ unLongitude minBound - eastLimit
           let mBound = mkLongitude (unLongitude maxBound - diff)
           -- This is the western half of the condition.
-          let mWesternHalfCondition = (\bound -> E.between lonExpr (E.val bound, E.val maxBound)) <$> mBound
+          let mWesternHalfCondition = (\bound -> between lonExpr (val bound, val maxBound)) <$> mBound
           let condition = case mWesternHalfCondition of
                 Nothing -> easternHalfCondition
-                Just westernHalfCondition -> easternHalfCondition E.||. westernHalfCondition
-          E.where_ condition
+                Just westernHalfCondition -> easternHalfCondition ||. westernHalfCondition
+          where_ condition
         -- The lower bound didn't exist.
         -- That means we're on the eastern boundary of the longitude wrap-around line.
         -- We'll need an 'or' condition.
@@ -213,15 +214,15 @@ longitudeBetweenQuery maximumDistance lonExpr coordinatesLon =
         -- and one that goes from the western boundary to the east.
         (Just lower, Nothing) -> do
           -- This is the western half of the condition.
-          let westernHalfCondition = E.between lonExpr (E.val lower, E.val maxBound)
+          let westernHalfCondition = between lonExpr (val lower, val maxBound)
           let diff = abs $ unLongitude maxBound - westLimit
           let mBound = mkLongitude (unLongitude minBound + diff)
           -- This is the eastern half of the condition.
-          let mEasternHalfCondition = (\bound -> E.between lonExpr (E.val minBound, E.val bound)) <$> mBound
+          let mEasternHalfCondition = (\bound -> between lonExpr (val minBound, val bound)) <$> mBound
           let condition = case mEasternHalfCondition of
                 Nothing -> westernHalfCondition
-                Just easternHalfCondition -> easternHalfCondition E.||. westernHalfCondition
-          E.where_ condition
+                Just easternHalfCondition -> easternHalfCondition ||. westernHalfCondition
+          where_ condition
 
 -- One degree latitude is 111km
 roughMaxLatDistance :: Word -> Coord
@@ -231,10 +232,10 @@ roughMaxLatDistance maximumDistance = fixedToCoord $ fromIntegral maximumDistanc
 roughMaxLonDistance :: Word -> Coord
 roughMaxLonDistance maximumDistance = fixedToCoord $ 5 * fromIntegral maximumDistance / 111_000
 
-partySubstringQuery :: Maybe DanceStyle -> E.SqlExpr (Entity Party) -> E.SqlQuery ()
+partySubstringQuery :: Maybe DanceStyle -> SqlExpr (Entity Party) -> SqlQuery ()
 partySubstringQuery = substringQueryHelper PartyTitle PartyDescription
 
-externalEventSubstringQuery :: Maybe DanceStyle -> E.SqlExpr (Entity ExternalEvent) -> E.SqlQuery ()
+externalEventSubstringQuery :: Maybe DanceStyle -> SqlExpr (Entity ExternalEvent) -> SqlQuery ()
 externalEventSubstringQuery = substringQueryHelper ExternalEventTitle ExternalEventDescription
 
 substringQueryHelper ::
@@ -242,29 +243,29 @@ substringQueryHelper ::
   EntityField entity Text ->
   EntityField entity (Maybe Text) ->
   Maybe DanceStyle ->
-  E.SqlExpr (Entity entity) ->
-  E.SqlQuery ()
+  SqlExpr (Entity entity) ->
+  SqlQuery ()
 substringQueryHelper entityTitle entityDescription mDanceStyle entity =
   forM_ mDanceStyle $ \danceStyle ->
-    E.where_ $
+    where_ $
       orExpr $
         flip map (danceStyleQueryStrings danceStyle) $ \danceStyleQueryString ->
-          let substringVal = E.val ("%" <> danceStyleQueryString <> "%")
-           in (E.||.)
-                (E.like (entity E.^. entityTitle) substringVal)
-                ( E.like
-                    ( E.coalesceDefault
-                        [entity E.^. entityDescription]
-                        (E.val "")
+          let substringVal = val ("%" <> danceStyleQueryString <> "%")
+           in (||.)
+                (like (entity ^. entityTitle) substringVal)
+                ( like
+                    ( coalesceDefault
+                        [entity ^. entityDescription]
+                        (val "")
                     )
                     substringVal
                 )
 
-orExpr :: [E.SqlExpr (E.Value Bool)] -> E.SqlExpr (E.Value Bool)
+orExpr :: [SqlExpr (Value Bool)] -> SqlExpr (Value Bool)
 orExpr = \case
-  [] -> E.val True
+  [] -> val True
   [e] -> e
-  (e : es) -> e E.||. orExpr es
+  (e : es) -> e ||. orExpr es
 
 postProcessParties ::
   Word ->
