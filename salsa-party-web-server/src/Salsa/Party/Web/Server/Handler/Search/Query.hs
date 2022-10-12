@@ -21,7 +21,6 @@ import qualified Data.Text as T
 import Data.Time
 import Database.Esqueleto.Experimental
 import Salsa.Party.DB
-import Salsa.Party.Web.Server.Foundation (getPosterForParty)
 import Salsa.Party.Web.Server.Handler.Search.Deduplication
 import Salsa.Party.Web.Server.Handler.Search.Types
 import Text.Show.Pretty (ppShow)
@@ -69,32 +68,48 @@ runSearchQueryForResults searchResultCache searchQuery = do
 
 runUncachedSearchQueryForResults :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
 runUncachedSearchQueryForResults searchQuery@SearchQuery {..} = do
-  rawPartyResults <- select $ do
-    (place :& (organiser :& party)) <-
-      from $
-        table @Place
-          `innerJoin` ( table @Organiser
-                          `innerJoin` table @Party
-                          `on` ( \(organiser :& party) ->
-                                   organiser ^. OrganiserId ==. party ^. PartyOrganiser
-                               )
-                      )
-          `on` ( \(place :& (_ :& party)) ->
-                   party ^. PartyPlace ==. place ^. PlaceId
-               )
-    where_ $ dayLimit (party ^. PartyDay) searchQueryBegin searchQueryMEnd
-    forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
-    partySubstringQuery searchQueryDanceStyle party
-    pure (organiser, party, place)
+  rawPartyResults <-
+    fmap (map (\(a, b, c, vd) -> (a, b, c, unValue vd))) $
+      select $ do
+        ((place :& (organiser :& party)) :& (_ :& image)) <-
+          from $
+            ( table @Place
+                `innerJoin` ( table @Organiser
+                                `innerJoin` table @Party
+                                `on` ( \(organiser :& party) ->
+                                         organiser ^. OrganiserId ==. party ^. PartyOrganiser
+                                     )
+                            )
+                `on` ( \(place :& (_ :& party)) ->
+                         party ^. PartyPlace ==. place ^. PlaceId
+                     )
+            )
+              `leftJoin` ( table @PartyPoster
+                             `innerJoin` table @Image
+                               `on` ( \(partyPoster :& image) ->
+                                        partyPoster ^. PartyPosterImage ==. image ^. ImageId
+                                    )
+                         )
+                `on` ( \((_ :& (_ :& party)) :& (partyPoster :& _)) ->
+                         just (party ^. PartyId)
+                           ==. partyPoster ?. PartyPosterParty
+                     )
+        where_ $ dayLimit (party ^. PartyDay) searchQueryBegin searchQueryMEnd
+        forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
+        partySubstringQuery searchQueryDanceStyle party
+        pure (organiser, party, place, image ?. ImageKey)
 
   -- Post-process the distance before we fetch images so we don't fetch too many images.
-  let partyResultsWithoutImages = maybe rawPartyResults (\dist -> postProcessParties dist searchQueryCoordinates rawPartyResults) searchQueryDistance
-  partyResultsWithImages <-
-    forM partyResultsWithoutImages $ \(organiserEntity, partyEntity@(Entity partyId party), placeEntity) -> do
-      mKey <- getPosterForParty partyId
-      pure (partyDay party, (organiserEntity, partyEntity, placeEntity, mKey))
+  let partyResultsWithAccurateDistance =
+        maybe
+          rawPartyResults
+          (\dist -> postProcessParties dist searchQueryCoordinates rawPartyResults)
+          searchQueryDistance
 
-  let internalResults = makeGroupedByDay partyResultsWithImages
+  let internalResults = makeGroupedByDay $
+        flip map partyResultsWithAccurateDistance $
+          \tup@(_, Entity _ party, _, _) ->
+            (partyDay party, tup)
 
   rawExternalEventResults <- runExternalEventSearchQuery searchQuery
 
@@ -292,12 +307,12 @@ orExpr = \case
 postProcessParties ::
   Word ->
   Coordinates ->
-  [(Entity Organiser, Entity Party, Entity Place)] ->
-  [(Entity Organiser, Entity Party, Entity Place)]
+  [(Entity Organiser, Entity Party, Entity Place, Maybe CASKey)] ->
+  [(Entity Organiser, Entity Party, Entity Place, Maybe CASKey)]
 postProcessParties maximumDistance coordinates =
-  mapMaybe $ \(organiser, party, place) -> do
+  mapMaybe $ \(organiser, party, place, mImageKey) -> do
     guard $ coordinates `distanceTo` placeCoordinates (entityVal place) <= maximumDistance
-    pure (organiser, party, place)
+    pure (organiser, party, place, mImageKey)
 
 makeInternalResult :: (Entity Organiser, Entity Party, Entity Place, Maybe CASKey) -> Result
 makeInternalResult (organiser, party, place, mCasKey) = Internal organiser party place mCasKey
