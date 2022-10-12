@@ -68,6 +68,24 @@ runSearchQueryForResults searchResultCache searchQuery = do
 
 runUncachedSearchQueryForResults :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
 runUncachedSearchQueryForResults searchQuery@SearchQuery {..} = do
+  internalResults <- runPartySearchQuery searchQuery
+
+  rawExternalEventResults <- runExternalEventSearchQuery searchQuery
+
+  let externalResults =
+        deduplicateExternalEvents internalResults rawExternalEventResults
+
+  pure $
+    M.map (sortResults searchQueryCoordinates) $
+      M.filter (not . null) $
+        M.unionsWith
+          (++)
+          [ M.map (map makeInternalResult) internalResults,
+            M.map (map makeExternalResult) externalResults
+          ]
+
+runPartySearchQuery :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [(Entity Organiser, Entity Party, Entity Place, Maybe CASKey)])
+runPartySearchQuery SearchQuery {..} = do
   rawPartyResults <-
     fmap (map (\(a, b, c, vd) -> (a, b, c, unValue vd))) $
       select $ do
@@ -106,24 +124,11 @@ runUncachedSearchQueryForResults searchQuery@SearchQuery {..} = do
           (\dist -> postProcessParties dist searchQueryCoordinates rawPartyResults)
           searchQueryDistance
 
-  let internalResults = makeGroupedByDay $
-        flip map partyResultsWithAccurateDistance $
-          \tup@(_, Entity _ party, _, _) ->
-            (partyDay party, tup)
-
-  rawExternalEventResults <- runExternalEventSearchQuery searchQuery
-
-  let externalResults =
-        deduplicateExternalEvents internalResults rawExternalEventResults
-
   pure $
-    M.map (sortResults searchQueryCoordinates) $
-      M.filter (not . null) $
-        M.unionsWith
-          (++)
-          [ M.map (map makeInternalResult) internalResults,
-            M.map (map makeExternalResult) externalResults
-          ]
+    makeGroupedByDay $
+      flip map partyResultsWithAccurateDistance $
+        \tup@(_, Entity _ party, _, _) ->
+          (partyDay party, tup)
 
 runExternalEventSearchQuery :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [(Entity ExternalEvent, Entity Place, Maybe CASKey)])
 runExternalEventSearchQuery SearchQuery {..} = do
