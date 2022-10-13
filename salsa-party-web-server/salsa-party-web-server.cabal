@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.5.
+-- This file has been generated from package.yaml by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -144,7 +144,6 @@ library
     , blaze-html
     , bytestring
     , cache
-    , case-insensitive
     , clock
     , conduit
     , containers
@@ -188,15 +187,12 @@ library
     , tagsoup
     , template-haskell
     , text
-    , text-icu
     , time
     , token-limiter-concurrent
     , typed-process
     , typed-uuid
     , unliftio
     , validity
-    , validity-bytestring
-    , validity-persistent
     , validity-text
     , validity-time
     , wai

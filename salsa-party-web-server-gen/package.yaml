@@ -50,16 +50,19 @@ benchmarks:
     dependencies:
     - QuickCheck
     - cache
+    - containers
     - criterion
     - genvalidity
     - monad-logger
     - persistent
+    - random
     - salsa-party-data
     - salsa-party-data-gen
     - salsa-party-web-server
     - salsa-party-web-server-gen
     - sydtest
     - time
+    - vector
 
 tests:
   salsa-party-web-server-gen-test:

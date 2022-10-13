@@ -40,11 +40,15 @@ countSearchResults = M.foldl (+) 0 . M.map length
 data SearchResult
   = ResultsFound !(Map Day [Result])
   | NoDataYet
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
+
+instance NFData SearchResult
 
 data Result
   = External (Entity ExternalEvent) (Entity Place) (Maybe CASKey)
   | Internal (Entity Organiser) (Entity Party) (Entity Place) (Maybe CASKey)
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
+
+instance NFData Result
 
 type SearchResultCache = Cache SearchQuery (Map Day [Result])
