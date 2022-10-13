@@ -166,10 +166,10 @@ benchmark salsa-party-web-server-bench
     , cache
     , containers
     , criterion
+    , deepseq
     , genvalidity
     , monad-logger
     , persistent
-    , random
     , salsa-party-data
     , salsa-party-data-gen
     , salsa-party-web-server

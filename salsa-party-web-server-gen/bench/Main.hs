@@ -1,9 +1,11 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Main where
 
+import Control.DeepSeq
+import Control.Exception
 import Control.Monad
 import Control.Monad.Logger
 import Criterion.Main as Criterion
@@ -23,7 +25,6 @@ import Salsa.Party.Web.Server.Handler.Search
 import Salsa.Party.Web.Server.Handler.Search.Query
 import Salsa.Party.Web.Server.Handler.Search.Types
 import Salsa.Party.Web.Server.TestUtils
-import System.Random
 import Test.QuickCheck
 import Test.QuickCheck.Gen
 import Test.QuickCheck.Random
@@ -48,13 +49,19 @@ setupSearchData = runSqlPool setupSearchDataQuery
 
 setupSearchDataQuery :: SqlPersistT IO (Vector SearchQuery)
 setupSearchDataQuery = do
+  liftIO $ putStrLn "Generating Places"
   let places = runGen $
         genUniques placeQuery 10000 $ do
           location <- elements locations
           genPlaceAroundLocation (locationPlace location)
   placeIds <- insertMany places
 
-  let (partyPrototypes, externalEventPrototypes) = runGen $ genPrototypes placeIds
+  liftIO $ putStrLn "Generating importers"
+  let importers = runGen $ genUniques importerMetadataName 20 genValid
+  importerIds <- insertMany importers
+
+  liftIO $ putStrLn "Generating parties and external events"
+  let (partyPrototypes, externalEventPrototypes) = runGen $ genPrototypes importerIds placeIds
 
   -- Set up parties
   forM_ partyPrototypes $ \partyPrototype -> do
@@ -66,24 +73,19 @@ setupSearchDataQuery = do
     uuid <- nextRandomUUID
     insert $ externalEventPrototype {externalEventUuid = uuid}
 
-  pure $ runGen $ V.replicateM 100 genQuery
+  liftIO $ putStrLn "Generating search queries"
+  let queries = runGen $ V.replicateM 100 genQuery
+  liftIO $ evaluate $ force queries
 
 genQuery :: Gen SearchQuery
 genQuery = do
   -- Make a query
   day <- genDay
-  let chooseAround :: (Integral i, Random i) => i -> Gen i
-      chooseAround i =
-        let twentyPercent = fromIntegral i * 100 / 20 :: Double
-         in choose
-              ( round (fromIntegral i - twentyPercent),
-                round (fromIntegral i + twentyPercent)
-              )
-  daysAhead <- chooseAround defaultDaysAhead
+  daysAhead <- choose (defaultDaysAhead - 2, defaultDaysAhead + 2)
   coordinates <- do
     location <- elements locations
     genCoordinatesAround (placeCoordinates (locationPlace location))
-  distance <- chooseAround defaultMaximumDistance
+  distance <- choose (defaultMaximumDistance - 20_000, defaultMaximumDistance + 20_000)
   pure
     SearchQuery
       { searchQueryBegin = day,
@@ -95,8 +97,11 @@ genQuery = do
           Nothing
       }
 
-genPrototypes :: [PlaceId] -> Gen ([Party], [ExternalEvent])
-genPrototypes placeIds = (,) <$> genPartyPrototypes placeIds <*> genExternalEventPrototypes placeIds
+genPrototypes :: [ImporterMetadataId] -> [PlaceId] -> Gen ([Party], [ExternalEvent])
+genPrototypes importers placeIds =
+  (,)
+    <$> genPartyPrototypes placeIds
+    <*> genExternalEventPrototypes importers placeIds
 
 genPartyPrototypes :: [PlaceId] -> Gen [Party]
 genPartyPrototypes placeIds = replicateM 1000 $ do
@@ -109,16 +114,18 @@ genPartyPrototypes placeIds = replicateM 1000 $ do
         partyPlace = placeId
       }
 
-genExternalEventPrototypes :: [PlaceId] -> Gen [ExternalEvent]
-genExternalEventPrototypes placeIds = do
-  genUniques (\ExternalEvent {..} -> (externalEventImporter, externalEventKey)) 50000 $ do
+genExternalEventPrototypes :: [ImporterMetadataId] -> [PlaceId] -> Gen [ExternalEvent]
+genExternalEventPrototypes importers placeIds = do
+  genUniques externalEventKey 50000 $ do
     placeId <- elements placeIds
+    importer <- elements importers
     day <- genDay
     externalEventPrototype <- genValid
     pure $
       externalEventPrototype
         { externalEventDay = day,
-          externalEventPlace = placeId
+          externalEventPlace = placeId,
+          externalEventImporter = importer
         }
 
 genUniques :: Ord b => (a -> b) -> Word -> Gen a -> Gen [a]
@@ -130,7 +137,7 @@ genUniques func n gen = go S.empty n
         a <- gen
         let b = func a
         if b `S.member` acc
-          then go acc i
+          then scale succ $ go acc i
           else (a :) <$> go (S.insert b acc) (pred i)
 
 -- We generate days within a month, there's no point in looking accross centuries.
@@ -144,8 +151,7 @@ doSearchAtBenchmark pool queries =
       doSearchesAt pool queries
 
 doSearchesAt :: ConnectionPool -> Vector SearchQuery -> IO (Vector SearchResult)
-doSearchesAt pool queries =
-  mapM (doSearchAt pool)
+doSearchesAt pool = mapM (doSearchAt pool)
 
 doSearchAt :: ConnectionPool -> SearchQuery -> IO SearchResult
 doSearchAt pool query = do
