@@ -5,6 +5,7 @@
 
 module Salsa.Party.DB.Slug where
 
+import Control.DeepSeq
 import Control.Monad
 import Data.Aeson as JSON
 import qualified Data.Char as Char
@@ -56,6 +57,8 @@ validateSlugChar c
         declare "The character is alphanumeric" $ Char.isAlphaNum c,
         declare "The character is in Latin1" $ Char.isAscii c
       ]
+
+instance NFData (Slug a)
 
 instance Show (Slug a) where
   show = T.unpack . unSlug

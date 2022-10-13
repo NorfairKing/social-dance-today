@@ -6,6 +6,7 @@ module Salsa.Party.DB.Password
   )
 where
 
+import Control.DeepSeq
 import Data.Password.Bcrypt
 import Data.Proxy
 import Data.Text (Text)
@@ -17,8 +18,14 @@ import Database.Persist.Sql
 instance Validity Password where
   validate = validate . unsafeShowPassword
 
+instance NFData Password where
+  rnf pwh = deepseq (unsafeShowPassword pwh) ()
+
 instance Validity (PasswordHash Bcrypt) where
   validate = trivialValidation
+
+instance NFData (PasswordHash Bcrypt) where
+  rnf pwh = deepseq (unPasswordHash pwh) ()
 
 instance PersistField (PasswordHash Bcrypt) where
   toPersistValue = toPersistValue . unPasswordHash

@@ -29,6 +29,7 @@ module Salsa.Party.DB
   )
 where
 
+import Control.DeepSeq
 import Control.Monad
 import Data.ByteString (ByteString)
 import Data.List.NonEmpty (NonEmpty)
@@ -343,10 +344,18 @@ StaticMap
     deriving Generic
 |]
 
+instance (ToBackendKey SqlBackend record) => NFData (Key record) where
+  rnf = rnf . fromSqlKey
+
+instance (ToBackendKey SqlBackend record, NFData record) => NFData (Entity record) where
+  rnf (Entity k v) = deepseq k $ deepseq v ()
+
 instance Validity Textarea where
   validate = delve "Textarea" . unTextarea
 
 instance Validity User
+
+instance NFData User
 
 instance Validity Place where
   validate place@Place {..} =
@@ -355,11 +364,19 @@ instance Validity Place where
         declare "The place query is not empty" $ not $ T.null placeQuery
       ]
 
+instance NFData Place
+
 instance Validity Organiser
+
+instance NFData Organiser
 
 instance Validity OrganiserReminder
 
+instance NFData OrganiserReminder
+
 instance Validity PartyPoster
+
+instance NFData PartyPoster
 
 instance Validity Party where
   validate party@Party {..} =
@@ -369,21 +386,39 @@ instance Validity Party where
         declare "The description is normalised" $ normaliseMDescription partyDescription == partyDescription
       ]
 
+instance NFData Party
+
 instance Validity ExternalEvent
+
+instance NFData ExternalEvent
 
 instance Validity ExternalEventPoster
 
+instance NFData ExternalEventPoster
+
 instance Validity ImporterMetadata
+
+instance NFData ImporterMetadata
 
 instance Validity Image
 
+instance NFData Image
+
 instance Validity Schedule
+
+instance NFData Schedule
 
 instance Validity ScheduleParty
 
+instance NFData ScheduleParty
+
 instance Validity SchedulePoster
 
+instance NFData SchedulePoster
+
 instance Validity StaticMap
+
+instance NFData StaticMap
 
 changesComparedTo :: ExternalEvent -> ExternalEvent -> Maybe (NonEmpty (Update ExternalEvent))
 changesComparedTo ee1 ee2 =

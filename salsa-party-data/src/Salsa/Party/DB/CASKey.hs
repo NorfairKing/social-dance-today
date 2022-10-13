@@ -5,6 +5,7 @@
 module Salsa.Party.DB.CASKey where
 
 import Control.Arrow (left)
+import Control.DeepSeq
 import qualified Crypto.Hash.SHA256 as SHA256
 import Data.Aeson as JSON
 import Data.ByteString (ByteString)
@@ -27,6 +28,8 @@ newtype CASKey = CASKey {unCASKey :: ByteString}
   deriving (Eq, Ord, Generic)
 
 instance Validity CASKey
+
+instance NFData CASKey
 
 instance Show CASKey where
   show = T.unpack . renderCASKey

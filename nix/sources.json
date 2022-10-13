@@ -173,10 +173,10 @@
         "homepage": "https://www.youtube.com/watch?v=eIs9qNh17SM",
         "owner": "NorfairKing",
         "repo": "validity",
-        "rev": "8373ac5f0f02ad66f1b83c9bf572290430e84062",
-        "sha256": "04rs2hq9xz9y8w5zpc15zazm8dcbkd5kryh4cy7yww187jgp0saq",
+        "rev": "657cf4bdc2731387abea6e707b88d381d5218616",
+        "sha256": "1ygj14nirm4nfbdcarkjbpykcf0l1c9dz08x8h374a301r3mwxya",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/validity/archive/8373ac5f0f02ad66f1b83c9bf572290430e84062.tar.gz",
+        "url": "https://github.com/NorfairKing/validity/archive/657cf4bdc2731387abea6e707b88d381d5218616.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "yesod-autoreload": {

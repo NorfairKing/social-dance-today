@@ -25,6 +25,20 @@ library:
   - text
   - yesod-form
 
+benchmarks:
+  salsa-party-data-bench:
+    main: Main.hs
+    source-dirs: bench/
+    ghc-options:
+    - -Wall
+    - -O2
+    dependencies:
+    - criterion
+    - genvalidity-criterion
+    - salsa-party-data
+    - salsa-party-data-gen
+
+
 tests:
   salsa-party-data-gen-test:
     main: Spec.hs

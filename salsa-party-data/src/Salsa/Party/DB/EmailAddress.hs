@@ -5,6 +5,7 @@
 module Salsa.Party.DB.EmailAddress where
 
 import Autodocodec
+import Control.DeepSeq
 import Data.Aeson as JSON
 import Data.String
 import Data.Text (Text)
@@ -22,6 +23,8 @@ newtype EmailAddress = EmailAddress {emailAddressText :: Text}
   deriving (FromJSON, ToJSON) via (Autodocodec EmailAddress)
 
 instance Validity EmailAddress
+
+instance NFData EmailAddress
 
 instance HasCodec EmailAddress where
   codec = dimapCodec EmailAddress emailAddressText codec

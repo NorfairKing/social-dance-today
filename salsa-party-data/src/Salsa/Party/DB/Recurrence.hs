@@ -4,6 +4,7 @@
 
 module Salsa.Party.DB.Recurrence where
 
+import Control.DeepSeq
 import Data.Aeson
 import Data.ByteString (ByteString)
 import Data.Fixed
@@ -28,6 +29,8 @@ data DayOfWeekIndex
   deriving (Show, Eq, Enum, Bounded, Generic)
 
 instance Validity DayOfWeekIndex
+
+instance NFData DayOfWeekIndex
 
 instance FromJSON DayOfWeekIndex where
   parseJSON v = do
@@ -69,6 +72,8 @@ data Recurrence
   deriving (Show, Eq, Generic)
 
 instance Validity Recurrence
+
+instance NFData Recurrence
 
 instance FromJSON Recurrence where
   parseJSON = withObject "Recurrence" $ \o -> do

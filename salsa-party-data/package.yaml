@@ -28,7 +28,6 @@ library:
   - persistent
   - random
   - resourcet
-  - scientific
   - shakespeare
   - template-haskell
   - text

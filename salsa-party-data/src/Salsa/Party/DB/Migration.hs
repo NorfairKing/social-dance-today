@@ -85,7 +85,9 @@ removeInvalidPlaces = do
 locations :: [Location]
 locations =
   case Yaml.decodeEither' locationsFileContents of
-    Left err -> error $ show err
+    Left err ->
+      -- This error is fine. It happens at compile-time.
+      error $ show err
     Right ls -> ls
 
 locationsFileContents :: ByteString
