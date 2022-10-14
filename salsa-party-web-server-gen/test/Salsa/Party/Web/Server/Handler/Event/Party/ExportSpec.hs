@@ -137,6 +137,7 @@ spec = do
               partyStart = Just (TimeOfDay 20 15 00),
               partyHomepage = Nothing,
               partyPrice = Just "15.0 CHF",
+              partyPoster = Nothing,
               partyCancelled = False,
               partyCreated = UTCTime (fromGregorian 2021 09 05) 18,
               partyModified = Nothing,

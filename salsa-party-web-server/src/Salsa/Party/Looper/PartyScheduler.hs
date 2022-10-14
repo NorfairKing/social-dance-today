@@ -2,6 +2,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -Wno-unused-pattern-binds #-}
 
 module Salsa.Party.Looper.PartyScheduler
   ( runPartyScheduler,
@@ -28,7 +29,7 @@ runPartyScheduler = do
 
 data ScheduleDecision
   = NextDayTooFarAhead
-  | ScheduleAParty (Entity Schedule) [Day] (Maybe ImageId)
+  | ScheduleAParty !(Entity Schedule) ![Day]
   deriving (Show, Eq)
 
 makeScheduleDecision :: MonadUnliftIO m => Entity Schedule -> SqlPersistT m ScheduleDecision
@@ -46,11 +47,9 @@ makeScheduleDecision scheduleEntity@(Entity scheduleId_ Schedule {..}) = do
         Nothing -> today
         Just day -> day
 
-  case nextDays of
-    [] -> pure NextDayTooFarAhead
-    _ -> do
-      mImageId <- fmap (schedulePosterImage . entityVal) <$> getBy (UniqueSchedulePoster scheduleId_)
-      pure $ ScheduleAParty scheduleEntity nextDays mImageId
+  pure $ case nextDays of
+    [] -> NextDayTooFarAhead
+    _ -> ScheduleAParty scheduleEntity nextDays
 
 daysToScheduleAhead :: Integer
 daysToScheduleAhead = 45
@@ -58,7 +57,7 @@ daysToScheduleAhead = 45
 handleScheduleDecision :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => ScheduleDecision -> m ()
 handleScheduleDecision = \case
   NextDayTooFarAhead -> logDebugN "Not scheduling any parties because the next day would be too far ahead."
-  ScheduleAParty (Entity scheduleId_ schedule) nextDays mImageId -> do
+  ScheduleAParty (Entity scheduleId_ schedule) nextDays -> do
     pool <- asks appConnectionPool
     let runDBHere func = runSqlPool (retryOnBusy func) pool
     now <- liftIO getCurrentTime
@@ -67,30 +66,29 @@ handleScheduleDecision = \case
         uuid <- nextRandomUUID
         let party = scheduleToPartyOn uuid now nextDay schedule
         partyId_ <- insert party
-        insert_ ScheduleParty {schedulePartySchedule = scheduleId_, schedulePartyParty = partyId_, schedulePartyScheduled = now}
-        forM_ mImageId $ \imageId_ ->
-          insert_
-            PartyPoster
-              { partyPosterParty = partyId_,
-                partyPosterImage = imageId_,
-                partyPosterCreated = now,
-                partyPosterModified = Nothing
-              }
+        insert_
+          ScheduleParty
+            { schedulePartySchedule = scheduleId_,
+              schedulePartyParty = partyId_,
+              schedulePartyScheduled = now
+            }
 
 scheduleToPartyOn :: EventUUID -> UTCTime -> Day -> Schedule -> Party
 scheduleToPartyOn uuid now day Schedule {..} =
-  Party
-    { partyUuid = uuid,
-      partySlug = makePartySlug scheduleTitle,
-      partyOrganiser = scheduleOrganiser,
-      partyTitle = scheduleTitle,
-      partyDescription = scheduleDescription,
-      partyDay = day,
-      partyStart = scheduleStart,
-      partyHomepage = scheduleHomepage,
-      partyPrice = schedulePrice,
-      partyCancelled = False,
-      partyCreated = now,
-      partyModified = Nothing,
-      partyPlace = schedulePlace
-    }
+  let Schedule _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+   in Party
+        { partyUuid = uuid,
+          partySlug = makePartySlug scheduleTitle,
+          partyOrganiser = scheduleOrganiser,
+          partyTitle = scheduleTitle,
+          partyDescription = scheduleDescription,
+          partyDay = day,
+          partyStart = scheduleStart,
+          partyHomepage = scheduleHomepage,
+          partyPrice = schedulePrice,
+          partyPoster = schedulePoster,
+          partyCancelled = False,
+          partyCreated = now,
+          partyModified = Nothing,
+          partyPlace = schedulePlace
+        }

@@ -13,10 +13,9 @@ import qualified Database.Esqueleto.Legacy as E
 import Database.Persist
 import Database.Persist.Sql
 import Salsa.Party.DB
-import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Scoring
 
-getExternalEventTupBySlug :: MonadIO m => EventSlug -> Day -> SqlPersistT m (Maybe (Entity ExternalEvent, Entity Place, Maybe CASKey))
+getExternalEventTupBySlug :: MonadIO m => EventSlug -> Day -> SqlPersistT m (Maybe (Entity ExternalEvent, Entity Place))
 getExternalEventTupBySlug externalEventSlug_ day = do
   externalEventTups <-
     E.select $
@@ -26,21 +25,12 @@ getExternalEventTupBySlug externalEventSlug_ day = do
         E.where_ $ externalEvent E.^. ExternalEventSlug E.==. E.just (E.val externalEventSlug_)
         pure (externalEvent, place)
 
-  externalEventTrips <- forM externalEventTups $ \(externalEventEntity@(Entity externalEventId _), placeEntity) -> do
-    mKey <- getPosterForExternalEvent externalEventId
-    pure (externalEventEntity, placeEntity, mKey)
+  pure $ listToMaybe $ sortOn (Down . scoreExternalEventTup) externalEventTups
 
-  pure $ listToMaybe $ sortOn (Down . scoreExternalEventTrip) externalEventTrips
-
-getExternalEventTupByUuid :: MonadIO m => EventUUID -> SqlPersistT m (Maybe (Entity ExternalEvent, Entity Place, Maybe CASKey))
+getExternalEventTupByUuid :: MonadIO m => EventUUID -> SqlPersistT m (Maybe (Entity ExternalEvent, Entity Place))
 getExternalEventTupByUuid eventUuid = do
-  mTup <- E.selectOne $
+  E.selectOne $
     E.from $ \(externalEvent `E.InnerJoin` place) -> do
       E.on (externalEvent E.^. ExternalEventPlace E.==. place E.^. PlaceId)
       E.where_ $ externalEvent E.^. ExternalEventUuid E.==. E.val eventUuid
       pure (externalEvent, place)
-
-  -- TODO do this in one big query instead.
-  forM mTup $ \(externalEventEntity@(Entity externalEventId _), placeEntity) -> do
-    mKey <- getPosterForExternalEvent externalEventId
-    pure (externalEventEntity, placeEntity, mKey)

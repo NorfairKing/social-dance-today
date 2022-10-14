@@ -180,6 +180,8 @@ importFestivalPage = awaitForever $ \(request, response) -> do
                 Just placeEntity -> pure placeEntity
             Just coords -> lift $ importDB $ insertPlace address coords
 
+        let externalEventPoster = Nothing
+
         let externalEventCreated = now
         let externalEventModified = Nothing
         externalEventImporter <- asks importEnvId

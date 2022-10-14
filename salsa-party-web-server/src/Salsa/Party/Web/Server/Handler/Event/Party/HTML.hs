@@ -34,7 +34,6 @@ partyPageHtml (Entity _ organiser@Organiser {..}) (Entity partyId party@Party {.
 
   place@Place {..} <- runDB $ get404 partyPlace
   mSchedule <- runDB $ getScheduleForParty partyId
-  mPosterKey <- runDB $ getPosterForParty partyId
   googleMapsWidget <- makeGoogleMapsWidget partyUuid placeQuery
   now <- getClientNow
   let today = localDay now
@@ -50,7 +49,7 @@ partyPageHtml (Entity _ organiser@Organiser {..}) (Entity partyId party@Party {.
         else MsgPartyTitleScheduled partyTitle
     messageRender <- getMessageRender
     setDescription $ partyHtmlDescription messageRender timeLocale prettyDayFormat prettyTimeFormat party organiser place
-    let ldEvent = partyToLDEvent renderUrl party organiser place mPosterKey
+    let ldEvent = partyToLDEvent renderUrl party organiser place
     toWidgetHead $ toJSONLDData ldEvent
     addHeader "Last-Modified" $ TE.decodeLatin1 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified
     let mAddToGoogleLink = addPartyToGoogleCalendarLink renderUrl organiser party place
@@ -58,5 +57,5 @@ partyPageHtml (Entity _ organiser@Organiser {..}) (Entity partyId party@Party {.
 
 addPartyToGoogleCalendarLink :: (Route App -> Text) -> Organiser -> Party -> Place -> Maybe URI
 addPartyToGoogleCalendarLink renderUrl organiser party@Party {..} Place {..} =
-  let Party _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+  let Party _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
    in addEventToGoogleCalendarLink (renderUrl (partyRoute organiser party)) partyDay partyStart placeQuery partyTitle partyDescription

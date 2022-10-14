@@ -73,6 +73,8 @@ addPartyOnSchedule moment organiserId = driveDB $ do
           placeLat = Latitude 0, -- Dummy
           placeLon = Longitude 0 -- Dummy
         }
+  posterFile <- readTestFile "test_resources/posters/landscape.jpg"
+  (_, posterKey) <- insertTestFileImage posterFile
   let partySlug_ = Slug "bachata-community-zurich-mondays"
   let party =
         Party
@@ -85,21 +87,13 @@ addPartyOnSchedule moment organiserId = driveDB $ do
             partyStart = Just $ TimeOfDay 19 30 00,
             partyHomepage = Just "https://youtube.com/channel/UCbfoGDdy-3KgeU8OsojO_lA",
             partyPrice = Just "FREE (Freiwillig Twint oder Kässeli)",
+            partyPoster = Just posterKey,
             partyCancelled = False,
             partyCreated = moment,
             partyModified = Nothing,
             partyPlace = placeId
           }
   partyId <- DB.insert party
-  posterFile <- readTestFile "test_resources/posters/landscape.jpg"
-  posterId <- insertTestFileImage posterFile
-  DB.insert_
-    PartyPoster
-      { partyPosterParty = partyId,
-        partyPosterImage = posterId,
-        partyPosterCreated = moment,
-        partyPosterModified = Nothing
-      }
   scheduleId <-
     DB.insert
       Schedule
@@ -111,17 +105,11 @@ addPartyOnSchedule moment organiserId = driveDB $ do
           scheduleStart = partyStart party,
           scheduleHomepage = partyHomepage party,
           schedulePrice = partyPrice party,
+          schedulePoster = Just posterKey,
           scheduleCreated = moment,
           scheduleModified = Nothing,
           schedulePlace = placeId
         }
-  DB.insert_
-    SchedulePoster
-      { schedulePosterSchedule = scheduleId,
-        schedulePosterImage = posterId,
-        schedulePosterCreated = moment,
-        schedulePosterModified = Nothing
-      }
   DB.insert_
     ScheduleParty
       { schedulePartySchedule = scheduleId,
@@ -139,6 +127,8 @@ addPartyOffSchedule moment organiserId = driveDB $ do
           placeLat = Latitude 0, -- Dummy
           placeLon = Longitude 0 -- Dummy
         }
+  posterFile <- readTestFile "test_resources/posters/portrait.jpg"
+  (_, posterKey) <- insertTestFileImage posterFile
   let partySlug_ = Slug "bachata-community-zurich-mondays"
   let party =
         Party
@@ -151,21 +141,13 @@ addPartyOffSchedule moment organiserId = driveDB $ do
             partyStart = Nothing,
             partyHomepage = Nothing,
             partyPrice = Nothing,
+            partyPoster = Just posterKey,
             partyCancelled = False,
             partyCreated = moment,
             partyModified = Nothing,
             partyPlace = placeId
           }
-  partyId <- DB.insert party
-  posterFile <- readTestFile "test_resources/posters/portrait.jpg"
-  posterId <- insertTestFileImage posterFile
-  DB.insert_
-    PartyPoster
-      { partyPosterParty = partyId,
-        partyPosterImage = posterId,
-        partyPosterCreated = moment,
-        partyPosterModified = Nothing
-      }
+  DB.insert_ party
 
 addPartyWithoutPoster :: UTCTime -> OrganiserId -> WebdriverTestM App ()
 addPartyWithoutPoster moment organiserId = driveDB $ do
@@ -189,6 +171,7 @@ addPartyWithoutPoster moment organiserId = driveDB $ do
             partyStart = Nothing,
             partyHomepage = Nothing,
             partyPrice = Nothing,
+            partyPoster = Nothing,
             partyCancelled = False,
             partyCreated = moment,
             partyModified = Nothing,

@@ -22,8 +22,8 @@ import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search (daysToKeepParties)
 
-externalEventPageHtml :: Entity ExternalEvent -> Entity Place -> Maybe CASKey -> Handler Html
-externalEventPageHtml (Entity _ externalEvent@ExternalEvent {..}) (Entity _ place@Place {..}) mPosterKey = do
+externalEventPageHtml :: Entity ExternalEvent -> Entity Place -> Handler Html
+externalEventPageHtml (Entity _ externalEvent@ExternalEvent {..}) (Entity _ place@Place {..}) = do
   isAdmin <- do
     mAuth <- maybeAuth
     case mAuth of
@@ -44,7 +44,7 @@ externalEventPageHtml (Entity _ externalEvent@ExternalEvent {..}) (Entity _ plac
   withNavBar $ do
     setTitleI $ externalEventTitleMessage externalEvent
     setDescription $ externalEventHtmlDescription messageRender timeLocale prettyDayFormat prettyTimeFormat externalEvent place
-    toWidgetHead $ toJSONLDData $ externalEventToLDEvent renderUrl externalEvent place mPosterKey
+    toWidgetHead $ toJSONLDData $ externalEventToLDEvent renderUrl externalEvent place
     addHeader "Last-Modified" $ TE.decodeLatin1 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe externalEventCreated externalEventModified
     addHeader "X-Robots-Tag" $ T.pack $ "unavailable_after: " <> formatTime timeLocale "%F" (addDays daysToKeepParties externalEventDay)
     let mAddToGoogleLink = addExternalEventToGoogleCalendarLink renderUrl externalEvent place
@@ -56,5 +56,5 @@ parseURILike url = parseAbsoluteURI url <|> parseAbsoluteURI ("https://" <> url)
 
 addExternalEventToGoogleCalendarLink :: (Route App -> Text) -> ExternalEvent -> Place -> Maybe URI
 addExternalEventToGoogleCalendarLink renderUrl externalEvent@ExternalEvent {..} Place {..} =
-  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
    in addEventToGoogleCalendarLink (renderUrl (externalEventRoute externalEvent)) externalEventDay externalEventStart placeQuery externalEventTitle externalEventDescription

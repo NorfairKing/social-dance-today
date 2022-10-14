@@ -128,6 +128,7 @@ parseEventPage = awaitForever $ \(key, request, response) -> do
               utf8 ref
 
           let externalEventPrice = Nothing -- TODO, rather hard to parse
+          let externalEventPoster = Nothing
           let externalEventCreated = now
           let externalEventModified = Nothing
           externalEventImporter <- asks importEnvId

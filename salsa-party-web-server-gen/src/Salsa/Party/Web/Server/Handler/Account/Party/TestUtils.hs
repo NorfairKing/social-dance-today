@@ -68,14 +68,13 @@ verifyPartyAddedHelper partyUuid_ addPartyForm_ mPoster = do
   mParty <- DB.getBy $ UniquePartyUUID partyUuid_
   case mParty of
     Nothing -> liftIO $ expectationFailure "expected the added party to still exist."
-    Just (Entity partyId party) -> do
+    Just (Entity _ party) -> do
       liftIO $ addPartyForm_ `addPartyFormShouldMatch` party
       mPlace <- DB.get $ partyPlace party
       liftIO $ case mPlace of
         Nothing -> expectationFailure "expected the added party to still have a place"
         Just place -> placeQuery place `shouldBe` addPartyFormAddress addPartyForm_
-      mCASKey <- getPosterForParty partyId
-      liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
+      liftIO $ partyPoster party `shouldBe` (mPoster >>= testFileCASKey)
 
 addPartyFormToEditPartyForm :: AddPartyForm -> EditPartyForm
 addPartyFormToEditPartyForm AddPartyForm {..} =
@@ -99,7 +98,7 @@ addPartyFormShouldMatch addPartyForm_@AddPartyForm {..} party@Party {..} = do
           ]
   context ctx $ do
     let AddPartyForm _ _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
-    let Party _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+    let Party _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
     context "day" $ partyDay `shouldBe` addPartyFormDay
     context "title" $ partyTitle `shouldBe` addPartyFormTitle
     -- We can't check the address because that's in the Place.
@@ -152,14 +151,13 @@ verifyPartyEditedHelper partyUuid_ editPartyForm_ mPoster = do
   mParty <- DB.getBy $ UniquePartyUUID partyUuid_
   case mParty of
     Nothing -> liftIO $ expectationFailure "expected the edited party to still exist."
-    Just (Entity partyId party) -> do
+    Just (Entity _ party) -> do
       liftIO $ editPartyForm_ `editPartyFormShouldMatch` party
       mPlace <- DB.get $ partyPlace party
       liftIO $ case mPlace of
         Nothing -> expectationFailure "expected the edited party to still have a place"
         Just place -> placeQuery place `shouldBe` editPartyFormAddress editPartyForm_
-      mCASKey <- getPosterForParty partyId
-      liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
+      liftIO $ partyPoster party `shouldBe` (mPoster >>= testFileCASKey)
 
 editPartyFormShouldMatch :: EditPartyForm -> Party -> IO ()
 editPartyFormShouldMatch editPartyForm_@EditPartyForm {..} party@Party {..} = do
@@ -172,7 +170,7 @@ editPartyFormShouldMatch editPartyForm_@EditPartyForm {..} party@Party {..} = do
           ]
   context ctx $ do
     let EditPartyForm _ _ _ _ _ _ _ = undefined -- We want to check every part of the party form
-    let Party _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+    let Party _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
     context "title" $ partyTitle `shouldBe` editPartyFormTitle
     -- We can't check the address because that's in the Place.
     -- partyAddress `shouldBe` editPartyFormAddress

@@ -19,13 +19,10 @@ main =
           genValidBench @OrganiserReminder,
           genValidBench @Place,
           genValidBench @Party,
-          genValidBench @PartyPoster,
           genValidBench @Image,
           genValidBench @Schedule,
-          genValidBench @SchedulePoster,
           genValidBench @ImporterMetadata,
-          genValidBench @ExternalEvent,
-          genValidBench @ExternalEventPoster
+          genValidBench @ExternalEvent
         ],
       bgroup
         "shrinkers"
@@ -34,12 +31,9 @@ main =
           shrinkValidBench @OrganiserReminder,
           shrinkValidBench @Place,
           shrinkValidBench @Party,
-          shrinkValidBench @PartyPoster,
           shrinkValidBench @Image,
           shrinkValidBench @Schedule,
-          shrinkValidBench @SchedulePoster,
           shrinkValidBench @ImporterMetadata,
-          shrinkValidBench @ExternalEvent,
-          shrinkValidBench @ExternalEventPoster
+          shrinkValidBench @ExternalEvent
         ]
     ]

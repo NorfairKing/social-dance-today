@@ -30,14 +30,11 @@ spec = do
     persistEntitySpec @OrganiserReminder
     persistEntitySpec @Place
     persistEntitySpec @Party
-    persistEntitySpec @PartyPoster
     persistEntitySpec @Image
     persistEntitySpec @Schedule
-    persistEntitySpec @SchedulePoster
     persistEntitySpec @ScheduleParty
     persistEntitySpec @ImporterMetadata
     persistEntitySpec @ExternalEvent
-    persistEntitySpec @ExternalEventPoster
     persistEntitySpec @StaticMap
 
 persistEntitySpec ::

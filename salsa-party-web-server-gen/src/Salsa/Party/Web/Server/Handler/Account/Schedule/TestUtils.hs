@@ -68,14 +68,13 @@ verifyScheduleAddedHelper scheduleUuid_ addScheduleForm_ mPoster = do
   mSchedule <- DB.getBy $ UniqueScheduleUUID scheduleUuid_
   case mSchedule of
     Nothing -> liftIO $ expectationFailure "expected the added schedule to still exist."
-    Just (Entity scheduleId schedule) -> do
+    Just (Entity _ schedule) -> do
       liftIO $ addScheduleForm_ `addScheduleFormShouldMatch` schedule
       mPlace <- DB.get $ schedulePlace schedule
       liftIO $ case mPlace of
         Nothing -> expectationFailure "expected the added schedule to still have a place"
         Just place -> placeQuery place `shouldBe` addScheduleFormAddress addScheduleForm_
-      mCASKey <- getPosterForSchedule scheduleId
-      liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
+      liftIO $ schedulePoster schedule `shouldBe` (mPoster >>= testFileCASKey)
 
 addScheduleFormShouldMatch :: AddScheduleForm -> Schedule -> IO ()
 addScheduleFormShouldMatch AddScheduleForm {..} Schedule {..} = do
@@ -144,14 +143,13 @@ verifyScheduleEditedHelper scheduleUuid_ editScheduleForm_ mPoster = do
   mSchedule <- DB.getBy $ UniqueScheduleUUID scheduleUuid_
   case mSchedule of
     Nothing -> liftIO $ expectationFailure "expected the edited schedule to still exist."
-    Just (Entity scheduleId schedule) -> do
+    Just (Entity _ schedule) -> do
       liftIO $ editScheduleForm_ `editScheduleFormShouldMatch` schedule
       mPlace <- DB.get $ schedulePlace schedule
       liftIO $ case mPlace of
         Nothing -> expectationFailure "expected the edited schedule to still have a place"
         Just place -> placeQuery place `shouldBe` editScheduleFormAddress editScheduleForm_
-      mCASKey <- getPosterForSchedule scheduleId
-      liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
+      liftIO $ schedulePoster schedule `shouldBe` (mPoster >>= testFileCASKey)
 
 editScheduleFormShouldMatch :: EditScheduleForm -> Schedule -> IO ()
 editScheduleFormShouldMatch EditScheduleForm {..} Schedule {..} = do
@@ -181,14 +179,13 @@ verifyScheduleAddedPartyHelper eventUuid_ addScheduleForm_ mPoster = do
   mSchedule <- DB.getBy $ UniquePartyUUID eventUuid_
   case mSchedule of
     Nothing -> liftIO $ expectationFailure "expected the added party to still exist."
-    Just (Entity partyId party) -> do
+    Just (Entity _ party) -> do
       liftIO $ addScheduleForm_ `addScheduleFormShouldMatchParty` party
       mPlace <- DB.get $ partyPlace party
       liftIO $ case mPlace of
         Nothing -> expectationFailure "expected the added party to still have a place"
         Just place -> placeQuery place `shouldBe` addScheduleFormAddress addScheduleForm_
-      mCASKey <- getPosterForParty partyId
-      liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
+      liftIO $ partyPoster party `shouldBe` (mPoster >>= testFileCASKey)
 
 addScheduleFormShouldMatchParty :: AddScheduleForm -> Party -> IO ()
 addScheduleFormShouldMatchParty AddScheduleForm {..} Party {..} = do
@@ -217,14 +214,13 @@ verifyScheduleEditedPartyHelper eventUuid_ editScheduleForm_ mPoster = do
   mSchedule <- DB.getBy $ UniquePartyUUID eventUuid_
   case mSchedule of
     Nothing -> liftIO $ expectationFailure "expected the edited party to still exist."
-    Just (Entity partyId party) -> do
+    Just (Entity _ party) -> do
       liftIO $ editScheduleForm_ `editScheduleFormShouldMatchParty` party
       mPlace <- DB.get $ partyPlace party
       liftIO $ case mPlace of
         Nothing -> expectationFailure "expected the edited party to still have a place"
         Just place -> placeQuery place `shouldBe` editScheduleFormAddress editScheduleForm_
-      mCASKey <- getPosterForParty partyId
-      liftIO $ mCASKey `shouldBe` (mPoster >>= testFileCASKey)
+      liftIO $ partyPoster party `shouldBe` (mPoster >>= testFileCASKey)
 
 editScheduleFormShouldMatchParty :: EditScheduleForm -> Party -> IO ()
 editScheduleFormShouldMatchParty EditScheduleForm {..} Party {..} = do

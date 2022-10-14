@@ -9,7 +9,7 @@ import Salsa.Party.Web.Server.Handler.Import
 
 partyHtmlDescription :: (AppMessage -> Text) -> TimeLocale -> String -> String -> Party -> Organiser -> Place -> Text
 partyHtmlDescription render timeLocale prettyDayFormat prettyTimeFormat Party {..} Organiser {..} Place {..} =
-  let Party _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+  let Party _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
       Organiser _ _ _ _ _ _ _ = undefined
       Place _ _ _ = undefined
       facts =

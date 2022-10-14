@@ -76,8 +76,17 @@ partyScreenshotTest mPosterName mMapFilePath mRecurrence = do
         placeId <- DB.insert place
         forM_ mMapFilePath $ \mapFilePath -> do
           mapFile <- readTestFile mapFilePath
-          mapId <- insertTestFileImage mapFile
-          DB.insert_ StaticMap {staticMapPlace = placeId, staticMapImage = mapId}
+          (mapId, mapKey) <- insertTestFileImage mapFile
+          DB.insert_
+            StaticMap
+              { staticMapPlace = placeId,
+                staticMapLegacyImage = mapId,
+                staticMapImage = Just mapKey
+              }
+        mPosterKey <- forM mPosterName $ \posterName -> do
+          posterFile <- readTestFile $ "test_resources/posters/" <> posterName <> ".jpg"
+          (_, posterKey) <- insertTestFileImage posterFile
+          pure posterKey
         let party =
               Party
                 { partyUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112, -- Dummy
@@ -89,23 +98,13 @@ partyScreenshotTest mPosterName mMapFilePath mRecurrence = do
                   partyStart = Just $ TimeOfDay 19 30 00,
                   partyHomepage = Just "https://youtube.com/channel/UCbfoGDdy-3KgeU8OsojO_lA",
                   partyPrice = Just "FREE (Freiwillig Twint oder Kässeli)",
+                  partyPoster = mPosterKey,
                   partyCancelled = False,
                   partyCreated = moment,
                   partyModified = Nothing,
                   partyPlace = placeId
                 }
         partyId <- DB.insert party
-        mPosterId <- forM mPosterName $ \posterName -> do
-          posterFile <- readTestFile $ "test_resources/posters/" <> posterName <> ".jpg"
-          posterId <- insertTestFileImage posterFile
-          DB.insert_
-            PartyPoster
-              { partyPosterParty = partyId,
-                partyPosterImage = posterId,
-                partyPosterCreated = moment,
-                partyPosterModified = Nothing
-              }
-          pure posterId
         forM_ mRecurrence $ \recurrence -> do
           scheduleId <-
             DB.insert
@@ -118,17 +117,10 @@ partyScreenshotTest mPosterName mMapFilePath mRecurrence = do
                   scheduleStart = partyStart party,
                   scheduleHomepage = partyHomepage party,
                   schedulePrice = partyPrice party,
+                  schedulePoster = mPosterKey,
                   scheduleCreated = moment,
                   scheduleModified = Nothing,
                   schedulePlace = placeId
-                }
-          forM_ mPosterId $ \posterId ->
-            DB.insert_
-              SchedulePoster
-                { schedulePosterSchedule = scheduleId,
-                  schedulePosterImage = posterId,
-                  schedulePosterCreated = moment,
-                  schedulePosterModified = Nothing
                 }
           DB.insert_
             ScheduleParty

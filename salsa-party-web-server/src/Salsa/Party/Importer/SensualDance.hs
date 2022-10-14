@@ -250,6 +250,7 @@ importItem = awaitForever $ \(Item {..}, mImageBlob) -> do
       let externalEventHomepage = itemWebsite
       let externalEventPrice = Nothing
       let externalEventCancelled = Nothing
+      let externalEventPoster = Nothing
       case M.lookup itemRegion regionMap of
         Nothing -> logDebugN $ "Could not categorise region: " <> itemRegion
         Just address -> do
@@ -266,20 +267,13 @@ importItem = awaitForever $ \(Item {..}, mImageBlob) -> do
               lift $
                 importExternalEventAnd ExternalEvent {..} $ \externalEventId -> do
                   forM_ mImageBlob $ \imageBlob -> do
-                    mImageId <- tryToImportImageBlob "image/jpeg" imageBlob
-                    forM_ mImageId $ \imageId -> do
+                    mImageKey <- tryToImportImageBlob "image/jpeg" imageBlob
+                    forM_ mImageKey $ \key -> do
                       importDB $
-                        upsertBy
-                          (UniqueExternalEventPoster externalEventId)
-                          ( ExternalEventPoster
-                              { externalEventPosterExternalEvent = externalEventId,
-                                externalEventPosterImage = imageId,
-                                externalEventPosterCreated = now,
-                                externalEventPosterModified = Nothing
-                              }
-                          )
-                          [ ExternalEventPosterImage =. imageId,
-                            ExternalEventPosterModified =. Just now
+                        update
+                          externalEventId
+                          [ ExternalEventPoster =. Just key,
+                            ExternalEventModified =. Just now
                           ]
 
 regionMap :: Map Text Text

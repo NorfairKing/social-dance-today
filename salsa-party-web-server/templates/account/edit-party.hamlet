@@ -96,7 +96,7 @@
             <img .file-img .is-16by9 style="max-width: 640px; max-height: 360px;">
 
 
-      $maybe posterKey <- mPosterKey
+      $maybe posterKey <- partyPoster party
         <div .field>
           <div .control>
             <input .input name="poster-key" type="hidden" value=#{renderCASKey posterKey}>

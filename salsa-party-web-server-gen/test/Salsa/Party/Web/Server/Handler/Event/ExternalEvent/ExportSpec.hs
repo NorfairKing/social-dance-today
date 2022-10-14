@@ -36,6 +36,7 @@ spec = do
               externalEventStart = Just (TimeOfDay 20 15 00),
               externalEventHomepage = Nothing,
               externalEventPrice = Just "15.0 CHF",
+              externalEventPoster = Nothing,
               externalEventCancelled = Just False,
               externalEventCreated = UTCTime (fromGregorian 2021 07 05) 185,
               externalEventModified = Nothing,

@@ -36,6 +36,7 @@ completeServerMigration quiet = do
   logInfoN "Autmatic migrations done, starting application-specific migrations."
   setUpPlaces
   removeInvalidPlaces
+  setUpImageKeys
   setUpIndices
   logInfoN "Migrations done."
 
@@ -80,6 +81,53 @@ removeInvalidPlaces = do
           logInfoN $ T.pack $ unlines [unwords ["Removing invalid place", show place], err]
           delete placeId
         Right _ -> pure ()
+
+setUpImageKeys :: forall m. (MonadUnliftIO m, MonadLogger m) => SqlPersistT m ()
+setUpImageKeys = do
+  logInfoN "Setting up image keys for parties"
+  ackPartyPostersSource <- selectSourceRes [] []
+  withAcquire ackPartyPostersSource $ \partyPosterSource ->
+    runConduit $
+      partyPosterSource
+        .| C.mapM_
+          ( \(Entity _ LegacyPartyPoster {..}) -> do
+              logDebugN $ T.pack $ unwords ["Updating party poster for party", show (fromSqlKey legacyPartyPosterParty)]
+              mImage <- fmap imageKey <$> get legacyPartyPosterImage
+              update legacyPartyPosterParty [PartyPoster =. mImage]
+          )
+  logInfoN "Setting up image keys for external events"
+  ackExternalEventPostersSource <- selectSourceRes [] []
+  withAcquire ackExternalEventPostersSource $ \externalEventPosterSource ->
+    runConduit $
+      externalEventPosterSource
+        .| C.mapM_
+          ( \(Entity _ LegacyExternalEventPoster {..}) -> do
+              logDebugN $ T.pack $ unwords ["Updating external event poster for external event", show (fromSqlKey legacyExternalEventPosterExternalEvent)]
+              mImage <- fmap imageKey <$> get legacyExternalEventPosterImage
+              update legacyExternalEventPosterExternalEvent [ExternalEventPoster =. mImage]
+          )
+  logInfoN "Setting up image keys for schedules"
+  ackSchedulePostersSource <- selectSourceRes [] []
+  withAcquire ackSchedulePostersSource $ \schedulePosterSource ->
+    runConduit $
+      schedulePosterSource
+        .| C.mapM_
+          ( \(Entity _ LegacyPartyPoster {..}) -> do
+              logDebugN $ T.pack $ unwords ["Updating schedule poster for schedule", show (fromSqlKey legacyPartyPosterParty)]
+              mImage <- fmap imageKey <$> get legacyPartyPosterImage
+              update legacyPartyPosterParty [PartyPoster =. mImage]
+          )
+  logInfoN "Setting up image keys for static maps"
+  ackStaticMapPostersSource <- selectSourceRes [] []
+  withAcquire ackStaticMapPostersSource $ \externalEventPosterSource ->
+    runConduit $
+      externalEventPosterSource
+        .| C.mapM_
+          ( \(Entity staticMapId StaticMap {..}) -> do
+              logDebugN $ T.pack $ unwords ["Updating external event poster for static map", show (fromSqlKey staticMapLegacyImage)]
+              mImage <- fmap imageKey <$> get staticMapLegacyImage
+              update staticMapId [StaticMapImage =. mImage]
+          )
 
 {-# NOINLINE locations #-}
 locations :: [Location]

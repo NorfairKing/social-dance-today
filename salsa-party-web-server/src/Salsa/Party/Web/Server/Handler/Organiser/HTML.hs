@@ -38,7 +38,7 @@ organiserPage (Entity organiserId organiser@Organiser {..}) = do
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
   prettyDateTimeFormat <- getPrettyDateTimeFormat
-  let mLatestModifiedParty = maximumMay $ map (\(Entity _ Party {..}, _, _) -> fromMaybe partyCreated partyModified) parties
+  let mLatestModifiedParty = maximumMay $ map (\(Entity _ Party {..}, _) -> fromMaybe partyCreated partyModified) parties
   let latestModifiedOrganiser = fromMaybe organiserCreated organiserModified
   let lastModified = maybe latestModifiedOrganiser (max latestModifiedOrganiser) mLatestModifiedParty
   withNavBar $ do
@@ -48,16 +48,12 @@ organiserPage (Entity organiserId organiser@Organiser {..}) = do
     addStylesheet $ StaticR zoom_without_container_css
     $(widgetFile "organiser") <> posterCSS
 
-getUpcomingPartiesOfOrganiser :: MonadIO m => Day -> OrganiserId -> SqlPersistT m [(Entity Party, Entity Place, Maybe CASKey)]
+getUpcomingPartiesOfOrganiser :: MonadIO m => Day -> OrganiserId -> SqlPersistT m [(Entity Party, Entity Place)]
 getUpcomingPartiesOfOrganiser today organiserId = do
-  partyTups <- E.select $
+  E.select $
     E.from $ \(party `E.InnerJoin` p) -> do
       E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
       E.where_ (party E.^. PartyOrganiser E.==. E.val organiserId)
       E.where_ (party E.^. PartyDay E.>=. E.val today)
       E.orderBy [E.asc $ party E.^. PartyDay]
       pure (party, p)
-  forM partyTups $ \(partyEntity@(Entity partyId _), placeEntity) -> do
-    -- TODO this is potentially expensive, can we do it in one query?
-    mKey <- getPosterForParty partyId
-    pure (partyEntity, placeEntity, mKey)

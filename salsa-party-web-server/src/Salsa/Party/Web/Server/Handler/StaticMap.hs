@@ -48,12 +48,11 @@ getEventMapR eventUUID = do
     Left (Entity _ party) -> pure $ partyPlace party
     Right (Entity _ externalEvent) -> pure $ externalEventPlace externalEvent
   mImageKey <- runDB $
-    fmap (fmap E.unValue) $
+    fmap (E.unValue =<<) $
       E.selectOne $
-        E.from $ \(staticMap `E.InnerJoin` image) -> do
-          E.on (staticMap E.^. StaticMapImage E.==. image E.^. ImageId)
+        E.from $ \staticMap -> do
           E.where_ (staticMap E.^. StaticMapPlace E.==. E.val placeId)
-          pure (image E.^. ImageKey)
+          pure (staticMap E.^. StaticMapImage)
 
   imageKey <- case mImageKey of
     Just imageKey -> do
@@ -73,8 +72,13 @@ loadAndCacheMapImage placeId = do
     void $
       upsertBy
         (UniqueStaticMapPlace placeId)
-        (StaticMap {staticMapPlace = placeId, staticMapImage = imageId})
-        [] -- No need to update anything: [StaticMapImage =. imageId]
+        ( StaticMap
+            { staticMapPlace = placeId,
+              staticMapImage = Just imageKey,
+              staticMapLegacyImage = imageId
+            }
+        )
+        [] -- No need to update anything
   pure imageKey
 
 loadMapImage :: Text -> Handler (Entity Image)

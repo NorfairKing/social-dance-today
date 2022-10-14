@@ -126,6 +126,7 @@ importEventSync = awaitForever $ \(request, Event {..}) -> do
       -- I guess it either dissappears or is just not updated.
       -- Either way, nothing we can do about that.
       let externalEventCancelled = Nothing
+      let externalEventPoster = Nothing
       let externalEventCreated = now
       let externalEventModified = Nothing
 

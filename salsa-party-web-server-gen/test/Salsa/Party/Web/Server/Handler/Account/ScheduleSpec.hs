@@ -236,7 +236,7 @@ spec = serverSpec $ do
                 mSchedule <- testDB $ DB.getBy $ UniqueScheduleUUID scheduleUuid_
                 mCasKey1 <- case mSchedule of
                   Nothing -> liftIO $ expectationFailure "expected the first schedule to exist."
-                  Just (Entity scheduleId _) -> testDB $ getPosterForSchedule scheduleId
+                  Just (Entity _ schedule) -> pure $ schedulePoster schedule
                 -- There is now a poster.
                 liftIO $ mCasKey1 `shouldBe` testFileCASKey poster1
                 get $ AccountR $ AccountScheduleEditR scheduleUuid_

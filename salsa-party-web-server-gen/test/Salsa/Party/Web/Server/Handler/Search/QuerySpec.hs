@@ -207,8 +207,8 @@ spec = do
                       sr
                         `shouldBe` M.fromList
                           [ ( day,
-                              [ Internal (Entity organiserId organiser) (Entity party1Id party1) (Entity place1Id place1) Nothing,
-                                Internal (Entity organiserId organiser) (Entity party2Id party2) (Entity place2Id place2) Nothing
+                              [ Internal (Entity organiserId organiser) (Entity party1Id party1) (Entity place1Id place1),
+                                Internal (Entity organiserId organiser) (Entity party2Id party2) (Entity place2Id place2)
                               ]
                             )
                           ]
@@ -264,8 +264,8 @@ spec = do
                       sr
                         `shouldBe` M.fromList
                           [ ( day,
-                              [ Internal (Entity organiserId organiser) (Entity party1Id party1) (Entity place1Id place1) Nothing,
-                                Internal (Entity organiserId organiser) (Entity party2Id party2) (Entity place2Id place2) Nothing
+                              [ Internal (Entity organiserId organiser) (Entity party1Id party1) (Entity place1Id place1),
+                                Internal (Entity organiserId organiser) (Entity party2Id party2) (Entity place2Id place2)
                               ]
                             )
                           ]
@@ -274,55 +274,53 @@ spec = do
         forAllValid $ \organiser ->
           forAllValid $ \party1Prototype ->
             forAllValid $ \party2Prototype ->
-              forAllValid $ \partyPoster1Prototype ->
-                forAllValid $ \partyPoster2Prototype ->
-                  forAllValid $ \image1Prototype ->
-                    forAll (genValid `suchThat` (\i -> imageKey image1Prototype /= imageKey i)) $ \image2Prototype ->
-                      forAllValid $ \day ->
-                        flip runSqlPool pool $ do
-                          let queryPlace = Place {placeQuery = "Search Place", placeLat = Latitude 0, placeLon = Longitude 0}
-                          _ <- DB.insert queryPlace
-                          let place1 = Place {placeQuery = "Place 1", placeLat = Latitude 0, placeLon = Longitude 0.1}
-                          place1Id <- DB.insert place1
-                          let place2 = Place {placeQuery = "Place 2", placeLat = Latitude 0.1, placeLon = Longitude 0}
-                          place2Id <- DB.insert place2
-                          organiserId <- DB.insert organiser
-                          let party1 =
-                                party1Prototype
-                                  { partyOrganiser = organiserId,
-                                    partyDay = day,
-                                    partyPlace = place1Id
-                                  }
-                          party1Id <- DB.insert party1
-                          let party2 =
-                                party2Prototype
-                                  { partyOrganiser = organiserId,
-                                    partyDay = day,
-                                    partyPlace = place2Id
-                                  }
-                          party2Id <- DB.insert party2
-                          image1Id <- DB.insert image1Prototype
-                          DB.insert_ partyPoster1Prototype {partyPosterParty = party1Id, partyPosterImage = image1Id}
-                          image2Id <- DB.insert image2Prototype
-                          DB.insert_ partyPoster2Prototype {partyPosterParty = party2Id, partyPosterImage = image2Id}
-                          sr <-
-                            runUncachedSearchQueryForResults @IO
-                              SearchQuery
-                                { searchQueryBegin = day,
-                                  searchQueryMEnd = Just day,
-                                  searchQueryCoordinates = placeCoordinates queryPlace,
-                                  searchQueryDistance = Just defaultMaximumDistance,
-                                  searchQueryDanceStyle = Nothing
-                                }
-                          liftIO $
-                            sr
-                              `shouldBe` M.fromList
-                                [ ( day,
-                                    [ Internal (Entity organiserId organiser) (Entity party1Id party1) (Entity place1Id place1) (Just (imageKey image1Prototype)),
-                                      Internal (Entity organiserId organiser) (Entity party2Id party2) (Entity place2Id place2) (Just (imageKey image2Prototype))
-                                    ]
-                                  )
+              forAllValid $ \image1Prototype ->
+                forAll (genValid `suchThat` (\i -> imageKey image1Prototype /= imageKey i)) $ \image2Prototype ->
+                  forAllValid $ \day ->
+                    flip runSqlPool pool $ do
+                      let queryPlace = Place {placeQuery = "Search Place", placeLat = Latitude 0, placeLon = Longitude 0}
+                      _ <- DB.insert queryPlace
+                      let place1 = Place {placeQuery = "Place 1", placeLat = Latitude 0, placeLon = Longitude 0.1}
+                      place1Id <- DB.insert place1
+                      let place2 = Place {placeQuery = "Place 2", placeLat = Latitude 0.1, placeLon = Longitude 0}
+                      place2Id <- DB.insert place2
+                      organiserId <- DB.insert organiser
+                      DB.insert_ image1Prototype
+                      DB.insert_ image2Prototype
+                      let party1 =
+                            party1Prototype
+                              { partyOrganiser = organiserId,
+                                partyDay = day,
+                                partyPlace = place1Id,
+                                partyPoster = Just $ imageKey image1Prototype
+                              }
+                      party1Id <- DB.insert party1
+                      let party2 =
+                            party2Prototype
+                              { partyOrganiser = organiserId,
+                                partyDay = day,
+                                partyPlace = place2Id,
+                                partyPoster = Just $ imageKey image2Prototype
+                              }
+                      party2Id <- DB.insert party2
+                      sr <-
+                        runUncachedSearchQueryForResults @IO
+                          SearchQuery
+                            { searchQueryBegin = day,
+                              searchQueryMEnd = Just day,
+                              searchQueryCoordinates = placeCoordinates queryPlace,
+                              searchQueryDistance = Just defaultMaximumDistance,
+                              searchQueryDanceStyle = Nothing
+                            }
+                      liftIO $
+                        sr
+                          `shouldBe` M.fromList
+                            [ ( day,
+                                [ Internal (Entity organiserId organiser) (Entity party1Id party1) (Entity place1Id place1),
+                                  Internal (Entity organiserId organiser) (Entity party2Id party2) (Entity place2Id place2)
                                 ]
+                              )
+                            ]
 
       it "runs correctly with this complex case" $ \pool ->
         forAllValid $ \organiser ->
@@ -442,9 +440,9 @@ spec = do
                                   sr
                                     `shouldBe` M.fromList
                                       [ ( day,
-                                          [ Internal (Entity organiserId organiser) (Entity party1Id party1) (Entity place1Id place1) Nothing,
-                                            External (Entity externalEvent1Id externalEvent1) (Entity place4Id place4) Nothing,
-                                            External (Entity externalEvent2Id externalEvent2) (Entity place5Id place5) Nothing
+                                          [ Internal (Entity organiserId organiser) (Entity party1Id party1) (Entity place1Id place1),
+                                            External (Entity externalEvent1Id externalEvent1) (Entity place4Id place4),
+                                            External (Entity externalEvent2Id externalEvent2) (Entity place5Id place5)
                                           ]
                                         )
                                       ]

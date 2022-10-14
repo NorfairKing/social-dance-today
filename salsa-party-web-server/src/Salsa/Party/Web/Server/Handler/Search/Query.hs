@@ -21,7 +21,6 @@ import qualified Data.Text as T
 import Data.Time
 import Database.Esqueleto.Experimental
 import Salsa.Party.DB
-import Salsa.Party.Web.Server.Foundation (getPosterForExternalEvent, getPosterForParty)
 import Salsa.Party.Web.Server.Handler.Search.Deduplication
 import Salsa.Party.Web.Server.Handler.Search.Types
 import Text.Show.Pretty (ppShow)
@@ -84,7 +83,7 @@ runUncachedSearchQueryForResults searchQuery = do
             M.map (map makeExternalResult) externalResults
           ]
 
-runInternalSearchQuery :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [(Entity Organiser, Entity Party, Entity Place, Maybe CASKey)])
+runInternalSearchQuery :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [(Entity Organiser, Entity Party, Entity Place)])
 runInternalSearchQuery SearchQuery {..} = do
   rawPartyResults <- select $ do
     (organiser :& party :& place) <-
@@ -104,15 +103,16 @@ runInternalSearchQuery SearchQuery {..} = do
     pure (organiser, party, place)
 
   -- Post-process the distance before we fetch images so we don't fetch too many images.
-  let partyResultsWithoutImages = maybe rawPartyResults (\dist -> postProcessParties dist searchQueryCoordinates rawPartyResults) searchQueryDistance
-  partyResultsWithImages <-
-    forM partyResultsWithoutImages $ \(organiserEntity, partyEntity@(Entity partyId party), placeEntity) -> do
-      mKey <- getPosterForParty partyId
-      pure (partyDay party, (organiserEntity, partyEntity, placeEntity, mKey))
+  let postprocessedResults =
+        maybe
+          rawPartyResults
+          (\dist -> postProcessParties dist searchQueryCoordinates rawPartyResults)
+          searchQueryDistance
 
-  pure $ makeGroupedByDay partyResultsWithImages
+  let partyResults = map (\tup@(_, Entity _ party, _) -> (partyDay party, tup)) postprocessedResults
+  pure $ makeGroupedByDay partyResults
 
-runExternalSearchQuery :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [(Entity ExternalEvent, Entity Place, Maybe CASKey)])
+runExternalSearchQuery :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [(Entity ExternalEvent, Entity Place)])
 runExternalSearchQuery SearchQuery {..} = do
   rawExternalEventResults <- select $ do
     (externalEvent :& place) <-
@@ -127,16 +127,17 @@ runExternalSearchQuery SearchQuery {..} = do
     pure (externalEvent, place)
 
   -- Post-process the distance before we fetch images so we don't fetch too many images.
-  let externalEventResultsWithoutImages = maybe rawExternalEventResults (\dist -> postProcessExternalEvents dist searchQueryCoordinates rawExternalEventResults) searchQueryDistance
+  let postprocessedResults =
+        maybe
+          rawExternalEventResults
+          (\dist -> postProcessExternalEvents dist searchQueryCoordinates rawExternalEventResults)
+          searchQueryDistance
 
-  externalEventResultsWithImages <-
-    forM externalEventResultsWithoutImages $ \(externalEventEntity@(Entity externalEventId externalEvent), placeEntity) -> do
-      mKey <- getPosterForExternalEvent externalEventId
-      pure (externalEventDay externalEvent, (externalEventEntity, placeEntity, mKey))
+  let externalEventResults = flip map postprocessedResults $ \tup@(Entity _ externalEvent, _) -> (externalEventDay externalEvent, tup)
 
   pure $
     deduplicateExternalEventsExternally $
-      makeGroupedByDay externalEventResultsWithImages
+      makeGroupedByDay externalEventResults
 
 dayLimit :: SqlExpr (Value Day) -> Day -> Maybe Day -> SqlExpr (Value Bool)
 dayLimit dayExp begin mEnd =
@@ -286,8 +287,8 @@ postProcessParties maximumDistance coordinates =
     guard $ coordinates `distanceTo` placeCoordinates (entityVal place) <= maximumDistance
     pure (organiser, party, place)
 
-makeInternalResult :: (Entity Organiser, Entity Party, Entity Place, Maybe CASKey) -> Result
-makeInternalResult (organiser, party, place, mCasKey) = Internal organiser party place mCasKey
+makeInternalResult :: (Entity Organiser, Entity Party, Entity Place) -> Result
+makeInternalResult (organiser, party, place) = Internal organiser party place
 
 postProcessExternalEvents ::
   Word ->
@@ -299,8 +300,8 @@ postProcessExternalEvents maximumDistance coordinates =
     guard $ coordinates `distanceTo` placeCoordinates (entityVal place) <= maximumDistance
     pure (externalEvent, place)
 
-makeExternalResult :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Result
-makeExternalResult (externalEvent, place, mCasKey) = External externalEvent place mCasKey
+makeExternalResult :: (Entity ExternalEvent, Entity Place) -> Result
+makeExternalResult (externalEvent, place) = External externalEvent place
 
 sortResults :: Coordinates -> [Result] -> [Result]
 sortResults coordinates =
@@ -311,11 +312,11 @@ sortResults coordinates =
       ]
   where
     isInternal = \case
-      Internal _ _ _ _ -> True
-      External _ _ _ -> False
+      Internal _ _ _ -> True
+      External _ _ -> False
     distanceToResult = \case
-      External _ (Entity _ place) _ -> placeCoordinates place `distanceTo` coordinates
-      Internal _ _ (Entity _ place) _ -> placeCoordinates place `distanceTo` coordinates
+      External _ (Entity _ place) -> placeCoordinates place `distanceTo` coordinates
+      Internal _ _ (Entity _ place) -> placeCoordinates place `distanceTo` coordinates
 
 defaultMaximumDistance :: Word
 defaultMaximumDistance = 50_000 -- 50 km

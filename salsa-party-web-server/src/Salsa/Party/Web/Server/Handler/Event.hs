@@ -29,8 +29,8 @@ getEventR eventUuid = do
     Nothing -> do
       mExternalEventTup <- runDB $ getExternalEventTupByUuid eventUuid
       case mExternalEventTup of
-        Just (externalEventEntity@(Entity _ externalEvent), placeEntity, mCASKey) -> case externalEventSlugRoute externalEvent of
-          Nothing -> externalEventPage externalEventEntity placeEntity mCASKey
+        Just (externalEventEntity@(Entity _ externalEvent), placeEntity) -> case externalEventSlugRoute externalEvent of
+          Nothing -> externalEventPage externalEventEntity placeEntity
           Just route -> redirect route
         -- If the UUID represents a party that does not exist, we will assume
         -- that the event has dissappeared from our database.
@@ -56,7 +56,7 @@ getExternalEventSlugR externalEventSlug_ day = do
   mExternalEventTup <- runDB $ getExternalEventTupBySlug externalEventSlug_ day
   case mExternalEventTup of
     Nothing -> goneOrNotFound day
-    Just (externalEventEntity, placeEntity, mCASKey) -> externalEventPage externalEventEntity placeEntity mCASKey
+    Just (externalEventEntity, placeEntity) -> externalEventPage externalEventEntity placeEntity
 
 -- In cases where we can tell which day the party was supposed to be on, we'll
 -- still serve up a 404 if the day is in the future.

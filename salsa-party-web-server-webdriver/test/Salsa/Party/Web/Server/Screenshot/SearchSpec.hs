@@ -69,6 +69,8 @@ addPartyOnSchedule moment placeId = driveDB $ do
             organiserModified = Nothing
           }
   organiserId <- DB.insert organiser
+  posterFile <- readTestFile "test_resources/posters/landscape.jpg"
+  (_, posterKey) <- insertTestFileImage posterFile
   let party =
         Party
           { partyUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112, -- Dummy
@@ -80,21 +82,13 @@ addPartyOnSchedule moment placeId = driveDB $ do
             partyStart = Just $ TimeOfDay 19 30 00,
             partyHomepage = Just "https://youtube.com/channel/UCbfoGDdy-3KgeU8OsojO_lA",
             partyPrice = Just "FREE (Freiwillig Twint oder Kässeli)",
+            partyPoster = Just posterKey,
             partyCancelled = False,
             partyCreated = moment,
             partyModified = Nothing,
             partyPlace = placeId
           }
   partyId <- DB.insert party
-  posterFile <- readTestFile "test_resources/posters/landscape.jpg"
-  posterId <- insertTestFileImage posterFile
-  DB.insert_
-    PartyPoster
-      { partyPosterParty = partyId,
-        partyPosterImage = posterId,
-        partyPosterCreated = moment,
-        partyPosterModified = Nothing
-      }
   scheduleId <-
     DB.insert
       Schedule
@@ -106,17 +100,11 @@ addPartyOnSchedule moment placeId = driveDB $ do
           scheduleStart = partyStart party,
           scheduleHomepage = partyHomepage party,
           schedulePrice = partyPrice party,
+          schedulePoster = Just posterKey,
           scheduleCreated = moment,
           scheduleModified = Nothing,
           schedulePlace = placeId
         }
-  DB.insert_
-    SchedulePoster
-      { schedulePosterSchedule = scheduleId,
-        schedulePosterImage = posterId,
-        schedulePosterCreated = moment,
-        schedulePosterModified = Nothing
-      }
   DB.insert_
     ScheduleParty
       { schedulePartySchedule = scheduleId,
@@ -134,6 +122,8 @@ addExternalEvent moment placeId = driveDB $ do
             importerMetadataLastRunImported = Nothing
           }
   importerId <- DB.insert importer
+  posterFile <- readTestFile "test_resources/posters/portrait.jpg"
+  (_, posterKey) <- insertTestFileImage posterFile
   let slug = Slug "mi-salsa"
   let externalEvent =
         ExternalEvent
@@ -146,6 +136,7 @@ addExternalEvent moment placeId = driveDB $ do
             externalEventStart = Nothing,
             externalEventHomepage = Just "https://mi-salsa.com",
             externalEventPrice = Just "5 CHF",
+            externalEventPoster = Just posterKey,
             externalEventCancelled = Just False,
             externalEventCreated = moment,
             externalEventModified = Nothing,
@@ -154,16 +145,7 @@ addExternalEvent moment placeId = driveDB $ do
             externalEventOrganiser = Nothing,
             externalEventOrigin = "https://example.com"
           }
-  externalEventId <- DB.insert externalEvent
-  posterFile <- readTestFile "test_resources/posters/portrait.jpg"
-  posterId <- insertTestFileImage posterFile
-  DB.insert_
-    ExternalEventPoster
-      { externalEventPosterExternalEvent = externalEventId,
-        externalEventPosterImage = posterId,
-        externalEventPosterCreated = moment,
-        externalEventPosterModified = Nothing
-      }
+  DB.insert_ externalEvent
 
 addPartyWithoutPoster :: UTCTime -> PlaceId -> WebdriverTestM App ()
 addPartyWithoutPoster moment placeId = driveDB $ do
@@ -186,6 +168,7 @@ addPartyWithoutPoster moment placeId = driveDB $ do
             externalEventStart = Just $ TimeOfDay 21 30 00,
             externalEventHomepage = Just "https://foo-bar-quux.com",
             externalEventPrice = Just "10 CHF",
+            externalEventPoster = Nothing,
             externalEventCancelled = Nothing,
             externalEventCreated = moment,
             externalEventModified = Nothing,

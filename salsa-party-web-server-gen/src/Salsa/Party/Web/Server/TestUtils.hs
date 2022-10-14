@@ -115,15 +115,15 @@ readTestFile testFilePath = do
 testFileCASKey :: TestFile -> Maybe CASKey
 testFileCASKey TestFile {..} = mkCASKey <$> testFileType <*> pure testFileContents
 
-insertTestFileImage :: MonadIO m => TestFile -> SqlPersistT m ImageId
+insertTestFileImage :: MonadIO m => TestFile -> SqlPersistT m (ImageId, CASKey)
 insertTestFileImage TestFile {..} = do
   case testFileType of
     Nothing -> liftIO $ expectationFailure "Could not make the caskey of a test file"
     Just typ -> do
       let casKey = mkCASKey typ testFileContents
       now <- liftIO getCurrentTime
-      DB.entityKey
-        <$> DB.upsertBy
+      DB.Entity imageId _ <-
+        DB.upsertBy
           (UniqueImageKey casKey)
           ( Image
               { imageKey = casKey,
@@ -133,6 +133,7 @@ insertTestFileImage TestFile {..} = do
               }
           )
           []
+      pure (imageId, casKey)
 
 addRecurrenceParams :: Recurrence -> RequestBuilder App ()
 addRecurrenceParams = \case

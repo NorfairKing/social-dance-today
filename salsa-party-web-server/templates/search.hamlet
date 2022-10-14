@@ -15,12 +15,12 @@ $forall day <- days
         <div .columns .is-multiline .is-centered>
           $forall result <- results
             $case result
-              $of Internal (Entity _ organiser) (Entity _ party) (Entity _ p) mPosterVal 
+              $of Internal (Entity _ organiser) (Entity _ party) (Entity _ p) 
                 <div .column .is-two-thirds-tablet .is-half-desktop>
                   <div .zoom-without-container>
                     <a  href=@{partyRoute organiser party}>
                       <div .card id=#{uuidText $ partyUuid party}>
-                        $maybe posterKey <- mPosterVal
+                        $maybe posterKey <- partyPoster party
                           <div .card-image .has-text-centered>
                             <div .poster-container>
                               <img .poster .poster-background
@@ -43,12 +43,12 @@ $forall day <- days
                           <h3 .subtitle .is-5>
                             #{placeQuery p}
 
-              $of External (Entity _ externalEvent) ( Entity _ p) mPosterVal
+              $of External (Entity _ externalEvent) ( Entity _ p) 
                 <div .column .is-two-thirds-tablet .is-half-desktop>
                   <div .zoom-without-container>
                     <a  href=@{externalEventRoute externalEvent}>
                       <div .card id=#{uuidText $ externalEventUuid externalEvent}>
-                        $maybe posterKey <- mPosterVal
+                        $maybe posterKey <- externalEventPoster externalEvent
                           <div .card-image .has-text-centered>
                             <div .poster-container>
                               <img .poster .poster-background

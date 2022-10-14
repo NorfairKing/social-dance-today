@@ -35,6 +35,7 @@ spec = do
             partyStart = Just $ TimeOfDay 19 00 00,
             partyHomepage = Just "https://www.rhythmia.ch/",
             partyPrice = Just "5 CHF",
+            partyPoster = Nothing,
             partyCancelled = True,
             partyCreated = UTCTime (fromGregorian 2021 06 19) 164155,
             partyModified = Nothing,

@@ -31,7 +31,7 @@ partyCalendar renderUrl organiser party place =
 
 partyCalendarEvent :: (Route App -> Text) -> Organiser -> Party -> Place -> ICal.Event
 partyCalendarEvent renderUrl organiser party@Party {..} Place {..} =
-  let Party _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+  let Party _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
    in ( ICal.makeEvent
           (ICal.UID (uuidText partyUuid))
           (ICal.DateTimeStamp (ICal.DateTimeUTC (fromMaybe partyCreated partyModified)))

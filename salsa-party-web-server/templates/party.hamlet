@@ -29,7 +29,7 @@
           <h4 .subtitle .is-6>
             ^{recurrenceDescriptionWidget (scheduleRecurrence schedule)}
 
-        $maybe posterKey <- mPosterKey
+        $maybe posterKey <- partyPoster
           <div .content>
             ^{posterImageWidget party organiser posterKey}
         
@@ -75,7 +75,7 @@
         <meta property="og:type" content="website">
         <meta property="og:url" content=@{partyRoute organiser party}>
         <meta property="og:title" content=#{partyTitle}>
-        $maybe posterKey <- mPosterKey
+        $maybe posterKey <- partyPoster
           <meta property="og:image" content=@{ImageR posterKey}>
         $maybe description <- partyDescription
           <meta property="og:description" content=#{description}>
@@ -87,7 +87,7 @@
         <meta name="twitter:title" content=#{partyTitle}>
         $maybe description <- partyDescription
           <meta property="twitter:description" content=#{description}>
-        $maybe posterKey <- mPosterKey
+        $maybe posterKey <- partyPoster
           <meta name="twitter:card" content="summary_large_image">
           <meta name="twitter:image" content=@{ImageR posterKey}>
         
@@ -157,7 +157,7 @@ $if isAdmin
                 LD Event
 
               <pre>
-                #{TE.decodeUtf8 $ LT.toStrict $ JSON.encodePretty $ partyToLDEvent renderUrl party organiser place mPosterKey}
+                #{TE.decodeUtf8 $ LT.toStrict $ JSON.encodePretty $ partyToLDEvent renderUrl party organiser place}
 
 
             <div .block>

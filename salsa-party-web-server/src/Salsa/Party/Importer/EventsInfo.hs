@@ -199,6 +199,7 @@ eventDetailsConverter = awaitForever $ \(identifier, EventDetails {..}) -> do
         )
           <$> eventDetailsPrice
   let externalEventCancelled = Just eventDetailsCancelled
+  let externalEventPoster = Nothing
   now <- liftIO getCurrentTime
   let externalEventCreated = now
   let externalEventModified = Nothing

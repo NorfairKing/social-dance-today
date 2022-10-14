@@ -18,5 +18,5 @@ getEventExportR eventUuid = do
     Nothing -> do
       mExternalEvent <- runDB $ getExternalEventTupByUuid eventUuid
       case mExternalEvent of
-        Just (externalEventEntity, placeEntity, _) -> toTypedContent . JSONResponse <$> exportExternalEvent externalEventEntity placeEntity
+        Just (externalEventEntity, placeEntity) -> toTypedContent . JSONResponse <$> exportExternalEvent externalEventEntity placeEntity
         Nothing -> notFound

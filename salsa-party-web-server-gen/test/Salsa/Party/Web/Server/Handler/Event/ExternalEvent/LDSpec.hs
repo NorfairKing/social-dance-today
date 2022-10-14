@@ -49,15 +49,13 @@ spec = do
         it "always outputs valid json (without crashing)" $ \app ->
           forAllValid $ \externalEvent ->
             forAllValid $ \place ->
-              forAllValid $ \mCasKey ->
-                let urlRender :: Route App -> Text
-                    urlRender route = yesodRender app "https://social-dance.today" route []
-                 in shouldBeValid $
-                      externalEventToLDEvent
-                        urlRender
-                        externalEvent
-                        place
-                        mCasKey
+              let urlRender :: Route App -> Text
+                  urlRender route = yesodRender app "https://social-dance.today" route []
+               in shouldBeValid $
+                    externalEventToLDEvent
+                      urlRender
+                      externalEvent
+                      place
 
         it "outputs the same JSON LD as before for this external event" $ \app ->
           let exampleExternalEvent =
@@ -72,6 +70,7 @@ spec = do
                     externalEventStart = Just (TimeOfDay 20 15 00),
                     externalEventHomepage = Nothing,
                     externalEventPrice = Just "15.0 CHF",
+                    externalEventPoster = either (const Nothing) Just $ parseCASKey "UTpq9WwrRgBrNo9GusMO2QYGN+IZCK4E+IsnbgCVmvY=",
                     externalEventCancelled = Just False,
                     externalEventCreated = UTCTime (fromGregorian 2021 07 05) 185621,
                     externalEventModified = Nothing,
@@ -94,5 +93,4 @@ spec = do
                     urlRender
                     exampleExternalEvent
                     examplePlace
-                    (either (const Nothing) Just $ parseCASKey "UTpq9WwrRgBrNo9GusMO2QYGN+IZCK4E+IsnbgCVmvY=")
                 )

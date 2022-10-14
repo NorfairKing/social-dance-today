@@ -31,7 +31,7 @@ externalEventCalendar renderUrl externalEvent place =
 
 externalEventCalendarEvent :: (Route App -> Text) -> ExternalEvent -> Place -> ICal.Event
 externalEventCalendarEvent renderUrl externalEvent@ExternalEvent {..} Place {..} =
-  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
    in ( ICal.makeEvent
           (ICal.UID (uuidText externalEventUuid))
           (ICal.DateTimeStamp (ICal.DateTimeUTC (fromMaybe externalEventCreated externalEventModified)))

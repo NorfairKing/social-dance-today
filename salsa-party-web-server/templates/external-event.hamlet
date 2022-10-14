@@ -19,7 +19,7 @@
           <h4 .title .is-6>
             _{MsgPartyOrganiser organiserName}
 
-        $maybe posterKey <- mPosterKey
+        $maybe posterKey <- externalEventPoster
           ^{externalEventPosterImageWidget externalEvent posterKey}
 
 
@@ -64,7 +64,7 @@
         <meta property="og:type" content="website">
         <meta property="og:url" content=@{externalEventRoute externalEvent}>
         <meta property="og:title" content=#{externalEventTitle}>
-        $maybe posterKey <- mPosterKey
+        $maybe posterKey <- externalEventPoster
           <meta property="og:image" content=@{ImageR posterKey}>
         $maybe description <- externalEventDescription
           <meta property="og:description" content=#{description}>
@@ -77,7 +77,7 @@
         <meta name="twitter:title" content=#{externalEventTitle}>
         $maybe description <- externalEventDescription
           <meta property="twitter:description" content=#{description}>
-        $maybe posterKey <- mPosterKey
+        $maybe posterKey <- externalEventPoster
           <meta name="twitter:card" content="summary_large_image">
           <meta name="twitter:image" content=@{ImageR posterKey}>
         
@@ -138,7 +138,7 @@ $if isAdmin
                 LD Event
 
               <pre>
-                #{TE.decodeUtf8 $ LT.toStrict $ JSON.encodePretty $ externalEventToLDEvent renderUrl externalEvent place mPosterKey}
+                #{TE.decodeUtf8 $ LT.toStrict $ JSON.encodePretty $ externalEventToLDEvent renderUrl externalEvent place}
 
 
             <div .block>

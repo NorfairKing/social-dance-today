@@ -24,7 +24,7 @@ exportExternalEvent (Entity _ externalEvent) (Entity _ place) = do
 
 externalEventExport :: ExternalEvent -> Place -> ImporterMetadata -> ExternalEventExport
 externalEventExport ExternalEvent {..} place ImporterMetadata {..} =
-  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
       ImporterMetadata _ _ _ _ = undefined
       externalEventExportUuid = externalEventUuid
       externalEventExportSlug = externalEventSlug
@@ -40,6 +40,7 @@ externalEventExport ExternalEvent {..} place ImporterMetadata {..} =
       externalEventExportCreated = externalEventCreated
       externalEventExportModified = externalEventModified
       externalEventExportPlace = placeExport place
+      externalEventExportPoster = externalEventPoster
       externalEventExportImporter = importerMetadataName
       externalEventExportOrigin = externalEventOrigin
    in ExternalEventExport {..}
@@ -59,6 +60,7 @@ data ExternalEventExport = ExternalEventExport
     externalEventExportCreated :: !UTCTime,
     externalEventExportModified :: !(Maybe UTCTime),
     externalEventExportPlace :: !PlaceExport,
+    externalEventExportPoster :: !(Maybe CASKey),
     externalEventExportImporter :: !Text,
     externalEventExportOrigin :: !Text
   }
@@ -68,7 +70,7 @@ instance Validity ExternalEventExport
 
 instance ToJSON ExternalEventExport where
   toJSON ExternalEventExport {..} =
-    let ExternalEventExport _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+    let ExternalEventExport _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
      in object $
           concat
             [ [ "uuid" .= externalEventExportUuid,
@@ -87,6 +89,7 @@ instance ToJSON ExternalEventExport where
               mField "homepage" externalEventExportHomepage,
               mField "start" externalEventExportStart,
               mField "price" externalEventExportPrice,
+              mField "poster" externalEventExportPoster,
               mField "modified" externalEventExportModified
             ]
 
@@ -106,6 +109,7 @@ instance FromJSON ExternalEventExport where
     externalEventExportCreated <- o .: "created"
     externalEventExportModified <- o .:? "modified"
     externalEventExportPlace <- o .: "place"
+    externalEventExportPoster <- o .:? "poster"
     externalEventExportImporter <- o .: "importer"
     externalEventExportOrigin <- o .: "origin"
     pure ExternalEventExport {..}
@@ -126,6 +130,7 @@ importExternalEventExport ExternalEventExport {..} = do
   let externalEventCreated = externalEventExportCreated
   let externalEventModified = externalEventExportModified
   Entity externalEventPlace _ <- importPlaceExport externalEventExportPlace
+  let externalEventPoster = externalEventExportPoster
   let externalEventOrigin = externalEventExportOrigin
   Entity externalEventImporter _ <-
     upsertBy

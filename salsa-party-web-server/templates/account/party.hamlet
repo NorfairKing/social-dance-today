@@ -17,7 +17,7 @@
       (_{autoDayMsg today partyDay})
 
 
-    $maybe posterKey <- mPosterKey
+    $maybe posterKey <- partyPoster
       ^{posterImageWidget party organiser posterKey}
 
     $maybe Entity _ schedule <- mSchedule

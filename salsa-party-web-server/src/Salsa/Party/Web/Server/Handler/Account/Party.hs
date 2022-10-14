@@ -107,75 +107,49 @@ addParty organiserId AddPartyForm {..} mFileInfo = do
   now <- liftIO getCurrentTime
   uuid <- nextRandomUUID
   Entity placeId _ <- lookupPlace addPartyFormAddress
-  let AddPartyForm _ _ _ _ _ _ _ _ = undefined
-  partyId <-
-    runDB $
-      insert
-        ( Party
-            { partyUuid = uuid,
-              partySlug = makePartySlug addPartyFormTitle,
-              partyOrganiser = organiserId,
-              partyTitle = addPartyFormTitle,
-              partyDescription = unTextarea <$> addPartyFormDescription,
-              partyDay = addPartyFormDay,
-              partyStart = addPartyFormStart,
-              partyHomepage = addPartyFormHomepage,
-              partyPrice = addPartyFormPrice,
-              partyCancelled = False,
-              partyCreated = now,
-              partyModified = Nothing,
-              partyPlace = placeId
-            }
-        )
-  case mFileInfo of
+
+  mPosterKey <- forM mFileInfo $ \posterFileInfo -> do
     -- Update the poster if a new one has been submitted
-    Just posterFileInfo -> do
-      imageBlob <- fileSourceByteString posterFileInfo
-      let contentType = fileContentType posterFileInfo
-      case posterCropImage contentType imageBlob of
-        Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
-        Right (convertedImageType, convertedImageBlob) -> do
-          let casKey = mkCASKey convertedImageType convertedImageBlob
-          runDB $ do
-            Entity imageId _ <-
-              upsertBy
-                (UniqueImageKey casKey)
-                ( Image
-                    { imageKey = casKey,
-                      imageTyp = convertedImageType,
-                      imageBlob = convertedImageBlob,
-                      imageCreated = now
-                    }
-                )
-                [] -- No need to update anything, the casKey makes the image unique.
-            insert_
-              ( PartyPoster
-                  { partyPosterParty = partyId,
-                    partyPosterImage = imageId,
-                    partyPosterCreated = now,
-                    partyPosterModified = Nothing
+    imageBlob <- fileSourceByteString posterFileInfo
+    let contentType = fileContentType posterFileInfo
+    case posterCropImage contentType imageBlob of
+      Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
+      Right (convertedImageType, convertedImageBlob) -> do
+        let casKey = mkCASKey convertedImageType convertedImageBlob
+        runDB $
+          void $
+            upsertBy
+              (UniqueImageKey casKey)
+              ( Image
+                  { imageKey = casKey,
+                    imageTyp = convertedImageType,
+                    imageBlob = convertedImageBlob,
+                    imageCreated = now
                   }
               )
-    -- If no new poster has been submitted, check for a poster key.
-    -- If there is a poster key, we need to make sure the association exists.
-    -- This is really only for duplication, I think.
-    Nothing -> forM_ addPartyFormPosterKey $ \posterKey -> do
-      mImage <- runDB $ getBy $ UniqueImageKey posterKey
-      forM_ mImage $ \(Entity imageId _) ->
-        -- TODO don't fetch the entire image.
-        runDB $
-          upsertBy
-            (UniquePartyPoster partyId)
-            ( PartyPoster
-                { partyPosterParty = partyId,
-                  partyPosterImage = imageId,
-                  partyPosterCreated = now,
-                  partyPosterModified = Nothing
-                }
-            )
-            [ PartyPosterImage =. imageId,
-              PartyPosterModified =. Just now
-            ]
+              [] -- No need to update anything, the casKey makes the image unique.
+        pure casKey
+
+  let AddPartyForm _ _ _ _ _ _ _ _ = undefined
+  runDB $
+    insert_
+      ( Party
+          { partyUuid = uuid,
+            partySlug = makePartySlug addPartyFormTitle,
+            partyOrganiser = organiserId,
+            partyTitle = addPartyFormTitle,
+            partyDescription = unTextarea <$> addPartyFormDescription,
+            partyDay = addPartyFormDay,
+            partyStart = addPartyFormStart,
+            partyHomepage = addPartyFormHomepage,
+            partyPrice = addPartyFormPrice,
+            partyPoster = mPosterKey,
+            partyCancelled = False,
+            partyCreated = now,
+            partyModified = Nothing,
+            partyPlace = placeId
+          }
+      )
 
   addMessageI "is-success" MsgSubmitPartySuccess
   redirect $ AccountR $ AccountPartyR uuid
@@ -194,7 +168,6 @@ getAccountPartyR partyUuid_ = do
       when (partyOrganiser /= organiserId) $ permissionDeniedI MsgAccountPartyErrorNotYourParty
       Place {..} <- runDB $ get404 partyPlace
       mSchedule <- runDB $ getScheduleForParty partyId
-      mPosterKey <- runDB $ getPosterForParty partyId
       today <- getClientToday
       token <- genToken
       withNavBar $ do
@@ -266,10 +239,9 @@ editPartyFormPage ::
   -- | Just for errors
   Maybe (FormResult a) ->
   Handler Html
-editPartyFormPage (Entity partyId party) mResult = do
+editPartyFormPage (Entity _ party) mResult = do
   place <- runDB $ get404 $ partyPlace party
   organiser <- runDB $ get404 $ partyOrganiser party
-  mPosterKey <- runDB $ getPosterForParty partyId
   token <- genToken
   withMFormResultNavBar mResult $(widgetFile "account/edit-party")
 
@@ -282,6 +254,29 @@ editParty (Entity partyId party) form mFileInfo = do
   now <- liftIO getCurrentTime
   -- This place lookup relies on the caching for geocoding to be fast if nothing has changed.
   Entity placeId _ <- lookupPlace (editPartyFormAddress form)
+
+  -- Update the poster if a new one has been submitted
+  mPosterKey <- forM mFileInfo $ \posterFileInfo -> do
+    imageBlob <- fileSourceByteString posterFileInfo
+    let contentType = fileContentType posterFileInfo
+    case posterCropImage contentType imageBlob of
+      Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
+      Right (convertedImageType, convertedImageBlob) -> do
+        let casKey = mkCASKey convertedImageType convertedImageBlob
+        runDB $
+          void $
+            upsertBy
+              (UniqueImageKey casKey)
+              ( Image
+                  { imageKey = casKey,
+                    imageTyp = convertedImageType,
+                    imageBlob = convertedImageBlob,
+                    imageCreated = now
+                  }
+              )
+              [] -- No need to update anything, the casKey makes the image unique.
+        pure casKey
+
   let EditPartyForm _ _ _ _ _ _ _ = undefined
   let whenChanged :: (Eq a, PersistField a) => (Party -> a) -> (EditPartyForm -> a) -> EntityField Party a -> Maybe (Update Party)
       whenChanged partyFunc formFunc field = do
@@ -298,6 +293,9 @@ editParty (Entity partyId party) form mFileInfo = do
             whenChanged partyPrice editPartyFormPrice PartyPrice,
             if partyPlace party /= placeId
               then Just (PartyPlace =. placeId)
+              else Nothing,
+            if partyPoster party /= mPosterKey
+              then Just (PartyPoster =. mPosterKey)
               else Nothing
           ]
       mUpdates =
@@ -305,40 +303,6 @@ editParty (Entity partyId party) form mFileInfo = do
           then Nothing
           else Just $ (PartyModified =. Just now) : fieldUpdates
   forM_ mUpdates $ \updates -> runDB $ update partyId updates
-
-  -- Update the poster if a new one has been submitted
-  forM_ mFileInfo $ \posterFileInfo -> do
-    imageBlob <- fileSourceByteString posterFileInfo
-    let contentType = fileContentType posterFileInfo
-    case posterCropImage contentType imageBlob of
-      Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
-      Right (convertedImageType, convertedImageBlob) -> do
-        let casKey = mkCASKey convertedImageType convertedImageBlob
-        runDB $ do
-          Entity imageId _ <-
-            upsertBy
-              (UniqueImageKey casKey)
-              ( Image
-                  { imageKey = casKey,
-                    imageTyp = convertedImageType,
-                    imageBlob = convertedImageBlob,
-                    imageCreated = now
-                  }
-              )
-              [] -- No need to update anything, the casKey makes the image unique.
-          void $
-            upsertBy
-              (UniquePartyPoster partyId)
-              ( PartyPoster
-                  { partyPosterParty = partyId,
-                    partyPosterImage = imageId,
-                    partyPosterCreated = now,
-                    partyPosterModified = Nothing
-                  }
-              )
-              [ PartyPosterImage =. imageId,
-                PartyPosterModified =. Just now
-              ]
 
   addMessageI "is-success" MsgEditPartySuccess
   redirect $ AccountR $ AccountPartyEditR $ partyUuid party
@@ -350,9 +314,8 @@ getAccountPartyDuplicateR partyUuid_ = do
   case mOrganiser of
     Nothing -> notFound
     Just (Entity organiserId organiser) -> do
-      Entity partyId party <- getPartyEntityOfOrganiser partyUuid_ organiserId
+      Entity _ party <- getPartyEntityOfOrganiser partyUuid_ organiserId
       place <- runDB $ get404 $ partyPlace party
-      mPosterKey <- runDB $ getPosterForParty partyId
       token <- genToken
       withNavBar $(widgetFile "account/duplicate-party")
 

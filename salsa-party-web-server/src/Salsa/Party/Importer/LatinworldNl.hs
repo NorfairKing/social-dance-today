@@ -186,6 +186,8 @@ importEventPage = awaitForever $ \(relativeUrl, request, response) -> do
 
           let externalEventDescription = Nothing
 
+          let externalEventPoster = Nothing
+
           let externalEventCreated = now
           let externalEventModified = Nothing
           externalEventImporter <- asks importEnvId

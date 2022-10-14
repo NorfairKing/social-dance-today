@@ -182,7 +182,7 @@ spec = serverSpec $ do
                 mParty <- testDB $ DB.getBy $ UniquePartyUUID partyUuid_
                 mCasKey1 <- case mParty of
                   Nothing -> liftIO $ expectationFailure "expected the first party to exist."
-                  Just (Entity partyId _) -> testDB $ getPosterForParty partyId
+                  Just (Entity _ party) -> pure $ partyPoster party
                 -- There is now a poster.
                 liftIO $ mCasKey1 `shouldBe` testFileCASKey poster1
                 get $ AccountR $ AccountPartyEditR partyUuid_

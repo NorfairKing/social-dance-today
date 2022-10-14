@@ -63,33 +63,6 @@ insertPlace address Coordinates {..} =
       PlaceLon =. coordinatesLon
     ]
 
-getPosterForParty :: MonadIO m => PartyId -> SqlPersistT m (Maybe CASKey)
-getPosterForParty partyId =
-  fmap (fmap E.unValue) $
-    E.selectOne $
-      E.from $ \(partyPoster `E.InnerJoin` image) -> do
-        E.on (partyPoster E.^. PartyPosterImage E.==. image E.^. ImageId)
-        E.where_ (partyPoster E.^. PartyPosterParty E.==. E.val partyId)
-        pure (image E.^. ImageKey)
-
-getPosterForSchedule :: MonadIO m => ScheduleId -> SqlPersistT m (Maybe CASKey)
-getPosterForSchedule scheduleId =
-  fmap (fmap E.unValue) $
-    E.selectOne $
-      E.from $ \(schedulePoster `E.InnerJoin` image) -> do
-        E.on (schedulePoster E.^. SchedulePosterImage E.==. image E.^. ImageId)
-        E.where_ (schedulePoster E.^. SchedulePosterSchedule E.==. E.val scheduleId)
-        pure (image E.^. ImageKey)
-
-getPosterForExternalEvent :: MonadIO m => ExternalEventId -> SqlPersistT m (Maybe CASKey)
-getPosterForExternalEvent externalEventId = do
-  keys <- E.select $
-    E.from $ \(externalEventPoster `E.InnerJoin` image) -> do
-      E.on (externalEventPoster E.^. ExternalEventPosterImage E.==. image E.^. ImageId)
-      E.where_ (externalEventPoster E.^. ExternalEventPosterExternalEvent E.==. E.val externalEventId)
-      pure (image E.^. ImageKey)
-  pure $ E.unValue <$> listToMaybe keys
-
 getScheduleForParty :: MonadIO m => PartyId -> SqlPersistT m (Maybe (Entity Schedule))
 getScheduleForParty partyId = E.selectOne $
   E.from $ \(partySchedule `E.InnerJoin` schedule) -> do
@@ -112,13 +85,10 @@ deleteOrganiserCompletely organiserId = do
   delete organiserId
 
 deletePartyCompletely :: MonadIO m => PartyId -> SqlPersistT m ()
-deletePartyCompletely partyId = do
-  deleteWhere [PartyPosterParty ==. partyId]
-  delete partyId
+deletePartyCompletely = delete
 
 deleteScheduleCompletely :: MonadIO m => ScheduleId -> SqlPersistT m ()
 deleteScheduleCompletely scheduleId = do
-  deleteWhere [SchedulePosterSchedule ==. scheduleId]
   deleteWhere [SchedulePartySchedule ==. scheduleId]
   delete scheduleId
 

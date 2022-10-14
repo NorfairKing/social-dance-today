@@ -151,7 +151,7 @@ importOrganiserExport OrganiserExport {..} = do
 
 partyExport :: Party -> Place -> Organiser -> User -> PartyExport
 partyExport Party {..} place organiser user =
-  let Party _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+  let Party _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
       Place _ _ _ = undefined
       partyExportUuid = partyUuid
       partyExportSlug = partySlug
@@ -162,6 +162,7 @@ partyExport Party {..} place organiser user =
       partyExportStart = partyStart
       partyExportHomepage = partyHomepage
       partyExportPrice = partyPrice
+      partyExportPoster = partyPoster
       partyExportCancelled = partyCancelled
       partyExportCreated = partyCreated
       partyExportModified = partyModified
@@ -179,6 +180,7 @@ data PartyExport = PartyExport
     partyExportHomepage :: !(Maybe Text),
     partyExportPrice :: !(Maybe Text),
     partyExportCancelled :: !Bool,
+    partyExportPoster :: !(Maybe CASKey),
     partyExportCreated :: !UTCTime,
     partyExportModified :: !(Maybe UTCTime),
     partyExportPlace :: !PlaceExport
@@ -204,7 +206,8 @@ instance ToJSON PartyExport where
           mField "start" partyExportStart,
           mField "price" partyExportPrice,
           mField "homepage" partyExportHomepage,
-          mField "modified" partyExportModified
+          mField "modified" partyExportModified,
+          mField "poster" partyExportPoster
         ]
 
 instance FromJSON PartyExport where
@@ -218,6 +221,7 @@ instance FromJSON PartyExport where
     partyExportStart <- o .:? "start"
     partyExportHomepage <- o .:? "homepage"
     partyExportPrice <- o .:? "price"
+    partyExportPoster <- o .:? "poster"
     partyExportCancelled <- o .:? "cancelled" .!= False
     partyExportCreated <- o .: "created"
     partyExportModified <- o .:? "modified"
@@ -235,6 +239,7 @@ importPartyExport PartyExport {..} = do
   let partyHomepage = partyExportHomepage
   Entity partyOrganiser _ <- importOrganiserExport partyExportOrganiser
   let partyPrice = partyExportPrice
+  let partyPoster = partyExportPoster
   let partyCancelled = partyExportCancelled
   let partyCreated = partyExportCreated
   let partyModified = partyExportModified

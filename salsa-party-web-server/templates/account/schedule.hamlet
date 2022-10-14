@@ -10,7 +10,7 @@
       ^{recurrenceDescriptionWidget scheduleRecurrence}
 
 
-    $maybe posterKey <- mPosterKey
+    $maybe posterKey <- schedulePoster
       ^{schedulePosterImageWidget schedule organiser posterKey}
 
     $maybe description <- scheduleDescription

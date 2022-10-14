@@ -11,15 +11,14 @@ import Salsa.Party.Web.Server.Handler.Import
 import qualified Web.JSONLD as LD
 
 partyPageLD :: Entity Organiser -> Entity Party -> Handler JSONLDData
-partyPageLD (Entity _ organiser) (Entity partyId party@Party {..}) = do
+partyPageLD (Entity _ organiser) (Entity _ party@Party {..}) = do
   place <- runDB $ get404 partyPlace
-  mPosterKey <- runDB $ getPosterForParty partyId
   renderUrl <- getUrlRender
-  pure $ toJSONLDData $ partyToLDEvent renderUrl party organiser place mPosterKey
+  pure $ toJSONLDData $ partyToLDEvent renderUrl party organiser place
 
-partyToLDEvent :: (Route App -> Text) -> Party -> Organiser -> Place -> Maybe CASKey -> LD.Event
-partyToLDEvent renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
-  let Party _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+partyToLDEvent :: (Route App -> Text) -> Party -> Organiser -> Place -> LD.Event
+partyToLDEvent renderUrl Party {..} Organiser {..} Place {..} =
+  let Party _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
    in LD.Event
         { LD.eventName = partyTitle,
           LD.eventLocation =
@@ -56,7 +55,7 @@ partyToLDEvent renderUrl Party {..} Organiser {..} Place {..} mPosterKey =
               if partyCancelled
                 then LD.EventCancelled
                 else LD.EventScheduled,
-          LD.eventImages = [LD.EventImageURL (renderUrl (ImageR posterKey)) | posterKey <- maybeToList mPosterKey],
+          LD.eventImages = [LD.EventImageURL (renderUrl (ImageR posterKey)) | posterKey <- maybeToList partyPoster],
           LD.eventOrganizer =
             Just $
               LD.EventOrganizerOrganization

@@ -50,16 +50,14 @@ spec = do
           forAllValid $ \organiser ->
             forAllValid $ \party ->
               forAllValid $ \place ->
-                forAllValid $ \mCasKey ->
-                  let urlRender :: Route App -> Text
-                      urlRender route = yesodRender app "https://social-dance.today" route []
-                   in shouldBeValid $
-                        partyToLDEvent
-                          urlRender
-                          party
-                          organiser
-                          place
-                          mCasKey
+                let urlRender :: Route App -> Text
+                    urlRender route = yesodRender app "https://social-dance.today" route []
+                 in shouldBeValid $
+                      partyToLDEvent
+                        urlRender
+                        party
+                        organiser
+                        place
 
         it "outputs the same JSON LD as before for this party" $ \app ->
           let exampleOrganiser =
@@ -84,6 +82,7 @@ spec = do
                     partyStart = Nothing,
                     partyHomepage = Just "https://www.rhythmia.ch/",
                     partyPrice = Just "5 CHF",
+                    partyPoster = either (const Nothing) Just $ parseCASKey "UTpq9WwrRgBrNo9GusMO2QYGN+IZCK4E+IsnbgCVmvY=",
                     partyCancelled = True,
                     partyCreated = UTCTime (fromGregorian 2021 06 19) 164155,
                     partyModified = Nothing,
@@ -105,5 +104,4 @@ spec = do
                     exampleParty
                     exampleOrganiser
                     examplePlace
-                    (either (const Nothing) Just $ parseCASKey "UTpq9WwrRgBrNo9GusMO2QYGN+IZCK4E+IsnbgCVmvY=")
                 )

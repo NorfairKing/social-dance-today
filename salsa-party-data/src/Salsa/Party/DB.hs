@@ -185,6 +185,8 @@ Party sql=party
 
     place PlaceId
 
+    poster CASKey Maybe default=NULL
+
     UniquePartyUUID uuid !force
 
     deriving Show
@@ -192,14 +194,12 @@ Party sql=party
     deriving Generic
 
 
-PartyPoster sql=party_poster
+LegacyPartyPoster sql=party_poster
     party PartyId
     image ImageId
     created UTCTime
     modified UTCTime Maybe default=NULL
-
     UniquePartyPoster party
-
     deriving Show
     deriving Eq
     deriving Generic
@@ -235,6 +235,8 @@ Schedule
 
     place PlaceId
 
+    poster CASKey Maybe default=NULL
+
     UniqueScheduleUUID uuid !force
 
 
@@ -242,14 +244,13 @@ Schedule
     deriving Eq
     deriving Generic
 
-SchedulePoster sql=schedule_poster
+
+LegacySchedulePoster sql=schedule_poster
     schedule ScheduleId
     image ImageId
     created UTCTime
     modified UTCTime Maybe default=NULL
-
     UniqueSchedulePoster schedule
-
     deriving Show
     deriving Eq
     deriving Generic
@@ -308,6 +309,8 @@ ExternalEvent sql=external_event
 
     place PlaceId
 
+    poster CASKey Maybe default=NULL
+
     -- The importer that imported this event
     importer ImporterMetadataId
 
@@ -321,21 +324,23 @@ ExternalEvent sql=external_event
     deriving Eq
     deriving Generic
 
-ExternalEventPoster sql=external_event_poster
+
+LegacyExternalEventPoster sql=external_event_poster
     externalEvent ExternalEventId
     image ImageId
     created UTCTime
     modified UTCTime Maybe default=NULL
-
     UniqueExternalEventPoster externalEvent
 
     deriving Show
     deriving Eq
     deriving Generic
 
+
 StaticMap
     place PlaceId
-    image ImageId
+    legacyImage ImageId sql=image
+    image CASKey Maybe sql=key
 
     UniqueStaticMapPlace place
 
@@ -374,10 +379,6 @@ instance Validity OrganiserReminder
 
 instance NFData OrganiserReminder
 
-instance Validity PartyPoster
-
-instance NFData PartyPoster
-
 instance Validity Party where
   validate party@Party {..} =
     mconcat
@@ -391,10 +392,6 @@ instance NFData Party
 instance Validity ExternalEvent
 
 instance NFData ExternalEvent
-
-instance Validity ExternalEventPoster
-
-instance NFData ExternalEventPoster
 
 instance Validity ImporterMetadata
 
@@ -411,10 +408,6 @@ instance NFData Schedule
 instance Validity ScheduleParty
 
 instance NFData ScheduleParty
-
-instance Validity SchedulePoster
-
-instance NFData SchedulePoster
 
 instance Validity StaticMap
 

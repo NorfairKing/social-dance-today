@@ -239,20 +239,13 @@ importExternalEventWithMImage (externalEvent, mImageURI) =
   importExternalEventAnd externalEvent $ \externalEventId -> do
     now <- liftIO getCurrentTime
     forM_ mImageURI $ \imageUri -> do
-      mImageId <- tryToImportImage imageUri
-      forM_ mImageId $ \imageId -> do
+      mImageKey <- tryToImportImage imageUri
+      forM_ mImageKey $ \key -> do
         importDB $
-          upsertBy
-            (UniqueExternalEventPoster externalEventId)
-            ( ExternalEventPoster
-                { externalEventPosterExternalEvent = externalEventId,
-                  externalEventPosterImage = imageId,
-                  externalEventPosterCreated = now,
-                  externalEventPosterModified = Nothing
-                }
-            )
-            [ ExternalEventPosterImage =. imageId,
-              ExternalEventPosterModified =. Just now
+          update
+            externalEventId
+            [ ExternalEventPoster =. Just key,
+              ExternalEventModified =. Just now
             ]
 
 importExternalEvent :: ExternalEvent -> Import ()
@@ -468,7 +461,7 @@ userAgentList =
     "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0"
   ]
 
-tryToImportImage :: URI -> Import (Maybe ImageId)
+tryToImportImage :: URI -> Import (Maybe CASKey)
 tryToImportImage uri = do
   case requestFromURI uri of
     Nothing -> pure Nothing
@@ -484,7 +477,7 @@ tryToImportImage uri = do
               let imageBlob = LB.toStrict $ responseBody response
               tryToImportImageBlob contentType imageBlob
 
-tryToImportImageBlob :: Text -> ByteString -> Import (Maybe ImageId)
+tryToImportImageBlob :: Text -> ByteString -> Import (Maybe CASKey)
 tryToImportImageBlob contentType imageBlob =
   case posterCropImage contentType imageBlob of
     Left err -> do
@@ -493,7 +486,7 @@ tryToImportImageBlob contentType imageBlob =
     Right (convertedImageType, convertedImageBlob) -> do
       let casKey = mkCASKey convertedImageType convertedImageBlob
       now <- liftIO getCurrentTime
-      Entity imageId _ <-
+      _ <-
         importDB $
           upsertBy
             (UniqueImageKey casKey)
@@ -505,7 +498,7 @@ tryToImportImageBlob contentType imageBlob =
                 }
             )
             [] -- No need to update anything, the casKey makes the image unique.
-      pure $ Just imageId
+      pure $ Just casKey
 
 logRequestErrors ::
   ConduitT
@@ -670,6 +663,7 @@ convertLDEventToExternalEventWith makeKey = awaitForever $ \(request, _, ldEvent
               Just LD.EventCancelled -> Just True
               _ -> Nothing
         now <- liftIO getCurrentTime
+        let externalEventPoster = Nothing
         let externalEventCreated = now
         let externalEventModified = Nothing
         externalEventImporter <- asks importEnvId

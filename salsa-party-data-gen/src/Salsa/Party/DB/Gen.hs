@@ -95,14 +95,6 @@ instance GenValid ExternalEvent where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
-instance GenValid ExternalEventPoster where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenValid PartyPoster where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
 instance GenValid Image where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
@@ -116,10 +108,6 @@ instance GenValid Recurrence where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Schedule where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenValid SchedulePoster where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 

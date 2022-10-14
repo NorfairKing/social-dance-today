@@ -83,9 +83,9 @@ tuples = \case
   [] -> []
   (b : bs) -> map ((,) b) bs ++ tuples bs
 
-importParty :: MonadIO m => PartyExport -> SqlPersistT m (Entity Organiser, Entity Party, Entity Place, Maybe CASKey)
+importParty :: MonadIO m => PartyExport -> SqlPersistT m (Entity Organiser, Entity Party, Entity Place)
 importParty export = do
-  partyEntity@(Entity partyId party) <- importPartyExport export
+  partyEntity@(Entity _ party) <- importPartyExport export
   mOrganiser <- DB.get (partyOrganiser party)
   organiserEntity <- case mOrganiser of
     Nothing -> liftIO $ expectationFailure "Organiser not found."
@@ -94,18 +94,16 @@ importParty export = do
   placeEntity <- case mPlace of
     Nothing -> liftIO $ expectationFailure "Place not found."
     Just place -> pure (Entity (partyPlace party) place)
-  mCasKey <- getPosterForParty partyId
-  pure (organiserEntity, partyEntity, placeEntity, mCasKey)
+  pure (organiserEntity, partyEntity, placeEntity)
 
-importExternalEvent :: MonadIO m => ExternalEventExport -> SqlPersistT m (Entity ExternalEvent, Entity Place, Maybe CASKey)
+importExternalEvent :: MonadIO m => ExternalEventExport -> SqlPersistT m (Entity ExternalEvent, Entity Place)
 importExternalEvent export = do
-  externalEventEntity@(Entity externalEventId externalEvent) <- importExternalEventExport export
+  externalEventEntity@(Entity _ externalEvent) <- importExternalEventExport export
   mPlace <- DB.get (externalEventPlace externalEvent)
   placeEntity <- case mPlace of
     Nothing -> liftIO $ expectationFailure "Place not found."
     Just place -> pure (Entity (externalEventPlace externalEvent) place)
-  mCasKey <- getPosterForExternalEvent externalEventId
-  pure (externalEventEntity, placeEntity, mCasKey)
+  pure (externalEventEntity, placeEntity)
 
 positiveTest :: Path Abs Dir -> (Path Rel File, AnyExport) -> (Path Rel File, AnyExport) -> DB.SqlPersistM ()
 positiveTest rootDir t1@(exportFile1, export1) t2@(exportFile2, export2) =

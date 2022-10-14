@@ -100,6 +100,8 @@ parseEventFromPage request response = do
         -- We can't accurately parse the cancelled state because the pages list PostPoned even when the events are not.
         let externalEventCancelled = Nothing
 
+        let externalEventPoster = Nothing
+
         let externalEventCreated = now
         let externalEventModified = Nothing
         externalEventImporter <- asks importEnvId

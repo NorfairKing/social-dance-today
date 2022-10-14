@@ -127,6 +127,7 @@ tribeCalendarJSONLDEvents = awaitForever $ \(request, response, event) -> do
       -- TODO the events may contain an attendance mode but in this case they don't seem to.
       -- We may want to try and parse it anyway in case that changes or we use this function somewhere else.
       let externalEventCancelled = Nothing
+      let externalEventPoster = Nothing
       now <- liftIO getCurrentTime
       let externalEventCreated = now
       let externalEventModified = Nothing

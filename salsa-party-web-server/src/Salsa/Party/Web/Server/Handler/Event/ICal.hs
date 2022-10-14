@@ -18,5 +18,5 @@ getEventIcsR eventUuid = do
     Nothing -> do
       mExternalEvent <- runDB $ getExternalEventTupByUuid eventUuid
       case mExternalEvent of
-        Just (externalEventEntity, placeEntity, _) -> externalEventPageICal externalEventEntity placeEntity
+        Just (externalEventEntity, placeEntity) -> externalEventPageICal externalEventEntity placeEntity
         Nothing -> notFound

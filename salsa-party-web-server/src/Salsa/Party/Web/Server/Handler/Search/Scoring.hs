@@ -9,14 +9,13 @@ import qualified Data.Text as T
 import Database.Persist
 import Salsa.Party.DB
 
-scoreExternalEventTrip :: (Entity ExternalEvent, Entity Place, Maybe CASKey) -> Double
-scoreExternalEventTrip (Entity _ externalEvent, Entity _ place, mPoster) =
+scoreExternalEventTup :: (Entity ExternalEvent, Entity Place) -> Double
+scoreExternalEventTup (Entity _ externalEvent, Entity _ place) =
   foldl'
     (+)
     0
     [ scoreExternalEvent externalEvent,
-      2 * scorePlace place,
-      scoreMPoster mPoster
+      2 * scorePlace place
     ]
 
 scoreExternalEvent :: ExternalEvent -> Double
@@ -29,7 +28,8 @@ scoreExternalEvent ExternalEvent {..} =
       (* 2) $ min 10 $ scoreMaybe scoreText externalEventOrganiser,
       (* 2) $ min 10 $ scoreMaybe scoreText externalEventHomepage,
       (* 2) $ min 1 $ scoreMaybe scoreText externalEventPrice,
-      (* 2) $ min 1 $ scoreMaybe (const 1) externalEventStart
+      (* 2) $ min 1 $ scoreMaybe (const 1) externalEventStart,
+      scoreMPoster externalEventPoster
     ]
 
 scorePlace :: Place -> Double

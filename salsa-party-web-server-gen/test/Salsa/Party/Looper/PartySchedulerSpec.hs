@@ -21,9 +21,8 @@ spec = do
             runPersistentTest pool $ do
               decision <- makeScheduleDecision scheduleEntity
               case decision of
-                ScheduleAParty (Entity scheduleId_ _) _ mImageId -> liftIO $ do
-                  scheduleId_ `shouldBe` entityKey scheduleEntity
-                  mImageId `shouldBe` Nothing
+                ScheduleAParty (Entity scheduleId_ _) _ ->
+                  liftIO $ scheduleId_ `shouldBe` entityKey scheduleEntity
                 _ -> liftIO $ expectationFailure $ "Should have decided to schedule a party, but decided this instead: " <> ppShow decision
 
         it "decides to schedule a party for the right day in this example case" $ \pool ->
@@ -45,11 +44,10 @@ spec = do
                   insert_ scheduleParty
                   decision <- makeScheduleDecision (Entity scheduleId schedule)
                   liftIO $ case decision of
-                    ScheduleAParty (Entity scheduleId' schedule') nextDays mImageId -> do
+                    ScheduleAParty (Entity scheduleId' schedule') nextDays -> do
                       scheduleId' `shouldBe` scheduleId
                       schedule' `shouldBe` schedule
                       nextDays `shouldSatisfy` all (>= day)
-                      mImageId `shouldBe` Nothing
                     _ -> liftIO $ expectationFailure $ "Should have decided to schedule a party, but decided this instead: " <> ppShow decision
 
         it "decides not to send schedule a party when that party would be too far ahead" $ \pool ->

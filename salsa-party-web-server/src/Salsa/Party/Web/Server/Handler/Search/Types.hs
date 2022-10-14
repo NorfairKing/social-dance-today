@@ -45,8 +45,8 @@ data SearchResult
 instance NFData SearchResult
 
 data Result
-  = External (Entity ExternalEvent) (Entity Place) (Maybe CASKey)
-  | Internal (Entity Organiser) (Entity Party) (Entity Place) (Maybe CASKey)
+  = External !(Entity ExternalEvent) !(Entity Place)
+  | Internal !(Entity Organiser) !(Entity Party) !(Entity Place)
   deriving (Show, Eq, Generic)
 
 instance NFData Result

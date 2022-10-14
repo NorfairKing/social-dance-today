@@ -131,6 +131,7 @@ convertToExternalEvent = awaitForever $ \Event {..} -> do
   let externalEventOrganiser = eventOrganizer
   let externalEventPrice = Nothing
   let externalEventCancelled = Nothing
+  let externalEventPoster = Nothing
 
   let LocalTime externalEventDay start = utcToLocalTime utc eventStartDate -- For some reason they display the dates as UTC even though they're local time
   let externalEventStart = Just start

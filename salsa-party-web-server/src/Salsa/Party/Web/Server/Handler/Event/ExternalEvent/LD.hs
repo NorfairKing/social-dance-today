@@ -10,14 +10,14 @@ where
 import Salsa.Party.Web.Server.Handler.Import
 import qualified Web.JSONLD as LD
 
-externalEventPageLD :: Entity ExternalEvent -> Entity Place -> Maybe CASKey -> Handler JSONLDData
-externalEventPageLD (Entity _ externalEvent) (Entity _ place) mPosterKey = do
+externalEventPageLD :: Entity ExternalEvent -> Entity Place -> Handler JSONLDData
+externalEventPageLD (Entity _ externalEvent) (Entity _ place) = do
   renderUrl <- getUrlRender
-  pure $ toJSONLDData $ externalEventToLDEvent renderUrl externalEvent place mPosterKey
+  pure $ toJSONLDData $ externalEventToLDEvent renderUrl externalEvent place
 
-externalEventToLDEvent :: (Route App -> Text) -> ExternalEvent -> Place -> Maybe CASKey -> LD.Event
-externalEventToLDEvent renderUrl ExternalEvent {..} Place {..} mPosterKey =
-  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+externalEventToLDEvent :: (Route App -> Text) -> ExternalEvent -> Place -> LD.Event
+externalEventToLDEvent renderUrl ExternalEvent {..} Place {..} =
+  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
    in LD.Event
         { LD.eventName = externalEventTitle,
           LD.eventLocation =
@@ -56,7 +56,7 @@ externalEventToLDEvent renderUrl ExternalEvent {..} Place {..} mPosterKey =
                   else LD.EventScheduled
             )
               <$> externalEventCancelled,
-          LD.eventImages = [LD.EventImageURL (renderUrl (ImageR posterKey)) | posterKey <- maybeToList mPosterKey],
+          LD.eventImages = [LD.EventImageURL (renderUrl (ImageR posterKey)) | posterKey <- maybeToList externalEventPoster],
           LD.eventOrganizer = case externalEventOrganiser of
             Nothing -> Nothing
             Just name ->

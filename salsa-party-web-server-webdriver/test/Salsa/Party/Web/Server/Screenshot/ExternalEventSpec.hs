@@ -49,8 +49,13 @@ externalEventScreenshotTest mPosterName = do
                   placeLon = Longitude 0 -- Dummy
                 }
         placeId <- DB.insert place
-        mapId <- insertTestFileImage mapFile
-        DB.insert_ StaticMap {staticMapPlace = placeId, staticMapImage = mapId}
+        (mapId, mapKey) <- insertTestFileImage mapFile
+        DB.insert_
+          StaticMap
+            { staticMapPlace = placeId,
+              staticMapLegacyImage = mapId,
+              staticMapImage = Just mapKey
+            }
         let importer =
               ImporterMetadata
                 { importerMetadataName = "example.com",
@@ -59,6 +64,10 @@ externalEventScreenshotTest mPosterName = do
                   importerMetadataLastRunImported = Nothing
                 }
         importerId <- DB.insert importer
+        mPosterKey <- forM mPosterName $ \posterName -> do
+          posterFile <- readTestFile $ "test_resources/posters/" <> posterName <> ".jpg"
+          (_, posterKey) <- insertTestFileImage posterFile
+          pure posterKey
         let externalEvent =
               ExternalEvent
                 { externalEventUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112, -- Dummy
@@ -70,6 +79,7 @@ externalEventScreenshotTest mPosterName = do
                   externalEventStart = Just $ TimeOfDay 19 30 00,
                   externalEventHomepage = Just "https://youtube.com/channel/UCbfoGDdy-3KgeU8OsojO_lA",
                   externalEventPrice = Just "FREE (Freiwillig Twint oder Kässeli)",
+                  externalEventPoster = mPosterKey,
                   externalEventCancelled = Just False,
                   externalEventCreated = moment,
                   externalEventModified = Nothing,
@@ -78,17 +88,7 @@ externalEventScreenshotTest mPosterName = do
                   externalEventOrganiser = Just "DJ Schenker🎵",
                   externalEventOrigin = "https://example.com"
                 }
-        externalEventId <- DB.insert externalEvent
-        forM_ mPosterName $ \posterName -> do
-          posterFile <- readTestFile $ "test_resources/posters/" <> posterName <> ".jpg"
-          posterId <- insertTestFileImage posterFile
-          DB.insert_
-            ExternalEventPoster
-              { externalEventPosterExternalEvent = externalEventId,
-                externalEventPosterImage = posterId,
-                externalEventPosterCreated = moment,
-                externalEventPosterModified = Nothing
-              }
+        DB.insert_ externalEvent
       -- Set the window size and orientation
       setWindowSize (width, height)
       -- Go to the party page

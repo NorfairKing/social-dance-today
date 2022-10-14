@@ -43,7 +43,6 @@ getAccountScheduleR scheduleUuid_ = do
         Just scheduleEntity -> pure scheduleEntity
       when (scheduleOrganiser /= organiserId) $ permissionDeniedI MsgEditScheduleErrorNotYourSchedule
       Place {..} <- runDB $ get404 schedulePlace
-      mPosterKey <- runDB $ getPosterForSchedule scheduleId
       parties <- runDB $ getPartiesOfSchedule scheduleId
       today <- getClientToday
 
@@ -195,6 +194,31 @@ addSchedule organiserId AddScheduleForm {..} mFileInfo = do
   now <- liftIO getCurrentTime
   uuid <- nextRandomUUID
   Entity placeId _ <- lookupPlace addScheduleFormAddress
+
+  mImageKey <- case mFileInfo of
+    Nothing -> pure Nothing -- No need to do anything
+    -- Add the poster if a new one has been submitted
+    Just posterFileInfo -> do
+      imageBlob <- fileSourceByteString posterFileInfo
+      let contentType = fileContentType posterFileInfo
+      case posterCropImage contentType imageBlob of
+        Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
+        Right (convertedImageType, convertedImageBlob) -> do
+          let casKey = mkCASKey convertedImageType convertedImageBlob
+          runDB $
+            void $
+              upsertBy
+                (UniqueImageKey casKey)
+                ( Image
+                    { imageKey = casKey,
+                      imageTyp = convertedImageType,
+                      imageBlob = convertedImageBlob,
+                      imageCreated = now
+                    }
+                )
+                [] -- No need to update anything, the casKey makes the image unique.
+          pure $ Just casKey
+
   let AddScheduleForm _ _ _ _ _ _ _ = undefined
   let schedule =
         Schedule
@@ -206,42 +230,12 @@ addSchedule organiserId AddScheduleForm {..} mFileInfo = do
             scheduleStart = addScheduleFormStart,
             scheduleHomepage = addScheduleFormHomepage,
             schedulePrice = addScheduleFormPrice,
+            schedulePoster = mImageKey,
             scheduleCreated = now,
             scheduleModified = Nothing,
             schedulePlace = placeId
           }
   scheduleId <- runDB $ insert schedule
-
-  case mFileInfo of
-    Nothing -> pure () -- No need to do anything
-    -- Add the poster if a new one has been submitted
-    Just posterFileInfo -> do
-      imageBlob <- fileSourceByteString posterFileInfo
-      let contentType = fileContentType posterFileInfo
-      case posterCropImage contentType imageBlob of
-        Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
-        Right (convertedImageType, convertedImageBlob) -> do
-          let casKey = mkCASKey convertedImageType convertedImageBlob
-          runDB $ do
-            Entity imageId _ <-
-              upsertBy
-                (UniqueImageKey casKey)
-                ( Image
-                    { imageKey = casKey,
-                      imageTyp = convertedImageType,
-                      imageBlob = convertedImageBlob,
-                      imageCreated = now
-                    }
-                )
-                [] -- No need to update anything, the casKey makes the image unique.
-            insert_
-              ( SchedulePoster
-                  { schedulePosterSchedule = scheduleId,
-                    schedulePosterImage = imageId,
-                    schedulePosterCreated = now,
-                    schedulePosterModified = Nothing
-                  }
-              )
 
   let scheduleEntity = Entity scheduleId schedule
   -- Schedule the parties immediately, instead of waiting for the
@@ -316,10 +310,9 @@ editScheduleFormPage ::
   -- | Just for errors
   Maybe (FormResult a) ->
   Handler Html
-editScheduleFormPage (Entity scheduleId schedule) mResult = do
+editScheduleFormPage (Entity _ schedule) mResult = do
   place <- runDB $ get404 $ schedulePlace schedule
   organiser <- runDB $ get404 $ scheduleOrganiser schedule
-  mPosterKey <- runDB $ getPosterForSchedule scheduleId
   token <- genToken
   withMFormResultNavBar mResult $(widgetFile "account/edit-schedule")
 
@@ -333,6 +326,29 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
   today <- getClientToday
   -- This place lookup relies on the caching for geocoding to be fast if nothing has changed.
   Entity placeId _ <- lookupPlace (editScheduleFormAddress form)
+
+  -- Add the new image to the database if a new one has been submitted
+  mNewImageKey <- forM mFileInfo $ \posterFileInfo -> do
+    imageBlob <- fileSourceByteString posterFileInfo
+    let contentType = fileContentType posterFileInfo
+    case posterCropImage contentType imageBlob of
+      Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
+      Right (convertedImageType, convertedImageBlob) -> do
+        let casKey = mkCASKey convertedImageType convertedImageBlob
+        runDB $
+          void $
+            upsertBy
+              (UniqueImageKey casKey)
+              ( Image
+                  { imageKey = casKey,
+                    imageTyp = convertedImageType,
+                    imageBlob = convertedImageBlob,
+                    imageCreated = now
+                  }
+              )
+              [] -- No need to update anything, the casKey makes the image unique.
+        pure casKey
+
   let EditScheduleForm _ _ _ _ _ _ _ = undefined
   let whenChanged :: (Eq a, PersistField a) => a -> (EditScheduleForm -> a) -> EntityField f a -> Maybe (Update f)
       whenChanged val formFunc field = do
@@ -359,50 +375,15 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
                 whenChanged schedulePrice editScheduleFormPrice SchedulePrice,
                 if schedulePlace /= placeId
                   then Just (SchedulePlace =. placeId)
+                  else Nothing,
+                if schedulePoster /= mNewImageKey
+                  then Just (SchedulePoster =. mNewImageKey)
                   else Nothing
               ]
       mScheduleUpdates :: Maybe [Update Schedule]
       mScheduleUpdates = mUpdates ScheduleModified scheduleFieldUpdates
 
   forM_ mScheduleUpdates $ \updates -> runDB $ update scheduleId updates
-
-  -- Add the new image to the database if a new one has been submitted
-  mNewImageId <- forM mFileInfo $ \posterFileInfo -> do
-    imageBlob <- fileSourceByteString posterFileInfo
-    let contentType = fileContentType posterFileInfo
-    case posterCropImage contentType imageBlob of
-      Left err -> invalidArgs ["Could not decode poster image: " <> T.pack err]
-      Right (convertedImageType, convertedImageBlob) -> do
-        let casKey = mkCASKey convertedImageType convertedImageBlob
-        runDB $ do
-          Entity imageId _ <-
-            upsertBy
-              (UniqueImageKey casKey)
-              ( Image
-                  { imageKey = casKey,
-                    imageTyp = convertedImageType,
-                    imageBlob = convertedImageBlob,
-                    imageCreated = now
-                  }
-              )
-              [] -- No need to update anything, the casKey makes the image unique.
-          pure imageId
-
-  -- Update the schedule poster if a new one has been submitted
-  forM_ mNewImageId $ \imageId -> runDB $ do
-    void $
-      upsertBy
-        (UniqueSchedulePoster scheduleId)
-        ( SchedulePoster
-            { schedulePosterSchedule = scheduleId,
-              schedulePosterImage = imageId,
-              schedulePosterCreated = now,
-              schedulePosterModified = Nothing
-            }
-        )
-        [ SchedulePosterImage =. imageId,
-          SchedulePosterModified =. Just now
-        ]
 
   -- If the recurrence has changed, then we delete all future parties and reschedule them from scratch.
   -- If the recurrence has not changed, then we just update the future parties.
@@ -445,6 +426,9 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
                     whenChanged schedulePrice editScheduleFormPrice PartyPrice,
                     if schedulePlace /= placeId
                       then Just (PartyPlace =. placeId)
+                      else Nothing,
+                    if schedulePoster /= mNewImageKey
+                      then Just (PartyPoster =. mNewImageKey)
                       else Nothing
                   ]
           mPartyUpdates :: Maybe [Update Party]
@@ -454,22 +438,6 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
       forM_ mPartyUpdates $ \updates ->
         runDB $
           forM_ futureScheduledPartiesIds $ \partyId -> update partyId updates
-
-      -- Update the scheduled parties' poster if a new one has been submitted
-      forM_ mNewImageId $ \imageId -> runDB $ do
-        forM_ futureScheduledPartiesIds $ \partyId ->
-          upsertBy
-            (UniquePartyPoster partyId)
-            ( PartyPoster
-                { partyPosterParty = partyId,
-                  partyPosterImage = imageId,
-                  partyPosterCreated = now,
-                  partyPosterModified = Nothing
-                }
-            )
-            [ PartyPosterImage =. imageId,
-              PartyPosterModified =. Just now
-            ]
 
   addMessageI "is-success" MsgEditScheduleSuccess
   redirect $ AccountR $ AccountScheduleEditR scheduleUuid

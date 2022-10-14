@@ -87,7 +87,7 @@ spec =
 
                   liftIO $ case jsonLDResults of
                     [JSONLD [ldEvent]] ->
-                      let expectedLDEvent = partyToLDEvent urlRenderRelative party organiser place Nothing
+                      let expectedLDEvent = partyToLDEvent urlRenderRelative party organiser place
                           ctx =
                             unlines
                               [ "Encoded JSON:",
@@ -140,7 +140,7 @@ spec =
 
                   liftIO $ case jsonLDResults of
                     [JSONLD [ldEvent]] ->
-                      let expectedLDEvent = partyToLDEvent urlRenderRelative party organiser place Nothing
+                      let expectedLDEvent = partyToLDEvent urlRenderRelative party organiser place
                           ctx =
                             unlines
                               [ "Encoded JSON:",
@@ -176,7 +176,7 @@ spec =
 
                 liftIO $ case jsonLDResults of
                   [JSONLD [ldEvent]] ->
-                    let expectedLDEvent = externalEventToLDEvent urlRenderRelative externalEvent place Nothing
+                    let expectedLDEvent = externalEventToLDEvent urlRenderRelative externalEvent place
                         ctx =
                           unlines
                             [ "Encoded JSON:",

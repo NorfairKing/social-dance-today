@@ -62,7 +62,6 @@ test-suite salsa-party-web-server-gen-test
       Salsa.Party.DB.CoordinatesSpec
       Salsa.Party.DB.RecurrenceSpec
       Salsa.Party.DB.SlugSpec
-      Salsa.Party.DBSpec
       Salsa.Party.Importer.EnvSpec
       Salsa.Party.Looper.OrganiserReminderSpec
       Salsa.Party.Looper.PartySchedulerSpec
@@ -140,12 +139,10 @@ test-suite salsa-party-web-server-gen-test
     , sydtest
     , sydtest-aeson
     , sydtest-persistent
-    , sydtest-persistent-sqlite
     , sydtest-yesod
     , text
     , time
     , typed-uuid
-    , unliftio
     , uuid
     , yesod
     , yesod-auth

@@ -111,6 +111,7 @@ parseEventsFromStylePage = awaitForever $ \(request, response) -> do
               guard $ not isLocal
 
             let externalEventOrganiser = Nothing
+            let externalEventPoster = Nothing
 
             let externalEventCreated = now
             let externalEventModified = Nothing

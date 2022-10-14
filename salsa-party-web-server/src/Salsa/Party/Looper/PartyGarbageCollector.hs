@@ -23,5 +23,4 @@ runPartyGarbageCollector App {..} = do
 garbageCollectExternalEvent :: ExternalEventId -> SqlPersistT (LoggingT IO) ()
 garbageCollectExternalEvent externalEventId = do
   logInfoNS "PartyGarbageCollector" $ T.pack $ unwords ["Garbage collecting ExternalEvent", show (fromSqlKey externalEventId)]
-  deleteBy $ UniqueExternalEventPoster externalEventId
   delete externalEventId

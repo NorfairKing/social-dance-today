@@ -6,9 +6,9 @@ import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.JSON
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
 import Salsa.Party.Web.Server.Handler.Import
 
-externalEventPage :: Entity ExternalEvent -> Entity Place -> Maybe CASKey -> Handler TypedContent
-externalEventPage externalEventEntity placeEntity mCASKey = selectRep $ do
-  provideRep $ externalEventPageHtml externalEventEntity placeEntity mCASKey
-  provideRep $ externalEventPageLD externalEventEntity placeEntity mCASKey
+externalEventPage :: Entity ExternalEvent -> Entity Place -> Handler TypedContent
+externalEventPage externalEventEntity placeEntity = selectRep $ do
+  provideRep $ externalEventPageHtml externalEventEntity placeEntity
+  provideRep $ externalEventPageLD externalEventEntity placeEntity
   provideRep $ externalEventPageICal externalEventEntity placeEntity
-  provideRep $ externalEventPageJSON externalEventEntity placeEntity mCASKey
+  provideRep $ externalEventPageJSON externalEventEntity placeEntity
