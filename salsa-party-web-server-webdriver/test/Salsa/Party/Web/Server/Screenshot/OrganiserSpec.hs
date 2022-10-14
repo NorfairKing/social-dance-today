@@ -74,7 +74,7 @@ addPartyOnSchedule moment organiserId = driveDB $ do
           placeLon = Longitude 0 -- Dummy
         }
   posterFile <- readTestFile "test_resources/posters/landscape.jpg"
-  (_, posterKey) <- insertTestFileImage posterFile
+  posterKey <- insertTestFileImage posterFile
   let partySlug_ = Slug "bachata-community-zurich-mondays"
   let party =
         Party
@@ -128,7 +128,7 @@ addPartyOffSchedule moment organiserId = driveDB $ do
           placeLon = Longitude 0 -- Dummy
         }
   posterFile <- readTestFile "test_resources/posters/portrait.jpg"
-  (_, posterKey) <- insertTestFileImage posterFile
+  posterKey <- insertTestFileImage posterFile
   let partySlug_ = Slug "bachata-community-zurich-mondays"
   let party =
         Party

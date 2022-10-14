@@ -76,17 +76,15 @@ partyScreenshotTest mPosterName mMapFilePath mRecurrence = do
         placeId <- DB.insert place
         forM_ mMapFilePath $ \mapFilePath -> do
           mapFile <- readTestFile mapFilePath
-          (mapId, mapKey) <- insertTestFileImage mapFile
+          mapKey <- insertTestFileImage mapFile
           DB.insert_
             StaticMap
               { staticMapPlace = placeId,
-                staticMapLegacyImage = mapId,
-                staticMapImage = Just mapKey
+                staticMapImage = mapKey
               }
         mPosterKey <- forM mPosterName $ \posterName -> do
           posterFile <- readTestFile $ "test_resources/posters/" <> posterName <> ".jpg"
-          (_, posterKey) <- insertTestFileImage posterFile
-          pure posterKey
+          insertTestFileImage posterFile
         let party =
               Party
                 { partyUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112, -- Dummy

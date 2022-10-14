@@ -20,6 +20,6 @@ garbageCollectImage (Entity imageId Image {..}) = do
   parties <- count [PartyPoster ==. Just imageKey]
   externalEvents <- count [ExternalEventPoster ==. Just imageKey]
   schedules <- count [SchedulePoster ==. Just imageKey]
-  staticMaps <- count [StaticMapImage ==. Just imageKey]
+  staticMaps <- count [StaticMapImage ==. imageKey]
   let total = parties + externalEvents + schedules + staticMaps
   when (total <= 0) $ delete imageId

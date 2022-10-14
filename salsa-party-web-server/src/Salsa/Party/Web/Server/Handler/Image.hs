@@ -3,6 +3,7 @@
 
 module Salsa.Party.Web.Server.Handler.Image
   ( getImageR,
+    respondWithImage,
   )
 where
 
@@ -19,9 +20,12 @@ getImageR key = do
       -- that the event has dissappeared from our database.
       -- How else would a user have obtained the hash?
       gone
-    Just (Entity _ Image {..}) -> do
-      -- Cache forever because of CAS
-      addHeader "Cache-Control" "max-age=31536000, public, immutable"
-      addHeader "Content-Disposition" "inline"
-      setEtag $ renderCASKey key
-      respond (TE.encodeUtf8 imageTyp) imageBlob
+    Just (Entity _ image) -> respondWithImage image
+
+respondWithImage :: Image -> Handler TypedContent
+respondWithImage Image {..} = do
+  -- Cache forever because of CAS
+  addHeader "Cache-Control" "max-age=31536000, public, immutable"
+  addHeader "Content-Disposition" "inline"
+  setEtag $ renderCASKey imageKey
+  respond (TE.encodeUtf8 imageTyp) imageBlob

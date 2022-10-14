@@ -14,7 +14,7 @@ import qualified Database.Esqueleto.Legacy as E
 import Google.Maps
 import Network.HTTP.Client
 import Network.HTTP.Client.Retry
-import Salsa.Party.Web.Server.Handler.Image (getImageR)
+import Salsa.Party.Web.Server.Handler.Image (respondWithImage)
 import Salsa.Party.Web.Server.Handler.Import
 
 -- | Serve a static map of the area around a given place
@@ -47,39 +47,39 @@ getEventMapR eventUUID = do
   placeId <- case partyOrExternalEvent of
     Left (Entity _ party) -> pure $ partyPlace party
     Right (Entity _ externalEvent) -> pure $ externalEventPlace externalEvent
-  mImageKey <- runDB $
-    fmap (E.unValue =<<) $
+  mImage <- runDB $
+    fmap (fmap entityVal) $
       E.selectOne $
-        E.from $ \staticMap -> do
+        E.from $ \(staticMap `E.InnerJoin` image) -> do
+          E.on (staticMap E.^. StaticMapImage E.==. image E.^. ImageKey)
           E.where_ (staticMap E.^. StaticMapPlace E.==. E.val placeId)
-          pure (staticMap E.^. StaticMapImage)
+          pure image
 
-  imageKey <- case mImageKey of
-    Just imageKey -> do
+  image <- case mImage of
+    Just image -> do
       logDebugN $ T.pack $ "Static map for event found in cache." <> show (uuidString eventUUID)
-      pure imageKey
+      pure image
     Nothing -> do
       logDebugN $ T.pack $ "Static map not in cache, fetching it first." <> show (uuidString eventUUID)
       loadAndCacheMapImage placeId
 
-  getImageR imageKey
+  respondWithImage image
 
-loadAndCacheMapImage :: PlaceId -> Handler CASKey
+loadAndCacheMapImage :: PlaceId -> Handler Image
 loadAndCacheMapImage placeId = do
   Place {..} <- runDB $ get404 placeId
-  Entity imageId Image {..} <- loadMapImage placeQuery
+  Entity _ image@Image {..} <- loadMapImage placeQuery
   runDB $
     void $
       upsertBy
         (UniqueStaticMapPlace placeId)
         ( StaticMap
             { staticMapPlace = placeId,
-              staticMapImage = Just imageKey,
-              staticMapLegacyImage = imageId
+              staticMapImage = imageKey
             }
         )
         [] -- No need to update anything
-  pure imageKey
+  pure image
 
 loadMapImage :: Text -> Handler (Entity Image)
 loadMapImage query = do

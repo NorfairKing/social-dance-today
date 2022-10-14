@@ -49,12 +49,11 @@ externalEventScreenshotTest mPosterName = do
                   placeLon = Longitude 0 -- Dummy
                 }
         placeId <- DB.insert place
-        (mapId, mapKey) <- insertTestFileImage mapFile
+        mapKey <- insertTestFileImage mapFile
         DB.insert_
           StaticMap
             { staticMapPlace = placeId,
-              staticMapLegacyImage = mapId,
-              staticMapImage = Just mapKey
+              staticMapImage = mapKey
             }
         let importer =
               ImporterMetadata
@@ -66,8 +65,7 @@ externalEventScreenshotTest mPosterName = do
         importerId <- DB.insert importer
         mPosterKey <- forM mPosterName $ \posterName -> do
           posterFile <- readTestFile $ "test_resources/posters/" <> posterName <> ".jpg"
-          (_, posterKey) <- insertTestFileImage posterFile
-          pure posterKey
+          insertTestFileImage posterFile
         let externalEvent =
               ExternalEvent
                 { externalEventUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112, -- Dummy

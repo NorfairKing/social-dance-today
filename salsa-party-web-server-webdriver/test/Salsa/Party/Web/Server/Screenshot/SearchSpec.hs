@@ -70,7 +70,7 @@ addPartyOnSchedule moment placeId = driveDB $ do
           }
   organiserId <- DB.insert organiser
   posterFile <- readTestFile "test_resources/posters/landscape.jpg"
-  (_, posterKey) <- insertTestFileImage posterFile
+  posterKey <- insertTestFileImage posterFile
   let party =
         Party
           { partyUuid = Typed.UUID $ UUID.fromWords 123 456 789 101112, -- Dummy
@@ -123,7 +123,7 @@ addExternalEvent moment placeId = driveDB $ do
           }
   importerId <- DB.insert importer
   posterFile <- readTestFile "test_resources/posters/portrait.jpg"
-  (_, posterKey) <- insertTestFileImage posterFile
+  posterKey <- insertTestFileImage posterFile
   let slug = Slug "mi-salsa"
   let externalEvent =
         ExternalEvent

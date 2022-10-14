@@ -194,17 +194,6 @@ Party sql=party
     deriving Generic
 
 
-LegacyPartyPoster sql=party_poster
-    party PartyId
-    image ImageId
-    created UTCTime
-    modified UTCTime Maybe default=NULL
-    UniquePartyPoster party
-    deriving Show
-    deriving Eq
-    deriving Generic
-
-
 Image sql=image
     key CASKey
     typ Text sql=type -- type is not an acceptable identifier in haskell.
@@ -240,17 +229,6 @@ Schedule
     UniqueScheduleUUID uuid !force
 
 
-    deriving Show
-    deriving Eq
-    deriving Generic
-
-
-LegacySchedulePoster sql=schedule_poster
-    schedule ScheduleId
-    image ImageId
-    created UTCTime
-    modified UTCTime Maybe default=NULL
-    UniqueSchedulePoster schedule
     deriving Show
     deriving Eq
     deriving Generic
@@ -325,22 +303,9 @@ ExternalEvent sql=external_event
     deriving Generic
 
 
-LegacyExternalEventPoster sql=external_event_poster
-    externalEvent ExternalEventId
-    image ImageId
-    created UTCTime
-    modified UTCTime Maybe default=NULL
-    UniqueExternalEventPoster externalEvent
-
-    deriving Show
-    deriving Eq
-    deriving Generic
-
-
 StaticMap
     place PlaceId
-    legacyImage ImageId sql=image
-    image CASKey Maybe sql=key
+    image CASKey sql=key
 
     UniqueStaticMapPlace place
 
