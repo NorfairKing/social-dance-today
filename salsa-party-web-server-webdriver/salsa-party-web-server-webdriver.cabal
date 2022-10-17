@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.5.
+-- This file has been generated from package.yaml by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -47,6 +47,7 @@ test-suite salsa-party-web-server-webdriver-test
       Salsa.Party.Web.Server.Handler.SearchSpec
       Salsa.Party.Web.Server.Handler.TestImport
       Salsa.Party.Web.Server.Onboarding.OrganiserSpec
+      Salsa.Party.Web.Server.Screenshot.Account.PartySpec
       Salsa.Party.Web.Server.Screenshot.ExternalEventSpec
       Salsa.Party.Web.Server.Screenshot.OrganiserSpec
       Salsa.Party.Web.Server.Screenshot.PartySpec
