@@ -31,7 +31,8 @@ importerLoopers Settings {..} app = do
                 (runImporterWithDoubleCheck settingImporterInterval app sets importer)
    in mapM
         importerLooper
-        [ eventsInfoImporter,
+        [ salsaFauraxFrImporter,
+          eventsInfoImporter,
           golatindanceComImporter,
           danceplaceComImporter,
           mapdanceComImporter,
