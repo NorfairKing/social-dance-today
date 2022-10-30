@@ -70,17 +70,6 @@ renderDanceStyleInUrl = \case
   Tango -> "Tango"
   WestCoastSwing -> "West Coast Swing"
 
-renderDanceStyleInText :: DanceStyle -> Text
-renderDanceStyleInText = \case
-  Salsa -> "Salsa"
-  Bachata -> "Bachata"
-  ChaChaCha -> "Cha-Cha-Cha"
-  Kizomba -> "Kizomba"
-  Zouk -> "Zouk"
-  LindyHop -> "Lindy Hop"
-  Tango -> "Tango"
-  WestCoastSwing -> "West Coast Swing"
-
 allDanceStyles :: [DanceStyle]
 allDanceStyles = [minBound .. maxBound]
 

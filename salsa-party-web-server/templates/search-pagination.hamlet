@@ -1,5 +1,21 @@
-<nav .pagination role="navigation" aria-label="pagination">
-  <a .pagination-previous rel="nofollow" href=#{prevDayRoute}>
+<div .is-grouped .has-text-centered role="navigation" aria-label="pagination">
+  <a .button rel="nofollow" href=#{prevDayRoute}>
     _{MsgSearchNavEarlier}
-  <a .pagination-next rel="nofollow" href=#{nextDayRoute}>
+
+  <div .dropdown .is-hoverable>
+    <div .dropdown-trigger>
+      <button .button aria-haspopup="true" aria-controls="filter-dropdown">
+        <span>
+          Filter
+
+    <div .dropdown-menu #filter-dropdown role="menu">
+      <div .dropdown-content>
+        $forall (mDanceStyle, link) <- danceStyleFilterLinks
+          <a .dropdown-item href=#{link}>
+            $maybe danceStyle <- mDanceStyle
+              _{danceStyleMessage danceStyle}
+            $nothing
+              _{MsgAllDanceStyles}
+
+  <a .button rel="nofollow" href=#{nextDayRoute}>
     _{MsgSearchNavLater}

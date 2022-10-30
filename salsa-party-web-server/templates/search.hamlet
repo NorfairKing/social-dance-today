@@ -1,9 +1,8 @@
-<section .section>
-  <div .container>
-    <h1 #search-results-title .title .is-3 .has-text-centered>
-      _{title}
+<div .container .px-4>
+  <h1 #search-results-title .title .is-3 .has-text-centered>
+    _{title}
 
-    ^{pagination}
+  ^{pagination}
 
 
 $forall day <- days

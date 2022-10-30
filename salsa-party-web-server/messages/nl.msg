@@ -346,6 +346,17 @@ GoogleMapAlt location@Text: Kaart van de omgeving van #{location}
 PaginationPrevious: Vorige
 PaginationNext: Volgende
 
+# All Dance Styles
+AllDanceStyles: Alle dansstijlen
+Salsa: Salsa
+Bachata: Bachata
+ChaChaCha: Cha-Cha-Cha
+Kizomba: Kizomba
+Zouk: Zouk
+LindyHop: Lindy Hop
+Tango: Tango
+WestCoastSwing: West Coast Swing
+
 # Auto day
 DayMoreThanAYearAgo: meer dan een jaar geleden
 Day11MonthsAgo: 11 maanden geleden

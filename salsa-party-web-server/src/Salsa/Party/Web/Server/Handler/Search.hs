@@ -103,7 +103,7 @@ queryForm =
                       map
                         ( \danceStyle ->
                             Option
-                              { optionDisplay = renderDanceStyleInText danceStyle,
+                              { optionDisplay = renderDanceStyleInUrl danceStyle, -- Unused
                                 optionInternalValue = danceStyle,
                                 optionExternalValue = renderDanceStyleInUrl danceStyle
                               }
@@ -169,25 +169,33 @@ queryFormToSearchParameters QueryForm {..} = do
   let searchParameterDanceStyle = queryFormDanceStyle
   pure SearchParameters {..}
 
+-- Compute the fancy route for given search paramaters, if we can.
+searchParameterSpecificRoute :: SearchParameters -> Maybe (Route App)
+searchParameterSpecificRoute SearchParameters {..} =
+  let SearchParameters _ _ _ _ = undefined
+   in case searchParameterDistance of
+        Just _ -> Nothing
+        Nothing -> case searchParameterLocation of
+          SearchCoordinates _ -> Nothing
+          SearchAddress address -> case searchParameterDate of
+            SearchFromToday -> Just $ case searchParameterDanceStyle of
+              Nothing -> SearchR address
+              Just danceStyle -> SearchDanceStyleR address danceStyle
+            SearchExactlyOn day -> Just $ case searchParameterDanceStyle of
+              Nothing -> SearchDayR address day
+              Just danceStyle -> SearchDayDanceStyleR address day danceStyle
+            SearchFromTo begin end -> Just $ case searchParameterDanceStyle of
+              Nothing -> SearchFromToR address begin end
+              Just danceStyle -> SearchFromToDanceStyleR address begin end danceStyle
+            SearchFromOn _ -> Nothing
+
 getQueryR :: Handler Html
 getQueryR = do
-  searchParameters@SearchParameters {..} <- runInputGet queryForm >>= queryFormToSearchParameters
-  case searchParameterDistance of
-    Just _ -> searchResultsPage searchParameters
-    Nothing ->
-      case searchParameterLocation of
-        SearchCoordinates _ -> searchResultsPage searchParameters
-        SearchAddress address -> case searchParameterDate of
-          SearchFromToday -> case searchParameterDanceStyle of
-            Nothing -> redirect $ SearchR address
-            Just danceStyle -> redirect $ SearchDanceStyleR address danceStyle
-          SearchExactlyOn day -> case searchParameterDanceStyle of
-            Nothing -> redirect $ SearchDayR address day
-            Just danceStyle -> redirect $ SearchDayDanceStyleR address day danceStyle
-          SearchFromTo begin end -> case searchParameterDanceStyle of
-            Nothing -> redirect $ SearchFromToR address begin end
-            Just danceStyle -> redirect $ SearchFromToDanceStyleR address begin end danceStyle
-          SearchFromOn _ -> searchResultsPage searchParameters
+  searchParameters <- runInputGet queryForm >>= queryFormToSearchParameters
+  -- If we have a fancy route, redirect there, otherwise just show results
+  case searchParameterSpecificRoute searchParameters of
+    Nothing -> searchResultsPage searchParameters
+    Just route -> redirect route
 
 getSearchR :: Text -> Handler Html
 getSearchR query = do
@@ -252,7 +260,9 @@ getSearchFromToDanceStyleR query begin end danceStyle =
 searchParametersQueryRoute :: (MonadHandler m, HandlerSite m ~ App) => SearchParameters -> m Text
 searchParametersQueryRoute searchParameters = do
   urlRenderParams <- getUrlRenderParams
-  pure $ urlRenderParams QueryR $ searchParameterParameters searchParameters
+  pure $ case searchParameterSpecificRoute searchParameters of
+    Nothing -> urlRenderParams QueryR $ searchParameterParameters searchParameters
+    Just route -> urlRenderParams route []
 
 -- | Search parameters contain everything necessary to produce the html page of search results.
 --
@@ -271,7 +281,8 @@ searchParameterParameters SearchParameters {..} =
   concat
     [ searchParameterLocationParameters searchParameterLocation,
       searchParameterDateParameters searchParameterDate,
-      [(distanceParameter, T.pack $ show $ mToKm dist) | dist <- maybeToList searchParameterDistance]
+      [(distanceParameter, T.pack $ show $ mToKm dist) | dist <- maybeToList searchParameterDistance],
+      [(danceStyleParameter, renderDanceStyleInUrl danceStyle) | danceStyle <- maybeToList searchParameterDanceStyle]
     ]
 
 data SearchLocation
@@ -374,6 +385,11 @@ searchResultsPage searchParameters@SearchParameters {..} = do
         let days = [begin .. end]
         prevDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = navPrevSearchDate today searchParameterDate}
         nextDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = navNextSearchDate today searchParameterDate}
+
+        let danceStyleFilterLink mDanceStyle = searchParametersQueryRoute $ searchParameters {searchParameterDanceStyle = mDanceStyle}
+        let danceStyleFilters = filter (/= searchParameterDanceStyle) $ Nothing : map Just allDanceStyles
+        danceStyleFilterLinks <- mapM (\mDanceStyle -> (,) mDanceStyle <$> danceStyleFilterLink mDanceStyle) danceStyleFilters
+
         let pagination = $(widgetFile "search-pagination")
         addStylesheet $ StaticR zoom_without_container_css
         $(widgetFile "search") <> posterCSS
@@ -396,8 +412,8 @@ searchParametersHtmlTitle :: SearchParameters -> WidgetFor App AppMessage
 searchParametersHtmlTitle SearchParameters {..} = do
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
-  pure $ case searchParameterDanceStyle of
-    Nothing -> case searchParameterLocation of
+  case searchParameterDanceStyle of
+    Nothing -> pure $ case searchParameterLocation of
       SearchCoordinates _ -> case searchParameterDate of
         SearchFromToday -> MsgSearchTitleAroundYourLocationToday
         SearchFromOn day -> MsgSearchTitleAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
@@ -408,26 +424,27 @@ searchParametersHtmlTitle SearchParameters {..} = do
         SearchFromOn day -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
         SearchFromTo begin end -> MsgSearchTitleAroundAddressFromTo address (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
         SearchExactlyOn day -> MsgSearchTitleAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
-    Just danceStyle ->
-      let danceStyleText = renderDanceStyleInText danceStyle
-       in case searchParameterLocation of
-            SearchCoordinates _ -> case searchParameterDate of
-              SearchFromToday -> MsgSearchTitleDanceStyleAroundYourLocationToday danceStyleText
-              SearchFromOn day -> MsgSearchTitleDanceStyleAroundYourLocationOnDay danceStyleText $ formatTime timeLocale prettyDayFormat day
-              SearchFromTo begin end -> MsgSearchTitleDanceStyleAroundYourLocationFromTo danceStyleText (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
-              SearchExactlyOn day -> MsgSearchTitleDanceStyleAroundYourLocationOnDay danceStyleText $ formatTime timeLocale prettyDayFormat day
-            SearchAddress address -> case searchParameterDate of
-              SearchFromToday -> MsgSearchTitleDanceStyleAroundAddressToday danceStyleText address
-              SearchFromOn day -> MsgSearchTitleDanceStyleAroundAddressOnDay danceStyleText address $ formatTime timeLocale prettyDayFormat day
-              SearchFromTo begin end -> MsgSearchTitleDanceStyleAroundAddressFromTo danceStyleText address (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
-              SearchExactlyOn day -> MsgSearchTitleDanceStyleAroundAddressOnDay danceStyleText address $ formatTime timeLocale prettyDayFormat day
+    Just danceStyle -> do
+      messageRender <- getMessageRender
+      let danceStyleText = messageRender $ danceStyleMessage danceStyle
+      pure $ case searchParameterLocation of
+        SearchCoordinates _ -> case searchParameterDate of
+          SearchFromToday -> MsgSearchTitleDanceStyleAroundYourLocationToday danceStyleText
+          SearchFromOn day -> MsgSearchTitleDanceStyleAroundYourLocationOnDay danceStyleText $ formatTime timeLocale prettyDayFormat day
+          SearchFromTo begin end -> MsgSearchTitleDanceStyleAroundYourLocationFromTo danceStyleText (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
+          SearchExactlyOn day -> MsgSearchTitleDanceStyleAroundYourLocationOnDay danceStyleText $ formatTime timeLocale prettyDayFormat day
+        SearchAddress address -> case searchParameterDate of
+          SearchFromToday -> MsgSearchTitleDanceStyleAroundAddressToday danceStyleText address
+          SearchFromOn day -> MsgSearchTitleDanceStyleAroundAddressOnDay danceStyleText address $ formatTime timeLocale prettyDayFormat day
+          SearchFromTo begin end -> MsgSearchTitleDanceStyleAroundAddressFromTo danceStyleText address (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
+          SearchExactlyOn day -> MsgSearchTitleDanceStyleAroundAddressOnDay danceStyleText address $ formatTime timeLocale prettyDayFormat day
 
 searchParametersHtmlDescription :: SearchParameters -> WidgetFor App AppMessage
 searchParametersHtmlDescription SearchParameters {..} = do
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
-  pure $ case searchParameterDanceStyle of
-    Nothing -> case searchParameterLocation of
+  case searchParameterDanceStyle of
+    Nothing -> pure $ case searchParameterLocation of
       SearchCoordinates _ -> case searchParameterDate of
         SearchFromToday -> MsgSearchDescriptionAroundYourLocationToday
         SearchFromOn day -> MsgSearchDescriptionAroundYourLocationOnDay $ formatTime timeLocale prettyDayFormat day
@@ -438,19 +455,20 @@ searchParametersHtmlDescription SearchParameters {..} = do
         SearchFromOn day -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
         SearchFromTo begin end -> MsgSearchDescriptionAroundAddressFromTo address (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
         SearchExactlyOn day -> MsgSearchDescriptionAroundAddressOnDay address $ formatTime timeLocale prettyDayFormat day
-    Just danceStyle ->
-      let danceStyleText = renderDanceStyleInText danceStyle
-       in case searchParameterLocation of
-            SearchCoordinates _ -> case searchParameterDate of
-              SearchFromToday -> MsgSearchDescriptionDanceStyleAroundYourLocationToday danceStyleText
-              SearchFromOn day -> MsgSearchDescriptionDanceStyleAroundYourLocationOnDay danceStyleText $ formatTime timeLocale prettyDayFormat day
-              SearchFromTo begin end -> MsgSearchDescriptionDanceStyleAroundYourLocationFromTo danceStyleText (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
-              SearchExactlyOn day -> MsgSearchDescriptionDanceStyleAroundYourLocationOnDay danceStyleText $ formatTime timeLocale prettyDayFormat day
-            SearchAddress address -> case searchParameterDate of
-              SearchFromToday -> MsgSearchDescriptionDanceStyleAroundAddressToday danceStyleText address
-              SearchFromOn day -> MsgSearchDescriptionDanceStyleAroundAddressOnDay danceStyleText address $ formatTime timeLocale prettyDayFormat day
-              SearchFromTo begin end -> MsgSearchDescriptionDanceStyleAroundAddressFromTo danceStyleText address (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
-              SearchExactlyOn day -> MsgSearchDescriptionDanceStyleAroundAddressOnDay danceStyleText address $ formatTime timeLocale prettyDayFormat day
+    Just danceStyle -> do
+      messageRender <- getMessageRender
+      let danceStyleText = messageRender $ danceStyleMessage danceStyle
+      pure $ case searchParameterLocation of
+        SearchCoordinates _ -> case searchParameterDate of
+          SearchFromToday -> MsgSearchDescriptionDanceStyleAroundYourLocationToday danceStyleText
+          SearchFromOn day -> MsgSearchDescriptionDanceStyleAroundYourLocationOnDay danceStyleText $ formatTime timeLocale prettyDayFormat day
+          SearchFromTo begin end -> MsgSearchDescriptionDanceStyleAroundYourLocationFromTo danceStyleText (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
+          SearchExactlyOn day -> MsgSearchDescriptionDanceStyleAroundYourLocationOnDay danceStyleText $ formatTime timeLocale prettyDayFormat day
+        SearchAddress address -> case searchParameterDate of
+          SearchFromToday -> MsgSearchDescriptionDanceStyleAroundAddressToday danceStyleText address
+          SearchFromOn day -> MsgSearchDescriptionDanceStyleAroundAddressOnDay danceStyleText address $ formatTime timeLocale prettyDayFormat day
+          SearchFromTo begin end -> MsgSearchDescriptionDanceStyleAroundAddressFromTo danceStyleText address (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
+          SearchExactlyOn day -> MsgSearchDescriptionDanceStyleAroundAddressOnDay danceStyleText address $ formatTime timeLocale prettyDayFormat day
 
 defaultDaysAhead :: Integer
 defaultDaysAhead = 7

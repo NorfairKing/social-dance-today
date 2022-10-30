@@ -20,10 +20,13 @@ runSearchCachePopulator :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m)
 runSearchCachePopulator = do
   today <- liftIO $ utctDay <$> getCurrentTime
   forM_ locations $ \location -> do
-    let coordinates = placeCoordinates $ locationPlace location
+    let place = locationPlace location
+    let address = placeQuery place
+    let coordinates = placeCoordinates place
 
     -- Without dance style:
     populateCacheForQuery
+      address
       SearchQuery
         { searchQueryBegin = today,
           searchQueryMEnd = Just $ addDays (defaultDaysAhead - 1) today,
@@ -35,6 +38,7 @@ runSearchCachePopulator = do
     -- Per dance-style too:
     forM allDanceStyles $ \danceStyle -> do
       populateCacheForQuery
+        address
         SearchQuery
           { searchQueryBegin = today,
             searchQueryMEnd = Just $ addDays (defaultDaysAhead - 1) today,
@@ -43,8 +47,8 @@ runSearchCachePopulator = do
             searchQueryDanceStyle = Just danceStyle
           }
 
-populateCacheForQuery :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => SearchQuery -> m ()
-populateCacheForQuery query = do
+populateCacheForQuery :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => Text -> SearchQuery -> m ()
+populateCacheForQuery address query = do
   searchResultCache <- asks appSearchResultCache
   mResult <- liftIO $ Cache.lookup searchResultCache query
   case mResult of
@@ -67,10 +71,13 @@ populateCacheForQuery query = do
 
   logInfoN $
     T.pack $
-      unwords
-        [ "Populating search cache for query",
-          ppShow query
-        ]
+      unwords $
+        concat
+          [ [ "Populating search cache for location",
+              show address
+            ],
+            concat [["and style", show ds] | ds <- maybeToList (searchQueryDanceStyle query)]
+          ]
   pool <- asks appConnectionPool
   let runDBHere func = runSqlPool (retryOnBusy func) pool
   queryResults <- runDBHere $ runUncachedSearchQueryForResults query

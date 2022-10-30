@@ -15,8 +15,8 @@
 
 module Salsa.Party.Web.Server.Foundation.I18N
   ( module Salsa.Party.Web.Server.Foundation.I18N,
-    module Salsa.Party.Web.Server.Foundation.I18N.SupportedLanguage,
     module Salsa.Party.Web.Server.Foundation.I18N.Messages,
+    module Salsa.Party.Web.Server.Foundation.I18N.SupportedLanguage,
   )
 where
 
@@ -183,6 +183,17 @@ postSelectLanguageR lang = do
   setLanguage $ supportedLanguageAbbreviation lang
   setUltDestReferer
   redirectUltDest HomeR
+
+danceStyleMessage :: DanceStyle -> AppMessage
+danceStyleMessage = \case
+  Salsa -> MsgSalsa
+  Bachata -> MsgBachata
+  ChaChaCha -> MsgChaChaCha
+  Kizomba -> MsgKizomba
+  Zouk -> MsgZouk
+  LindyHop -> MsgLindyHop
+  Tango -> MsgTango
+  WestCoastSwing -> MsgWestCoastSwing
 
 getTimeLocale :: MonadHandler m => m TimeLocale
 getTimeLocale = languageTimeLocale <$> getFirstMatchingSupportedLanguage

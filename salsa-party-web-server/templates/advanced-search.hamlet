@@ -77,7 +77,7 @@
                   <option selected value="">
                   $forall danceStyle <- allDanceStyles
                     <option value=#{renderDanceStyleInUrl danceStyle}>
-                      #{renderDanceStyleInText danceStyle}
+                      _{danceStyleMessage danceStyle}
 
           <div .field>
             <div .control>
