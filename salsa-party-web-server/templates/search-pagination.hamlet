@@ -6,7 +6,7 @@
     <div .dropdown-trigger>
       <button .button aria-haspopup="true" aria-controls="filter-dropdown">
         <span>
-          Filter
+          _{MsgDanceStyleFilter}
 
     <div .dropdown-menu #filter-dropdown role="menu">
       <div .dropdown-content>

@@ -352,6 +352,7 @@ PaginationPrevious:  Früher
 PaginationNext:  Später
 
 # Dance Styles
+DanceStyleFilter: Filter
 AllDanceStyles: Alle Tanzstile
 Salsa: Salsa
 Bachata: Bachata
