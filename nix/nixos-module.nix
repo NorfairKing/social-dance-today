@@ -1,7 +1,7 @@
+{ salsaPartyRelease
+, looper
+}:
 { envname
-, sources ? import ./sources.nix
-, salsaPkgs ? import ./pkgs.nix { inherit sources; }
-, salsaPartyRelease ? salsaPkgs.salsaPartyRelease
 }:
 { lib, pkgs, config, ... }:
 with lib;
@@ -13,8 +13,7 @@ let
 
   toYamlFile = pkgs.callPackage ./to-yaml.nix { };
 
-  mkLooperOption = pkgs.callPackage (sources.looper + "/nix/looper-option.nix") { };
-  inherit (import sources.gitignore { inherit (pkgs) lib; }) gitignoreSource;
+  mkLooperOption = looper.passthru.mkLooperOption;
 in
 {
   options.services.salsa-party."${envname}" =

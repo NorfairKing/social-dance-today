@@ -1,16 +1,13 @@
-{ sources ? import ./sources.nix
-, pkgs ? import ./pkgs.nix { inherit sources; }
+{ salsa-party-nixos-module-factory
+, nixosTest
 }:
 let
-  salsa-party-production = import (./nixos-module.nix) {
+  salsa-party-production = salsa-party-nixos-module-factory {
     envname = "production";
-    inherit sources;
-    salsaPkgs = pkgs;
-    salsaPartyRelease = pkgs.salsaPartyRelease;
   };
   port = 8001;
 in
-pkgs.nixosTest (
+nixosTest (
   { lib, pkgs, ... }: {
     name = "salsa-party-module-test";
     nodes = {

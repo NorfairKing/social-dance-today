@@ -94,6 +94,8 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -with-rtsopts=-I60
+    - -with-rtsopts=-A64m
     dependencies:
     - salsa-party-web-server
 

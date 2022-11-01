@@ -13,7 +13,7 @@ ghc-options:
 
 extra-deps:
 - github: NorfairKing/ical
-  commit: 55d9ebd7a00ae947a9fee59039702e387a79b045
+  commit: 13b1a3925edf77664324a80f5e62071bea6d0fea
   subdirs:
     - ical
     - ical-gen
@@ -123,7 +123,7 @@ extra-deps:
 - amazonka-1.6.1
 - unliftio-core-0.1.2.0@sha256:b0a7652ffce2284a6cebe05c99eb60573a8fb6631163f34b0b30a80b4a78cb23,1081
 
-
+system-ghc: true
 nix:
-  shell-file: shell.nix
-  add-gc-roots: true
+  enable: false
+with-hpack: hpack

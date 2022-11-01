@@ -13,6 +13,7 @@ import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Encoding.Error as TE
 import Data.Time
 import qualified ICal
+import ICal.Conformance
 import LinkCheck (runLinkCheck)
 import qualified LinkCheck.OptParse.Types as LinkCheck (Settings (..))
 import Network.URI
@@ -164,8 +165,8 @@ spec uri = do
                       Nothing -> liftIO $ expectationFailure "Should have gotten a response by now."
                       Just calResponse -> do
                         let cts = responseBody calResponse
-                        case ICal.parseICalendarByteString $ LB.toStrict cts of
-                          Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
+                        case runConformStrict (ICal.parseICalendarByteString (LB.toStrict cts)) of
+                          Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> show err
                           Right cals ->
                             case cals of
                               [] ->

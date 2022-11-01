@@ -47,6 +47,10 @@ runSearchCachePopulator = do
             searchQueryDanceStyle = Just danceStyle
           }
 
+  -- Purge expired results, because that doesn't happen automatically.
+  searchResultCache <- asks appSearchResultCache
+  liftIO $ Cache.purgeExpired searchResultCache
+
 populateCacheForQuery :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => Text -> SearchQuery -> m ()
 populateCacheForQuery address query = do
   searchResultCache <- asks appSearchResultCache

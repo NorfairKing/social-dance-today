@@ -12,6 +12,7 @@ import qualified Data.UUID as UUID
 import qualified Data.UUID.Typed as Typed
 import qualified Database.Persist as DB
 import qualified ICal
+import ICal.Conformance
 import Salsa.Party.Web.Server.Handler.Event.Party.ICal
 import Salsa.Party.Web.Server.Handler.TestImport
 import Yesod.Core
@@ -41,8 +42,8 @@ spec = do
                   Nothing -> liftIO $ expectationFailure "Should have had a response by now."
                   Just resp -> do
                     let cts = responseBody resp
-                    case ICal.parseICalendarByteString $ LB.toStrict cts of
-                      Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
+                    case runConformStrict (ICal.parseICalendarByteString (LB.toStrict cts)) of
+                      Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> show err
                       Right cals ->
                         case cals of
                           [] ->
@@ -75,8 +76,8 @@ spec = do
                     Nothing -> liftIO $ expectationFailure "Should have had a response by now."
                     Just resp -> do
                       let cts = responseBody resp
-                      case ICal.parseICalendarByteString $ LB.toStrict cts of
-                        Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
+                      case runConformStrict (ICal.parseICalendarByteString (LB.toStrict cts)) of
+                        Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> show err
                         Right cals ->
                           case cals of
                             [] ->
@@ -127,8 +128,8 @@ spec = do
                         Nothing -> liftIO $ expectationFailure "Should have had a response by now."
                         Just resp -> do
                           let cts = responseBody resp
-                          case ICal.parseICalendarByteString $ LB.toStrict cts of
-                            Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> err
+                          case runConformStrict (ICal.parseICalendarByteString (LB.toStrict cts)) of
+                            Left err -> liftIO $ expectationFailure $ "Failed to parse ICalendar:\n" <> show err
                             Right cals ->
                               case cals of
                                 [] ->
