@@ -27,7 +27,6 @@ import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Query
 import Salsa.Party.Web.Server.Handler.Search.Types
-import Salsa.Party.Web.Server.Poster
 
 getAdvancedSearchR :: Handler Html
 getAdvancedSearchR = withNavBar $ do

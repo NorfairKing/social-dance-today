@@ -108,12 +108,14 @@ posterImageWidgetWithoutCSS posterKey altMessage =
         src=@{ImageR posterKey}
         width=#{desiredWidth}
         height=#{desiredHeight}
+        loading="lazy"
         role="none"
         alt="">
       <img .poster
         src=@{ImageR posterKey}
         width=#{desiredWidth}
         height=#{desiredHeight}
+        loading="lazy"
         alt=_{altMessage}>
   |]
 

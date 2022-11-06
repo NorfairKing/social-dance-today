@@ -13,7 +13,6 @@ import qualified Data.Text.Encoding as TE
 import qualified Database.Esqueleto.Legacy as E
 import Safe (maximumMay)
 import Salsa.Party.Web.Server.Handler.Import
-import Salsa.Party.Web.Server.Poster
 
 getOrganiserR :: OrganiserUUID -> Handler Html
 getOrganiserR uuid = do

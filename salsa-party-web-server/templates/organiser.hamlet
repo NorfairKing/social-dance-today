@@ -25,20 +25,8 @@
                 <div .card>
                   $maybe posterKey <- partyPoster party
                     <div .card-image .has-text-centered>
-                      <div .poster-container>
-                        <img .poster .poster-background
-                          src=@{ImageR posterKey}
-                          width=#{desiredWidth}
-                          height=#{desiredHeight}
-                          loading="lazy"
-                          role="none"
-                          alt="">
-                        <img .poster
-                          src=@{ImageR posterKey}
-                          width=#{desiredWidth}
-                          height=#{desiredHeight}
-                          loading="lazy"
-                          alt=_{MsgPosterAltFull (partyTitle party) (formatTime timeLocale prettyDayFormat (partyDay party)) organiserName}>
+                      ^{posterImageWidgetWithoutCSS posterKey (MsgPosterAltFull (partyTitle party) (formatTime timeLocale prettyDayFormat (partyDay party)) organiserName)}
+
                   <div .card-content>
                     <h3 .title .is-5>
                       $maybe start <- partyStart party
