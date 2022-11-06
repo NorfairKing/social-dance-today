@@ -31,7 +31,7 @@
 
         $maybe posterKey <- partyPoster
           <div .content>
-            ^{posterImageWidget party organiser posterKey}
+            ^{partyPosterImageWidget party organiser posterKey}
         
 
         $maybe description <- partyDescription

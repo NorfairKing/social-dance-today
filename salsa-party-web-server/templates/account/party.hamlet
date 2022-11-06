@@ -18,7 +18,7 @@
 
 
     $maybe posterKey <- partyPoster
-      ^{posterImageWidget party organiser posterKey}
+      ^{partyPosterImageWidget party organiser posterKey}
 
     $maybe Entity _ schedule <- mSchedule
       <h4 .subtitle .is-6>

@@ -97,7 +97,7 @@
         <div .field>
           <div .control>
             <input .input name="poster-key" type="hidden" value=#{renderCASKey posterKey}>
-        ^{posterImageWidget party organiser posterKey}
+        ^{partyPosterImageWidget party organiser posterKey}
 
       <div .field>
         <div .control>

@@ -36,27 +36,6 @@ import Text.Hamlet
 import Text.Read
 import Yesod
 
-posterImageWidget :: Party -> Organiser -> CASKey -> Widget
-posterImageWidget Party {..} Organiser {..} posterKey = do
-  timeLocale <- getTimeLocale
-  prettyDayFormat <- getPrettyDayFormat
-  let timeStr = formatTime timeLocale prettyDayFormat partyDay
-  [whamlet|
-    <div .poster-container>
-      <img .poster .poster-background
-        src=@{ImageR posterKey}
-        width=#{desiredWidth}
-        height=#{desiredHeight}
-        role="none"
-        alt="">
-      <img .poster
-        src=@{ImageR posterKey}
-        width=#{desiredWidth}
-        height=#{desiredHeight}
-        alt=_{MsgPosterAltFull partyTitle timeStr organiserName}>
-  |]
-    <> posterCSS
-
 recurrenceDescriptionWidget :: Recurrence -> Widget
 recurrenceDescriptionWidget recurrence = do
   msg <- recurrenceDescriptionMessage recurrence
@@ -97,9 +76,32 @@ dayOfWeekIndexMessage = \case
   ThirdToLast -> MsgRecurrenceMonthlyDescriptionEveryThirdToLast
   FourthToLast -> MsgRecurrenceMonthlyDescriptionEveryFourthToLast
 
+partyPosterImageWidget :: Party -> Organiser -> CASKey -> Widget
+partyPosterImageWidget party organiser posterKey = do
+  timeLocale <- getTimeLocale
+  prettyDayFormat <- getPrettyDayFormat
+  let timeStr = formatTime timeLocale prettyDayFormat (partyDay party)
+  let altMessage = MsgPosterAltFull (partyTitle party) timeStr (organiserName organiser)
+  posterImageWidgetWithoutCSS posterKey altMessage <> posterCSS
+
 schedulePosterImageWidget :: Schedule -> Organiser -> CASKey -> Widget
 schedulePosterImageWidget Schedule {..} Organiser {..} posterKey = do
   recurrenceDescription <- recurrenceDescriptionText scheduleRecurrence
+  let altMessage = MsgPosterAltSchedule scheduleTitle recurrenceDescription organiserName
+  posterImageWidgetWithoutCSS posterKey altMessage <> posterCSS
+
+externalEventPosterImageWidget :: ExternalEvent -> CASKey -> Widget
+externalEventPosterImageWidget ExternalEvent {..} posterKey = do
+  timeLocale <- getTimeLocale
+  prettyDayFormat <- getPrettyDayFormat
+  let timeStr = formatTime timeLocale prettyDayFormat externalEventDay
+  let altMessage = case externalEventOrganiser of
+        Nothing -> MsgPosterAltTitle externalEventTitle timeStr
+        Just organiserName -> MsgPosterAltFull externalEventTitle timeStr organiserName
+  posterImageWidgetWithoutCSS posterKey altMessage <> posterCSS
+
+posterImageWidgetWithoutCSS :: CASKey -> AppMessage -> Widget
+posterImageWidgetWithoutCSS posterKey altMessage =
   [whamlet|
     <div .poster-container>
       <img .poster .poster-background
@@ -112,33 +114,8 @@ schedulePosterImageWidget Schedule {..} Organiser {..} posterKey = do
         src=@{ImageR posterKey}
         width=#{desiredWidth}
         height=#{desiredHeight}
-        alt=_{MsgPosterAltSchedule scheduleTitle recurrenceDescription organiserName}>
+        alt=_{altMessage}>
   |]
-    <> posterCSS
-
-externalEventPosterImageWidget :: ExternalEvent -> CASKey -> Widget
-externalEventPosterImageWidget ExternalEvent {..} posterKey = do
-  timeLocale <- getTimeLocale
-  prettyDayFormat <- getPrettyDayFormat
-  let timeStr = formatTime timeLocale prettyDayFormat externalEventDay
-  let altMsg = case externalEventOrganiser of
-        Nothing -> MsgPosterAltTitle externalEventTitle timeStr
-        Just organiserName -> MsgPosterAltFull externalEventTitle timeStr organiserName
-  [whamlet|
-    <div .poster-container>
-      <img .poster .poster-background
-        src=@{ImageR posterKey}
-        width=#{desiredWidth}
-        height=#{desiredHeight}
-        role="none">
-        alt="">
-      <img .poster
-        src=@{ImageR posterKey}
-        width=#{desiredWidth}
-        height=#{desiredHeight}
-        alt=_{altMsg}>
-  |]
-    <> posterCSS
 
 posterCSS :: Widget
 posterCSS =
