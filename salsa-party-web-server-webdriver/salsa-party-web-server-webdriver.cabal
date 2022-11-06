@@ -48,6 +48,7 @@ test-suite salsa-party-web-server-webdriver-test
       Salsa.Party.Web.Server.Handler.TestImport
       Salsa.Party.Web.Server.Onboarding.OrganiserSpec
       Salsa.Party.Web.Server.Screenshot.Account.PartySpec
+      Salsa.Party.Web.Server.Screenshot.Account.ScheduleSpec
       Salsa.Party.Web.Server.Screenshot.ExternalEventSpec
       Salsa.Party.Web.Server.Screenshot.OrganiserSpec
       Salsa.Party.Web.Server.Screenshot.PartySpec
