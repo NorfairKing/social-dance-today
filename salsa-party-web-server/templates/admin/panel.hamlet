@@ -212,10 +212,10 @@
               #{importerMetadataName importer}
             <td>
               $maybe start <- importerMetadataLastRunStart importer
-                #{formatTime timeLocale prettyDateTimeFormat start}
+                ^{formatAdminTime start}
             <td>
               $maybe end <- importerMetadataLastRunEnd importer
-                #{formatTime timeLocale prettyDateTimeFormat end}
+                ^{formatAdminTime end}
             <td>
               $maybe nbEventsImported <- importerMetadataLastRunImported importer
                 #{nbEventsImported}
