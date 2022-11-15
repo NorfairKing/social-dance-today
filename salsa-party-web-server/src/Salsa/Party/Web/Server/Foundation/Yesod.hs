@@ -27,7 +27,6 @@ import Database.Persist.Sql
 import Database.Persist.Sqlite
 import Path
 import Salsa.Party.DB
-import Salsa.Party.OptParse
 import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.Foundation.App
 import Salsa.Party.Web.Server.Foundation.Auth

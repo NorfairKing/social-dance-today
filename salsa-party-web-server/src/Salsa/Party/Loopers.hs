@@ -12,7 +12,6 @@ import Data.Time
 import GHC.Clock (getMonotonicTimeNSec)
 import Looper
 import Salsa.Party.AdminNotification
-import Salsa.Party.Importers
 import Salsa.Party.Looper
 import Salsa.Party.OptParse
 import Salsa.Party.Web.Server.Application ()
@@ -20,34 +19,36 @@ import UnliftIO
 
 runLoopers :: Settings -> App -> LoggingT IO ()
 runLoopers settings@Settings {..} app = do
-  importers <- importerLoopers settings app
   let looperDefs =
-        importers
-          ++ [ mkLooperDef
-                 "search-cache-populator"
-                 settingSearchCachePopulatorLooperSettings
-                 (runReaderT runSearchCachePopulator app),
-               mkLooperDef
-                 "explore-cache-populator"
-                 settingExploreCachePopulatorLooperSettings
-                 (runReaderT runExploreCachePopulator app),
-               mkLooperDef
-                 "organiser-reminder"
-                 settingOrganiserReminderLooperSettings
-                 (runReaderT runOrganiserReminder app),
-               mkLooperDef
-                 "party-garbage-collector"
-                 settingPartyGarbageCollectorLooperSettings
-                 (runPartyGarbageCollector app),
-               mkLooperDef
-                 "image-garbage-collector"
-                 settingImageGarbageCollectorLooperSettings
-                 (runImageGarbageCollector app),
-               mkLooperDef
-                 "party-scheduler"
-                 settingPartySchedulerLooperSettings
-                 (runReaderT runPartyScheduler app)
-             ]
+        [ mkLooperDef
+            "search-cache-populator"
+            settingSearchCachePopulatorLooperSettings
+            (runReaderT runSearchCachePopulator app),
+          mkLooperDef
+            "explore-cache-populator"
+            settingExploreCachePopulatorLooperSettings
+            (runReaderT runExploreCachePopulator app),
+          mkLooperDef
+            "organiser-reminder"
+            settingOrganiserReminderLooperSettings
+            (runReaderT runOrganiserReminder app),
+          mkLooperDef
+            "party-garbage-collector"
+            settingPartyGarbageCollectorLooperSettings
+            (runPartyGarbageCollector app),
+          mkLooperDef
+            "image-garbage-collector"
+            settingImageGarbageCollectorLooperSettings
+            (runImageGarbageCollector app),
+          mkLooperDef
+            "party-scheduler"
+            settingPartySchedulerLooperSettings
+            (runReaderT runPartyScheduler app),
+          mkLooperDef
+            "importers"
+            settingImportersLooperSettings
+            (importersLooper settings app)
+        ]
       looperRunner LooperDef {..} = addLooperNameToLog looperDefName $ do
         logInfoN "Starting"
         begin <- liftIO getMonotonicTimeNSec

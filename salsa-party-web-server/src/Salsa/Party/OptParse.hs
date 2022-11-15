@@ -16,7 +16,6 @@ import Control.Monad.Logger
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
-import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
 import qualified Env
@@ -27,6 +26,8 @@ import qualified Options.Applicative.Help as OptParse (string)
 import Path
 import Path.IO
 import Salsa.Party.DB
+import Salsa.Party.Importer
+import Salsa.Party.Importers
 
 getSettings :: IO Settings
 getSettings = do
@@ -55,14 +56,14 @@ data Settings = Settings
     settingPartyGarbageCollectorLooperSettings :: !LooperSettings,
     settingImageGarbageCollectorLooperSettings :: !LooperSettings,
     settingPartySchedulerLooperSettings :: !LooperSettings,
+    settingImportersLooperSettings :: !LooperSettings,
     settingImporterInterval :: !NominalDiffTime,
-    settingImporterSettings :: !(Map Text LooperSettings)
+    settingImporterSettings :: !(Map Text ImporterSettings)
   }
   deriving (Show, Eq, Generic)
 
-data SentrySettings = SentrySettings
-  { sentrySettingDSN :: !Text,
-    sentrySettingRelease :: !Text
+data ImporterSettings = ImporterSettings
+  { importerSettingEnabled :: !Bool
   }
   deriving (Show, Eq, Generic)
 
@@ -89,10 +90,11 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingPartyGarbageCollectorLooperSettings = deriveLooperSettings (minutes 1) (hours 24) flagPartyGarbageCollectorLooperFlags envPartyGarbageCollectorLooperEnvironment (mc confPartyGarbageCollectorLooperConfiguration)
   let settingImageGarbageCollectorLooperSettings = deriveLooperSettings (minutes 1 + seconds 30) (hours 24) flagImageGarbageCollectorLooperFlags envImageGarbageCollectorLooperEnvironment (mc confImageGarbageCollectorLooperConfiguration)
   let settingPartySchedulerLooperSettings = deriveLooperSettings (minutes 2 + seconds 30) (hours 24) flagPartySchedulerLooperFlags envPartySchedulerLooperEnvironment (mc confPartySchedulerLooperConfiguration)
+  let settingImportersLooperSettings = deriveLooperSettings (minutes 3 + seconds 30) (minutes 10) flagImportersLooperFlags envImportersLooperEnvironment (mc confImportersLooperConfiguration)
 
   let settingImporterInterval = maybe (hours 24) fromIntegral $ flagImporterInterval <|> envImporterInterval <|> mc confImporterInterval
   settingImporterSettings <- fmap M.fromList $
-    forM (zip [0 ..] dataSources) $ \(ix, dataSource) -> do
+    forM dataSources $ \dataSource -> do
       flags <- case M.lookup dataSource flagImporterFlags of
         Nothing -> fail $ unwords ["No flags for data source", show dataSource]
         Just fs -> pure fs
@@ -100,11 +102,19 @@ combineToSettings Flags {..} Environment {..} mConf = do
         Nothing -> fail $ unwords ["No environment for data source", show dataSource]
         Just e -> pure e
       let mLConf = M.lookup dataSource (maybe M.empty confImporterConfigurations mConf)
-      pure (dataSource, deriveLooperSettings (minutes 3 + hours ix) (hours 24) flags env mLConf)
+      pure (dataSource, deriveImporterSettings flags env mLConf)
 
   pure Settings {..}
   where
     mc :: (Configuration -> Maybe a) -> Maybe a
+    mc f = mConf >>= f
+
+deriveImporterSettings :: ImporterFlags -> ImporterEnvironment -> Maybe ImporterConfiguration -> ImporterSettings
+deriveImporterSettings ImporterFlags {..} ImporterEnvironment {..} mConf =
+  let importerSettingEnabled = fromMaybe True $ importerFlagEnabled <|> importerEnvEnabled <|> mc importerConfEnabled
+   in ImporterSettings {..}
+  where
+    mc :: (ImporterConfiguration -> Maybe a) -> Maybe a
     mc f = mConf >>= f
 
 combineToSentrySettings :: SentryFlags -> SentryEnvironment -> Maybe SentryConfiguration -> Maybe SentrySettings
@@ -133,8 +143,9 @@ data Configuration = Configuration
     confPartyGarbageCollectorLooperConfiguration :: !(Maybe LooperConfiguration),
     confImageGarbageCollectorLooperConfiguration :: !(Maybe LooperConfiguration),
     confPartySchedulerLooperConfiguration :: !(Maybe LooperConfiguration),
+    confImportersLooperConfiguration :: !(Maybe LooperConfiguration),
     confImporterInterval :: !(Maybe Int),
-    confImporterConfigurations :: !(Map Text LooperConfiguration)
+    confImporterConfigurations :: !(Map Text ImporterConfiguration)
   }
   deriving (Show, Eq, Generic)
 
@@ -161,8 +172,23 @@ instance HasCodec Configuration where
         <*> optionalFieldOrNull "party-garbage-collector" "The party garbage collector looper" .= confPartyGarbageCollectorLooperConfiguration
         <*> optionalFieldOrNull "image-garbage-collector" "The image garbage collector looper" .= confImageGarbageCollectorLooperConfiguration
         <*> optionalFieldOrNull "party-scheduler" "The party scheduler looper" .= confPartySchedulerLooperConfiguration
+        <*> optionalFieldOrNull "importers" "The importers looper" .= confImportersLooperConfiguration
         <*> optionalFieldOrNull "importer-interval" "The default interval for importers" .= confImporterInterval
         <*> optionalFieldOrNullWithOmittedDefault "importer" M.empty "The per-importer configurations" .= confImporterConfigurations
+
+data ImporterConfiguration = ImporterConfiguration
+  { importerConfEnabled :: !(Maybe Bool)
+  }
+  deriving (Show, Eq, Generic)
+
+instance HasCodec ImporterConfiguration where
+  codec =
+    object "ImporterConfiguration" $
+      ImporterConfiguration
+        <$> parseAlternative
+          (optionalFieldOrNull "enabled" "Enable this importer")
+          (optionalFieldOrNull "enable" "Enable this importer")
+          .= importerConfEnabled
 
 data SentryConfiguration = SentryConfiguration
   { sentryConfDSN :: !(Maybe Text),
@@ -209,8 +235,14 @@ data Environment = Environment
     envPartyGarbageCollectorLooperEnvironment :: !LooperEnvironment,
     envImageGarbageCollectorLooperEnvironment :: !LooperEnvironment,
     envPartySchedulerLooperEnvironment :: !LooperEnvironment,
+    envImportersLooperEnvironment :: !LooperEnvironment,
     envImporterInterval :: !(Maybe Int),
-    envImporterEnvironments :: !(Map Text LooperEnvironment)
+    envImporterEnvironments :: !(Map Text ImporterEnvironment)
+  }
+  deriving (Show, Eq, Generic)
+
+data ImporterEnvironment = ImporterEnvironment
+  { importerEnvEnabled :: !(Maybe Bool)
   }
   deriving (Show, Eq, Generic)
 
@@ -248,6 +280,7 @@ environmentParser =
       <*> looperEnvironmentParser "PARTY_GARBAGE_COLLECTOR"
       <*> looperEnvironmentParser "IMAGE_GARBAGE_COLLECTOR"
       <*> looperEnvironmentParser "PARTY_SCHEDULER"
+      <*> looperEnvironmentParser "IMPORTERS"
       <*> Env.var (fmap Just . Env.auto) "IMPORTER_INTERVAL" (mE <> Env.help "The default interval for the importers")
       <*> importerEnvironments
   where
@@ -259,15 +292,34 @@ environmentParser =
       s -> Left $ Env.UnreadError $ "Unknown log level: " <> s
     mE = Env.def Nothing
 
-importerEnvironments :: Env.Parser Env.Error (Map Text LooperEnvironment)
+importerEnvironments :: Env.Parser Env.Error (Map Text ImporterEnvironment)
 importerEnvironments =
   M.fromList
     <$> traverse
-      (\ds -> (,) ds <$> looperEnvironmentParser (dataSourceEnvVar ds))
+      (\ds -> (,) ds <$> importerEnvironmentParser ds)
       dataSources
 
+importerEnvironmentParser :: Text -> Env.Parser Env.Error ImporterEnvironment
+importerEnvironmentParser dataSource =
+  Env.prefixed (dataSourceEnvVar dataSource) $
+    ImporterEnvironment
+      <$> Env.var
+        (fmap Just . Env.auto)
+        "ENABLED"
+        ( mE
+            <> Env.help
+              ( unwords
+                  [ "Enable the",
+                    show dataSource,
+                    "data source"
+                  ]
+              )
+        )
+  where
+    mE = Env.def Nothing
+
 dataSourceEnvVar :: Text -> String
-dataSourceEnvVar = (<> "_IMPORTER") . T.unpack . T.toUpper . T.replace "." "_"
+dataSourceEnvVar = (<> "_IMPORTER_") . T.unpack . T.toUpper . T.replace "." "_"
 
 sentryEnvironmentParser :: Env.Parser Env.Error SentryEnvironment
 sentryEnvironmentParser =
@@ -323,8 +375,9 @@ data Flags = Flags
     flagPartyGarbageCollectorLooperFlags :: !LooperFlags,
     flagImageGarbageCollectorLooperFlags :: !LooperFlags,
     flagPartySchedulerLooperFlags :: !LooperFlags,
+    flagImportersLooperFlags :: !LooperFlags,
     flagImporterInterval :: !(Maybe Int),
-    flagImporterFlags :: !(Map Text LooperFlags)
+    flagImporterFlags :: !(Map Text ImporterFlags)
   }
   deriving (Show, Eq, Generic)
 
@@ -391,7 +444,7 @@ parseFlags =
           <|> flag'
             False
             ( mconcat
-                [ long "nosend-emails",
+                [ long "no-send-emails",
                   help "Don't send emails or require email verification"
                 ]
             )
@@ -478,6 +531,7 @@ parseFlags =
     <*> getLooperFlags "party-garbage-collector"
     <*> getLooperFlags "image-garbage-collector"
     <*> getLooperFlags "party-scheduler"
+    <*> getLooperFlags "importers"
     <*> optional
       ( option
           auto
@@ -488,17 +542,42 @@ parseFlags =
               ]
           )
       )
-    <*> getImporterFlags
+    <*> getImportersFlags
 
-getImporterFlags :: OptParse.Parser (Map Text LooperFlags)
-getImporterFlags =
+data ImporterFlags = ImporterFlags
+  { importerFlagEnabled :: !(Maybe Bool)
+  }
+  deriving (Show, Eq, Generic)
+
+getImportersFlags :: OptParse.Parser (Map Text ImporterFlags)
+getImportersFlags =
   M.fromList
     <$> traverse
-      (\ds -> (,) ds <$> getLooperFlags (dataSourceFlagPrefix ds))
+      (\ds -> (,) ds <$> getImporterFlag ds)
       dataSources
 
-dataSourceFlagPrefix :: Text -> String
-dataSourceFlagPrefix = (<> "-importer") . T.unpack . T.toLower . T.replace "." "-"
+getImporterFlag :: Text -> OptParse.Parser ImporterFlags
+getImporterFlag dataSource =
+  ImporterFlags
+    <$> optional
+      ( flag'
+          True
+          ( mconcat
+              [ long ("enable-" <> dataSourceFlagPiece dataSource),
+                help (unwords ["enable", show dataSource])
+              ]
+          )
+          <|> flag'
+            False
+            ( mconcat
+                [ long ("disable-" <> dataSourceFlagPiece dataSource),
+                  help (unwords ["disable", show dataSource])
+                ]
+            )
+      )
+
+dataSourceFlagPiece :: Text -> String
+dataSourceFlagPiece = T.unpack . T.toLower . T.replace "." "-"
 
 data SentryFlags = SentryFlags
   { sentryFlagDSN :: !(Maybe Text),
@@ -538,23 +617,4 @@ instance HasCodec LogLevel where
       ]
 
 dataSources :: [Text]
-dataSources =
-  [ "salsa.faurax.fr",
-    "goanddance.com",
-    "muevete.ch",
-    "tanzevents.ch",
-    "danceus.org",
-    "events.info",
-    "golatindance.com",
-    "danceplace.com",
-    "mapdance.com",
-    "salsachicago.com",
-    "dancefloorfinder.com",
-    "sensual.dance",
-    "salsa.be",
-    "latinworld.nl",
-    "tanzagenda.ch",
-    "stayhappening.com",
-    "londonsalsaevents.com",
-    "salsalovers.be"
-  ]
+dataSources = map importerName allImporters

@@ -47,6 +47,7 @@ library
       Salsa.Party.Looper.ExploreCachePopulator
       Salsa.Party.Looper.ImageGarbageCollector
       Salsa.Party.Looper.Import
+      Salsa.Party.Looper.Importers
       Salsa.Party.Looper.OrganiserReminder
       Salsa.Party.Looper.PartyGarbageCollector
       Salsa.Party.Looper.PartyScheduler

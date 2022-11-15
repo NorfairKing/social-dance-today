@@ -33,7 +33,6 @@ import Database.Persist
 import Database.Persist.Sql
 import Database.Persist.Sqlite
 import GHC.Generics (Generic)
-import Looper
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.Retry
 import Network.HTTP.Types as HTTP
@@ -59,64 +58,8 @@ data Importer = Importer
   }
   deriving (Generic)
 
--- We double-check whether to run the importer because we don't want to
--- bash any external sites should the importers or the webserver
--- crashloop, or we just deploy more often than once a day.
---
--- This does mean that if we deploy often, importers might be stopped early and not re-run,
--- but this shouldn't be a problem because:
---
---  * We try to fetch events at least a month in advance
---  * There should be at least once day in a month where we don't deploy twice a day.
-runImporterWithDoubleCheck :: NominalDiffTime -> App -> LooperSettings -> Importer -> LoggingT IO ()
-runImporterWithDoubleCheck importerInterval app _ importer = addImporterNameToLog (importerName importer) $ do
-  let runDBHere :: SqlPersistT (LoggingT IO) a -> LoggingT IO a
-      runDBHere = flip runSqlPool (appConnectionPool app) . retryOnBusy
-
-  logInfoN "Checking whether to run"
-  now <- liftIO getCurrentTime
-  importerMetadataEntity <-
-    runDBHere $
-      upsertBy
-        (UniqueImporterMetadataName $ importerName importer)
-        ( ImporterMetadata
-            { importerMetadataName = importerName importer,
-              importerMetadataLastRunStart = Nothing,
-              importerMetadataLastRunEnd = Nothing,
-              importerMetadataLastRunImported = Nothing
-            }
-        )
-        []
-  let mLastRun = importerMetadataLastRunStart $ entityVal importerMetadataEntity
-  shouldRun <- case mLastRun of
-    Nothing -> do
-      logDebugN "Definitely running because it's never run before"
-      pure True
-    Just lastRun -> do
-      let diff = diffUTCTime now lastRun
-      let shouldRun = diff >= importerInterval
-          showDiffTime = T.pack . formatTime defaultTimeLocale "%dd%Hh%Mm%Ss"
-      let ctx =
-            T.unwords
-              [ "because the last run was",
-                T.pack (show lastRun),
-                "which is",
-                showDiffTime diff,
-                "seconds ago and the importer interval is",
-                showDiffTime importerInterval,
-                "seconds"
-              ]
-      if shouldRun
-        then logDebugN $ "Running " <> ctx
-        else logDebugN $ "Not running " <> ctx
-      pure shouldRun
-  when shouldRun $ do
-    logInfoN "Starting importer"
-    runImporter app importer
-    logInfoN "Importer done"
-
 runImporter :: App -> Importer -> LoggingT IO ()
-runImporter a Importer {..} = do
+runImporter a Importer {..} = addImporterNameToLog importerName $ do
   let runDBHere :: SqlPersistT (LoggingT IO) a -> LoggingT IO a
       runDBHere = flip runSqlPool (appConnectionPool a) . retryOnBusy
 

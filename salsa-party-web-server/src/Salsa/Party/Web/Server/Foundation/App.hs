@@ -10,7 +10,6 @@ import Database.Persist.Sql
 import Network.HTTP.Client as HTTP
 import Path
 import Salsa.Party.DB
-import Salsa.Party.OptParse
 import Salsa.Party.Web.Server.Handler.Search.Types
 import Yesod.EmbeddedStatic (EmbeddedStatic)
 
@@ -34,3 +33,9 @@ data App = App
     appGoogleAnalyticsTracking :: !(Maybe Text), -- Nothing means disabled.
     appGoogleSearchConsoleVerification :: !(Maybe Text) -- Nothing means disabled.
   }
+
+data SentrySettings = SentrySettings
+  { sentrySettingDSN :: !Text,
+    sentrySettingRelease :: !Text
+  }
+  deriving (Show, Eq)

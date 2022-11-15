@@ -122,10 +122,15 @@ in
                   party-garbage-collector = mkLooperOption "party-garbage-collector";
                   image-garbage-collector = mkLooperOption "image-garbage-collector";
                   party-scheduler = mkLooperOption "party-scheduler";
+                  importers = mkLooperOption "importers";
 
                   importer = mkOption {
                     default = { };
-                    type = types.attrsOf (mkLooperOption "importer").type;
+                    type = types.attrsOf (types.submodule {
+                      options = {
+                        enable = mkEnableOption "Enable this importer";
+                      };
+                    });
                   };
                 };
             });

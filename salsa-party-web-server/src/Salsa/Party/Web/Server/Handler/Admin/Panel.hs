@@ -43,7 +43,6 @@ getAdminPanelR = do
       pure (importer, upcomingEvents, events)
   token <- genToken
   timeLocale <- getTimeLocale
-  prettyDateTimeFormat <- getPrettyDateTimeFormat
   withNavBar $ do
     setTitle "Salsa Parties Admin Panel"
     setDescription "Admin panel for the salsa parties admin"

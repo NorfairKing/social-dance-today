@@ -25,10 +25,10 @@ nixosTest (
             enable-osm-geocoding = false;
             enable-google-geocoding = false;
             organiser-reminder.enable = false;
+            importers.enable = true;
             importer = {
               "salsalovers.be" = {
                 enable = false;
-                phase = 0;
               };
             };
           };
