@@ -21,5 +21,9 @@ Disallow: /
 User-agent: DataForSeoBot
 Disallow: /
 
+User-agent: AwarioRssBot
+User-agent: AwarioSmartBot
+Disallow: /
+
 User-agent: *
 Allow: /
