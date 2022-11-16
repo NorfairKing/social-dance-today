@@ -11,7 +11,6 @@ allImporters =
     mapdanceComImporter,
     salsachicagoComImporter,
     dancefloorfinderComImporter,
-    sensualDanceImporter,
     salsaBeImporter,
     latinworldNlImporter,
     tanzagendaChImporter,

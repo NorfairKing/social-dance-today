@@ -185,6 +185,7 @@ in
           (nullOrOption "google-search-console-verification" google-search-console-verification)
           (nullOrOption "image-garbage-collector" image-garbage-collector)
           (nullOrOption "organiser-reminder" organiser-reminder)
+          (nullOrOption "importers" importers)
           (nullOrOption "importer" importer)
           (nullOrOption "sentry" sentry)
           cfg.web-server.config

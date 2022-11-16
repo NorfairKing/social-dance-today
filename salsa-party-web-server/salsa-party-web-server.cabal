@@ -37,7 +37,6 @@ library
       Salsa.Party.Importer.SalsaFauraxFr
       Salsa.Party.Importer.SalsaLoversBe
       Salsa.Party.Importer.Selenium
-      Salsa.Party.Importer.SensualDance
       Salsa.Party.Importer.StayHappeningCom
       Salsa.Party.Importer.TanzagendaCh
       Salsa.Party.Importer.TanzeventsCh
@@ -142,7 +141,6 @@ library
     , autodocodec
     , autodocodec-yaml
     , base >=4.7 && <5
-    , base64-bytestring
     , blaze-html
     , bytestring
     , cache
@@ -200,7 +198,6 @@ library
     , wai
     , wai-extra
     , warp
-    , webdriver
     , xml-conduit
     , yesod
     , yesod-auth

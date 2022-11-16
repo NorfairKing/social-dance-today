@@ -16,7 +16,6 @@ library:
   - amazonka-ses
   - autodocodec
   - autodocodec-yaml
-  - base64-bytestring
   - blaze-html
   - bytestring
   - cache
@@ -74,7 +73,6 @@ library:
   - wai
   - wai-extra
   - warp
-  - webdriver
   - xml-conduit
   - yesod
   - yesod-auth
