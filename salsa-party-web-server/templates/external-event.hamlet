@@ -20,8 +20,14 @@
             _{MsgPartyOrganiser organiserName}
 
         $maybe posterKey <- externalEventPoster
-          ^{externalEventPosterImageWidget externalEvent posterKey}
+          <div .content>
+            ^{externalEventPosterImageWidget externalEvent posterKey}
 
+        $if not (S.null guessedDanceStyles)
+          <div .tags>
+            $forall danceStyle <- S.toList guessedDanceStyles
+              <span .tag .is-light .is-medium>
+                _{danceStyleMessage danceStyle}
 
         $maybe description <- externalEventDescription
           <div .content .description>

@@ -12,6 +12,7 @@ module Salsa.Party.Web.Server.Handler.Event.Party.HTML (partyPageHtml) where
 
 import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString.Lazy as LT
+import qualified Data.Set as S
 import qualified Data.Text.Encoding as TE
 import Google.Calendar
 import Google.Maps
@@ -42,6 +43,7 @@ partyPageHtml (Entity _ organiser@Organiser {..}) (Entity partyId party@Party {.
   prettyDayFormat <- getPrettyDayFormat
   prettyDateTimeFormat <- getPrettyDateTimeFormat
   prettyTimeFormat <- getPrettyTimeFormat
+  let guessedDanceStyles = guessDanceStyles partyTitle `S.union` maybe S.empty guessDanceStyles partyDescription
   withNavBar $ do
     setTitleI $
       if partyCancelled

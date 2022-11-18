@@ -248,6 +248,7 @@ partySubstringQuery = substringQueryHelper PartyTitle PartyDescription
 externalEventSubstringQuery :: Maybe DanceStyle -> SqlExpr (Entity ExternalEvent) -> SqlQuery ()
 externalEventSubstringQuery = substringQueryHelper ExternalEventTitle ExternalEventDescription
 
+-- Make sure this matches 'Salsa.Party.DB.DanceStyle.guessDanceStyles'
 substringQueryHelper ::
   PersistEntity entity =>
   EntityField entity Text ->

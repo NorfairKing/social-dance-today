@@ -32,7 +32,12 @@
         $maybe posterKey <- partyPoster
           <div .content>
             ^{partyPosterImageWidget party organiser posterKey}
-        
+
+        $if not (S.null guessedDanceStyles)
+          <div .tags>
+            $forall danceStyle <- S.toList guessedDanceStyles
+              <span .tag .is-light .is-medium>
+                _{danceStyleMessage danceStyle}
 
         $maybe description <- partyDescription
           <div .content>

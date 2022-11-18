@@ -10,6 +10,7 @@ module Salsa.Party.Web.Server.Handler.Event.ExternalEvent.HTML (externalEventPag
 
 import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString.Lazy as LT
+import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Google.Calendar
@@ -41,6 +42,7 @@ externalEventPageHtml (Entity _ externalEvent@ExternalEvent {..}) (Entity _ plac
   prettyDateTimeFormat <- getPrettyDateTimeFormat
   prettyTimeFormat <- getPrettyTimeFormat
   messageRender <- getMessageRender
+  let guessedDanceStyles = guessDanceStyles externalEventTitle `S.union` maybe S.empty guessDanceStyles externalEventDescription
   withNavBar $ do
     setTitleI $ externalEventTitleMessage externalEvent
     setDescription $ externalEventHtmlDescription messageRender timeLocale prettyDayFormat prettyTimeFormat externalEvent place

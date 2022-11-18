@@ -9,7 +9,11 @@ import Control.Monad
 import Data.Aeson as JSON
 import qualified Data.CaseInsensitive as CI
 import Data.Hashable
+import Data.Maybe
+import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Validity
 import Data.Validity.Text ()
 import GHC.Generics (Generic)
@@ -86,3 +90,10 @@ instance ToHttpApiData DanceStyle where
 instance ToJSON DanceStyle
 
 instance FromJSON DanceStyle
+
+guessDanceStyles :: Text -> Set DanceStyle
+guessDanceStyles t = S.fromAscList $
+  flip mapMaybe allDanceStyles $ \danceStyle ->
+    if any (\qs -> CI.foldCase qs `T.isInfixOf` CI.foldCase t) (danceStyleQueryStrings danceStyle)
+      then Just danceStyle
+      else Nothing
