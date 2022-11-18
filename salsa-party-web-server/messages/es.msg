@@ -37,6 +37,7 @@ ExploreUpcomingParties number@String: #{number} próximas fiestas
 ExploreSkylineAlt location@Text: Horizonte nocturno de #{location}
 
 ## Footer
+GiveFeedback: Dar opinion
 FooterGeocodingAttribution: Geocodificación por OpenStreetMaps Nominatim
 FooterOpenstreetmapCopyright: © Colaboradores de OpenStreetMap
 

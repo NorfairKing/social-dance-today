@@ -8,7 +8,12 @@ $forall (classes, message) <- messages
 
 <footer .footer>
   <div .container>
-    <div .columns .is-centered .p-4>
+    <div .columns .is-centered .py-6>
+      <p .has-text-centered>
+        <a .button .is-white href="https://forms.gle/BqaWtxegT6nzcE3YA">
+          _{MsgGiveFeedback}
+
+    <div .columns .is-centered .py-4>
       <p .has-text-centered>
         &copy;
         <span id="copyright">

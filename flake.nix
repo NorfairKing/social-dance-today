@@ -2,7 +2,6 @@
   description = "salsa-party";
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-21.11";
-    flake-utils.url = "github:numtide/flake-utils";
     pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
     validity.url = "github:NorfairKing/validity?ref=flake";
     validity.flake = false;
@@ -10,7 +9,7 @@
     autodocodec.flake = false;
     safe-coloured-text.url = "github:NorfairKing/safe-coloured-text?ref=flake";
     safe-coloured-text.flake = false;
-    sydtest.url = "github:NorfairKing/sydtest?ref=flake";
+    sydtest.url = "github:NorfairKing/sydtest";
     sydtest.flake = false;
     ical.url = "github:NorfairKing/ical?ref=flake";
     ical.flake = false;
@@ -35,7 +34,6 @@
   outputs =
     { self
     , nixpkgs
-    , flake-utils
     , pre-commit-hooks
     , validity
     , safe-coloured-text
@@ -51,82 +49,84 @@
     , linkcheck
     , seocheck
     }:
-    flake-utils.lib.eachSystem [ "x86_64-linux" ]
-      (system:
-      let
-        pkgsFor = nixpkgs: import nixpkgs {
-          inherit system;
-          config.allowUnfree = true;
-          overlays = [
-            self.overlays.${system}
-            (import (validity + "/nix/overlay.nix"))
-            (import (safe-coloured-text + "/nix/overlay.nix"))
-            (import (sydtest + "/nix/overlay.nix"))
-            (import (autodocodec + "/nix/overlay.nix"))
-            (import (ical + "/nix/overlay.nix"))
-            (import (token-limiter-concurrent + "/nix/overlay.nix"))
-            (import (typed-uuid + "/nix/overlay.nix"))
-            (import (looper + "/nix/overlay.nix"))
-            (import (yesod-autoreload + "/nix/overlay.nix"))
-            (import (yesod-static-remote + "/nix/overlay.nix"))
-            (import (pretty-relative-time + "/nix/overlay.nix"))
-            (import (linkcheck + "/nix/overlay.nix"))
-            (import (seocheck + "/nix/overlay.nix"))
-          ];
+    let
+      system = "x86_64-linux";
+      pkgsFor = nixpkgs: import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+        overlays = [
+          self.overlays.${system}
+          (import (validity + "/nix/overlay.nix"))
+          (import (safe-coloured-text + "/nix/overlay.nix"))
+          (import (sydtest + "/nix/overlay.nix"))
+          (import (autodocodec + "/nix/overlay.nix"))
+          (import (ical + "/nix/overlay.nix"))
+          (import (token-limiter-concurrent + "/nix/overlay.nix"))
+          (import (typed-uuid + "/nix/overlay.nix"))
+          (import (looper + "/nix/overlay.nix"))
+          (import (yesod-autoreload + "/nix/overlay.nix"))
+          (import (yesod-static-remote + "/nix/overlay.nix"))
+          (import (pretty-relative-time + "/nix/overlay.nix"))
+          (import (linkcheck + "/nix/overlay.nix"))
+          (import (seocheck + "/nix/overlay.nix"))
+        ];
+      };
+      pkgs = pkgsFor nixpkgs;
+      mkNixosModule = import ./nix/nixos-module.nix {
+        inherit (pkgs) salsaPartyRelease;
+        inherit (pkgs.haskellPackages) looper;
+      };
+    in
+    {
+      overlays.${system} = import ./nix/overlay.nix;
+      packages.${system}.default = pkgs.salsaPartyRelease;
+      checks.${system} = {
+        release = self.packages.${system}.default;
+        shell = self.devShells.${system}.default;
+        nixos-module-test = import ./nix/nixos-module-test.nix {
+          inherit (pkgs) nixosTest;
+          salsa-party-nixos-module-factory = self.nixosModuleFactories.${system}.default;
         };
-        pkgs = pkgsFor nixpkgs;
-        mkNixosModule = import ./nix/nixos-module.nix {
-          inherit (pkgs) salsaPartyRelease;
-          inherit (pkgs.haskellPackages) looper;
-        };
-      in
-      {
-        overlays = import ./nix/overlay.nix;
-        packages.default = pkgs.salsaPartyRelease;
-        checks = {
-          nixos-module-test = import ./nix/nixos-module-test.nix {
-            inherit (pkgs) nixosTest;
-            salsa-party-nixos-module-factory = self.nixosModuleFactories.${system}.default;
+        pre-commit = pre-commit-hooks.lib.${system}.run {
+          src = ./.;
+          hooks = {
+            hlint.enable = true;
+            hpack.enable = true;
+            ormolu.enable = true;
+            nixpkgs-fmt.enable = true;
+            nixpkgs-fmt.excludes = [ ".*/default.nix" ];
+            cabal2nix.enable = true;
           };
-          pre-commit = pre-commit-hooks.lib.${system}.run {
-            src = ./.;
-            hooks = {
-              hlint.enable = true;
-              hpack.enable = true;
-              ormolu.enable = true;
-              nixpkgs-fmt.enable = true;
-              nixpkgs-fmt.excludes = [ ".*/default.nix" ];
-              cabal2nix.enable = true;
-            };
-          };
         };
-        devShells.default = pkgs.haskellPackages.shellFor {
-          name = "salsa-party-shell";
-          packages = p: builtins.attrValues p.salsaPartyPackages;
-          withHoogle = true;
-          doBenchmark = true;
-          buildInputs = with pkgs; [
-            niv
-            zlib
-            cabal-install
-            chromium
-            chromedriver
-            selenium-server-standalone
-            icu
-            bzip2
-          ] ++ (with pre-commit-hooks;
-            [
-              hlint
-              hpack
-              nixpkgs-fmt
-              ormolu
-              cabal2nix
-            ]);
-          shellHook = self.checks.${system}.pre-commit.shellHook + ''
-            export FONTCONFIG_SYSROOT=${pkgs.callPackage ./nix/fonts-conf.nix { }}
-          '';
-        };
-        nixosModules.default = mkNixosModule { envname = "production"; };
-        nixosModuleFactories.default = mkNixosModule;
-      });
+      };
+      devShells.${system}.default = pkgs.haskellPackages.shellFor {
+        name = "salsa-party-shell";
+        packages = p: builtins.attrValues p.salsaPartyPackages;
+        withHoogle = true;
+        doBenchmark = true;
+        buildInputs = (with pkgs; [
+          niv
+          zlib
+          cabal-install
+          chromium
+          chromedriver
+          selenium-server-standalone
+          icu
+          bzip2
+        ]) ++ (with pre-commit-hooks.packages.${system};
+          [
+            hlint
+            hpack
+            nixpkgs-fmt
+            ormolu
+            cabal2nix
+          ]);
+        shellHook = ''
+          ${self.checks.${system}.pre-commit.shellHook}
+          ${pkgs.haskellPackages.sydtest-webdriver.setupFontsConfigScript}
+        '';
+      };
+      nixosModules.${system}.default = mkNixosModule { envname = "production"; };
+      nixosModuleFactories.${system}.default = mkNixosModule;
+    };
 }

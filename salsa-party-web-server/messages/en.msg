@@ -37,6 +37,7 @@ ExploreUpcomingParties number@String: #{number} upcoming parties
 ExploreSkylineAlt location@Text: Night-time skyline of #{location}
 
 ## Footer
+GiveFeedback: Give Feedback
 FooterGeocodingAttribution: Geocoding by OpenStreetMaps Nominatim
 FooterOpenstreetmapCopyright: © OpenStreetMap contributors
 

@@ -37,6 +37,7 @@ ExploreUpcomingParties number@String: #{number} komende feesten
 ExploreSkylineAlt location@Text: Night-time skyline van #{location}
 
 ## Footer
+GiveFeedback: Geef Feedback
 FooterGeocodingAttribution: Geocodering door OpenStreetMaps Nominatim
 FooterOpenstreetmapCopyright: © OpenStreetMap medewerkers
 
