@@ -44,7 +44,7 @@ getAdminPanelR = do
   token <- genToken
   timeLocale <- getTimeLocale
   withNavBar $ do
-    setTitle "Salsa Parties Admin Panel"
+    setTitle "Admin Panel"
     setDescription "Admin panel for the salsa parties admin"
     $(widgetFile "admin/panel")
 
@@ -55,7 +55,7 @@ getAdminUsersPageR :: PageNumber -> Handler Html
 getAdminUsersPageR pageNumber = do
   paginated <- runDB $ selectPaginated defaultPageSize [] [Asc UserCreated, Asc UserId] pageNumber
   withNavBar $ do
-    setTitle "Salsa Users Admin Users"
+    setTitle "Admin Users"
     setDescription "Admin overview of the users"
     $(widgetFile "admin/users")
 
@@ -97,7 +97,7 @@ getAdminOrganisersPageR :: PageNumber -> Handler Html
 getAdminOrganisersPageR pageNumber = do
   paginated <- runDB $ selectPaginated defaultPageSize [] [Asc OrganiserId] pageNumber
   withNavBar $ do
-    setTitle "Salsa Organisers Admin Organisers"
+    setTitle "Admin Organisers"
     setDescription "Admin overview of the organisers"
     $(widgetFile "admin/organisers")
 
@@ -113,7 +113,7 @@ getAdminOrganiserRemindersPageR pageNumber = do
       decision <- makeOrganiserReminderDecision organiserReminderEntity
       pure (organiserReminder, mOrganiser, decision)
   withNavBar $ do
-    setTitle "Salsa OrganiserReminders Admin Organiser Reminders"
+    setTitle "Admin Organiser Reminders"
     setDescription "Admin overview of the organiser reminders"
     $(widgetFile "admin/organiser-reminders")
 
@@ -140,7 +140,7 @@ adminPartiesPage :: [Filter Party] -> [SelectOpt Party] -> (PageNumber -> Route 
 adminPartiesPage filters sorters pageRoute pageNumber = do
   paginated <- runDB $ selectPaginated defaultPageSize filters sorters pageNumber
   withNavBar $ do
-    setTitle "Salsa Parties Admin Parties"
+    setTitle "Admin Parties"
     setDescription "Admin overview of the parties"
     $(widgetFile "admin/parties")
 
@@ -195,7 +195,7 @@ externalEventsListPage filters sorters pageRoute pageNumber = do
   paginated <- runDB $ selectPaginated defaultPageSize filters sorters pageNumber
   token <- genToken
   withNavBar $ do
-    setTitle "Salsa Parties Admin External Events"
+    setTitle "Admin External Events"
     setDescription "Admin overview of the external events"
     $(widgetFile "admin/external-events")
 
@@ -209,7 +209,7 @@ adminSchedulesPage :: [Filter Schedule] -> [SelectOpt Schedule] -> (PageNumber -
 adminSchedulesPage filters sorters pageRoute pageNumber = do
   paginated <- runDB $ selectPaginated defaultPageSize filters sorters pageNumber
   withNavBar $ do
-    setTitle "Salsa Schedules Admin Schedules"
+    setTitle "Admin Schedules"
     setDescription "Admin overview of the schedules"
     $(widgetFile "admin/schedules")
 
