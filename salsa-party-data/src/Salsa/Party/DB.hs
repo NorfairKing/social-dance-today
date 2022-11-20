@@ -12,7 +12,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# OPTIONS_GHC -fno-warn-orphans -fno-warn-dodgy-exports #-}
+{-# OPTIONS_GHC -Wno-orphans -Wno-dodgy-exports -Wno-unused-pattern-binds #-}
 
 module Salsa.Party.DB
   ( module Salsa.Party.DB,
@@ -380,7 +380,8 @@ instance NFData StaticMap
 
 changesComparedTo :: ExternalEvent -> ExternalEvent -> Maybe (NonEmpty (Update ExternalEvent))
 changesComparedTo ee1 ee2 =
-  let changed :: Eq a => (ExternalEvent -> a) -> Bool
+  let ExternalEvent _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ = undefined
+      changed :: Eq a => (ExternalEvent -> a) -> Bool
       changed func = func ee1 /= func ee2
       updateWhenChanged :: (Eq a, PersistField a) => EntityField ExternalEvent a -> (ExternalEvent -> a) -> Maybe (Update ExternalEvent)
       updateWhenChanged field func = do
