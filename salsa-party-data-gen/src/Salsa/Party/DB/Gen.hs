@@ -119,6 +119,10 @@ instance GenValid StaticMap where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
+instance GenValid Prospect where
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+
 -- This isn't very general, but that's probably fine.
 genValidEmailAddress :: Gen EmailAddress
 genValidEmailAddress = do

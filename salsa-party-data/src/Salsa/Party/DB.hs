@@ -315,6 +315,15 @@ StaticMap
     deriving Show
     deriving Eq
     deriving Generic
+
+
+Prospect
+    email Text
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
 |]
 
 instance (ToBackendKey SqlBackend record) => NFData (Key record) where
@@ -380,6 +389,10 @@ instance NFData ScheduleParty
 instance Validity StaticMap
 
 instance NFData StaticMap
+
+instance Validity Prospect
+
+instance NFData Prospect
 
 changesComparedTo :: ExternalEvent -> ExternalEvent -> Maybe (NonEmpty (Update ExternalEvent))
 changesComparedTo ee1 ee2 =

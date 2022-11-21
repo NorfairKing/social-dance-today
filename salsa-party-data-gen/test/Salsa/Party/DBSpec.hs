@@ -36,6 +36,7 @@ spec = do
     persistEntitySpec @ImporterMetadata
     persistEntitySpec @ExternalEvent
     persistEntitySpec @StaticMap
+    persistEntitySpec @Prospect
 
 persistEntitySpec ::
   forall a outers.
