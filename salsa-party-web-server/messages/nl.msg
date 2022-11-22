@@ -353,6 +353,7 @@ AllDanceStyles: Alle dansstijlen
 Salsa: Salsa
 Bachata: Bachata
 ChaChaCha: Cha-Cha-Cha
+Merengue: Merengue
 Kizomba: Kizomba
 Zouk: Zouk
 LindyHop: Lindy Hop

@@ -24,6 +24,7 @@ data DanceStyle
   = Salsa
   | Bachata
   | ChaChaCha
+  | Merengue
   | Kizomba
   | Zouk
   | LindyHop
@@ -42,6 +43,7 @@ danceStyleQueryStrings = \case
   Salsa -> ["salsa", "mambo"]
   Bachata -> ["bachata"]
   ChaChaCha -> ["cha-cha", "cha cha", "chacha"]
+  Merengue -> ["merengue"]
   Kizomba -> ["kizomba", "kiz", "urban kiz"]
   Zouk -> ["zouk"]
   LindyHop -> ["lindy hop", "swing"]
@@ -54,6 +56,7 @@ parseDanceStyleInUrl =
       "salsa" -> Just Salsa
       "bachata" -> Just Bachata
       "cha-cha-cha" -> Just ChaChaCha
+      "merengue" -> Just Merengue
       "kizomba" -> Just Kizomba
       "zouk" -> Just Zouk
       "lindy hop" -> Just LindyHop
@@ -68,6 +71,7 @@ renderDanceStyleInUrl = \case
   Salsa -> "Salsa"
   Bachata -> "Bachata"
   ChaChaCha -> "Cha-Cha-Cha"
+  Merengue -> "Merengue"
   Kizomba -> "Kizomba"
   Zouk -> "Zouk"
   LindyHop -> "Lindy Hop"

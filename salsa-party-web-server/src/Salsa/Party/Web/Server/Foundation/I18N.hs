@@ -168,6 +168,7 @@ danceStyleMessage = \case
   Salsa -> MsgSalsa
   Bachata -> MsgBachata
   ChaChaCha -> MsgChaChaCha
+  Merengue -> MsgMerengue
   Kizomba -> MsgKizomba
   Zouk -> MsgZouk
   LindyHop -> MsgLindyHop
