@@ -87,8 +87,8 @@ with final.haskell.lib;
                   sha256 = "sha256:08i3w728xdlzyvq4j9k1sm3ydfc6ch61cgs0wxvxqhc002vph5fa";
                 };
                 "static/instantpage.js" = builtins.fetchurl {
-                  url = "https://instant.page/5.1.0";
-                  sha256 = "sha256:03ryk64a2dxrs65fwpjy2n03nvxd68mdi414pmwd7b7k3lvk8p7s";
+                  url = "https://instant.page/5.1.1";
+                  sha256 = "sha256:0v5gmrd6wswnh92xqrmbk9gcf5yrmwl335j4fqyhdhz3dahyf3hd";
                 };
               };
               salsa-party-web-server-e2e = salsaPartyPkg "salsa-party-web-server-e2e";
