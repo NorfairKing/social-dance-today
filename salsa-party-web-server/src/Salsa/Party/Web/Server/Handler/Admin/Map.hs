@@ -12,20 +12,11 @@ module Salsa.Party.Web.Server.Handler.Admin.Map
   )
 where
 
-import Conduit
 import Data.Aeson as JSON
-import qualified Data.Conduit.Combinators as C
-import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as M
-import Data.Word
 import qualified Database.Esqueleto.Legacy as E
-import Safe
 import Salsa.Party.DB.Migration
 import Salsa.Party.Importer.Env
 import Salsa.Party.Web.Server.Handler.Import
-import Salsa.Party.Web.Server.Handler.Search
-import Text.Julius
-import Text.Printf
 
 getAdminMapR :: Handler Html
 getAdminMapR = do
@@ -40,11 +31,16 @@ getAdminMapR = do
           ( map
               ( \location ->
                   let place = locationPlace location
-                   in ( [ latitudeToFloat $ placeLat place,
-                          longitudeToFloat $ placeLon place
-                        ] ::
-                          [Float]
-                      )
+                   in object
+                        [ "coords"
+                            .= ( [ latitudeToFloat $ placeLat place,
+                                   longitudeToFloat $ placeLon place
+                                 ] ::
+                                   [Float]
+                               ),
+                          "title" .= placeQuery place,
+                          "link" .= urlRender (SearchR (placeQuery place))
+                        ]
               )
               locations
           )

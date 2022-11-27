@@ -38,3 +38,6 @@ $maybe Entity _ place <- mPlace
     
         <pre>
           #{show $ mkLocation place},
+
+        <pre>
+          #{mkLocationSection place}

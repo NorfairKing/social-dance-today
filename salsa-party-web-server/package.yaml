@@ -5,6 +5,11 @@ license:             AllRightsReserved
 dependencies:
 - base >= 4.7 && < 5
 
+extra-source-files:
+- templates/**/*
+- messages/**/*
+- assets/**/*
+
 library:
   source-dirs: src
   dependencies:

@@ -54,30 +54,69 @@
 - query: "Paris"
   lat: 48.858889700
   lon: 2.320041021
-  ## England
+- query: "Marseille"
+  lat: 43.30148
+  lon: 5.54800
+- query: "Montpellier"
+  lat: 43.55772
+  lon: 3.87537
+- query: "Nîmes"
+  lat: 43.90231
+  lon: 4.39052
+- query: "Lion"
+  lat: 45.69634
+  lon: 4.73594
+- query: "Dijon"
+  lat: 47.40875
+  lon: 5.06463
+  ## United Kingdom
 - query: "London"
   lat: 51.5073219
   lon: -0.1276474
 - query: "Birmingham"
   lat: 52.48
   lon: -1.9025
+- query: "Bristol"
+  lat: 36.61761
+  lon: -82.14841
+- query: "Glasgow"
+  lat: 55.86098
+  lon: -4.24887
+- query: "Edinburgh"
+  lat: 55.95334
+  lon: -3.18837
+- query: "Manchester"
+  lat: 53.47948
+  lon: -2.24511
   ## Spain
 - query: "Barcelona"
   lat: 41.3948976
   lon: 2.0787282
 - query: "Cádiz"
-  lat: 35.4524784
-  lon: -7.260937
+  lat: 36.52978
+  lon: -6.29465
 - query: "Madrid"
   lat: 40.4381311
   lon: -3.8196194
 - query: "Málaga"
   lat: 36.719444
   lon: -4.42
+- query: "Valencia"
+  lat: 39.68195
+  lon: -0.76545
   ## The Netherlands
 - query: "Amsterdam"
   lat: 52.374540300
   lon: 4.897975505
+- query: "Breda"
+  lat: 51.56437
+  lon: 4.78026
+- query: "Rotterdam"
+  lat: 51.92339
+  lon: 4.48956
+- query: "Groningen"
+  lat: 53.34398
+  lon: 6.76511
   ## Sweden
 - query: "Örebro"
   lat: 59.266667000
@@ -311,8 +350,8 @@
   lat: 47.603832100
   lon: -122.330062400
 - query: "San Francisco"
-  lat: 24.828920500
-  lon: -110.577827960
+  lat: 37.77902
+  lon: -122.41990
 - query: "San Diego"
   lat: 32.963783800
   lon: -116.770627700
@@ -412,6 +451,9 @@
 - query: "Fresno"
   lat: 36.75
   lon: -119.766667
+- query: "Cincinnati"
+  lat: 39.10145
+  lon: -84.51246
   # Latin America
 - query: "San Juan"
   lat: 18.3892246
@@ -420,10 +462,13 @@
   lat: 4.6482837
   lon: -74.2482335
 - query: "Havana"
-  lat: 39.3277335
-  lon: -90.9080091
+  lat: 22.18830
+  lon: 	-82.366592
   # Asia
   # Africa
+- query: "Mombasa"
+  lat: -4.03901
+  lon: 39.64842
   # Australia
 - query: "Sydney"
   lat: -33.8888621
@@ -431,3 +476,16 @@
 - query: "Melbourne"
   lat: -37.814217600
   lon: 144.96316080
+- query: "Perth"
+  lat: -31.95589
+  lon: 115.86058
+- query: "Adelaide"
+  lat: -34.92110
+  lon: 138.59726
+- query: "Brisbane"
+  lat: -27.46896
+  lon: 153.02349
+- query: "Gold Coast"
+  lat: -28.00237
+  lon: 153.41459
+

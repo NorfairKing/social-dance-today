@@ -36,4 +36,10 @@ adminGeocodingPage mResult = do
     _ -> pure Nothing
   let mkLocation place = Location {locationPlace = place}
   token <- genToken
+  let mkLocationSection Place {..} =
+        unlines
+          [ unwords ["- query:", show placeQuery],
+            unwords ["  lat:", show placeLat],
+            unwords ["  lon:", show placeLon]
+          ]
   withMFormResultNavBar mResult $(widgetFile "admin/geocoding")

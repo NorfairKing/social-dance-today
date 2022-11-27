@@ -7,12 +7,13 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 let locationMarkerData = #{locationMarkerData};
 // Add places
 for (const dat of locationMarkerData) {
-  L.circle (dat, {
+  L.circle (dat.coords, {
     color: 'red',
     fillColor: '#f03',
     fillOpacity: 0.5,
     radius: 50000
-  }).addTo(map)
+  }).bindPopup(String("<a href='" + dat.link + "'>" + dat.title + "</a>")).addTo(map);
+
 }
 let partyMarkerData = #{partyMarkerData};
 for (const dat of partyMarkerData) {
