@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.5.
+-- This file has been generated from package.yaml by hpack version 0.34.7.
 --
 -- see: https://github.com/sol/hpack
 
@@ -80,6 +80,7 @@ library
       Salsa.Party.Web.Server.Handler.Admin.Export
       Salsa.Party.Web.Server.Handler.Admin.Geocoding
       Salsa.Party.Web.Server.Handler.Admin.Panel
+      Salsa.Party.Web.Server.Handler.Admin.Prospect
       Salsa.Party.Web.Server.Handler.Admin.SiteTest
       Salsa.Party.Web.Server.Handler.Admin.TestOrganiserReminder
       Salsa.Party.Web.Server.Handler.Event

@@ -1,0 +1,62 @@
+<p>
+  Hello #{prospectEmailName prospectEmail}
+
+<p>
+  We would like to invite you to advertise your parties on
+  <a href=@{HomeR}>
+    Social Dance Today,
+  for free!
+
+<p>
+  We are fellow social dancers and we have developed a website where
+  dancers can find where they can go dance:
+  <a href=@{HomeR}>
+    @{HomeR}.
+
+<p>
+  We are glad that you organise parties for people to enjoy.
+  Some of your events,
+  <a href=@{externalEventRoute $ prospectEmailExternalEvent prospectEmail}>
+    "#{externalEventTitle $ prospectEmailExternalEvent prospectEmail}"
+  for example, are already advertised on our site because our site acts as a search engine for parties across the internet as well.
+
+<p>
+  In the past three months, we have had 550 active users from Zürich.
+  If you think your parties could benefit from more attendants, we can
+  recommend you to become an organiser on our site for free.
+
+<p>
+  There are several advantages to submitting your events directly on
+  our site:
+
+  <ul>
+    <li>
+      Your parties get prioritised in the search result pages.
+    <li>
+      You get an organiser page where dancers can see all your upcoming parties.
+      See
+      <a href=@{OrganiserSlugR exampleOrganiserSlug}>
+        the organiser page of #{exampleOrganiser}
+      for an example.
+    <li>
+      You get a calendar URL that people can use to add your current and future events to their calendars automatically.
+      You can try adding the calendar URL of #{exampleOrganiser} to your calendar to see what that looks like:
+      <pre>
+        @{OrganiserSlugCalendarR exampleOrganiserSlug}
+
+    <li>
+      You can make recurring events once and have them appear on schedule.
+
+    <li>
+      Our site will link to yours, which is great for your site's search engine optimisation (SEO).
+
+
+<p>
+  We look forward to your reply.
+
+<img width=128 height=155 src=@{LogoR} alt="Social Dance Today Logo">
+
+<p>
+  Kind regards
+<p>
+  Social Dance Today

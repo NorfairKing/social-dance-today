@@ -99,6 +99,9 @@
   /geocoding AdminGeocodingR GET POST
   /site-test AdminSiteTestR GET POST
 
+  /prospect-email AdminProspectEmailR GET POST
+  /prospect-email-send AdminProspectEmailSendR POST
+
   /test-organiser-reminder AdminTestOrganiserReminderR POST
 
 /favicon.ico FaviconR GET

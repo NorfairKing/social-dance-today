@@ -8,12 +8,14 @@ module Salsa.Party.Email
 where
 
 import Control.Monad.Logger
+import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import Lens.Micro
 import qualified Network.AWS as AWS
 import qualified Network.AWS.SES as SES
 import Salsa.Party.AWS
+import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation.App
 import Text.Show.Pretty
 import UnliftIO
@@ -39,7 +41,9 @@ sendEmailWithoutResultLogging App {..} destination message = do
     then case appSendAddress of
       Nothing -> pure NoEmailSent
       Just sendAddress -> do
-        let request = SES.sendEmail sendAddress destination message
+        let request =
+              SES.sendEmail sendAddress destination message
+                & SES.seReplyToAddresses .~ maybeToList (emailAddressText <$> appAdmin)
         response <- runAWS $ AWS.send request
         pure $ case (^. SES.sersResponseStatus) <$> response of
           Right 200 -> EmailSentSuccesfully
