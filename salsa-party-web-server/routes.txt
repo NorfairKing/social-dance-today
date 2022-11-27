@@ -58,6 +58,7 @@
 /admin AdminR:
   / AdminPanelR GET
   /charts AdminChartsR GET
+  /map AdminMapR GET
 
   /users AdminUsersR GET
   /users/#PageNumber AdminUsersPageR GET

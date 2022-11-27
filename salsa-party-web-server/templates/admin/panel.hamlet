@@ -9,6 +9,8 @@
     <div .buttons>
       <a .button href=@{AdminR AdminChartsR}>
         Charts
+      <a .button href=@{AdminR AdminMapR}>
+        Map
       <a .button href=@{AdminR AdminUsersR}>
         #{nbUsers} users
       <a .button href=@{AdminR AdminOrganisersR}>

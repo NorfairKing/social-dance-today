@@ -128,15 +128,28 @@ scrapeLDEvents = awaitForever $ \(request, response) -> do
                 postalAddressRegion <- optional $ text $ "span" @: ["itemprop" @= "addressRegion"]
                 postalAddressCountry <- optional $ text $ "span" @: ["itemprop" @= "addressCountry"]
                 pure $ LD.PlaceAddressPostalAddress LD.PostalAddress {..}
-              placeGeo <- optional $
-                chroot ("span" @: ["itemprop" @= "geo", "itemtype" @= "http://schema.org/GeoCoordinates"]) $ do
-                  let readOrFail :: (Read a, Monad m) => Text -> ScraperT Text m a
-                      readOrFail t = case readMaybe (T.unpack t) of
-                        Nothing -> fail "failed to parse."
-                        Just a -> pure a
-                  geoCoordinatesLatitude <- attr "content" ("meta" @: ["itemprop" @= "latitude"]) >>= readOrFail
-                  geoCoordinatesLongitude <- attr "content" ("meta" @: ["itemprop" @= "longitude"]) >>= readOrFail
-                  pure $ LD.PlaceGeoCoordinates LD.GeoCoordinates {..}
+              -- This used to say:
+              --
+              -- placeGeo <-
+              --   optional $
+              --     chroot ("span" @: ["itemprop" @= "geo", "itemtype" @= "http://schema.org/GeoCoordinates"]) $ do
+              --       let readOrFail :: (Read a, Monad m) => Text -> ScraperT Text m a
+              --           readOrFail t = case readMaybe (T.unpack t) of
+              --             Nothing -> fail "failed to parse."
+              --             Just a -> pure a
+              --       geoCoordinatesLatitude <- attr "content" ("meta" @: ["itemprop" @= "latitude"]) >>= readOrFail
+              --       geoCoordinatesLongitude <- attr "content" ("meta" @: ["itemprop" @= "longitude"]) >>= readOrFail
+              --       pure $ LD.PlaceGeoCoordinates LD.GeoCoordinates {..}
+              --
+              -- However, goanddance.com actually has a bug where it will have incorrect coordinates like this:
+              --
+              -- <span itemprop="geo" itemscope="" itemtype="http://schema.org/GeoCoordinates">
+              --   <meta itemprop="latitude" content="41.395327">
+              --   <meta itemprop="longitude" content="41.395327">
+              -- </span>
+              --
+              -- So instead, we just don't import coordinates and use the address to find the place
+              let placeGeo = Nothing
               pure $ LD.EventLocationPlace LD.Place {..}
             eventStartDate <- do
               startDateText <- attr "content" ("meta" @: ["itemprop" @= "startDate"])

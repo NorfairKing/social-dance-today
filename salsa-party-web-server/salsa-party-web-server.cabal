@@ -79,6 +79,7 @@ library
       Salsa.Party.Web.Server.Handler.Admin.Charts
       Salsa.Party.Web.Server.Handler.Admin.Export
       Salsa.Party.Web.Server.Handler.Admin.Geocoding
+      Salsa.Party.Web.Server.Handler.Admin.Map
       Salsa.Party.Web.Server.Handler.Admin.Panel
       Salsa.Party.Web.Server.Handler.Admin.Prospect
       Salsa.Party.Web.Server.Handler.Admin.SiteTest
