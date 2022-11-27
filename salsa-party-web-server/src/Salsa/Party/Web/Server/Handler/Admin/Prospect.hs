@@ -102,7 +102,13 @@ postAdminProspectEmailSendR = do
 
   let message = SES.message subject body
 
-  _ <- sendEmail app destination message
+  case appProspectSendAddress app of
+    Nothing -> pure ()
+    Just sendAddress -> do
+      let request =
+            SES.sendEmail sendAddress destination message
+              & SES.seReplyToAddresses .~ maybeToList (emailAddressText <$> appAdmin app)
+      void $ sendEmail app request
 
   redirect $ AdminR AdminProspectEmailR
 

@@ -24,6 +24,7 @@ import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
 import Data.Function
+import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
@@ -248,16 +249,24 @@ sendVerificationEmail userEmailAddress verificationKey = do
   let destination =
         SES.destination
           & SES.dToAddresses .~ [emailAddressText userEmailAddress]
+
   app <- getYesod
-  sendEmailResult <- sendEmail app destination message
-  case sendEmailResult of
-    ErrorWhileSendingEmail _ -> do
-      addMessageI "is-danger" MsgVerificationEmailFailure
-      logErrorN $ T.pack $ unwords ["Failed to send verification email to address:", show userEmailAddress]
-    EmailSentSuccesfully -> do
-      addMessageI "is-success" (ConfirmationEmailSent $ emailAddressText userEmailAddress)
-      logInfoN $ T.pack $ unwords ["Succesfully send verification email to address:", show userEmailAddress]
-    NoEmailSent -> pure ()
+
+  case appSendAddress app of
+    Nothing -> pure ()
+    Just sendAddress -> do
+      let request =
+            SES.sendEmail sendAddress destination message
+              & SES.seReplyToAddresses .~ maybeToList (emailAddressText <$> appAdmin app)
+      sendEmailResult <- sendEmail app request
+      case sendEmailResult of
+        ErrorWhileSendingEmail _ -> do
+          addMessageI "is-danger" MsgVerificationEmailFailure
+          logErrorN $ T.pack $ unwords ["Failed to send verification email to address:", show userEmailAddress]
+        EmailSentSuccesfully -> do
+          addMessageI "is-success" (ConfirmationEmailSent $ emailAddressText userEmailAddress)
+          logInfoN $ T.pack $ unwords ["Succesfully send verification email to address:", show userEmailAddress]
+        NoEmailSent -> pure ()
 
 getVerifyR ::
   ( app ~ App,

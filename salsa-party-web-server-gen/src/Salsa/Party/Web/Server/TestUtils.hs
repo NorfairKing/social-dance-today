@@ -68,6 +68,7 @@ serverSetupFunc man = do
         appSecureOnly = False,
         appSendEmails = False,
         appSendAddress = Nothing,
+        appProspectSendAddress = Nothing,
         appSearchResultCache = searchResultCache,
         appExploreResultCache = exploreResultCache,
         appAdmin = Just adminEmail,

@@ -63,6 +63,7 @@ runSalsaPartyServer settings@Settings {..} = do
                   appSecureOnly = True,
                   appSendEmails = settingSendEmails,
                   appSendAddress = settingSendAddress,
+                  appProspectSendAddress = settingProspectSendAddress,
                   appSearchResultCache = searchResultCache,
                   appExploreResultCache = exploreResultCache,
                   appAdmin = settingAdmin,

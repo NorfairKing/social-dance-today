@@ -66,6 +66,12 @@ in
                     default = null;
                     description = "The email address to send emails from";
                   };
+                  prospect-send-address = mkOption {
+                    type = types.nullOr types.str;
+                    example = "henk@social-dance.today";
+                    default = null;
+                    description = "The email address to send emails from, for prospect emails";
+                  };
                   enable-osm-geocoding = mkOption {
                     type = types.nullOr types.bool;
                     example = true;
@@ -178,6 +184,7 @@ in
           (nullOrOption "admin" admin)
           (nullOrOption "send-emails" send-emails)
           (nullOrOption "send-address" send-address)
+          (nullOrOption "prospect-send-address" prospect-send-address)
           (nullOrOption "enable-osm-geocoding" enable-osm-geocoding)
           (nullOrOption "enable-google-geocoding" enable-google-geocoding)
           (nullOrOption "google-api-key" google-api-key)

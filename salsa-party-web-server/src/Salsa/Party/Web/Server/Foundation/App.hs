@@ -24,6 +24,7 @@ data App = App
     appSecureOnly :: !Bool,
     appSendEmails :: !Bool,
     appSendAddress :: !(Maybe Text),
+    appProspectSendAddress :: !(Maybe Text),
     appSearchResultCache :: !SearchResultCache,
     appExploreResultCache :: !(Cache Coordinates Word),
     appAdmin :: !(Maybe EmailAddress),

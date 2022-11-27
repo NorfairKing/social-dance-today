@@ -213,12 +213,18 @@ sendOrganiserReminder emailAddress secret = do
   let destination =
         SES.destination
           & SES.dToAddresses .~ [emailAddressText emailAddress]
+  case appSendAddress app of
+    Nothing -> pure ()
+    Just sendAddress -> do
+      let request =
+            SES.sendEmail sendAddress destination message
+              & SES.seReplyToAddresses .~ maybeToList (emailAddressText <$> appAdmin app)
 
-  sendEmailResult <- sendEmail app destination message
-  case sendEmailResult of
-    NoEmailSent -> pure ()
-    EmailSentSuccesfully -> logInfoN $ T.pack $ unwords ["Succesfully send organiser reminder email to address:", show emailAddress]
-    ErrorWhileSendingEmail _ -> logErrorN $ T.pack $ unwords ["Failed to send organiser reminder email to address:", show emailAddress]
+      sendEmailResult <- sendEmail app request
+      case sendEmailResult of
+        NoEmailSent -> pure ()
+        EmailSentSuccesfully -> logInfoN $ T.pack $ unwords ["Succesfully send organiser reminder email to address:", show emailAddress]
+        ErrorWhileSendingEmail _ -> logErrorN $ T.pack $ unwords ["Failed to send organiser reminder email to address:", show emailAddress]
 
 organiserReminderTextContent :: (Route App -> [(Text, Text)] -> Text) -> ReminderSecret -> Text
 organiserReminderTextContent urlRender secret = LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/organiser-reminder.txt") urlRender
