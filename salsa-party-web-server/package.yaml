@@ -79,6 +79,7 @@ library:
   - wai-extra
   - warp
   - xml-conduit
+  - xml-types
   - yesod
   - yesod-auth
   - yesod-autoreload

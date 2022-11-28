@@ -108,6 +108,9 @@
 /favicon.ico FaviconR GET
 /logo.svg LogoR GET
 /sitemap.xml SitemapR GET
+/sitemap/toplevel.xml SitemapTopLevelR GET
+/sitemap/locations.xml SitemapLocationsR GET
+/sitemap/organisers.xml SitemapOrganisersR GET
 /robots.txt RobotsR GET
 
 /auth AuthR Auth getAuth

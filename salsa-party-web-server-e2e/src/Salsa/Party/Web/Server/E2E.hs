@@ -86,6 +86,18 @@ spec uri = do
         get SitemapR
         statusIs 200
 
+      it "SitemapTopLevelR" $ do
+        get SitemapTopLevelR
+        statusIs 200
+
+      it "SitemapLocationsR" $ do
+        get SitemapLocationsR
+        statusIs 200
+
+      it "SitemapOrganisersR" $ do
+        get SitemapOrganisersR
+        statusIs 200
+
       it "RobotsR" $ do
         get RobotsR
         statusIs 200

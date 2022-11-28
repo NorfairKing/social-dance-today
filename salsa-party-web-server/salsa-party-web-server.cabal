@@ -213,6 +213,7 @@ library
       Text.HTML.Scalpel.Extended
       Web.JSONLD
       Web.JSONLD.Parse
+      Web.SitemapIndex
   other-modules:
       Paths_salsa_party_web_server
   hs-source-dirs:
@@ -285,6 +286,7 @@ library
     , wai-extra
     , warp
     , xml-conduit
+    , xml-types
     , yesod
     , yesod-auth
     , yesod-autoreload

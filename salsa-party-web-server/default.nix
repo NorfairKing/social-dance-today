@@ -11,8 +11,8 @@
 , scalpel, scientific, shakespeare, sydtest, sydtest-discover
 , tagsoup, template-haskell, text, time, token-limiter-concurrent
 , typed-process, typed-uuid, unliftio, validity, validity-text
-, validity-time, wai, wai-extra, warp, xml-conduit, yesod
-, yesod-auth, yesod-autoreload, yesod-core, yesod-form
+, validity-time, wai, wai-extra, warp, xml-conduit, xml-types
+, yesod, yesod-auth, yesod-autoreload, yesod-core, yesod-form
 , yesod-sitemap, yesod-static, yesod-static-remote, zip-archive
 }:
 mkDerivation {
@@ -33,9 +33,9 @@ mkDerivation {
     retry safe safe-coloured-text salsa-party-data scalpel scientific
     shakespeare tagsoup template-haskell text time
     token-limiter-concurrent typed-process typed-uuid unliftio validity
-    validity-text validity-time wai wai-extra warp xml-conduit yesod
-    yesod-auth yesod-autoreload yesod-core yesod-form yesod-sitemap
-    yesod-static yesod-static-remote zip-archive
+    validity-text validity-time wai wai-extra warp xml-conduit
+    xml-types yesod yesod-auth yesod-autoreload yesod-core yesod-form
+    yesod-sitemap yesod-static yesod-static-remote zip-archive
   ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [
