@@ -330,6 +330,9 @@
 - query: "Vancouver"
   lat: 49.260872400
   lon: -123.113952900
+- query: "Calgary"
+  lat: 51.04609
+  lon: -114.06546
   ## United States
 - query: "New York"
   lat: 40.748551
