@@ -29,6 +29,8 @@
     linkcheck.flake = false;
     seocheck.url = "github:NorfairKing/seocheck?ref=flake";
     seocheck.flake = false;
+    dekking.url = "github:NorfairKing/dekking";
+    dekking.flake = false;
   };
 
   outputs =
@@ -48,6 +50,7 @@
     , pretty-relative-time
     , linkcheck
     , seocheck
+    , dekking
     }:
     let
       system = "x86_64-linux";
@@ -69,6 +72,7 @@
           (import (pretty-relative-time + "/nix/overlay.nix"))
           (import (linkcheck + "/nix/overlay.nix"))
           (import (seocheck + "/nix/overlay.nix"))
+          (import (dekking + "/nix/overlay.nix"))
         ];
       };
       pkgs = pkgsFor nixpkgs;
@@ -83,6 +87,7 @@
       checks.${system} = {
         release = self.packages.${system}.default;
         shell = self.devShells.${system}.default;
+        coverage = pkgs.salsaPartyCoverageReport;
         nixos-module-test = import ./nix/nixos-module-test.nix {
           inherit (pkgs) nixosTest;
           salsa-party-nixos-module-factory = self.nixosModuleFactories.${system}.default;

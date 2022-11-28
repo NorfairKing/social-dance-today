@@ -17,6 +17,22 @@
         "type": "github"
       }
     },
+    "dekking": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1669495445,
+        "narHash": "sha256-likVDV1rbH5nsrJJS5WmVAoxdWh0Glbfe3LkiBLfB1U=",
+        "owner": "NorfairKing",
+        "repo": "dekking",
+        "rev": "0b24602f9762edc203f65168fc8c09e7291b4a4b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NorfairKing",
+        "repo": "dekking",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "locked": {
         "lastModified": 1667077288,
@@ -152,6 +168,7 @@
     "root": {
       "inputs": {
         "autodocodec": "autodocodec",
+        "dekking": "dekking",
         "ical": "ical",
         "linkcheck": "linkcheck",
         "looper": "looper",

@@ -11,6 +11,14 @@ with final.haskell.lib;
     paths = final.lib.attrValues final.salsaPartyReleasePackages;
   };
 
+  salsaPartyCoverageReport = final.dekking.makeCoverageReport {
+    name = "salsa-party-coverage-report";
+    packages = [
+      "salsa-party-data"
+      "salsa-party-data-gen"
+    ];
+  };
+
   haskellPackages = prev.haskellPackages.override (old: {
     overrides = final.lib.composeExtensions (old.overrides or (_: _: { })) (
       self: super:
