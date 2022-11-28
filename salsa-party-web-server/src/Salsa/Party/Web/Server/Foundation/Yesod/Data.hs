@@ -17,6 +17,7 @@
 module Salsa.Party.Web.Server.Foundation.Yesod.Data where
 
 import Data.FileEmbed
+import Data.Int
 import Data.Text as Text
 import Data.Time
 import Salsa.Party.DB

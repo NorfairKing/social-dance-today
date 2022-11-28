@@ -111,6 +111,7 @@
 /sitemap/toplevel.xml SitemapTopLevelR GET
 /sitemap/locations.xml SitemapLocationsR GET
 /sitemap/organisers.xml SitemapOrganisersR GET
+/sitemap/events/#Int16/#Int16/sitemap.xml SitemapEventsR GET
 /robots.txt RobotsR GET
 
 /auth AuthR Auth getAuth

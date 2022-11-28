@@ -98,6 +98,11 @@ spec uri = do
         get SitemapOrganisersR
         statusIs 200
 
+      it "SitemapEventsR" $ \yc ->
+        forAll (choose (-180, 175)) $ \lo -> runYesodClientM yc $ do
+          get $ SitemapEventsR lo (lo + 5)
+          statusIs 200
+
       it "RobotsR" $ do
         get RobotsR
         statusIs 200

@@ -9,6 +9,7 @@ module Salsa.Party.Web.Server.Handler.Sitemap
     getSitemapTopLevelR,
     getSitemapLocationsR,
     getSitemapOrganisersR,
+    getSitemapEventsR,
     getRobotsR,
   )
 where
@@ -16,9 +17,12 @@ where
 import Conduit
 import Control.Monad
 import Control.Monad.Trans.Resource
+import qualified Data.Conduit as C
 import qualified Data.Conduit.Combinators as C
+import Data.Int
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Builder as TLB
+import qualified Database.Esqueleto.Legacy as E
 import Salsa.Party.DB.Migration
 import Salsa.Party.Web.Server.Handler.Import
 import Text.Shakespeare.Text
@@ -27,28 +31,38 @@ import Yesod.Sitemap
 
 getSitemapR :: Handler TypedContent
 getSitemapR =
-  sitemapIndexList
-    [ SitemapIndexUrl
-        { sitemapIndexLoc = SitemapTopLevelR,
-          sitemapIndexLastMod = Nothing
-        },
-      SitemapIndexUrl
-        { sitemapIndexLoc = SitemapLocationsR,
-          -- We could provide a more accurate last modification but it would
-          -- get in the way of responding quickly
-          sitemapIndexLastMod = Nothing
-        },
-      SitemapIndexUrl
-        { sitemapIndexLoc = SitemapOrganisersR,
-          -- We could provide a more accurate last modification but it would
-          -- get in the way of responding quickly
-          sitemapIndexLastMod = Nothing
-        }
-    ]
+  sitemapIndexList $
+    concat
+      [ [ SitemapIndexUrl
+            { sitemapIndexLoc = SitemapTopLevelR,
+              sitemapIndexLastMod = Nothing
+            },
+          SitemapIndexUrl
+            { sitemapIndexLoc = SitemapLocationsR,
+              -- We could provide a more accurate last modification but it would
+              -- get in the way of responding quickly
+              sitemapIndexLastMod = Nothing
+            },
+          SitemapIndexUrl
+            { sitemapIndexLoc = SitemapOrganisersR,
+              -- We could provide a more accurate last modification but it would
+              -- get in the way of responding quickly
+              sitemapIndexLastMod = Nothing
+            }
+        ],
+        let minB = -180
+            maxB = 180
+            interval = 5
+         in [ SitemapIndexUrl
+                { sitemapIndexLoc = SitemapEventsR lo (lo + interval),
+                  sitemapIndexLastMod = Nothing
+                }
+              | lo <- [minB, (minB + interval) .. (maxB - 1)]
+            ]
+      ]
 
 getSitemapTopLevelR :: Handler TypedContent
 getSitemapTopLevelR = do
-  today <- liftIO $ utctDay <$> getCurrentTime
   sitemapList
     [ SitemapUrl
         { sitemapLoc = HomeR,
@@ -68,15 +82,6 @@ getSitemapOrganisersR :: Handler TypedContent
 getSitemapOrganisersR = do
   acqOrganisers <- runDB $ selectSourceRes [] [Asc OrganiserId]
 
-  let dbAcq ::
-        Acquire (ConduitM () a Handler ()) ->
-        (a -> SitemapUrl (Route App)) ->
-        ConduitT () (SitemapUrl (Route App)) Handler ()
-      dbAcq acq func = do
-        (rk, aSource) <- allocateAcquire acq
-        aSource
-          .| C.map func
-        release rk
   sitemap $ do
     dbAcq
       acqOrganisers
@@ -112,7 +117,68 @@ getSitemapLocationsR = do
               sitemapPriority = Just 0.5
             }
 
+getSitemapEventsR :: Int16 -> Int16 -> Handler TypedContent
+getSitemapEventsR lo hi = do
+  let loLon = Longitude $ fixedToCoord $ fromIntegral lo
+  let hiLon = Longitude $ fixedToCoord $ fromIntegral hi
+  today <- liftIO $ utctDay <$> getCurrentTime
+  let yesterday = addDays (-1) today
+  let earliestDayToShow = yesterday
+
+  sitemap $ do
+    C.transPipe
+      runDB
+      ( E.selectSource $
+          E.from $ \(place `E.InnerJoin` party `E.InnerJoin` organiser) -> do
+            E.on $ place E.^. PlaceId E.==. party E.^. PartyPlace
+            E.on $ party E.^. PartyOrganiser E.==. organiser E.^. OrganiserId
+            E.where_ $
+              (place E.^. PlaceLon E.>=. E.val loLon)
+                E.&&. (place E.^. PlaceLon E.<. E.val hiLon)
+            E.where_ (party E.^. PartyDay E.>=. E.val earliestDayToShow)
+            pure (party, organiser)
+      )
+      .| C.map
+        ( \(Entity _ party@Party {..}, Entity _ organiser) ->
+            SitemapUrl
+              { sitemapLoc = partyRoute organiser party,
+                sitemapLastMod = Just $ fromMaybe partyCreated partyModified,
+                sitemapChangeFreq = Nothing,
+                sitemapPriority = Just 0.3
+              }
+        )
+    C.transPipe
+      runDB
+      ( E.selectSource $
+          E.from $ \(place `E.InnerJoin` externalEvent) -> do
+            E.on $ place E.^. PlaceId E.==. externalEvent E.^. ExternalEventPlace
+            E.where_ $
+              (place E.^. PlaceLon E.>=. E.val loLon)
+                E.&&. (place E.^. PlaceLon E.<. E.val hiLon)
+            E.where_ (externalEvent E.^. ExternalEventDay E.>=. E.val earliestDayToShow)
+            pure externalEvent
+      )
+      .| C.map
+        ( \(Entity _ externalEvent@ExternalEvent {..}) ->
+            SitemapUrl
+              { sitemapLoc = externalEventRoute externalEvent,
+                sitemapLastMod = Just $ fromMaybe externalEventCreated externalEventModified,
+                sitemapChangeFreq = Nothing,
+                sitemapPriority = Just 0.2
+              }
+        )
+
 getRobotsR :: Handler TL.Text
 getRobotsR = do
   urlRender <- getUrlRenderParams
   pure $ TLB.toLazyText $ $(textFile "templates/robots.txt") urlRender
+
+dbAcq ::
+  Acquire (ConduitM () a Handler ()) ->
+  (a -> SitemapUrl (Route App)) ->
+  ConduitT () (SitemapUrl (Route App)) Handler ()
+dbAcq acq func = do
+  (rk, aSource) <- allocateAcquire acq
+  aSource
+    .| C.map func
+  release rk
