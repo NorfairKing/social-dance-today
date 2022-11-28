@@ -25,6 +25,7 @@ import Data.Maybe
 import Data.Text (Text)
 import Database.Persist.Sql
 import Database.Persist.Sqlite
+import Network.HTTP.Types
 import Path
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Constants
@@ -142,7 +143,14 @@ instance Yesod App where
 setLanguageMiddleware :: Handler a -> Handler a
 setLanguageMiddleware handler = do
   mLParam <- lookupGetParam languageQueryParameter
-  forM_ mLParam $ \l -> setLanguage l
+  forM_ mLParam $ \l ->
+    -- Language parameter supplied, tried to parse it
+    case parseSupportedLanguage l of
+      -- Parses well, set the language
+      Just supportedLanguage -> setLanguage (supportedLanguageAbbreviation supportedLanguage)
+      -- Doesn't parse, error out.
+      -- This is to discourage people from trying to find a vulnerability in this parameter
+      Nothing -> void $ sendResponseStatus badRequest400 ("Unsupported language." :: Html)
   handler
 
 setSecurityHeaders :: Handler a -> Handler a
