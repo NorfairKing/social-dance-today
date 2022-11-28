@@ -36,6 +36,7 @@ completeServerMigration quiet = do
   logInfoN "Autmatic migrations done, starting application-specific migrations."
   setUpPlaces
   removeInvalidPlaces
+  removePlacesOnTheLine
   setUpIndices
   logInfoN "Migrations done."
 
@@ -80,6 +81,24 @@ removeInvalidPlaces = do
           logInfoN $ T.pack $ unlines [unwords ["Removing invalid place", show place], err]
           delete placeId
         Right _ -> pure ()
+
+-- TODO[after-release]: Remove this once the bug is fixed
+removePlacesOnTheLine :: forall m. (MonadUnliftIO m, MonadLogger m) => SqlPersistT m ()
+removePlacesOnTheLine = do
+  logInfoN "Removing places on the line"
+  acqPlacesSource <- selectSourceRes [] []
+  withAcquire acqPlacesSource $ \placesSource ->
+    runConduit $ placesSource .| C.mapM_ go
+  where
+    go :: Entity Place -> SqlPersistT m ()
+    go (Entity placeId place@Place {..}) =
+      let lat = latitudeToDouble placeLat
+          lon = longitudeToDouble placeLon
+          diff = abs (lat - lon)
+          tollerance = 0.000001
+       in when (diff <= tollerance) $ do
+            logInfoN $ T.pack $ unwords ["Removing place", show (fromSqlKey placeId), show place]
+            delete placeId
 
 {-# NOINLINE locations #-}
 locations :: [Location]

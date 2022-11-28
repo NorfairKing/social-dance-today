@@ -1,8 +1,8 @@
 { mkDerivation, base, bytestring, genvalidity-sydtest, http-client
-, ical, lib, linkcheck, monad-logger, network-uri, salsa-party-data
-, salsa-party-web-server, salsa-party-web-server-gen, scalpel
-, seocheck, sydtest, sydtest-discover, sydtest-yesod, text, time
-, yesod-auth
+, ical, lib, linkcheck, monad-logger, network-uri, QuickCheck
+, salsa-party-data, salsa-party-web-server
+, salsa-party-web-server-gen, scalpel, seocheck, sydtest
+, sydtest-discover, sydtest-yesod, text, time, yesod-auth
 }:
 mkDerivation {
   pname = "salsa-party-web-server-e2e";
@@ -12,7 +12,7 @@ mkDerivation {
   isExecutable = true;
   libraryHaskellDepends = [
     base bytestring genvalidity-sydtest ical linkcheck monad-logger
-    network-uri salsa-party-data salsa-party-web-server
+    network-uri QuickCheck salsa-party-data salsa-party-web-server
     salsa-party-web-server-gen scalpel seocheck sydtest sydtest-yesod
     text time yesod-auth
   ];
