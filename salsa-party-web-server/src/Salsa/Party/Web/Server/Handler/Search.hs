@@ -491,27 +491,3 @@ searchParametersHtmlDescription SearchParameters {..} = do
           SearchFromOn day -> MsgSearchDescriptionDanceStyleAroundAddressOnDay danceStyleText address $ formatTime timeLocale prettyDayFormat day
           SearchFromTo begin end -> MsgSearchDescriptionDanceStyleAroundAddressFromTo danceStyleText address (formatTime timeLocale prettyDayFormat begin) (formatTime timeLocale prettyDayFormat end)
           SearchExactlyOn day -> MsgSearchDescriptionDanceStyleAroundAddressOnDay danceStyleText address $ formatTime timeLocale prettyDayFormat day
-
-defaultDaysAhead :: Integer
-defaultDaysAhead = 7
-
-maximumDaysAhead :: Integer
-maximumDaysAhead = 5 * defaultDaysAhead
-
--- |
---
--- We want to delete old (external) events eventually because they fill up our
--- database and slow down queries.
--- However, we can't delete them too quickly because google will still try to
--- link to them.
--- We used to use 30 here, but it turned out to not be enough, so now we're
--- trying 90 instead
-daysToKeepParties :: Integer
-daysToKeepParties = 90
-
--- |
---
--- We tag pages with 'unavailable_after' earlier than
--- 'daysToKeepParties' to prevent further 404s and/or 410s.
-daysToKeepPartiesMarkedAsAvailable :: Integer
-daysToKeepPartiesMarkedAsAvailable = 30

@@ -20,8 +20,8 @@ import Database.Persist.Sql
 import Salsa.Party.DB
 import Salsa.Party.DB.Gen
 import Salsa.Party.DB.Migration
+import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.Gen ()
-import Salsa.Party.Web.Server.Handler.Search
 import Salsa.Party.Web.Server.Handler.Search.Query
 import Salsa.Party.Web.Server.Handler.Search.Types
 import Salsa.Party.Web.Server.TestUtils

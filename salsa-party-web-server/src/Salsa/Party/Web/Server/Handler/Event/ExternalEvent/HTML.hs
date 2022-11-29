@@ -21,7 +21,6 @@ import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Description
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
 import Salsa.Party.Web.Server.Handler.Import
-import Salsa.Party.Web.Server.Handler.Search (daysToKeepPartiesMarkedAsAvailable)
 
 externalEventPageHtml :: Entity ExternalEvent -> Entity Place -> Handler Html
 externalEventPageHtml (Entity _ externalEvent@ExternalEvent {..}) (Entity _ place@Place {..}) = do

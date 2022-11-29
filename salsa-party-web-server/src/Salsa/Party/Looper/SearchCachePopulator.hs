@@ -11,8 +11,7 @@ import qualified Data.Cache as Cache
 import qualified Data.Text as T
 import Salsa.Party.DB.Migration
 import Salsa.Party.Looper.Import
-import Salsa.Party.Web.Server.Constants
-import Salsa.Party.Web.Server.Handler.Search
+import Salsa.Party.Web.Server.Constants (defaultDaysAhead, development)
 import Salsa.Party.Web.Server.Handler.Search.Query
 import Salsa.Party.Web.Server.Handler.Search.Types
 

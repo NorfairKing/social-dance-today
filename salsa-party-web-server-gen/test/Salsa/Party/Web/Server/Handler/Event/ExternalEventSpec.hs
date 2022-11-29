@@ -3,7 +3,6 @@
 module Salsa.Party.Web.Server.Handler.Event.ExternalEventSpec (spec) where
 
 import qualified Database.Persist as DB
-import Salsa.Party.Web.Server.Handler.Search (daysToKeepPartiesMarkedAsAvailable)
 import Salsa.Party.Web.Server.Handler.TestImport
 
 spec :: Spec

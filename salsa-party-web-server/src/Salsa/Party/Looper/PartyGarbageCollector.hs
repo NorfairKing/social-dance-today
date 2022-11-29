@@ -9,7 +9,7 @@ module Salsa.Party.Looper.PartyGarbageCollector where
 import qualified Data.Conduit.Combinators as C
 import qualified Data.Text as T
 import Salsa.Party.Looper.Import
-import Salsa.Party.Web.Server.Handler.Search
+import Salsa.Party.Web.Server.Constants
 
 runPartyGarbageCollector :: App -> LoggingT IO ()
 runPartyGarbageCollector App {..} = do

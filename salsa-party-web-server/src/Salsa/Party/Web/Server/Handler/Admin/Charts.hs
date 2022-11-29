@@ -19,7 +19,6 @@ import qualified Data.Map.Strict as M
 import Data.Word
 import Safe
 import Salsa.Party.Web.Server.Handler.Import
-import Salsa.Party.Web.Server.Handler.Search
 import Text.Julius
 import Text.Printf
 
