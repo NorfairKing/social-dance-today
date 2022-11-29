@@ -25,7 +25,7 @@ import Text.Printf
 getAdminChartsR :: Handler Html
 getAdminChartsR = do
   today <- getClientToday
-  acqExternalEventsSource <- runDB $ selectSourceRes [] [Asc ExternalEventId]
+  acqExternalEventsSource <- runDB $ selectSourceRes [ExternalEventDay >=. addDays (-daysToKeepPartiesMarkedAsAvailable + 1) today] [Asc ExternalEventId]
   acqPartiesSource <- runDB $ selectSourceRes [] [Asc PartyId]
 
   -- Upcoming events
@@ -65,7 +65,7 @@ getAdminChartsR = do
   let eventsPerDayMap = M.unionWith (+) partiesPerDayMap externalEventsPerDayMap
 
   let minDay = fromMaybe today $ minimumMay $ map fst $ mapMaybe M.lookupMin [dayCountMapOfExternalEvents, dayCountMapOfParties]
-      minPartyDay = addDays (-daysToKeepParties + 1) today
+      minPartyDay = addDays (-daysToKeepPartiesMarkedAsAvailable + 1) today
       curDay = today
 
   withNavBar $ do
