@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.5.
+-- This file has been generated from package.yaml by hpack version 0.34.7.
 --
 -- see: https://github.com/sol/hpack
 
@@ -113,6 +113,7 @@ test-suite salsa-party-web-server-gen-test
     , base >=4.7 && <5
     , bytestring
     , cache
+    , case-insensitive
     , containers
     , esqueleto
     , genvalidity

@@ -59,6 +59,8 @@ spec =
               doSearch $ query {queryFormAddress = Just address}
               _ <- followRedirect
               statusIs 200
+              shouldHaveNoArchiveXRobotsTag
+              shouldHaveNoUnavailableAfterXRobotsTag
 
       it "Can GET a 200 query page for a nonempty address and begin day" $ \yc ->
         forAll (genValid `suchThat` (not . T.null)) $ \address ->
@@ -66,9 +68,11 @@ spec =
             forAllValid $ \coordinates ->
               runYesodClientM yc $ do
                 testDB $ insertPlace_ address coordinates
-                doSearch $ query {queryFormAddress = Just address, queryFormBegin = day}
+                doSearch $ query {queryFormAddress = Just address, queryFormBegin = Just day}
                 _ <- followRedirect
                 statusIs 200
+                shouldHaveNoArchiveXRobotsTag
+                shouldHaveUnavailableAfterXRobotsTag (addDays daysToKeepPartiesMarkedAsAvailable day)
 
       it "Can GET a 200 query page for a nonempty query and exact day" $ \yc ->
         forAll (genValid `suchThat` (not . T.null)) $ \address ->
@@ -76,22 +80,28 @@ spec =
             forAllValid $ \coordinates ->
               runYesodClientM yc $ do
                 testDB $ insertPlace_ address coordinates
-                doSearch $ query {queryFormAddress = Just address, queryFormOn = day}
+                doSearch $ query {queryFormAddress = Just address, queryFormOn = Just day}
                 _ <- followRedirect
                 statusIs 200
+                shouldHaveNoArchiveXRobotsTag
+                shouldHaveUnavailableAfterXRobotsTag (addDays daysToKeepPartiesMarkedAsAvailable day)
 
       it "Can GET a 200 query page by coordinates" $ \yc ->
         forAllValid $ \coordinates ->
           runYesodClientM yc $ do
             doSearch $ query {queryFormCoordinates = Just coordinates}
             statusIs 200
+            shouldHaveNoArchiveXRobotsTag
+            shouldHaveNoUnavailableAfterXRobotsTag
 
       it "Can GET a 200 query page by coordinates and day" $ \yc ->
         forAllValid $ \coordinates ->
           forAllValid $ \day ->
             runYesodClientM yc $ do
-              doSearch $ query {queryFormCoordinates = Just coordinates, queryFormBegin = day}
+              doSearch $ query {queryFormCoordinates = Just coordinates, queryFormBegin = Just day}
               statusIs 200
+              shouldHaveNoArchiveXRobotsTag
+              shouldHaveUnavailableAfterXRobotsTag (addDays daysToKeepPartiesMarkedAsAvailable day)
 
     describe "SearchR" $ do
       it "Can GET a 200 place page for a place" $ \yc ->
@@ -103,6 +113,8 @@ spec =
                 setMethod methodGet
                 setUrl $ SearchR address
               statusIs 200
+              shouldHaveNoArchiveXRobotsTag
+              shouldHaveNoUnavailableAfterXRobotsTag
 
       it "Can GET a 200 place page for a place and dance style" $ \yc ->
         forAll (genValid `suchThat` (not . T.null)) $ \address ->
@@ -114,6 +126,8 @@ spec =
                   setMethod methodGet
                   setUrl $ SearchDanceStyleR address danceStyle
                 statusIs 200
+                shouldHaveNoArchiveXRobotsTag
+                shouldHaveNoUnavailableAfterXRobotsTag
 
     describe "SearchDayR" $ do
       it "Can GET a 200 place page for a place and begin date" $ \yc ->
@@ -126,6 +140,8 @@ spec =
                   setMethod methodGet
                   setUrl $ SearchDayR address day
                 statusIs 200
+                shouldHaveNoArchiveXRobotsTag
+                shouldHaveUnavailableAfterXRobotsTag (addDays daysToKeepPartiesMarkedAsAvailable day)
 
     describe "SearchDayDanceStyleR" $ do
       it "Can GET a 200 place page for a place, dance style, and begin date" $ \yc ->
@@ -139,6 +155,8 @@ spec =
                     setMethod methodGet
                     setUrl $ SearchDayDanceStyleR address day danceStyle
                   statusIs 200
+                  shouldHaveNoArchiveXRobotsTag
+                  shouldHaveUnavailableAfterXRobotsTag (addDays daysToKeepPartiesMarkedAsAvailable day)
 
     describe "SearchFromToR" $ do
       it "Can GET a 200 place page for a place and begin+end date" $ \yc ->
@@ -152,6 +170,8 @@ spec =
                     setMethod methodGet
                     setUrl $ SearchFromToR address begin end
                   statusIs 200
+                  shouldHaveNoArchiveXRobotsTag
+                  shouldHaveUnavailableAfterXRobotsTag (addDays daysToKeepPartiesMarkedAsAvailable begin)
 
     describe "SearchFromToDanceStyleR" $ do
       it "Can GET a 200 place page for a place, dance style, and begin+end date" $ \yc ->
@@ -166,3 +186,5 @@ spec =
                       setMethod methodGet
                       setUrl $ SearchFromToDanceStyleR address begin end danceStyle
                     statusIs 200
+                    shouldHaveNoArchiveXRobotsTag
+                    shouldHaveUnavailableAfterXRobotsTag (addDays daysToKeepPartiesMarkedAsAvailable begin)

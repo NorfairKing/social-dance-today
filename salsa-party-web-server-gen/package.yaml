@@ -80,6 +80,7 @@ tests:
     - aeson-pretty
     - bytestring
     - cache
+    - case-insensitive
     - containers
     - esqueleto
     - genvalidity
@@ -94,7 +95,6 @@ tests:
     - mtl
     - password
     - path
-    - path-io
     - path-io
     - path-pieces
     - persistent

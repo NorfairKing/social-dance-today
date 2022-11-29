@@ -374,13 +374,36 @@ searchResultsPage searchParameters@SearchParameters {..} = do
                 #{formatTime timeLocale prettyDayFormat day}
                 (_{autoDayMsg today day})
           |]
+
+    -- X-Robots-Tag tags are specified here:
+    -- https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag
+    --
+    -- We use 'noarchive' so that Google never serves a cached version
+    -- of our search results.
+    --
+    -- > Do not show a cached link in search results. If you don't
+    -- > specify this directive, Google may generate a cached page and
+    -- > users may access it through the search results.
+    --
+    -- We use 'unavailable_after' so that google doesn't show this
+    -- exact page in search results anymore once we start deleting
+    -- those results.
+    --
+    -- > Do not show this page in search results after the specified date/time.
+    --
+    -- > If you don't specify this directive, this page may be shown
+    -- > in search results indefinitely. Googlebot will decrease the
+    -- > crawl rate of the URL considerably after the specified date and
+    -- > time.
+    --
+    addHeader "X-Robots-Tag" "noarchive"
+    case searchParameterDate of
+      SearchFromToday -> pure () -- Stays good
+      _ -> addHeader "X-Robots-Tag" $ T.pack $ "unavailable_after: " <> formatTime defaultTimeLocale "%F" (addDays daysToKeepPartiesMarkedAsAvailable begin)
+
     case searchResult of
       NoDataYet -> $(widgetFile "search-no-results")
       ResultsFound searchResults -> do
-        addHeader "X-Robots-Tag" "noarchive"
-        case searchParameterDate of
-          SearchFromToday -> pure () -- Stays good
-          _ -> addHeader "X-Robots-Tag" $ T.pack $ "unavailable_after: " <> formatTime timeLocale "%F" (addDays daysToKeepParties end)
         let days = [begin .. end]
         prevDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = navPrevSearchDate today searchParameterDate}
         nextDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = navNextSearchDate today searchParameterDate}
@@ -475,6 +498,8 @@ defaultDaysAhead = 7
 maximumDaysAhead :: Integer
 maximumDaysAhead = 5 * defaultDaysAhead
 
+-- |
+--
 -- We want to delete old (external) events eventually because they fill up our
 -- database and slow down queries.
 -- However, we can't delete them too quickly because google will still try to
@@ -483,3 +508,10 @@ maximumDaysAhead = 5 * defaultDaysAhead
 -- trying 90 instead
 daysToKeepParties :: Integer
 daysToKeepParties = 90
+
+-- |
+--
+-- We tag pages with 'unavailable_after' earlier than
+-- 'daysToKeepParties' to prevent further 404s and/or 410s.
+daysToKeepPartiesMarkedAsAvailable :: Integer
+daysToKeepPartiesMarkedAsAvailable = 30

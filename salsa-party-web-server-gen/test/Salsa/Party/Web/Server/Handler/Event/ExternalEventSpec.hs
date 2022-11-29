@@ -3,6 +3,7 @@
 module Salsa.Party.Web.Server.Handler.Event.ExternalEventSpec (spec) where
 
 import qualified Database.Persist as DB
+import Salsa.Party.Web.Server.Handler.Search (daysToKeepPartiesMarkedAsAvailable)
 import Salsa.Party.Web.Server.Handler.TestImport
 
 spec :: Spec
@@ -29,6 +30,8 @@ spec = do
               get $ EventR $ externalEventUuid externalEvent
               _ <- followRedirect
               statusIs 200
+              shouldHaveNoNoArchiveXRobotsTag
+              shouldHaveUnavailableAfterXRobotsTag (addDays daysToKeepPartiesMarkedAsAvailable (externalEventDay externalEvent))
 
       it "Gets a 404 or 410 for a nonexistent external event by slug" $ \yc ->
         forAllValid $ \slug ->
@@ -53,3 +56,5 @@ spec = do
                     DB.insert_ $ externalEvent {externalEventPlace = placeId}
                   get route
                   statusIs 200
+                  shouldHaveNoNoArchiveXRobotsTag
+                  shouldHaveUnavailableAfterXRobotsTag (addDays daysToKeepPartiesMarkedAsAvailable (externalEventDay externalEvent))

@@ -14,8 +14,10 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import Data.Cache
 import Data.Function ((&))
+import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Time
 import Database.Persist.Sql (SqlPersistT)
 import qualified Database.Persist.Sql as DB
@@ -149,3 +151,46 @@ testDB :: DB.SqlPersistT (NoLoggingT IO) a -> YesodClientM App a
 testDB func = do
   pool <- asks $ appConnectionPool . yesodClientSite
   liftIO $ runNoLoggingT $ runSqlPool (DB.retryOnBusy func) pool
+
+-- TODO upstream this?
+lookupResponseHeader :: HeaderName -> YesodClientM site [ByteString]
+lookupResponseHeader name = do
+  response <- requireResponse
+  pure $ map snd $ filter ((== name) . fst) (responseHeaders response)
+
+-- TODO upstream this?
+shouldHaveNoArchiveXRobotsTag :: YesodClientM site ()
+shouldHaveNoArchiveXRobotsTag = do
+  values <- lookupResponseHeader "X-Robots-Tag"
+  liftIO $ values `shouldSatisfy` elem "noarchive"
+
+-- TODO upstream this?
+shouldHaveNoNoArchiveXRobotsTag :: YesodClientM site ()
+shouldHaveNoNoArchiveXRobotsTag = do
+  values <- lookupResponseHeader "X-Robots-Tag"
+  liftIO $ values `shouldNotSatisfy` elem "noarchive"
+
+-- TODO upstream this?
+shouldHaveUnavailableAfterXRobotsTag :: Day -> YesodClientM site ()
+shouldHaveUnavailableAfterXRobotsTag day = do
+  md <- lookupUnavailableAfterXRobotsTag
+  liftIO $ md `shouldBe` Just day
+
+-- TODO upstream this?
+shouldHaveNoUnavailableAfterXRobotsTag :: YesodClientM site ()
+shouldHaveNoUnavailableAfterXRobotsTag = do
+  md <- lookupUnavailableAfterXRobotsTag
+  liftIO $ md `shouldBe` Nothing
+
+-- TODO upstream this?
+lookupUnavailableAfterXRobotsTag :: YesodClientM site (Maybe Day)
+lookupUnavailableAfterXRobotsTag = do
+  values <- lookupResponseHeader "X-Robots-Tag"
+  let dayStrings = mapMaybe (SB.stripPrefix "unavailable_after:") values
+  case listToMaybe dayStrings of
+    Nothing -> pure Nothing
+    Just stripped -> case TE.decodeUtf8' stripped of
+      Left _ -> liftIO $ expectationFailure "X-Robots-Tag did not contain valid UTF-8"
+      Right r -> case parseTimeM True defaultTimeLocale "%F" (T.unpack r) of
+        Nothing -> liftIO $ expectationFailure "X-Robots-Tag did not contain a parseable day"
+        Just d -> pure $ Just d

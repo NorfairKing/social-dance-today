@@ -29,6 +29,8 @@ spec = serverSpec $ do
               get $ EventR $ partyUuid party
               _ <- followRedirect -- We may end up on a slug-based route, but that's fine.
               statusIs 200
+              shouldHaveNoNoArchiveXRobotsTag
+              shouldHaveNoUnavailableAfterXRobotsTag
 
     it "GETs a 404 or 410 for a nonexistent party by slugs" $ \yc ->
       forAllValid $ \organiserSlug_ ->
@@ -56,3 +58,5 @@ spec = serverSpec $ do
                     DB.insert_ $ party {partyOrganiser = organiserId, partyPlace = placeId}
                   get $ PartySlugR organiserSlug_ partySlug_ (partyDay party)
                   statusIs 200
+                  shouldHaveNoNoArchiveXRobotsTag
+                  shouldHaveNoUnavailableAfterXRobotsTag
