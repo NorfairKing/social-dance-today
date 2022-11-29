@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Salsa.Party.Web.Server.Handler.Event.PartySpec (spec) where
+module Salsa.Party.Web.Server.Handler.Event.Party.HTMLSpec (spec) where
 
 import qualified Database.Persist as DB
 import Salsa.Party.Web.Server.Handler.TestImport
