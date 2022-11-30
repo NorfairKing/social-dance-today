@@ -15,10 +15,13 @@
 
 <p>
   We are glad that you organise parties for people to enjoy.
-  Some of your events,
-  <a href=@{externalEventRoute $ prospectEmailExternalEvent prospectEmail}>
-    "#{externalEventTitle $ prospectEmailExternalEvent prospectEmail}"
-  for example, are already advertised on our site because our site acts as a search engine for parties across the internet as well.
+  $maybe externalEvent <- prospectEmailExternalEvent prospectEmail
+    Some of your events,
+    <a href=@{externalEventRoute externalEvent}>
+      "#{externalEventTitle externalEvent}"
+    for example, are already advertised on our site because our site acts as a search engine for parties across the internet as well.
+  $nothing
+    Some of your events may already be advertised on our site because our site acts as a search engine for parties across the internet as well.
 
 <p>
   In the past three months, we have had 550 active users from Zürich.

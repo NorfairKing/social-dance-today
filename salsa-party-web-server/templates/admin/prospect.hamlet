@@ -34,8 +34,7 @@
             <input .input
               type=text
               name="external-event"
-              value=#{fromMaybe "" $ mf uuidFunc}
-              required>
+              value=#{maybe "" uuidFunc $ mmf prospectEmailExternalEvent}>
 
         ^{token}
 

@@ -6,10 +6,7 @@ We are fellow social dancers and we have developed a website where
 dancers can find where they can go dance: @{HomeR}.
 
 We are glad that you organise parties for people to enjoy.
-Some of your events, "#{externalEventTitle $ prospectEmailExternalEvent prospectEmail}" for example
-(@{externalEventRoute $ prospectEmailExternalEvent prospectEmail}),
-are already advertised on our site because our site acts as a search
-engine for parties across the internet as well.
+#{yourEventsSentence}
 
 In the past three months, we have had 550 active users from Zürich.
 If you think your parties could benefit from more attendants, we can

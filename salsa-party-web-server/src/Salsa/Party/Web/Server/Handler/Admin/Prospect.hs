@@ -13,6 +13,7 @@ module Salsa.Party.Web.Server.Handler.Admin.Prospect
   )
 where
 
+import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Builder as TLB
 import Lens.Micro
@@ -31,7 +32,7 @@ getAdminProspectEmailR = adminProspectEmailPage Nothing
 data ProspectEmail = ProspectEmail
   { prospectEmailName :: !Text,
     prospectEmailAddress :: !Text,
-    prospectEmailExternalEvent :: !ExternalEvent
+    prospectEmailExternalEvent :: !(Maybe ExternalEvent)
   }
   deriving (Show, Eq)
 
@@ -40,7 +41,7 @@ prospectEmailForm =
   ProspectEmail
     <$> ireq textField "name"
     <*> ireq emailField "email"
-    <*> ireq eventUuidField "external-event"
+    <*> iopt eventUuidField "external-event"
 
 eventUuidField :: Field Handler ExternalEvent
 eventUuidField =
@@ -77,7 +78,9 @@ adminProspectEmailPage mResult = do
 
   let mf :: (ProspectEmail -> a) -> Maybe a
       mf func = func . fst <$> mProspectEmail
-  let uuidFunc = uuidText . externalEventUuid . prospectEmailExternalEvent
+  let mmf :: (ProspectEmail -> Maybe a) -> Maybe a
+      mmf func = mProspectEmail >>= func . fst
+  let uuidFunc = uuidText . externalEventUuid
 
   token <- genToken
   withMFormResultNavBar mResult $(widgetFile "admin/prospect")
@@ -127,7 +130,20 @@ exampleOrganiserSlug :: OrganiserSlug
 exampleOrganiserSlug = Slug "salsaon2happenings"
 
 prospectEmailTextContent :: (Route App -> [(Text, Text)] -> Text) -> ProspectEmail -> Text
-prospectEmailTextContent urlRender prospectEmail = TL.toStrict $ TLB.toLazyText $ $(textFile "templates/email/prospect.txt") urlRender
+prospectEmailTextContent urlRender prospectEmail =
+  let yourEventsSentence =
+        case prospectEmailExternalEvent prospectEmail of
+          Just externalEvent ->
+            T.pack $
+              concat
+                [ "Some of your events, for example ",
+                  show (externalEventTitle externalEvent),
+                  " (",
+                  T.unpack $ urlRender (externalEventRoute externalEvent) [],
+                  ") are already advertised on our site because our site acts as a search engine for parties across the internet as well."
+                ]
+          Nothing -> "Some of your events may already be advertised on our site because our site acts as a search engine for parties across the internet as well."
+   in TL.toStrict $ TLB.toLazyText $ $(textFile "templates/email/prospect.txt") urlRender
 
 prospectEmailHtmlContent :: (Route App -> [(Text, Text)] -> Text) -> ProspectEmail -> Text
 prospectEmailHtmlContent urlRender prospectEmail = TL.toStrict $ renderHtml $ $(hamletFile "templates/email/prospect.hamlet") urlRender
