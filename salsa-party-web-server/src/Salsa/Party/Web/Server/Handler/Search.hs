@@ -23,6 +23,7 @@ module Salsa.Party.Web.Server.Handler.Search where
 import Control.Arrow (left)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
+import Network.HTTP.Types
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Query
@@ -161,7 +162,7 @@ queryFormToSearchParameters QueryForm {..} = do
            in if d < 0
                 then invalidArgsI [MsgEndBeforeBegin]
                 else
-                  if d > maximumDaysAhead
+                  if d > maximumSearchRange
                     then invalidArgsI [MsgEndTooFarAhead]
                     else pure $ SearchFromTo begin end
   let searchParameterDistance = queryFormDistance
@@ -325,96 +326,118 @@ searchParameterDateParameters = \case
       (endParameter, T.pack $ formatTime defaultTimeLocale "%F" end)
     ]
 
+searchDateResolveBegin :: Day -> SearchDate -> Day
+searchDateResolveBegin today = \case
+  SearchFromToday -> today
+  SearchFromOn day -> day
+  SearchFromTo day _ -> day
+  SearchExactlyOn day -> day
+
+searchDateResolveEnd :: Day -> SearchDate -> Day
+searchDateResolveEnd today = \case
+  SearchFromToday -> addDays (defaultDaysAhead - 1) today
+  SearchFromOn day -> addDays (defaultDaysAhead - 1) day
+  SearchFromTo _ day -> day
+  SearchExactlyOn day -> day
+
 searchResultsPage :: SearchParameters -> Handler Html
 searchResultsPage searchParameters@SearchParameters {..} = do
   today <- getClientToday
 
-  -- Resolve begin day
-  let begin = case searchParameterDate of
-        SearchFromToday -> today
-        SearchFromOn day -> day
-        SearchFromTo day _ -> day
-        SearchExactlyOn day -> day
+  let begin = searchDateResolveBegin today searchParameterDate
+  let end = searchDateResolveEnd today searchParameterDate
 
-  -- Resolve end day
-  let end = case searchParameterDate of
-        SearchFromToday -> addDays (defaultDaysAhead - 1) today
-        SearchFromOn day -> addDays (defaultDaysAhead - 1) day
-        SearchFromTo _ day -> day
-        SearchExactlyOn day -> day
+  if endTooLongAgo today end
+    then sendResponseStatus badRequest400 ("Too long ago" :: Html)
+    else do
+      -- Resolve coordinates
+      coordinates <- resolveSearchLocation searchParameterLocation
 
-  -- Resolve coordinates
-  coordinates <- resolveSearchLocation searchParameterLocation
+      -- Build the query
+      let query =
+            SearchQuery
+              { searchQueryBegin = begin,
+                searchQueryMEnd = Just end,
+                searchQueryCoordinates = coordinates,
+                searchQueryDistance = Just $ fromMaybe defaultMaximumDistance searchParameterDistance,
+                searchQueryDanceStyle = searchParameterDanceStyle
+              }
 
-  -- Build the query
-  let query =
-        SearchQuery
-          { searchQueryBegin = begin,
-            searchQueryMEnd = Just end,
-            searchQueryCoordinates = coordinates,
-            searchQueryDistance = Just $ fromMaybe defaultMaximumDistance searchParameterDistance,
-            searchQueryDanceStyle = searchParameterDanceStyle
-          }
+      -- Do the actual search
+      searchResultCache <- getsYesod appSearchResultCache
+      searchResult <- runDB $ runSearchQuery searchResultCache query
 
-  -- Do the actual search
-  searchResultCache <- getsYesod appSearchResultCache
-  searchResult <- runDB $ runSearchQuery searchResultCache query
+      withNavBar $ do
+        searchParametersHtmlTitle searchParameters >>= setTitleI
+        searchParametersHtmlDescription searchParameters >>= setDescriptionI
+        title <- searchParametersHtmlTitle searchParameters
+        timeLocale <- getTimeLocale
+        prettyDayFormat <- getPrettyDayFormat
+        let makeDayLink :: Day -> Widget
+            makeDayLink day = do
+              route <- searchParametersQueryRoute $ searchParameters {searchParameterDate = SearchExactlyOn day}
+              [whamlet|
+              <a href=#{route}>
+                  #{formatTime timeLocale prettyDayFormat day}
+                  (_{autoDayMsg today day})
+            |]
 
-  withNavBar $ do
-    searchParametersHtmlTitle searchParameters >>= setTitleI
-    searchParametersHtmlDescription searchParameters >>= setDescriptionI
-    title <- searchParametersHtmlTitle searchParameters
-    timeLocale <- getTimeLocale
-    prettyDayFormat <- getPrettyDayFormat
-    let makeDayLink :: Day -> Widget
-        makeDayLink day = do
-          route <- searchParametersQueryRoute $ searchParameters {searchParameterDate = SearchExactlyOn day}
-          [whamlet|
-            <a href=#{route}>
-                #{formatTime timeLocale prettyDayFormat day}
-                (_{autoDayMsg today day})
-          |]
+        -- X-Robots-Tag tags are specified here:
+        -- https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag
+        --
+        -- We use 'noarchive' so that Google never serves a cached version
+        -- of our search results.
+        --
+        -- > Do not show a cached link in search results. If you don't
+        -- > specify this directive, Google may generate a cached page and
+        -- > users may access it through the search results.
+        --
+        -- We use 'unavailable_after' so that google doesn't show this
+        -- exact page in search results anymore once we start deleting
+        -- those results.
+        --
+        -- > Do not show this page in search results after the specified date/time.
+        --
+        -- > If you don't specify this directive, this page may be shown
+        -- > in search results indefinitely. Googlebot will decrease the
+        -- > crawl rate of the URL considerably after the specified date and
+        -- > time.
+        --
+        addHeader "X-Robots-Tag" "noarchive"
+        case searchParameterDate of
+          SearchFromToday -> pure () -- Stays good
+          _ -> addHeader "X-Robots-Tag" $ T.pack $ "unavailable_after: " <> formatTime defaultTimeLocale "%F" (addDays daysToKeepPartiesMarkedAsAvailable begin)
 
-    -- X-Robots-Tag tags are specified here:
-    -- https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag
-    --
-    -- We use 'noarchive' so that Google never serves a cached version
-    -- of our search results.
-    --
-    -- > Do not show a cached link in search results. If you don't
-    -- > specify this directive, Google may generate a cached page and
-    -- > users may access it through the search results.
-    --
-    -- We use 'unavailable_after' so that google doesn't show this
-    -- exact page in search results anymore once we start deleting
-    -- those results.
-    --
-    -- > Do not show this page in search results after the specified date/time.
-    --
-    -- > If you don't specify this directive, this page may be shown
-    -- > in search results indefinitely. Googlebot will decrease the
-    -- > crawl rate of the URL considerably after the specified date and
-    -- > time.
-    --
-    addHeader "X-Robots-Tag" "noarchive"
-    case searchParameterDate of
-      SearchFromToday -> pure () -- Stays good
-      _ -> addHeader "X-Robots-Tag" $ T.pack $ "unavailable_after: " <> formatTime defaultTimeLocale "%F" (addDays daysToKeepPartiesMarkedAsAvailable begin)
+        case searchResult of
+          NoDataYet -> $(widgetFile "search-no-results")
+          ResultsFound searchResults -> do
+            let days = [begin .. end]
+            mPrevDayRoute <- resolveMPrevDayRoute today searchParameters
+            nextDayRoute <- resolveNextDayRoute today searchParameters
 
-    case searchResult of
-      NoDataYet -> $(widgetFile "search-no-results")
-      ResultsFound searchResults -> do
-        let days = [begin .. end]
-        prevDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = navPrevSearchDate today searchParameterDate}
-        nextDayRoute <- searchParametersQueryRoute $ searchParameters {searchParameterDate = navNextSearchDate today searchParameterDate}
+            let danceStyleFilterLink mDanceStyle = searchParametersQueryRoute $ searchParameters {searchParameterDanceStyle = mDanceStyle}
+            let danceStyleFilters = filter (/= searchParameterDanceStyle) $ Nothing : map Just allDanceStyles
+            danceStyleFilterLinks <- mapM (\mDanceStyle -> (,) mDanceStyle <$> danceStyleFilterLink mDanceStyle) danceStyleFilters
 
-        let danceStyleFilterLink mDanceStyle = searchParametersQueryRoute $ searchParameters {searchParameterDanceStyle = mDanceStyle}
-        let danceStyleFilters = filter (/= searchParameterDanceStyle) $ Nothing : map Just allDanceStyles
-        danceStyleFilterLinks <- mapM (\mDanceStyle -> (,) mDanceStyle <$> danceStyleFilterLink mDanceStyle) danceStyleFilters
+            let pagination = $(widgetFile "search-pagination")
+            addStylesheet $ StaticR zoom_without_container_css
+            $(widgetFile "search") <> posterCSS
 
-        let pagination = $(widgetFile "search-pagination")
-        addStylesheet $ StaticR zoom_without_container_css
-        $(widgetFile "search") <> posterCSS
+resolveMPrevDayRoute :: Day -> SearchParameters -> WidgetFor App (Maybe Text)
+resolveMPrevDayRoute today searchParameters = do
+  let prevSearchDate = navPrevSearchDate today $ searchParameterDate searchParameters
+  e <- searchParametersQueryRoute $ searchParameters {searchParameterDate = prevSearchDate}
+  pure $ do
+    guard $ not $ endTooLongAgo today $ searchDateResolveEnd today prevSearchDate
+    pure e
+
+endTooLongAgo :: Day -> Day -> Bool
+endTooLongAgo today e = e < addDays (-daysToKeepParties) today
+
+resolveNextDayRoute :: Day -> SearchParameters -> WidgetFor App Text
+resolveNextDayRoute today searchParameters =
+  searchParametersQueryRoute $
+    searchParameters {searchParameterDate = navNextSearchDate today (searchParameterDate searchParameters)}
 
 navPrevSearchDate :: Day -> SearchDate -> SearchDate
 navPrevSearchDate today = \case

@@ -20,9 +20,9 @@ development =
 defaultDaysAhead :: Integer
 defaultDaysAhead = 7
 
--- | How many days ahead we allow users to search
-maximumDaysAhead :: Integer
-maximumDaysAhead = 5 * defaultDaysAhead
+-- | How big of a search range we allow
+maximumSearchRange :: Integer
+maximumSearchRange = 5 * defaultDaysAhead
 
 -- | How many days to keep parties in the database before they can be
 -- garbage-collected

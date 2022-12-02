@@ -1,6 +1,7 @@
 <div .is-grouped .has-text-centered role="navigation" aria-label="pagination">
-  <a .button rel="nofollow" href=#{prevDayRoute}>
-    _{MsgSearchNavEarlier}
+  $maybe prevDayRoute <- mPrevDayRoute
+    <a .button href=#{prevDayRoute}>
+      _{MsgSearchNavEarlier}
 
   <div .dropdown .is-hoverable>
     <div .dropdown-trigger>

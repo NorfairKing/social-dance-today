@@ -36,8 +36,12 @@ queryFormRequestBuilder QueryForm {..} = do
 doSearch :: QueryForm -> YesodClientM App ()
 doSearch = request . queryFormRequestBuilder
 
+dayAroundToday :: Day -> Gen Day
+dayAroundToday today = (\i -> addDays i today) <$> choose (-daysToKeepParties, 365)
+
 spec :: Spec
-spec =
+spec = do
+  today <- liftIO $ utctDay <$> getCurrentTime
   serverSpec $ do
     describe "AdvancedSearchR" $ do
       it "Can GET the advanced search page" $ do
@@ -64,7 +68,7 @@ spec =
 
       it "Can GET a 200 query page for a nonempty address and begin day" $ \yc ->
         forAll (genValid `suchThat` (not . T.null)) $ \address ->
-          forAllValid $ \day ->
+          forAll (dayAroundToday today) $ \day ->
             forAllValid $ \coordinates ->
               runYesodClientM yc $ do
                 testDB $ insertPlace_ address coordinates
@@ -76,7 +80,7 @@ spec =
 
       it "Can GET a 200 query page for a nonempty query and exact day" $ \yc ->
         forAll (genValid `suchThat` (not . T.null)) $ \address ->
-          forAllValid $ \day ->
+          forAll (dayAroundToday today) $ \day ->
             forAllValid $ \coordinates ->
               runYesodClientM yc $ do
                 testDB $ insertPlace_ address coordinates
@@ -96,7 +100,7 @@ spec =
 
       it "Can GET a 200 query page by coordinates and day" $ \yc ->
         forAllValid $ \coordinates ->
-          forAllValid $ \day ->
+          forAll (dayAroundToday today) $ \day ->
             runYesodClientM yc $ do
               doSearch $ query {queryFormCoordinates = Just coordinates, queryFormBegin = Just day}
               statusIs 200
@@ -132,7 +136,7 @@ spec =
     describe "SearchDayR" $ do
       it "Can GET a 200 place page for a place and begin date" $ \yc ->
         forAll (genValid `suchThat` (not . T.null)) $ \address ->
-          forAllValid $ \day ->
+          forAll (dayAroundToday today) $ \day ->
             forAllValid $ \location ->
               runYesodClientM yc $ do
                 testDB $ insertPlace_ address location
@@ -146,7 +150,7 @@ spec =
     describe "SearchDayDanceStyleR" $ do
       it "Can GET a 200 place page for a place, dance style, and begin date" $ \yc ->
         forAll (genValid `suchThat` (not . T.null)) $ \address ->
-          forAllValid $ \day ->
+          forAll (dayAroundToday today) $ \day ->
             forAllValid $ \danceStyle ->
               forAllValid $ \location ->
                 runYesodClientM yc $ do
@@ -162,7 +166,7 @@ spec =
       it "Can GET a 200 place page for a place and begin+end date" $ \yc ->
         forAll (genValid `suchThat` (not . T.null)) $ \address ->
           forAllValid $ \begin ->
-            forAllValid $ \end ->
+            forAll (dayAroundToday today) $ \end ->
               forAllValid $ \location ->
                 runYesodClientM yc $ do
                   testDB $ insertPlace_ address location
@@ -177,7 +181,7 @@ spec =
       it "Can GET a 200 place page for a place, dance style, and begin+end date" $ \yc ->
         forAll (genValid `suchThat` (not . T.null)) $ \address ->
           forAllValid $ \begin ->
-            forAllValid $ \end ->
+            forAll (dayAroundToday today) $ \end ->
               forAllValid $ \danceStyle ->
                 forAllValid $ \location ->
                   runYesodClientM yc $ do
