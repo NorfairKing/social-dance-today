@@ -39,6 +39,7 @@ getSettings = do
 data Settings = Settings
   { settingHost :: !(Maybe Text),
     settingPort :: !Int,
+    settingEkgPort :: !Int,
     settingLogLevel :: !LogLevel,
     settingDbFile :: !(Path Abs File),
     settingSendEmails :: !Bool,
@@ -72,6 +73,7 @@ combineToSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 combineToSettings Flags {..} Environment {..} mConf = do
   let settingHost = ("https://" <>) <$> (flagHost <|> envHost <|> mc confHost)
   let settingPort = fromMaybe 8080 $ flagPort <|> envPort <|> mc confPort
+  let settingEkgPort = fromMaybe 8081 $ flagEkgPort <|> envEkgPort <|> mc confEkgPort
   let settingLogLevel = fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> mc confLogLevel
   settingDbFile <- case flagDbFile <|> envDbFile <|> mc confDbFile of
     Nothing -> resolveFile' "salsa-parties.sqlite3"
@@ -128,6 +130,7 @@ combineToSentrySettings SentryFlags {..} SentryEnvironment {..} mc =
 data Configuration = Configuration
   { confHost :: !(Maybe Text),
     confPort :: !(Maybe Int),
+    confEkgPort :: !(Maybe Int),
     confLogLevel :: !(Maybe LogLevel),
     confDbFile :: !(Maybe FilePath),
     confSendEmails :: !(Maybe Bool),
@@ -158,6 +161,7 @@ instance HasCodec Configuration where
       Configuration
         <$> optionalFieldOrNull "host" "The host, example: salsa-party.cs-syd.eu" .= confHost
         <*> optionalFieldOrNull "port" "Port" .= confPort
+        <*> optionalFieldOrNull "ekg-port" "Port for the ekg server" .= confEkgPort
         <*> optionalFieldOrNull "log-level" "Minimal severity for log messages" .= confLogLevel
         <*> optionalFieldOrNull "database" "The path to the database file" .= confDbFile
         <*> optionalFieldOrNull "send-emails" "Whether to send emails and require email verification" .= confSendEmails
@@ -222,6 +226,7 @@ data Environment = Environment
   { envConfigFile :: !(Maybe FilePath),
     envHost :: !(Maybe Text),
     envPort :: !(Maybe Int),
+    envEkgPort :: !(Maybe Int),
     envLogLevel :: !(Maybe LogLevel),
     envDbFile :: !(Maybe FilePath),
     envSendEmails :: !(Maybe Bool),
@@ -268,6 +273,7 @@ environmentParser =
       <$> Env.var (fmap Just . Env.str) "CONFIG_FILE" (mE <> Env.help "Config file")
       <*> Env.var (fmap Just . Env.str) "HOST" (mE <> Env.help "Host, example: salsa-party.cs-syd.eu")
       <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "Port")
+      <*> Env.var (fmap Just . Env.auto) "EKG_PORT" (mE <> Env.help "Ekg server port")
       <*> Env.var (fmap Just . logLevelReader) "LOG_LEVEL" (mE <> Env.help "Minimal severity for log messages")
       <*> Env.var (fmap Just . Env.auto) "DATABASE" (mE <> Env.help "The path to the database file")
       <*> Env.var (fmap Just . Env.auto) "SEND_EMAILS" (mE <> Env.help "Whether to send emails and require email verification")
@@ -364,6 +370,7 @@ data Flags = Flags
   { flagConfigFile :: !(Maybe FilePath),
     flagHost :: !(Maybe Text),
     flagPort :: !(Maybe Int),
+    flagEkgPort :: !(Maybe Int),
     flagLogLevel :: !(Maybe LogLevel),
     flagDbFile :: !(Maybe FilePath),
     flagSendEmails :: !(Maybe Bool),
@@ -416,6 +423,16 @@ parseFlags =
           ( mconcat
               [ long "port",
                 help "Port",
+                metavar "PORT"
+              ]
+          )
+      )
+    <*> optional
+      ( option
+          auto
+          ( mconcat
+              [ long "ekg-port",
+                help "Ekg server port",
                 metavar "PORT"
               ]
           )

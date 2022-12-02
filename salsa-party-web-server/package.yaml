@@ -30,6 +30,7 @@ library:
   - data-default
   - deepseq
   - edit-distance
+  - ekg
   - envparse
   - esqueleto
   - fast-logger
@@ -100,6 +101,7 @@ executables:
     - -with-rtsopts=-N
     - -with-rtsopts=-I60
     - -with-rtsopts=-A64m
+    - -with-rtsopts=-T
     dependencies:
     - salsa-party-web-server
 

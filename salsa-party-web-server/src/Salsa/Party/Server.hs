@@ -5,6 +5,7 @@
 
 module Salsa.Party.Server where
 
+import Control.Concurrent
 import Control.Concurrent.TokenLimiter.Concurrent
 import Control.Monad
 import Control.Monad.Logger
@@ -29,6 +30,7 @@ import Salsa.Party.Web.Server.Poster
 import Salsa.Party.Web.Server.Static
 import qualified System.Clock as TimeSpec
 import System.Exit
+import System.Remote.Monitoring as EKG
 import Text.Colour
 import Text.Show.Pretty
 import UnliftIO
@@ -38,48 +40,49 @@ salsaPartyServer = getSettings >>= runSalsaPartyServer
 
 runSalsaPartyServer :: Settings -> IO ()
 runSalsaPartyServer settings@Settings {..} = do
-  let info = mkSqliteConnectionInfo (T.pack (fromAbsFile settingDbFile)) & walEnabled .~ False & fkEnabled .~ False
-  runMyLoggingT $
-    filterLogger (\_ ll -> ll >= settingLogLevel) $ do
-      logInfoN $ T.pack $ ppShow settings
-      -- Set this to true momentarily when adding a new poster
-      when False convertPosters
-      withSqlitePoolInfo info 1 $ \pool -> do
-        runSqlPool (completeServerMigration False) pool
-        sessionKeyFile <- resolveFile' "client_session_key.aes"
-        man <- HTTP.newTlsManager
-        rateLimiter <- liftIO $ makeTokenLimiter OSM.tokenLimitConfig
-        searchResultCache <- liftIO $ newCache $ Just $ TimeSpec.fromNanoSecs $ (60 * 60 + 5) * 1_000_000_000 -- A bit more than one hour
-        exploreResultCache <- liftIO $ newCache $ Just $ TimeSpec.fromNanoSecs $ (6 * 60 * 60 + 5) * 1_000_000_000 -- A bit more than six hours
-        let app =
-              App
-                { appRoot = settingHost,
-                  appLogLevel = settingLogLevel,
-                  appStatic = salsaPartyWebServerStatic,
-                  appHashDifficulty = 10,
-                  appConnectionPool = pool,
-                  appHTTPManager = man,
-                  appSessionKeyFile = sessionKeyFile,
-                  appSecureOnly = True,
-                  appSendEmails = settingSendEmails,
-                  appSendAddress = settingSendAddress,
-                  appProspectSendAddress = settingProspectSendAddress,
-                  appSearchResultCache = searchResultCache,
-                  appExploreResultCache = exploreResultCache,
-                  appAdmin = settingAdmin,
-                  appOSMRateLimiter = do
-                    guard settingEnableOSMGeocoding
-                    pure rateLimiter,
-                  appGoogleAPIKey = do
-                    guard settingEnableGoogleGeocoding
-                    settingGoogleAPIKey,
-                  appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
-                  appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification,
-                  appSentrySettings = settingSentrySettings
-                }
-        concurrently_
-          (runLoopers settings app)
-          (runSalsaPartyWebServer settings app)
+  bracket (EKG.forkServer "0.0.0.0" settingEkgPort) (killThread . EKG.serverThreadId) $ \_ -> do
+    let info = mkSqliteConnectionInfo (T.pack (fromAbsFile settingDbFile)) & walEnabled .~ False & fkEnabled .~ False
+    runMyLoggingT $
+      filterLogger (\_ ll -> ll >= settingLogLevel) $ do
+        logInfoN $ T.pack $ ppShow settings
+        -- Set this to true momentarily when adding a new poster
+        when False convertPosters
+        withSqlitePoolInfo info 1 $ \pool -> do
+          runSqlPool (completeServerMigration False) pool
+          sessionKeyFile <- resolveFile' "client_session_key.aes"
+          man <- HTTP.newTlsManager
+          rateLimiter <- liftIO $ makeTokenLimiter OSM.tokenLimitConfig
+          searchResultCache <- liftIO $ newCache $ Just $ TimeSpec.fromNanoSecs $ (60 * 60 + 5) * 1_000_000_000 -- A bit more than one hour
+          exploreResultCache <- liftIO $ newCache $ Just $ TimeSpec.fromNanoSecs $ (6 * 60 * 60 + 5) * 1_000_000_000 -- A bit more than six hours
+          let app =
+                App
+                  { appRoot = settingHost,
+                    appLogLevel = settingLogLevel,
+                    appStatic = salsaPartyWebServerStatic,
+                    appHashDifficulty = 10,
+                    appConnectionPool = pool,
+                    appHTTPManager = man,
+                    appSessionKeyFile = sessionKeyFile,
+                    appSecureOnly = True,
+                    appSendEmails = settingSendEmails,
+                    appSendAddress = settingSendAddress,
+                    appProspectSendAddress = settingProspectSendAddress,
+                    appSearchResultCache = searchResultCache,
+                    appExploreResultCache = exploreResultCache,
+                    appAdmin = settingAdmin,
+                    appOSMRateLimiter = do
+                      guard settingEnableOSMGeocoding
+                      pure rateLimiter,
+                    appGoogleAPIKey = do
+                      guard settingEnableGoogleGeocoding
+                      settingGoogleAPIKey,
+                    appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
+                    appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification,
+                    appSentrySettings = settingSentrySettings
+                  }
+          concurrently_
+            (runLoopers settings app)
+            (runSalsaPartyWebServer settings app)
 
 runMyLoggingT :: LoggingT IO a -> IO a
 runMyLoggingT func =
