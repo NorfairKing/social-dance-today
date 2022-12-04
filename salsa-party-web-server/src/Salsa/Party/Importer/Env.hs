@@ -39,10 +39,10 @@ import Network.HTTP.Types as HTTP
 import Network.URI
 import Salsa.Party.AdminNotification
 import Salsa.Party.DB
+import Salsa.Party.Poster
 import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Geocoding
-import Salsa.Party.Web.Server.Poster
 import System.Random (randomRIO)
 import System.Random.Shuffle
 import Text.HTML.Scalpel

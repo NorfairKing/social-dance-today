@@ -137,6 +137,7 @@ library
       Salsa.Party.Looper.SearchCachePopulator
       Salsa.Party.Loopers
       Salsa.Party.OptParse
+      Salsa.Party.Poster
       Salsa.Party.Server
       Salsa.Party.Web.Server
       Salsa.Party.Web.Server.Application
@@ -206,7 +207,6 @@ library
       Salsa.Party.Web.Server.Handler.Search.Types
       Salsa.Party.Web.Server.Handler.Sitemap
       Salsa.Party.Web.Server.Handler.StaticMap
-      Salsa.Party.Web.Server.Poster
       Salsa.Party.Web.Server.Static
       Salsa.Party.Web.Server.Static.TH
       Salsa.Party.Web.Server.Widget
@@ -286,6 +286,7 @@ library
     , validity
     , validity-text
     , validity-time
+    , vector
     , wai
     , wai-extra
     , warp

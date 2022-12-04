@@ -27,11 +27,11 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
 import Salsa.Party.DB
+import Salsa.Party.Poster
 import Salsa.Party.Web.Server.Foundation.App
 import Salsa.Party.Web.Server.Foundation.I18N.Messages
 import Salsa.Party.Web.Server.Foundation.I18N.SupportedLanguage
 import Salsa.Party.Web.Server.Foundation.Yesod.Data
-import Salsa.Party.Web.Server.Poster
 import Text.Hamlet
 import Text.Read
 import Yesod
@@ -106,15 +106,15 @@ posterImageWidgetWithoutCSS posterKey altMessage =
     <div .poster-container>
       <img .poster .poster-background
         src=@{ImageR posterKey}
-        width=#{desiredWidth}
-        height=#{desiredHeight}
+        width=#{desiredPortraitWidth}
+        height=#{desiredPortraitHeight}
         loading="lazy"
         role="none"
         alt="">
       <img .poster
         src=@{ImageR posterKey}
-        width=#{desiredWidth}
-        height=#{desiredHeight}
+        width=#{desiredPortraitWidth}
+        height=#{desiredPortraitHeight}
         loading="lazy"
         alt=_{altMessage}>
   |]
@@ -122,19 +122,26 @@ posterImageWidgetWithoutCSS posterKey altMessage =
 posterCSS :: Widget
 posterCSS =
   toWidget
+    -- Default to portrait.
     [lucius|
   .poster-container {
-    max-width: #{show desiredWidth}px;
-    max-height: #{show desiredHeight}px;
     overflow: hidden;
     background: grey;
     position: relative;
     line-height: 0;
-    aspect-ratio: 390/400;
+  }
+  @media (orientation: portrait) {
+    .poster-container {
+      max-width: #{show desiredPortraitWidth}px;
+      max-height: #{show desiredPortraitHeight}px;
+      aspect-ratio: 4/4;
+    }
   }
   @media (orientation: landscape) {
     .poster-container {
-      aspect-ratio: 1920/1080;
+      max-width: #{show desiredLandscapeWidth}px;
+      max-height: #{show desiredLandscapeHeight}px;
+      aspect-ratio: 16/9;
     }
   }
   .poster {

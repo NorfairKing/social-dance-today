@@ -59,12 +59,10 @@ test-suite salsa-party-web-server-gen-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Salsa.Party.DB.CoordinatesSpec
-      Salsa.Party.DB.RecurrenceSpec
-      Salsa.Party.DB.SlugSpec
       Salsa.Party.Importer.EnvSpec
       Salsa.Party.Looper.OrganiserReminderSpec
       Salsa.Party.Looper.PartySchedulerSpec
+      Salsa.Party.PosterSpec
       Salsa.Party.Web.Server.Handler.Account.OrganiserSpec
       Salsa.Party.Web.Server.Handler.Account.OverviewSpec
       Salsa.Party.Web.Server.Handler.Account.PartiesSpec
@@ -107,7 +105,8 @@ test-suite salsa-party-web-server-gen-test
   build-tool-depends:
       sydtest-discover:sydtest-discover
   build-depends:
-      QuickCheck
+      JuicyPixels
+    , QuickCheck
     , aeson
     , aeson-pretty
     , base >=4.7 && <5
@@ -119,7 +118,6 @@ test-suite salsa-party-web-server-gen-test
     , genvalidity
     , genvalidity-sydtest
     , genvalidity-sydtest-aeson
-    , genvalidity-sydtest-persistent
     , genvalidity-text
     , genvalidity-time
     , http-client
@@ -129,7 +127,6 @@ test-suite salsa-party-web-server-gen-test
     , password
     , path
     , path-io
-    , path-pieces
     , persistent
     , pretty-show
     , salsa-party-data
@@ -145,6 +142,7 @@ test-suite salsa-party-web-server-gen-test
     , time
     , typed-uuid
     , uuid
+    , vector
     , yesod
     , yesod-auth
     , yesod-core

@@ -11,8 +11,8 @@
 , salsa-party-data, scalpel, scientific, shakespeare, sydtest
 , sydtest-discover, tagsoup, template-haskell, text, time
 , token-limiter-concurrent, typed-process, typed-uuid, unliftio
-, validity, validity-text, validity-time, wai, wai-extra, warp
-, xml-conduit, xml-types, yesod, yesod-auth, yesod-autoreload
+, validity, validity-text, validity-time, vector, wai, wai-extra
+, warp, xml-conduit, xml-types, yesod, yesod-auth, yesod-autoreload
 , yesod-core, yesod-form, yesod-sitemap, yesod-static
 , yesod-static-remote, zip-archive
 }:
@@ -34,7 +34,7 @@ mkDerivation {
     random-shuffle resourcet retry safe safe-coloured-text
     salsa-party-data scalpel scientific shakespeare tagsoup
     template-haskell text time token-limiter-concurrent typed-process
-    typed-uuid unliftio validity validity-text validity-time wai
+    typed-uuid unliftio validity validity-text validity-time vector wai
     wai-extra warp xml-conduit xml-types yesod yesod-auth
     yesod-autoreload yesod-core yesod-form yesod-sitemap yesod-static
     yesod-static-remote zip-archive

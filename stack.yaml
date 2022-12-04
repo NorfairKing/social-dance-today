@@ -12,6 +12,9 @@ ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -O0 -Wunused-packages
 
 extra-deps:
+  # TODO use nh2's fixes once they are not broken: https://github.com/Twinside/Juicy.Pixels/pull/215
+  # - github: Twinside/Juicy.Pixels
+  #   commit: 69e7aef1150f733dfb8b2ce2a008d0160792b752
 - github: NorfairKing/ical
   commit: 13b1a3925edf77664324a80f5e62071bea6d0fea
   subdirs:
@@ -122,6 +125,7 @@ extra-deps:
 - mime-0.4.0.2@sha256:208947d9d1a19d08850be67ecb28c6e776db697f3bba05bd9d682e51a59f241f,983
 - amazonka-1.6.1
 - unliftio-core-0.1.2.0@sha256:b0a7652ffce2284a6cebe05c99eb60573a8fb6631163f34b0b30a80b4a78cb23,1081
+- webp-0.1.0.1@sha256:f3e9ebf257f898054755747a3987da5bd221e5931e4052c2ac22e3215a4bcb71,2349
 
 system-ghc: true
 nix:
