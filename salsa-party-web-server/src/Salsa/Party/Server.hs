@@ -30,6 +30,7 @@ import Salsa.Party.Web.Server.Poster
 import Salsa.Party.Web.Server.Static
 import qualified System.Clock as TimeSpec
 import System.Exit
+import System.Metrics as EKG
 import System.Remote.Monitoring as EKG
 import Text.Colour
 import Text.Show.Pretty
@@ -40,7 +41,9 @@ salsaPartyServer = getSettings >>= runSalsaPartyServer
 
 runSalsaPartyServer :: Settings -> IO ()
 runSalsaPartyServer settings@Settings {..} = do
-  bracket (EKG.forkServer "0.0.0.0" settingEkgPort) (killThread . EKG.serverThreadId) $ \_ -> do
+  store <- EKG.newStore
+  registerGcMetrics store
+  bracket (EKG.forkServerWith store "0.0.0.0" settingEkgPort) (killThread . EKG.serverThreadId) $ \_ -> do
     let info = mkSqliteConnectionInfo (T.pack (fromAbsFile settingDbFile)) & walEnabled .~ False & fkEnabled .~ False
     runMyLoggingT $
       filterLogger (\_ ll -> ll >= settingLogLevel) $ do
@@ -82,7 +85,7 @@ runSalsaPartyServer settings@Settings {..} = do
                   }
           concurrently_
             (runLoopers settings app)
-            (runSalsaPartyWebServer settings app)
+            (runSalsaPartyWebServer store settings app)
 
 runMyLoggingT :: LoggingT IO a -> IO a
 runMyLoggingT func =
