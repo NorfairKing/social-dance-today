@@ -218,6 +218,8 @@ library
       Paths_salsa_party_web_server
   hs-source-dirs:
       src
+  default-extensions:
+      StrictData
   build-depends:
       JuicyPixels
     , JuicyPixels-extra
@@ -306,6 +308,8 @@ executable salsa-party-web-server
       Paths_salsa_party_web_server
   hs-source-dirs:
       app
+  default-extensions:
+      StrictData
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -with-rtsopts=-I60 -with-rtsopts=-A64m -with-rtsopts=-T
   build-depends:
       base >=4.7 && <5
@@ -320,6 +324,8 @@ test-suite salsa-party-web-server-test
       Paths_salsa_party_web_server
   hs-source-dirs:
       test
+  default-extensions:
+      StrictData
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
   build-tool-depends:
       sydtest-discover:sydtest-discover
