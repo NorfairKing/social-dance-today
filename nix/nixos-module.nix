@@ -253,6 +253,8 @@ in
           };
           ekgHost = optionalAttrs (!builtins.isNull ekg-port) {
             "ekg.${head hosts}" = {
+              enableACME = true;
+              forceSSL = true;
               locations."/" = {
                 proxyPass = "http://localhost:${builtins.toString ekg-port}";
               };
