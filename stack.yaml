@@ -12,6 +12,8 @@ ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -O0 -Wunused-packages
 
 extra-deps:
+- github: Twinside/Juicy.Pixels
+  commit: 69e7aef1150f733dfb8b2ce2a008d0160792b752
 - github: NorfairKing/ical
   commit: 13b1a3925edf77664324a80f5e62071bea6d0fea
   subdirs:
