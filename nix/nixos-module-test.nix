@@ -5,7 +5,8 @@ let
   salsa-party-production = salsa-party-nixos-module-factory {
     envname = "production";
   };
-  port = 8001;
+  port = 8047;
+  ekg-port = 8048;
 in
 nixosTest (
   { lib, pkgs, ... }: {
@@ -21,6 +22,7 @@ nixosTest (
           web-server = {
             enable = true;
             inherit port;
+            inherit ekg-port;
             log-level = "Debug";
             enable-osm-geocoding = false;
             enable-google-geocoding = false;
@@ -43,6 +45,8 @@ nixosTest (
 
       server.wait_for_open_port(${builtins.toString port})
       client.succeed("curl server:${builtins.toString port}")
+      server.wait_for_open_port(${builtins.toString ekg-port})
+      client.succeed("curl server:${builtins.toString ekg-port}")
     '';
   }
 )
