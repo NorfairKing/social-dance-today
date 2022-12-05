@@ -222,7 +222,6 @@ library
       StrictData
   build-depends:
       JuicyPixels
-    , JuicyPixels-extra
     , aeson
     , aeson-pretty
     , amazonka

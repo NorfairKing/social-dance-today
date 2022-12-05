@@ -3,7 +3,6 @@
 module Salsa.Party.Web.Server.Poster where
 
 import Codec.Picture
-import Codec.Picture.Extra
 import Codec.Picture.Types
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
@@ -51,51 +50,7 @@ posterCropImage imageType contents = do
   if originalSize <= desiredSize && w <= desiredWidth && h <= desiredHeight
     then pure (imageType, contents)
     else do
-      convertedImage <-
-        if w <= desiredWidth && h <= desiredHeight
-          then reduceUntilSmallEnough jpegImage
-          else
-            let (actualWidth, actualHeight) =
-                  case compare w h of
-                    EQ -> (desiredWidth, desiredHeight)
-                    -- If width is smaller than height, it's a portrait image.
-                    -- In that case we want the height to be equal to the desired height
-                    -- and the width to be adjusted while keeping the image ratio.
-                    -- we want:
-                    --
-                    --  w / h == w' / h'
-                    --
-                    -- h' = desiredHeight
-                    -- w' = desiredHeight * w / h
-                    --
-                    -- This works:
-                    --
-                    --  w' / h' == (desiredHeight * w / h) / desiredHeight
-                    --          == w / h
-                    LT ->
-                      let h' = desiredHeight
-                          w' = min desiredWidth $ round $ fromIntegral desiredHeight * fromIntegral w / (fromIntegral h :: Float)
-                       in (w', h')
-                    -- If width is greater than height, it's a landscape image.
-                    -- In that case we want the width to be equal to the desired width
-                    -- and the height to be adjusted while keeping the image ratio.
-                    --
-                    -- w / h == w' / h'
-                    --
-                    -- w' = desiredWidth
-                    -- h' = desiredWidth * h / w
-                    --
-                    -- This works:
-                    --
-                    -- w' / h' == desiredWidth / (desiredWidth * h / w)
-                    --         == desiredWidth * w / desiredWidth * h
-                    --         == w / h
-                    GT ->
-                      let w' = desiredWidth
-                          h' = min desiredHeight $ round $ fromIntegral desiredWidth * fromIntegral h / (fromIntegral w :: Float)
-                       in (w', h')
-                convertedImage = scaleBilinear actualWidth actualHeight jpegImage
-             in reduceUntilSmallEnough convertedImage
+      convertedImage <- reduceUntilSmallEnough jpegImage
       pure ("image/jpeg", convertedImage)
 
 reduceUntilSmallEnough :: Image PixelYCbCr8 -> Either String ByteString
