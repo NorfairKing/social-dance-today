@@ -8,6 +8,7 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import Data.Text (Text)
+import Data.Word
 
 -- In pixels
 desiredWidth :: Int
@@ -20,6 +21,11 @@ desiredHeight = 360
 -- In bytes
 desiredSize :: Int
 desiredSize = 100 * 1024 -- 100 KiB
+
+-- Starting quality, between 0 and 100
+-- It makes sense to start at 100% because jpeg is already smaller than png, usually
+startingQuality :: Word8
+startingQuality = 80
 
 -- Resize and resize a poster
 -- The result must be
@@ -43,18 +49,11 @@ posterCropImage imageType contents = do
         ImageYCbCr8 i -> i -- No need to convert if it's already the right format.
         _ -> convertImage $ convertRGB8 dynamicImage
 
-  let w = imageWidth jpegImage :: Int
-      h = imageHeight jpegImage :: Int
-
-  let originalSize = SB.length contents
-  if originalSize <= desiredSize && w <= desiredWidth && h <= desiredHeight
-    then pure (imageType, contents)
-    else do
-      convertedImage <- reduceUntilSmallEnough jpegImage
-      pure ("image/jpeg", convertedImage)
+  convertedImage <- reduceUntilSmallEnough jpegImage
+  pure ("image/jpeg", convertedImage)
 
 reduceUntilSmallEnough :: Image PixelYCbCr8 -> Either String ByteString
-reduceUntilSmallEnough image = go 100 -- It makes sense to start at 100% because jpeg is already smaller than png, usually
+reduceUntilSmallEnough image = go startingQuality
   where
     go currentQuality
       | currentQuality > 0 =
