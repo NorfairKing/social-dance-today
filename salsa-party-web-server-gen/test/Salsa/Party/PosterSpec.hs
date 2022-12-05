@@ -11,33 +11,126 @@ module Salsa.Party.PosterSpec (spec) where
 
 import Codec.Picture
 import Codec.Picture.Types
+import Control.Monad
+import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
+import Data.Maybe
+import Data.Ratio
+import qualified Data.Text as T
 import qualified Data.Vector.Storable as VS
-import Debug.Trace
 import GHC.Generics (Generic)
+import Path
+import Path.IO
 import Salsa.Party.Poster
 import Test.QuickCheck
 import Test.Syd
 import Test.Syd.Validity
 
 spec :: Spec
-spec = modifyMaxSuccess (`div` 10) . describe "posterCropImage" $ do
-  it "always results in a jpeg file that is small enough when starting with a jpeg file" $ do
-    forAllValid $ \(Hidden jpegImage) -> do
-      saveJpgImage 100 "/home/syd/segfault.jpg" (ImageYCbCr8 jpegImage)
-      case posterCropImage "image/jpeg" (LB.toStrict (encodeJpeg jpegImage)) of
-        Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
-        Right (typ, converted) -> do
-          typ `shouldBe` "image/jpeg"
-          SB.length converted `shouldSatisfy` (<= desiredSize)
-  it "always results in a jpeg file that is small enough when starting with a png file" $ do
-    forAllValid $ \(Hidden pngImage) ->
-      case posterCropImage "image/png" (LB.toStrict (encodePng (pngImage :: Image PixelRGBA16))) of
-        Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
-        Right (typ, converted) -> do
-          typ `shouldBe` "image/jpeg"
-          SB.length converted `shouldSatisfy` (<= desiredSize)
+spec = do
+  describe "computeNewDimensions" $ do
+    it "always makes images small enough" $
+      forAll (choose (1, 10 * desiredHeight)) $ \w ->
+        forAll (choose (1, 10 * desiredHeight)) $ \h ->
+          let (w', h') = fromMaybe (w, h) $ computeNewDimensions (w, h)
+           in w' <= desiredWidth && h' <= desiredHeight
+    it "keeps the same ratio" $
+      forAll (choose (1, 10 * desiredHeight)) $ \w ->
+        forAll (choose (1, 10 * desiredHeight)) $ \h ->
+          case computeNewDimensions (w, h) of
+            Nothing -> pure ()
+            Just t@(w', h') -> context (show t) $ (w' % h') - (w % h) `shouldSatisfy` (< 3 / 100) -- Less than three percent off
+    it "works for this portrait image" $
+      computeNewDimensions (300, 400) `shouldBe` Just (270, 360)
+    it "works for this square image" $
+      computeNewDimensions (800, 800) `shouldBe` Just (360, 360)
+    it "works for this landscape image under the ratio" $
+      computeNewDimensions (800, 600) `shouldBe` Just (480, 360)
+    it "works for this landscape image above the ratio" $
+      computeNewDimensions (800, 300) `shouldBe` Just (640, 240)
+
+  modifyMaxSuccess (`div` 10) . describe "posterCropImage" $ do
+    it "always results in a jpeg file that is small enough when starting with a jpeg file" $ do
+      forAllValid $ \(Hidden jpegImage) -> do
+        saveJpgImage 100 "/home/syd/segfault.jpg" (ImageYCbCr8 jpegImage)
+        case posterCropImage "image/jpeg" (LB.toStrict (encodeJpeg jpegImage)) of
+          Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
+          Right (typ, converted) -> do
+            typ `shouldBe` "image/jpeg"
+            SB.length converted `shouldSatisfy` (<= desiredSize)
+
+    it "always results in a jpeg file that is small enough when starting with a png file" $ do
+      forAllValid $ \(Hidden pngImage) ->
+        case posterCropImage "image/png" (LB.toStrict (encodePng (pngImage :: Image PixelRGBA16))) of
+          Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
+          Right (typ, converted) -> do
+            typ `shouldBe` "image/jpeg"
+            SB.length converted `shouldSatisfy` (<= desiredSize)
+
+    scenarioDir "test_resources/posters/input" $ \inputFile ->
+      it (unwords ["imports", inputFile, "the same way as before"]) $ do
+        let outputFile = T.unpack . T.replace "input" "output" . T.pack $ inputFile
+        print outputFile
+        contents <- SB.readFile inputFile
+        case posterCropImage "image/jpeg" contents of
+          Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
+          Right (_, converted) -> pure $ pureGoldenPoster outputFile $ LB.fromStrict converted
+
+-- | A poster with location
+data Poster = Poster
+  { -- | File location for comparisons
+    posterFile :: !(Path Abs File),
+    -- | Decoded image
+    posterImage :: !ByteString
+  }
+
+-- | Make a golden test for a given poster in lazy 'LB.ByteString' form.
+pureGoldenPoster :: FilePath -> LB.ByteString -> GoldenTest Poster
+pureGoldenPoster fp contents =
+  GoldenTest
+    { goldenTestRead = do
+        relFile <- parseRelFile fp
+        currentDir <- getCurrentDir
+        let resolvedFile = currentDir </> relFile
+        mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile resolvedFile
+        forM mContents $ \cts ->
+          pure $
+            Poster
+              { posterFile = resolvedFile,
+                posterImage = cts
+              },
+      goldenTestProduce = do
+        let sb = LB.toStrict contents
+        relFile <- parseRelFile fp
+        tempDir <- resolveDir' "poster-comparison"
+        let tempFile = tempDir </> relFile
+        ensureDir $ parent tempFile
+        -- Write it to a file so we can compare it if it differs.
+        SB.writeFile (fromAbsFile tempFile) sb
+        pure $
+          Poster
+            { posterFile = tempFile,
+              posterImage = sb
+            },
+      goldenTestWrite = \(Poster _ actual) -> do
+        relFile <- parseRelFile fp
+        currentDir <- getCurrentDir
+        let resolvedFile = currentDir </> relFile
+        ensureDir $ parent resolvedFile
+        SB.writeFile (fromAbsFile resolvedFile) actual,
+      goldenTestCompare = \(Poster actualPath actual) (Poster expectedPath expected) ->
+        if actual == expected
+          then Nothing
+          else
+            Just $
+              ExpectationFailed $
+                unlines
+                  [ "Posters differ.",
+                    "expected: " <> fromAbsFile expectedPath,
+                    "actual: " <> fromAbsFile actualPath
+                  ]
+    }
 
 newtype Hidden a = Hidden {unHidden :: a}
   deriving (Eq, Generic)

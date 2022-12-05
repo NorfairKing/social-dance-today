@@ -17,6 +17,7 @@ library:
   source-dirs: src
   dependencies:
   - JuicyPixels
+  - JuicyPixels-extra
   - aeson
   - aeson-pretty
   - amazonka

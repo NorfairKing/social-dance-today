@@ -3,12 +3,16 @@
 module Salsa.Party.Poster where
 
 import Codec.Picture
+import Codec.Picture.Extra (scaleBilinear)
+import Codec.Picture.Saving (imageToJpg)
 import Codec.Picture.Types
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
+import Data.Ratio
 import Data.Text (Text)
 import Data.Word
+import Debug.Trace
 
 -- In pixels
 desiredWidth :: Int
@@ -25,7 +29,7 @@ desiredSize = 100 * 1024 -- 100 KiB
 -- Starting quality, between 0 and 100
 -- It makes sense to start at 100% because jpeg is already smaller than png, usually
 startingQuality :: Word8
-startingQuality = 80
+startingQuality = 100
 
 -- Resize and resize a poster
 -- The result must be
@@ -42,6 +46,7 @@ posterCropImage imageType contents = do
   dynamicImage <- case imageType of
     "image/png" -> decodePng contents
     "image/jpeg" -> decodeJpeg contents
+    "image/jpg" -> decodeJpeg contents
     _ -> decodeImage contents
 
   -- Convert to a very general jpeg format
@@ -49,8 +54,61 @@ posterCropImage imageType contents = do
         ImageYCbCr8 i -> i -- No need to convert if it's already the right format.
         _ -> convertImage $ convertRGB8 dynamicImage
 
-  convertedImage <- reduceUntilSmallEnough jpegImage
+  let w = imageWidth jpegImage :: Int
+      h = imageHeight jpegImage :: Int
+
+  convertedImage <- case computeNewDimensions (w, h) of
+    Nothing -> reduceUntilSmallEnough jpegImage
+    Just (actualWidth, actualHeight) ->
+      let convertedImage = scaleBilinear actualWidth actualHeight jpegImage
+       in reduceUntilSmallEnough convertedImage
+
   pure ("image/jpeg", convertedImage)
+
+-- Nothing means don't rescale
+computeNewDimensions :: (Int, Int) -> Maybe (Int, Int)
+computeNewDimensions (w, h) =
+  if w <= desiredWidth && h <= desiredHeight
+    then -- We don't want to upsize, only downsize.
+      Nothing
+    else Just $
+      case compare (w % h) (desiredWidth % desiredHeight) of
+        LT ->
+          -- If the real ratio is less than the desired ratio, it's more portrait than the desired ratio.
+          -- In that case we want the height to be equal to the desired height (less than the current height)
+          -- and the width to be adjusted downward while keeping the image ratio.
+          -- we want:
+          --
+          --  w / h == w' / h'
+          --
+          -- h' = desiredHeight
+          -- w' = desiredHeight * w / h
+          --
+          -- This works:
+          --
+          --  w' / h' == (desiredHeight * w / h) / desiredHeight
+          --          == w / h
+          let h' = desiredHeight
+              w' = round $ (fromIntegral desiredHeight * fromIntegral w) / (fromIntegral h :: Float)
+           in (w', h')
+        _ ->
+          -- If the real ratio is greater than the desired ratio, it's more landscape than the desired ratio.
+          -- In that case we want the width to be equal to the desired width (less than the current width)
+          -- and the height to be adjusted downward while keeping the image ratio.
+          --
+          -- w / h == w' / h'
+          --
+          -- w' = desiredWidth
+          -- h' = desiredWidth * h / w
+          --
+          -- This works:
+          --
+          -- w' / h' == desiredWidth / (desiredWidth * h / w)
+          --         == desiredWidth * w / desiredWidth * h
+          --         == w / h
+          let w' = desiredWidth
+              h' = round $ (fromIntegral desiredWidth * fromIntegral h) / (fromIntegral w :: Float)
+           in (w', h')
 
 reduceUntilSmallEnough :: Image PixelYCbCr8 -> Either String ByteString
 reduceUntilSmallEnough image = go startingQuality

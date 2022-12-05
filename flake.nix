@@ -105,14 +105,14 @@
         withHoogle = true;
         doBenchmark = true;
         buildInputs = (with pkgs; [
-          niv
-          zlib
-          cabal-install
-          chromium
-          chromedriver
-          selenium-server-standalone
-          icu
           bzip2
+          cabal-install
+          chromedriver
+          chromium
+          icu
+          niv
+          selenium-server-standalone
+          zlib
         ]) ++ (with pre-commit-hooks.packages.${system};
           [
             hlint
