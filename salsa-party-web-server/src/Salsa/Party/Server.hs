@@ -22,11 +22,11 @@ import Path.IO
 import Salsa.Party.DB.Migration
 import Salsa.Party.Loopers
 import Salsa.Party.OptParse
+import Salsa.Party.Poster
 import Salsa.Party.Web.Server
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Constants
 import Salsa.Party.Web.Server.Foundation
-import Salsa.Party.Web.Server.Poster
 import Salsa.Party.Web.Server.Static
 import qualified System.Clock as TimeSpec
 import System.Exit

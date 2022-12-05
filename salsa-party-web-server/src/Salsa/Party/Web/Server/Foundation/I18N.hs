@@ -27,11 +27,11 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
 import Salsa.Party.DB
+import Salsa.Party.Poster
 import Salsa.Party.Web.Server.Foundation.App
 import Salsa.Party.Web.Server.Foundation.I18N.Messages
 import Salsa.Party.Web.Server.Foundation.I18N.SupportedLanguage
 import Salsa.Party.Web.Server.Foundation.Yesod.Data
-import Salsa.Party.Web.Server.Poster
 import Text.Hamlet
 import Text.Read
 import Yesod

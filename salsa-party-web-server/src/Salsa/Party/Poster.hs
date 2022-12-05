@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Salsa.Party.Web.Server.Poster where
+module Salsa.Party.Poster where
 
 import Codec.Picture
 import Codec.Picture.Types

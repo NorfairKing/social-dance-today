@@ -25,9 +25,9 @@ import Control.Monad.Reader
 import qualified Data.Text as T
 import qualified Database.Esqueleto.Legacy as E
 import Salsa.Party.Looper.PartyScheduler
+import Salsa.Party.Poster
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
-import Salsa.Party.Web.Server.Poster
 
 getAccountScheduleR :: ScheduleUUID -> Handler Html
 getAccountScheduleR scheduleUuid_ = do

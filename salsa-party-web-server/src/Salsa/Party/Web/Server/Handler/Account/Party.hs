@@ -24,9 +24,9 @@ where
 
 import Control.Monad
 import qualified Data.Text as T
+import Salsa.Party.Poster
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Import
-import Salsa.Party.Web.Server.Poster
 
 getAccountSubmitR :: Handler Html
 getAccountSubmitR = withNavBar $(widgetFile "account/submit")
