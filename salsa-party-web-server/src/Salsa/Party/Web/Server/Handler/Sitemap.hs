@@ -149,6 +149,10 @@ getSitemapEventsR lo hi = do
                   -- the party title (and therefore slug) is changed inbetween
                   -- when the sitemap is requested and when the party is
                   -- requested.
+                  -- This should not happen, but seems like it has already, in
+                  -- the past.
+                  -- Another good reason to do it this way is so that the
+                  -- sitemap computation is faster.
                   EventR uuid,
                 sitemapLastMod = Just $ fromMaybe created modified,
                 sitemapChangeFreq = Nothing,
@@ -178,6 +182,10 @@ getSitemapEventsR lo hi = do
                   -- the external event title (and therefore slug) is changed inbetween
                   -- when the sitemap is requested and when the external event is
                   -- requested.
+                  -- This should not happen, but seems like it has already, in
+                  -- the past.
+                  -- Another good reason to do it this way is so that the
+                  -- sitemap computation is faster.
                   EventR uuid,
                 sitemapLastMod = Just $ fromMaybe created modified,
                 sitemapChangeFreq = Nothing,
