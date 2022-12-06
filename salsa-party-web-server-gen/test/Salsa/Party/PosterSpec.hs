@@ -71,7 +71,6 @@ spec = do
     scenarioDir "test_resources/posters/input" $ \inputFile ->
       it (unwords ["imports", inputFile, "the same way as before"]) $ do
         let outputFile = T.unpack . T.replace "input" "output" . T.pack $ inputFile
-        print outputFile
         contents <- SB.readFile inputFile
         case posterCropImage "image/jpeg" contents of
           Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
