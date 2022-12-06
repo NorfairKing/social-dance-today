@@ -64,16 +64,11 @@ desiredSize = 100 * 1024 -- 100 KiB
 posterCropImage :: Text -> ByteString -> Either String (Text, ByteString)
 posterCropImage imageType contents = do
   -- Definitely load the image, so we are sure it's indeed an image
-  dynamicImage <- case imageType of
-    "image/png" -> decodePng contents
-    "image/jpeg" -> decodeJpeg contents
-    "image/jpg" -> decodeJpeg contents
-    _ -> decodeImage contents
-
-  -- Convert to a very general jpeg format
-  let (jpegImage, wasJpegAlready) = case dynamicImage of
-        ImageYCbCr8 i -> (SomeJpg i, True)
-        _ -> (dynamicImageToYCbCr8 dynamicImage, False)
+  (wasJpegAlready, dynamicImage) <- case imageType of
+    "image/png" -> (,) False <$> decodePng contents
+    "image/jpeg" -> (,) True <$> decodeJpeg contents
+    "image/jpg" -> (,) True <$> decodeJpeg contents
+    _ -> (,) False <$> decodeImage contents
 
   -- If it was a jpeg file already and is already small enough, don't do
   -- anything with it so this function is idempotent.
@@ -83,6 +78,9 @@ posterCropImage imageType contents = do
   if wasJpegAlready && SB.length contents <= desiredSize
     then pure ("image/jpeg", contents)
     else do
+      -- Convert to a very general jpeg format
+      let jpegImage = dynamicImageToYCbCr8 dynamicImage
+
       -- We don't technically need to resize the image but because we know that
       -- we'll encode the image at a lower quality later, we will resize it to
       -- retain as much of the quality as we can.
