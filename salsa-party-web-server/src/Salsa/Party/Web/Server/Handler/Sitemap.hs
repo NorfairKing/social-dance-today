@@ -129,20 +129,28 @@ getSitemapEventsR lo hi = do
     C.transPipe
       runDB
       ( E.selectSource $
-          E.from $ \(place `E.InnerJoin` party `E.InnerJoin` organiser) -> do
+          E.from $ \(place `E.InnerJoin` party) -> do
             E.on $ place E.^. PlaceId E.==. party E.^. PartyPlace
-            E.on $ party E.^. PartyOrganiser E.==. organiser E.^. OrganiserId
             E.where_ $
               (place E.^. PlaceLon E.>=. E.val loLon)
                 E.&&. (place E.^. PlaceLon E.<. E.val hiLon)
             E.where_ (party E.^. PartyDay E.>=. E.val earliestDayToShow)
-            pure (party, organiser)
+            pure
+              ( party E.^. PartyUuid,
+                party E.^. PartyCreated,
+                party E.^. PartyModified
+              )
       )
       .| C.map
-        ( \(Entity _ party@Party {..}, Entity _ organiser) ->
+        ( \(E.Value uuid, E.Value created, E.Value modified) ->
             SitemapUrl
-              { sitemapLoc = partyRoute organiser party,
-                sitemapLastMod = Just $ fromMaybe partyCreated partyModified,
+              { sitemapLoc =
+                  -- We must use 'EventR' here instead of 'partyRoute' in case
+                  -- the party title (and therefore slug) is changed inbetween
+                  -- when the sitemap is requested and when the party is
+                  -- requested.
+                  EventR uuid,
+                sitemapLastMod = Just $ fromMaybe created modified,
                 sitemapChangeFreq = Nothing,
                 sitemapPriority = Just 0.3
               }
@@ -156,13 +164,22 @@ getSitemapEventsR lo hi = do
               (place E.^. PlaceLon E.>=. E.val loLon)
                 E.&&. (place E.^. PlaceLon E.<. E.val hiLon)
             E.where_ (externalEvent E.^. ExternalEventDay E.>=. E.val earliestDayToShow)
-            pure externalEvent
+            pure
+              ( externalEvent E.^. ExternalEventUuid,
+                externalEvent E.^. ExternalEventCreated,
+                externalEvent E.^. ExternalEventModified
+              )
       )
       .| C.map
-        ( \(Entity _ externalEvent@ExternalEvent {..}) ->
+        ( \(E.Value uuid, E.Value created, E.Value modified) ->
             SitemapUrl
-              { sitemapLoc = externalEventRoute externalEvent,
-                sitemapLastMod = Just $ fromMaybe externalEventCreated externalEventModified,
+              { sitemapLoc =
+                  -- We must use 'EventR' here instead of 'externalEventRoute' in case
+                  -- the external event title (and therefore slug) is changed inbetween
+                  -- when the sitemap is requested and when the external event is
+                  -- requested.
+                  EventR uuid,
+                sitemapLastMod = Just $ fromMaybe created modified,
                 sitemapChangeFreq = Nothing,
                 sitemapPriority = Just 0.2
               }
