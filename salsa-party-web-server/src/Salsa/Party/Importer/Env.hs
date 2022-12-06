@@ -81,7 +81,7 @@ runImporter a Importer {..} = addImporterNameToLog importerName $ do
         ]
 
   userAgent <- liftIO chooseUserAgent
-  logDebugN $ T.pack $ "Chose user agent: " <> show userAgent
+  logDebugN $ T.pack $ unwords ["Chose user agent:", show userAgent]
   let tokenLimitConfig =
         TokenLimitConfig
           { tokenLimitConfigMaxTokens = 10, -- Ten tokens maximum, represents one request
@@ -198,15 +198,33 @@ importExternalEvent externalEvent = importExternalEventAnd externalEvent $ \_ ->
 -- We use this extra function to import images but only if the event has changed.
 importExternalEventAnd :: ExternalEvent -> (ExternalEventId -> Import ()) -> Import ()
 importExternalEventAnd candidate func = do
-  logDebugN $ T.pack $ "Considering importing external event:\n" <> ppShow candidate
+  logDebugN $
+    T.pack $
+      unlines
+        [ "Considering importing external event:",
+          ppShow candidate
+        ]
   case prettyValidate candidate of
-    Left err -> logWarnN $ T.pack $ unlines ["Not importing invalid event:", err, ppShow candidate]
+    Left err ->
+      logWarnN $
+        T.pack $
+          unlines
+            [ "Not importing invalid event:",
+              err,
+              ppShow candidate
+            ]
     Right externalEvent@ExternalEvent {..} -> do
       now <- liftIO getCurrentTime
       let today = utctDay now
       let yesterday = addDays (-1) today
       if externalEventDay < yesterday
-        then logDebugN $ T.pack $ unwords ["Not importing external event because it is in the past:", T.unpack externalEventOrigin]
+        then
+          logDebugN $
+            T.pack $
+              unwords
+                [ "Not importing external event because it is in the past:",
+                  T.unpack externalEventOrigin
+                ]
         else do
           importerId <- asks importEnvId
           mExternalEvent <- importDB $ do
@@ -214,26 +232,29 @@ importExternalEventAnd candidate func = do
             getBy (UniqueExternalEventKey importerId externalEventKey)
           case mExternalEvent of
             Nothing -> do
-              logInfoN $ T.pack $ unwords ["Importing never-before-seen event from", T.unpack externalEventOrigin]
+              logInfoN $
+                T.pack $
+                  unwords
+                    [ "Importing never-before-seen event from",
+                      T.unpack externalEventOrigin
+                    ]
               importDB (insert externalEvent) >>= func
             Just (Entity externalEventId oldExternalEvent) -> do
               case externalEvent `changesComparedTo` oldExternalEvent of
                 Nothing -> do
                   logInfoN $
                     T.pack $
-                      unlines
+                      unwords
                         [ "Not re-importing known event, because it was not changed",
-                          unwords ["origin:", show externalEventOrigin],
-                          unwords ["key:", show externalEventKey]
+                          show externalEventOrigin
                         ]
                   pure ()
                 Just updates -> do
                   logInfoN $
                     T.pack $
-                      unlines
+                      unwords
                         [ "Importing known-but-changed event from",
-                          unwords ["origin:", show externalEventOrigin],
-                          unwords ["key:", show externalEventKey]
+                          show externalEventOrigin
                         ]
                   importDB $
                     void $
@@ -256,34 +277,37 @@ jsonRequestConduitWith = awaitForever $ \(c, request) -> do
   case errOrResponse of
     Left err ->
       logErrorN $
-        T.unlines
-          [ "HTTP Exception occurred.",
-            "request:",
-            T.pack (ppShow request),
-            "exception:",
-            T.pack (ppShow err)
-          ]
+        T.pack $
+          unlines
+            [ "HTTP Exception occurred.",
+              "request:",
+              ppShow request,
+              "exception:",
+              ppShow err
+            ]
     Right response -> do
       let body = responseBody response
       case JSON.eitherDecode body of
         Left err ->
           logErrorN $
-            T.unlines
-              [ "Invalid JSON:" <> T.pack err,
-                T.pack (show body),
-                T.pack err
-              ]
+            T.pack $
+              unlines
+                [ unwords ["Invalid JSON:", err],
+                  show body,
+                  err
+                ]
         Right jsonValue ->
           case JSON.parseEither parseJSON jsonValue of
             Left err ->
               logErrorN $
-                T.unlines
-                  [ "Unable to parse JSON:" <> T.pack err,
-                    case TE.decodeUtf8' (LB.toStrict (JSON.encodePretty jsonValue)) of
-                      Left _ -> "non-utf8, somehow"
-                      Right t -> t,
-                    T.pack err
-                  ]
+                T.pack $
+                  unlines
+                    [ unwords ["Unable to parse JSON:", err],
+                      case TE.decodeUtf8' (LB.toStrict (JSON.encodePretty jsonValue)) of
+                        Left _ -> "non-utf8, somehow"
+                        Right t -> show t,
+                      err
+                    ]
             Right a -> yield (c, a)
 
 debugConduit :: (Show a, MonadIO m) => ConduitT a a m ()
@@ -307,12 +331,12 @@ doHttpRequest requestPrototype = do
         Just _ -> oldHeaders
   let request = requestPrototype {requestHeaders = newHeaders}
   waitToFetch (show (getUri request))
-  logInfoN $ T.pack $ "Fetching: " <> show (getUri request)
+  logInfoN $ T.pack $ unwords ["Fetching:", show (getUri request)]
   httpLbsWithRetry request man
 
 waitToFetch :: String -> Import ()
 waitToFetch uri = do
-  logDebugN $ T.pack $ "Waiting to fetch: " <> uri
+  logDebugN $ T.pack $ unwords ["Waiting to fetch:", show uri]
   tokenLimiter <- asks importEnvRateLimiter
   liftIO $ waitDebit tokenLimiter 10 -- Need 10 tokens
 
@@ -409,7 +433,7 @@ tryToImportImage uri = do
   case requestFromURI uri of
     Nothing -> pure Nothing
     Just request -> do
-      logDebugN $ T.pack $ "Trying to import image:" <> show uri
+      logInfoN $ T.pack $ unwords ["Importing image:", show uri]
       errOrResponse <- doHttpRequest request
       case errOrResponse of
         Left _ -> pure Nothing
@@ -424,7 +448,7 @@ tryToImportImageBlob :: Text -> ByteString -> Import (Maybe CASKey)
 tryToImportImageBlob contentType imageBlob =
   case posterCropImage contentType imageBlob of
     Left err -> do
-      logErrorN $ T.pack $ "Error while trying to import image: " <> err
+      logErrorN $ T.pack $ unwords ["Error while trying to import image:", err]
       pure Nothing
     Right (convertedImageType, convertedImageBlob) -> do
       let casKey = mkCASKey convertedImageType convertedImageBlob
@@ -450,7 +474,7 @@ logRequestErrors ::
     Import
     ()
 logRequestErrors = awaitForever $ \(request, errOrResponse) -> case errOrResponse of
-  Left err -> logErrorN $ T.pack $ unlines ["Error while fetching page: " <> ppShow err]
+  Left err -> logErrorN $ T.pack $ unlines ["Error while fetching page:", ppShow err]
   Right response -> yield (request, response)
 
 logRequestErrors' ::
@@ -460,7 +484,7 @@ logRequestErrors' ::
     Import
     ()
 logRequestErrors' = awaitForever $ \(a, request, errOrResponse) -> case errOrResponse of
-  Left err -> logErrorN $ T.pack $ unlines ["Error while fetching page: " <> ppShow err]
+  Left err -> logErrorN $ T.pack $ unlines ["Error while fetching page:", ppShow err]
   Right response -> yield (a, request, response)
 
 teePrint ::
@@ -478,10 +502,10 @@ deduplicateC = () <$ go S.empty
         Just a ->
           if S.member a seen
             then do
-              logDebugN $ T.pack $ "Already seen, not yielding: " <> show a
+              logDebugN $ T.pack $ unwords ["Already seen, not yielding:", show a]
               go seen
             else do
-              logDebugN $ T.pack $ "Not seen yet, yielding: " <> show a
+              logDebugN $ T.pack $ unwords ["Not seen yet, yielding:", show a]
               yield a
               go $ S.insert a seen
 
