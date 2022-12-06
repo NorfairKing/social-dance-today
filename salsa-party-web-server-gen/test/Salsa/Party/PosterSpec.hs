@@ -58,33 +58,34 @@ spec = do
     it "works for this landscape image above the ratio" $
       computeNewDimensions (800, 300) `shouldBe` Just (640, 240)
 
-  modifyMaxSuccess (`div` 10) . describe "posterCropImage" $ do
-    it "always results in a jpeg file that is small enough when starting with a jpeg file" $ do
-      forAllValid $ \(Hidden jpegImage) -> do
-        case posterCropImage "image/jpeg" (LB.toStrict (encodeJpeg jpegImage)) of
-          Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
-          Right (typ, converted) -> do
-            typ `shouldBe` "image/jpeg"
-            SB.length converted `shouldSatisfy` (<= desiredSize)
+  describe "posterCropImage" $ do
+    modifyMaxSuccess (`div` 20) $ do
+      it "always results in a jpeg file that is small enough when starting with a jpeg file" $ do
+        forAllValid $ \(Hidden jpegImage) -> do
+          case posterCropImage "image/jpeg" (LB.toStrict (encodeJpeg jpegImage)) of
+            Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
+            Right (typ, converted) -> do
+              typ `shouldBe` "image/jpeg"
+              SB.length converted `shouldSatisfy` (<= desiredSize)
 
-    it "always results in a jpeg file that is small enough when starting with a png file" $ do
-      forAllValid $ \(Hidden pngImage) ->
-        case posterCropImage "image/png" (LB.toStrict (encodePng (pngImage :: Image PixelRGBA16))) of
-          Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
-          Right (typ, converted) -> do
-            typ `shouldBe` "image/jpeg"
-            SB.length converted `shouldSatisfy` (<= desiredSize)
+      it "always results in a jpeg file that is small enough when starting with a png file" $ do
+        forAllValid $ \(Hidden pngImage) ->
+          case posterCropImage "image/png" (LB.toStrict (encodePng (pngImage :: Image PixelRGBA16))) of
+            Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
+            Right (typ, converted) -> do
+              typ `shouldBe` "image/jpeg"
+              SB.length converted `shouldSatisfy` (<= desiredSize)
 
-    it "is idempotent" $ do
-      forAllValid $ \(Hidden jpegImage) -> do
-        case posterCropImage "image/jpeg" (LB.toStrict (encodeJpeg (jpegImage :: Image PixelYCbCr8))) of
-          Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
-          Right (typ1, convertedOnce) ->
-            case posterCropImage typ1 convertedOnce of
-              Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
-              Right (typ2, convertedTwice) -> do
-                typ1 `shouldBe` typ2
-                convertedTwice `shouldBe` convertedOnce
+      it "is idempotent" $ do
+        forAllValid $ \(Hidden jpegImage) -> do
+          case posterCropImage "image/jpeg" (LB.toStrict (encodeJpeg (jpegImage :: Image PixelYCbCr8))) of
+            Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
+            Right (typ1, convertedOnce) ->
+              case posterCropImage typ1 convertedOnce of
+                Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
+                Right (typ2, convertedTwice) -> do
+                  typ1 `shouldBe` typ2
+                  convertedTwice `shouldBe` convertedOnce
 
     scenarioDir "test_resources/posters/input" $ \inputFile ->
       it (unwords ["imports", inputFile, "the same way as before"]) $ do
