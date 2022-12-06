@@ -49,7 +49,7 @@ desiredSize = 100 * 1024 -- 100 KiB
 -- until it is small enough.
 posterCropImage :: Text -> ByteString -> Either String (Text, ByteString)
 posterCropImage imageType contents = do
-  -- Load the image
+  -- Definitely load the image, so we are sure it's indeed an image
   dynamicImage <- case imageType of
     "image/png" -> decodePng contents
     "image/jpeg" -> decodeJpeg contents
@@ -57,18 +57,30 @@ posterCropImage imageType contents = do
     _ -> decodeImage contents
 
   -- Convert to a very general jpeg format
-  let jpegImage = dynamicImageToYCbCr8 dynamicImage
+  let (jpegImage, wasJpegAlready) = case dynamicImage of
+        ImageYCbCr8 i -> (SomeJpg i, True)
+        _ -> (dynamicImageToYCbCr8 dynamicImage, False)
 
-  let w = someJpgWidth jpegImage :: Int
-      h = someJpgHeight jpegImage :: Int
+  -- If it was a jpeg file already and is already small enough, don't do
+  -- anything with it so this function is idempotent.
+  -- If we would know about the encoded quality of the image then we could
+  -- check that the quality is low enough, but there's no way to know the
+  -- quality at which a jpeg was encoded, it seems.
+  if wasJpegAlready && SB.length contents <= desiredSize
+    then pure ("image/jpeg", contents)
+    else do
+      -- We don't technically need to resize the image but because we know that
+      -- we'll encode the image at a lower quality later, we will resize it to
+      -- retain as much of the quality as we can.
+      let w = someJpgWidth jpegImage :: Int
+          h = someJpgHeight jpegImage :: Int
+      convertedImage <- case computeNewDimensions (w, h) of
+        Nothing -> reduceUntilSmallEnough jpegImage
+        Just (actualWidth, actualHeight) ->
+          let convertedImage = scaleSomeJpg actualWidth actualHeight jpegImage
+           in reduceUntilSmallEnough convertedImage
 
-  convertedImage <- case computeNewDimensions (w, h) of
-    Nothing -> reduceUntilSmallEnough jpegImage
-    Just (actualWidth, actualHeight) ->
-      let convertedImage = scaleSomeJpg actualWidth actualHeight jpegImage
-       in reduceUntilSmallEnough convertedImage
-
-  pure ("image/jpeg", convertedImage)
+      pure ("image/jpeg", convertedImage)
 
 componentToLDR :: Float -> Word8
 componentToLDR = truncate . (255 *) . min 1.0 . max 0.0

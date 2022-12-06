@@ -68,6 +68,17 @@ spec = do
             typ `shouldBe` "image/jpeg"
             SB.length converted `shouldSatisfy` (<= desiredSize)
 
+    it "is idempotent" $ do
+      forAllValid $ \(Hidden jpegImage) -> do
+        case posterCropImage "image/jpeg" (LB.toStrict (encodeJpeg (jpegImage :: Image PixelYCbCr8))) of
+          Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
+          Right (typ1, convertedOnce) ->
+            case posterCropImage typ1 convertedOnce of
+              Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
+              Right (typ2, convertedTwice) -> do
+                typ1 `shouldBe` typ2
+                convertedTwice `shouldBe` convertedOnce
+
     scenarioDir "test_resources/posters/input" $ \inputFile ->
       it (unwords ["imports", inputFile, "the same way as before"]) $ do
         let outputFile = T.unpack . T.replace "input" "output" . T.pack $ inputFile
@@ -152,8 +163,9 @@ instance (VS.Storable (PixelBaseComponent a), Validity (PixelBaseComponent a)) =
 instance (VS.Storable (PixelBaseComponent a), Pixel a, GenValid (PixelBaseComponent a)) => GenValid (Image a) where
   shrinkValid _ = [] -- TODO
   genValid = do
-    imageWidth <- elements [160, 320, 640, 1280]
-    imageHeight <- elements [90, 180, 360, 640]
+    let sizes = [80, 160, 320, 640, 1280, 2560]
+    imageWidth <- elements sizes
+    imageHeight <- elements sizes
     imageData <-
       VS.force
         <$> VS.replicateM
