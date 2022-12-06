@@ -48,9 +48,9 @@ spec = do
             Nothing -> pure ()
             Just t@(w', h') -> context (show t) $ 1 - ((w' % h') / (w % h)) `shouldSatisfy` (< 5 / 100) -- Less than five percent off
     it "works for this portrait image under the ratio" $
-      computeNewDimensions (300, 800) `shouldBe` Just (640, 240)
-    it "works for this portrait image" $
-      computeNewDimensions (600, 800) `shouldBe` Just (360, 480)
+      computeNewDimensions (300, 800) `shouldBe` Just (244, 650)
+    it "works for this portrait image over the ratio" $
+      computeNewDimensions (700, 800) `shouldBe` Just (520, 594)
     it "works for this square image" $
       computeNewDimensions (800, 800) `shouldBe` Just (360, 360)
     it "works for this landscape image under the ratio" $
@@ -94,6 +94,13 @@ spec = do
         case posterCropImage "image/jpeg" contents of
           Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
           Right (_, converted) -> pure $ pureGoldenPoster outputFile $ LB.fromStrict converted
+
+    scenarioDir "test_resources/posters/static" $ \inputFile ->
+      it (unwords ["imports", inputFile, "idempotently"]) $ do
+        contents <- SB.readFile inputFile
+        case posterCropImage "image/jpeg" contents of
+          Left err -> expectationFailure $ unwords ["Failed to encode jpeg", err]
+          Right (_, converted) -> converted == contents `shouldBe` True
 
 -- | A poster with location
 data Poster = Poster

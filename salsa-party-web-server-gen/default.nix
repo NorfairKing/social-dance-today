@@ -2,10 +2,9 @@
 , case-insensitive, containers, criterion, deepseq, esqueleto
 , filepath, genvalidity, genvalidity-bytestring
 , genvalidity-persistent, genvalidity-sydtest
-, genvalidity-sydtest-aeson, genvalidity-sydtest-persistent
-, genvalidity-text, genvalidity-time, genvalidity-typed-uuid
-, http-client, ical, JuicyPixels, lib, microlens, monad-logger, mtl
-, password, path, path-io, path-pieces, persistent
+, genvalidity-sydtest-aeson, genvalidity-text, genvalidity-time
+, genvalidity-typed-uuid, http-client, ical, JuicyPixels, lib
+, microlens, monad-logger, mtl, password, path, path-io, persistent
 , persistent-sqlite, pretty-show, QuickCheck, salsa-party-data
 , salsa-party-data-gen, salsa-party-web-server, shakespeare
 , sydtest, sydtest-aeson, sydtest-discover, sydtest-persistent
@@ -28,13 +27,12 @@ mkDerivation {
   testHaskellDepends = [
     aeson aeson-pretty base bytestring cache case-insensitive
     containers esqueleto genvalidity genvalidity-sydtest
-    genvalidity-sydtest-aeson genvalidity-sydtest-persistent
-    genvalidity-text genvalidity-time http-client ical JuicyPixels
-    monad-logger mtl password path path-io path-pieces persistent
-    pretty-show QuickCheck salsa-party-data salsa-party-data-gen
-    salsa-party-web-server shakespeare sydtest sydtest-aeson
-    sydtest-persistent sydtest-yesod text time typed-uuid uuid vector
-    yesod yesod-auth yesod-core
+    genvalidity-sydtest-aeson genvalidity-text genvalidity-time
+    http-client ical JuicyPixels monad-logger mtl password path path-io
+    persistent pretty-show QuickCheck salsa-party-data
+    salsa-party-data-gen salsa-party-web-server shakespeare sydtest
+    sydtest-aeson sydtest-persistent sydtest-yesod text time typed-uuid
+    uuid vector yesod yesod-auth yesod-core
   ];
   testToolDepends = [ sydtest-discover ];
   benchmarkHaskellDepends = [

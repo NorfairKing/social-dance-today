@@ -43,7 +43,7 @@ spec = serverSpec $ do
           forAllValid $ \location -> do
             withAnyLoggedInUser_ yc $ do
               testSubmitOrganiser organiserForm_
-              poster_ <- readTestFile "test_resources/posters/1.png"
+              poster_ <- readTestFile "test_resources/posters/static/1.jpg"
               partyUuid_ <-
                 testAddPartyWithPoster
                   partyForm_
@@ -58,7 +58,7 @@ spec = serverSpec $ do
             forAllValid $ \location -> do
               withAnyLoggedInUser_ yc $ do
                 testSubmitOrganiser organiserForm_
-                poster <- readTestFile "test_resources/posters/1.png"
+                poster <- readTestFile "test_resources/posters/static/1.jpg"
                 partyUuid1 <-
                   testAddPartyWithPoster
                     partyForm1_
@@ -172,8 +172,8 @@ spec = serverSpec $ do
             forAllValid $ \location -> do
               withAnyLoggedInUser_ yc $ do
                 testSubmitOrganiser organiserForm_
-                poster1 <- readTestFile "test_resources/posters/1.png"
-                poster2 <- readTestFile "test_resources/posters/2.png"
+                poster1 <- readTestFile "test_resources/posters/static/1.jpg"
+                poster2 <- readTestFile "test_resources/posters/static/2.jpg"
                 partyUuid_ <-
                   testAddPartyWithPoster
                     addPartyForm_

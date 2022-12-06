@@ -38,7 +38,7 @@ spec = serverSpec $ do
           forAllValid $ \location -> do
             withAnyLoggedInUser_ yc $ do
               testSubmitOrganiser organiserForm_
-              poster_ <- readTestFile "test_resources/posters/1.png"
+              poster_ <- readTestFile "test_resources/posters/static/1.jpg"
               scheduleUuid_ <-
                 testAddScheduleWithPoster
                   scheduleForm_
@@ -226,8 +226,8 @@ spec = serverSpec $ do
             forAllValid $ \location -> do
               withAnyLoggedInUser_ yc $ do
                 testSubmitOrganiser organiserForm_
-                poster1 <- readTestFile "test_resources/posters/1.png"
-                poster2 <- readTestFile "test_resources/posters/2.png"
+                poster1 <- readTestFile "test_resources/posters/static/1.jpg"
+                poster2 <- readTestFile "test_resources/posters/static/2.jpg"
                 scheduleUuid_ <-
                   testAddScheduleWithPoster
                     addScheduleForm_
@@ -254,8 +254,8 @@ spec = serverSpec $ do
             forAllValid $ \location -> do
               withAnyLoggedInUser_ yc $ do
                 testSubmitOrganiser organiserForm_
-                poster1 <- readTestFile "test_resources/posters/1.png"
-                poster2 <- readTestFile "test_resources/posters/2.png"
+                poster1 <- readTestFile "test_resources/posters/static/1.jpg"
+                poster2 <- readTestFile "test_resources/posters/static/2.jpg"
                 scheduleUuid_ <-
                   testAddScheduleWithPoster
                     addScheduleForm_

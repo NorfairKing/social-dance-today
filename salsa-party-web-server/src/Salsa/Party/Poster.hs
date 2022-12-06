@@ -30,6 +30,7 @@ import Data.Text (Text)
 import qualified Data.Vector.Storable as VS
 import Data.Word
 
+-- Landscape dimensions: 16:9
 -- In pixels
 desiredLandscapeWidth :: Int
 desiredLandscapeWidth = 640
@@ -38,13 +39,14 @@ desiredLandscapeWidth = 640
 desiredLandscapeHeight :: Int
 desiredLandscapeHeight = 360
 
+-- Portrait dimensions: 5:4
 -- In pixels
 desiredPortraitWidth :: Int
-desiredPortraitWidth = 360
+desiredPortraitWidth = 520
 
 -- In pixels
 desiredPortraitHeight :: Int
-desiredPortraitHeight = 640
+desiredPortraitHeight = 650
 
 -- In bytes
 desiredSize :: Int

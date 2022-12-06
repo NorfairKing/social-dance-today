@@ -87,7 +87,6 @@ tests:
     - genvalidity
     - genvalidity-sydtest
     - genvalidity-sydtest-aeson
-    - genvalidity-sydtest-persistent
     - genvalidity-text
     - genvalidity-time
     - http-client
@@ -97,7 +96,6 @@ tests:
     - password
     - path
     - path-io
-    - path-pieces
     - persistent
     - pretty-show
     - salsa-party-data

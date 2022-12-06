@@ -129,15 +129,19 @@ posterCSS =
     background: grey;
     position: relative;
     line-height: 0;
-    max-width: #{show desiredPortraitWidth}px;
-    max-height: #{show desiredPortraitHeight}px;
-    aspect-ratio: #{show desiredPortraitWidth}/#{show desiredPortraitHeight};
+  }
+  @media (orientation: portrait) {
+    .poster-container {
+      max-width: #{show desiredPortraitWidth}px;
+      max-height: #{show desiredPortraitHeight}px;
+      aspect-ratio: 4/4;
+    }
   }
   @media (orientation: landscape) {
-    max-width: #{show desiredLandscapeWidth}px;
-    max-height: #{show desiredLandscapeHeight}px;
     .poster-container {
-      aspect-ratio: #{show desiredLandscapeWidth}/#{show desiredLandscapeHeight};
+      max-width: #{show desiredLandscapeWidth}px;
+      max-height: #{show desiredLandscapeHeight}px;
+      aspect-ratio: 16/9;
     }
   }
   .poster {

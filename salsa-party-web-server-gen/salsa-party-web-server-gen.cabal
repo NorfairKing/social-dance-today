@@ -118,7 +118,6 @@ test-suite salsa-party-web-server-gen-test
     , genvalidity
     , genvalidity-sydtest
     , genvalidity-sydtest-aeson
-    , genvalidity-sydtest-persistent
     , genvalidity-text
     , genvalidity-time
     , http-client
@@ -128,7 +127,6 @@ test-suite salsa-party-web-server-gen-test
     , password
     , path
     , path-io
-    , path-pieces
     , persistent
     , pretty-show
     , salsa-party-data
