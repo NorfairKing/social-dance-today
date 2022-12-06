@@ -4,9 +4,13 @@
 {-# LANGUAGE RankNTypes #-}
 
 module Salsa.Party.Poster
-  ( desiredWidth,
-    desiredHeight,
+  ( desiredLandscapeWidth,
+    desiredLandscapeHeight,
+    desiredPortraitWidth,
+    desiredPortraitHeight,
     desiredSize,
+    computeOrientation,
+    Orientation (..),
     computeNewDimensions,
     posterCropImage,
   )
@@ -27,12 +31,20 @@ import qualified Data.Vector.Storable as VS
 import Data.Word
 
 -- In pixels
-desiredWidth :: Int
-desiredWidth = 640
+desiredLandscapeWidth :: Int
+desiredLandscapeWidth = 640
 
 -- In pixels
-desiredHeight :: Int
-desiredHeight = 360
+desiredLandscapeHeight :: Int
+desiredLandscapeHeight = 360
+
+-- In pixels
+desiredPortraitWidth :: Int
+desiredPortraitWidth = 360
+
+-- In pixels
+desiredPortraitHeight :: Int
+desiredPortraitHeight = 640
 
 -- In bytes
 desiredSize :: Int
@@ -159,50 +171,75 @@ dynamicImageToYCbCr8 = go
       ImageRGB16 img -> go . ImageRGB8 $ from16to8 img
       ImageRGBA16 img -> go . ImageRGBA8 $ from16to8 img
 
+data Orientation = Landscape | Square | Portrait
+
+computeOrientation :: (Int, Int) -> Orientation
+computeOrientation (w, h) = case compare w h of
+  LT -> Portrait
+  EQ -> Square
+  GT -> Landscape
+
 -- Nothing means don't rescale
 computeNewDimensions :: (Int, Int) -> Maybe (Int, Int)
 computeNewDimensions (w, h) =
+  case computeOrientation (w, h) of
+    Portrait -> rescaleToDesired (desiredPortraitWidth, desiredPortraitHeight) (w, h)
+    _ -> rescaleToDesired (desiredLandscapeWidth, desiredLandscapeHeight) (w, h)
+
+rescaleToDesired :: (Int, Int) -> (Int, Int) -> Maybe (Int, Int)
+rescaleToDesired (desiredWidth, desiredHeight) (w, h) =
   if w <= desiredWidth && h <= desiredHeight
     then -- We don't want to upsize, only downsize.
       Nothing
     else Just $
       case compare (w % h) (desiredWidth % desiredHeight) of
+        -- If the real ratio is less than the desired ratio, it's more portrait than the desired ratio.
+        -- In that case we want the height to be equal to the desired height (less than the current height)
+        -- and the width to be adjusted downward while keeping the image ratio.
         LT ->
-          -- If the real ratio is less than the desired ratio, it's more portrait than the desired ratio.
-          -- In that case we want the height to be equal to the desired height (less than the current height)
-          -- and the width to be adjusted downward while keeping the image ratio.
-          -- we want:
-          --
-          --  w / h == w' / h'
-          --
-          -- h' = desiredHeight
-          -- w' = desiredHeight * w / h
-          --
-          -- This works:
-          --
-          --  w' / h' == (desiredHeight * w / h) / desiredHeight
-          --          == w / h
           let h' = desiredHeight
-              w' = round $ (fromIntegral desiredHeight * fromIntegral w) / (fromIntegral h :: Float)
+              w' = rescaleWidth h' w h
            in (w', h')
+        -- If the real ratio is greater than the desired ratio, it's more landscape than the desired ratio.
+        -- In that case we want the width to be equal to the desired width (less than the current width)
+        -- and the height to be adjusted downward while keeping the image ratio.
         _ ->
-          -- If the real ratio is greater than the desired ratio, it's more landscape than the desired ratio.
-          -- In that case we want the width to be equal to the desired width (less than the current width)
-          -- and the height to be adjusted downward while keeping the image ratio.
-          --
-          -- w / h == w' / h'
-          --
-          -- w' = desiredWidth
-          -- h' = desiredWidth * h / w
-          --
-          -- This works:
-          --
-          -- w' / h' == desiredWidth / (desiredWidth * h / w)
-          --         == desiredWidth * w / desiredWidth * h
-          --         == w / h
           let w' = desiredWidth
-              h' = round $ (fromIntegral desiredWidth * fromIntegral h) / (fromIntegral w :: Float)
+              h' = rescaleHeight w' h w
            in (w', h')
+
+-- | Rescale the width given a new height, retaining the ratio of width to height
+--
+-- we want:
+--
+--  w / h == w' / h'
+--
+-- h' = desiredHeight
+-- w' = desiredHeight * w / h
+--
+-- This works:
+--
+--  w' / h' == (desiredHeight * w / h) / desiredHeight
+--          == w / h
+rescaleWidth :: Int -> Int -> Int -> Int
+rescaleWidth newHeight oldWidth oldHeight = round $ (fromIntegral newHeight * fromIntegral oldWidth) / (fromIntegral oldHeight :: Float)
+
+-- | Rescale the height given a new width, retaining the ratio of width to height
+--
+-- we want:
+--
+-- w / h == w' / h'
+--
+-- w' = desiredWidth
+-- h' = desiredWidth * h / w
+--
+-- This works:
+--
+-- w' / h' == desiredWidth / (desiredWidth * h / w)
+--         == desiredWidth * w / desiredWidth * h
+--         == w / h
+rescaleHeight :: Int -> Int -> Int -> Int
+rescaleHeight newWidth oldHeight oldWidth = round $ (fromIntegral newWidth * fromIntegral oldHeight) / (fromIntegral oldWidth :: Float)
 
 reduceUntilSmallEnough :: SomeJpg -> Either String ByteString
 reduceUntilSmallEnough (SomeJpg image) = go startingQuality

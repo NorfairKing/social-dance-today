@@ -30,19 +30,27 @@ import Test.Syd.Validity
 spec :: Spec
 spec = do
   describe "computeNewDimensions" $ do
+    let forAllWidth :: Testable prop => (Int -> prop) -> Property
+        forAllWidth = forAll (choose (1, 3 * max desiredLandscapeWidth desiredPortraitWidth))
+    let forAllHeight :: Testable prop => (Int -> prop) -> Property
+        forAllHeight = forAll (choose (1, 3 * max desiredLandscapeHeight desiredPortraitHeight))
     it "always makes images small enough" $
-      forAll (choose (1, 10 * desiredHeight)) $ \w ->
-        forAll (choose (1, 10 * desiredHeight)) $ \h ->
+      forAllWidth $ \w ->
+        forAllHeight $ \h ->
           let (w', h') = fromMaybe (w, h) $ computeNewDimensions (w, h)
-           in w' <= desiredWidth && h' <= desiredHeight
+           in case computeOrientation (w, h) of
+                Landscape -> w' <= desiredLandscapeWidth && h' <= desiredLandscapeHeight
+                _ -> w' <= desiredPortraitWidth && h' <= desiredPortraitHeight
     it "keeps the same ratio" $
-      forAll (choose (1, 10 * desiredHeight)) $ \w ->
-        forAll (choose (1, 10 * desiredHeight)) $ \h ->
+      forAllWidth $ \w ->
+        forAllHeight $ \h ->
           case computeNewDimensions (w, h) of
             Nothing -> pure ()
-            Just t@(w', h') -> context (show t) $ (w' % h') - (w % h) `shouldSatisfy` (< 3 / 100) -- Less than three percent off
+            Just t@(w', h') -> context (show t) $ 1 - ((w' % h') / (w % h)) `shouldSatisfy` (< 5 / 100) -- Less than five percent off
+    it "works for this portrait image under the ratio" $
+      computeNewDimensions (300, 800) `shouldBe` Just (640, 240)
     it "works for this portrait image" $
-      computeNewDimensions (300, 400) `shouldBe` Just (270, 360)
+      computeNewDimensions (600, 800) `shouldBe` Just (360, 480)
     it "works for this square image" $
       computeNewDimensions (800, 800) `shouldBe` Just (360, 360)
     it "works for this landscape image under the ratio" $
