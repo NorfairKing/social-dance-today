@@ -105,6 +105,7 @@ Organiser sql=organiser
     -- UUID, for external usage
     uuid OrganiserUUID
 
+    -- This field must not be updated after it's been set.
     slug OrganiserSlug Maybe default=null
 
     user UserId
@@ -169,6 +170,7 @@ Party sql=party
     --   - We use a party slug so that organisers can't steal eachother's audiences
     --   - We use the day to deduplicate a similar party by the same organisers
     --   - When in doubt we prefer the 'Party' version over the 'ExternalEvent' version.
+    -- This field must not be updated after it's been set.
     slug EventSlug Maybe default=null
 
     organiser OrganiserId
@@ -265,6 +267,7 @@ ExternalEvent sql=external_event
     uuid EventUUID
 
     -- An event slug for nicer URLS, in a shared namespace with the ExternalEvent table
+    -- This field must not be updated after it's been set.
     slug EventSlug Maybe default=null
 
     -- Unique key for party so that we don't duplicate parties
@@ -389,6 +392,8 @@ changesComparedTo ee1 ee2 =
         pure $ field =. func ee1
    in NE.nonEmpty $
         catMaybes
+          -- We don't update the slug, on purpose, because old URLs might
+          -- become out-of-date as a result.
           [ updateWhenChanged ExternalEventTitle externalEventTitle,
             updateWhenChanged ExternalEventDescription externalEventDescription,
             updateWhenChanged ExternalEventOrganiser externalEventOrganiser,
