@@ -98,13 +98,14 @@ with final.haskell.lib;
         in
         {
           inherit salsaPartyPackages;
-          # TODO use nh2's fixes once they are not broken: https://github.com/Twinside/Juicy.Pixels/pull/215
-          # JuicyPixels = self.callCabal2nix "JuicyPixels"
-          #   (builtins.fetchGit {
-          #     url = "git@github.com:Twinside/Juicy.Pixels.git";
-          #     rev = "69e7aef1150f733dfb8b2ce2a008d0160792b752";
-          #   })
-          #   { };
+          # Use nh2's fixes.
+          # https://github.com/Twinside/Juicy.Pixels/pull/216
+          JuicyPixels = self.callCabal2nix "JuicyPixels"
+            (builtins.fetchGit {
+              url = "git@github.com:Twinside/Juicy.Pixels.git";
+              rev = "4c4bd9356e2930bbbfd0b5ab6a704b14ec062a23";
+            })
+            { };
         } // salsaPartyPackages
     );
   });

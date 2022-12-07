@@ -12,9 +12,10 @@ ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -O0 -Wunused-packages
 
 extra-deps:
-  # TODO use nh2's fixes once they are not broken: https://github.com/Twinside/Juicy.Pixels/pull/215
-  # - github: Twinside/Juicy.Pixels
-  #   commit: 69e7aef1150f733dfb8b2ce2a008d0160792b752
+# Use nh2's fixes.
+# https://github.com/Twinside/Juicy.Pixels/pull/216
+- github: Twinside/Juicy.Pixels
+  commit: 4c4bd9356e2930bbbfd0b5ab6a704b14ec062a23
 - github: NorfairKing/ical
   commit: 13b1a3925edf77664324a80f5e62071bea6d0fea
   subdirs:
