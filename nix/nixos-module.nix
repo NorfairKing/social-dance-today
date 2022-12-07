@@ -156,7 +156,7 @@ in
             enable = mkEnableOption "End-to-end tests for the ${envname} environment of the salsa party web server";
             url = mkOption {
               type = types.str;
-              example = "https://staging.salsa-parties.today";
+              example = "https://staging.social-dance.today";
               description = "The url to the server to test";
             };
             debug = mkOption {

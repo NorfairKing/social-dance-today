@@ -82,7 +82,7 @@ makeGeocodingRequest manager GeocodingRequest {..} = do
         setQueryString
           [("q", Just $ TE.encodeUtf8 geocodingRequestQuery), ("format", Just "jsonv2")]
           requestPrototype
-            { requestHeaders = [("User-Agent", "salsa-parties.today")]
+            { requestHeaders = [("User-Agent", "social-dance.today")]
             }
   errOrResponse <- runNoLoggingT $ httpLbsWithRetry request manager
   case errOrResponse of
