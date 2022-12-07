@@ -3,6 +3,9 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-21.11";
     pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
+    haskell-dependency-graph-nix.url = "github:NorfairKing/haskell-dependency-graph-nix";
+    haskell-dependency-graph-nix.inputs.nixpkgs.follows = "nixpkgs";
+    haskell-dependency-graph-nix.inputs.pre-commit-hooks.follows = "pre-commit-hooks";
     validity.url = "github:NorfairKing/validity?ref=flake";
     validity.flake = false;
     autodocodec.url = "github:NorfairKing/autodocodec?ref=flake";
@@ -35,6 +38,7 @@
     { self
     , nixpkgs
     , pre-commit-hooks
+    , haskell-dependency-graph-nix
     , validity
     , safe-coloured-text
     , sydtest
@@ -86,6 +90,10 @@
         nixos-module-test = import ./nix/nixos-module-test.nix {
           inherit (pkgs) nixosTest;
           salsa-party-nixos-module-factory = self.nixosModuleFactories.${system}.default;
+        };
+        dependency-graph = haskell-dependency-graph-nix.lib.${system}.makeDependencyGraph {
+          packages = builtins.attrNames pkgs.haskellPackages.salsaPartyPackages;
+          inherit (pkgs) haskellPackages;
         };
         pre-commit = pre-commit-hooks.lib.${system}.run {
           src = ./.;
