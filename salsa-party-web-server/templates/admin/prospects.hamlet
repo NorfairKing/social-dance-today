@@ -13,11 +13,15 @@
           <th>
             Name
           <th>
-            Email
+            Email Address
           <th>
             Created
           <th>
             Modified
+          <th>
+            Unsubscribed
+          <th>
+            Invited
           <th width=50px>
             Details
       <tbody>
@@ -26,11 +30,15 @@
             <td>
               #{prospectName prospect}
             <td>
-              #{prospectEmail prospect}
+              #{prospectEmailAddress prospect}
             <td>
               ^{formatAdminTime $ prospectCreated prospect}
             <td>
               ^{maybe mempty formatAdminTime $ prospectModified prospect}
+            <td>
+              ^{maybe mempty formatAdminTime $ prospectUnsubscribed prospect}
+            <td>
+              ^{maybe mempty formatAdminTime $ prospectInvited prospect}
             <td>
               <a .is-link href=@{AdminR $ AdminProspectR prospectId}>
                 Details

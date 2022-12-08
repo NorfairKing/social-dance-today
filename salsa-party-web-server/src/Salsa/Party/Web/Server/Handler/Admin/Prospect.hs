@@ -14,16 +14,25 @@ module Salsa.Party.Web.Server.Handler.Admin.Prospect
     getAdminProspectEditR,
     EditProspectForm (..),
     postAdminProspectEditR,
+    postAdminProspectInviteR,
     postAdminProspectDeleteR,
   )
 where
 
 import Control.Monad
 import qualified Data.Text as T
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Builder as TLB
+import Lens.Micro
+import qualified Network.AWS.SES as SES
 import Network.URI
+import Salsa.Party.Email
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Admin.Panel (formatAdminTime)
 import Salsa.Party.Web.Server.Handler.Import
+import Text.Blaze.Html.Renderer.Text (renderHtml)
+import Text.Hamlet
+import Text.Shakespeare.Text
 
 getAdminProspectR :: ProspectId -> Handler Html
 getAdminProspectR prospectId = do
@@ -36,7 +45,7 @@ getAdminProspectR prospectId = do
 
 data AddProspectForm = AddProspectForm
   { addProspectFormName :: Text,
-    addProspectFormEmail :: Text,
+    addProspectFormEmailAddress :: Text,
     addProspectFormAddress :: Maybe Text,
     addProspectFormEvent :: Maybe Text
   }
@@ -47,7 +56,7 @@ instance Validity AddProspectForm where
     mconcat
       [ genericValidate pf,
         declare "The name is nonempty" $ not $ T.null addProspectFormName,
-        declare "The email is nonempty" $ not $ T.null addProspectFormEmail,
+        declare "The email address is nonempty" $ not $ T.null addProspectFormEmailAddress,
         declare "The address is nonempty" $ maybe True (not . T.null) addProspectFormAddress
       ]
 
@@ -55,7 +64,7 @@ addProspectForm :: FormInput Handler AddProspectForm
 addProspectForm =
   AddProspectForm
     <$> ireq textField "name"
-    <*> ireq emailField "email"
+    <*> ireq emailField "email-address"
     <*> iopt textField "address"
     <*> iopt textField "event"
 
@@ -90,13 +99,14 @@ addProspect AddProspectForm {..} = do
     insert_
       Prospect
         { prospectName = addProspectFormName,
-          prospectEmail = addProspectFormEmail,
+          prospectEmailAddress = addProspectFormEmailAddress,
           prospectPlace = entityKey <$> mPlaceEntity,
           prospectExternalEvent = entityKey <$> mExternalEvent,
           prospectCreated = now,
           prospectModified = Nothing,
           prospectSecret = secret,
-          prospectUnsubscribed = Nothing
+          prospectUnsubscribed = Nothing,
+          prospectInvited = Nothing
         }
 
   addMessage "is-success" "Succesfully submitted a new prospect"
@@ -104,7 +114,7 @@ addProspect AddProspectForm {..} = do
 
 data EditProspectForm = EditProspectForm
   { editProspectFormName :: Text,
-    editProspectFormEmail :: Text,
+    editProspectFormEmailAddress :: Text,
     editProspectFormAddress :: Maybe Text,
     editProspectFormEvent :: Maybe Text
   }
@@ -115,7 +125,7 @@ instance Validity EditProspectForm where
     mconcat
       [ genericValidate pf,
         declare "The name is nonempty" $ not $ T.null editProspectFormName,
-        declare "The email is nonempty" $ not $ T.null editProspectFormEmail,
+        declare "The email address is nonempty" $ not $ T.null editProspectFormEmailAddress,
         declare "The address is nonempty" $ maybe True (not . T.null) editProspectFormAddress
       ]
 
@@ -123,7 +133,7 @@ editProspectForm :: FormInput Handler EditProspectForm
 editProspectForm =
   EditProspectForm
     <$> ireq textField "name"
-    <*> ireq emailField "email"
+    <*> ireq emailField "email-address"
     <*> iopt textField "address"
     <*> iopt textField "event"
 
@@ -176,7 +186,7 @@ editProspect (Entity prospectId prospect) form = do
       fieldUpdates =
         catMaybes
           [ whenChanged prospectName editProspectFormName ProspectName,
-            whenChanged prospectEmail editProspectFormEmail ProspectEmail,
+            whenChanged prospectEmailAddress editProspectFormEmailAddress ProspectEmailAddress,
             if prospectPlace prospect /= (entityKey <$> mPlace)
               then Just (ProspectPlace =. entityKey <$> mPlace)
               else Nothing,
@@ -192,6 +202,73 @@ editProspect (Entity prospectId prospect) form = do
 
   addMessage "is-success" "Succesfully edited prospect"
   redirect $ AdminR $ AdminProspectEditR prospectId
+
+postAdminProspectInviteR :: ProspectId -> Handler Html
+postAdminProspectInviteR prospectId = do
+  prospect <- runDB $ get404 prospectId
+  mExternalEvent <- forM (prospectExternalEvent prospect) $ \externalEventId -> runDB $ get404 externalEventId
+
+  urlRender <- getUrlRenderParams
+  let textContent = prospectEmailTextContent urlRender prospect mExternalEvent
+  let htmlContent = prospectEmailHtmlContent urlRender prospect mExternalEvent
+
+  app <- getYesod
+  let destination =
+        SES.destination
+          & SES.dToAddresses .~ [prospectEmailAddress prospect]
+          & SES.dBCCAddresses .~ ["syd@cs-syd.eu"]
+
+  let textBody = SES.content textContent
+  let htmlBody = SES.content htmlContent
+
+  let body =
+        SES.body
+          & SES.bText ?~ textBody
+          & SES.bHTML ?~ htmlBody
+
+  let subject = SES.content "Advertise your parties on Social Dance Today for free!"
+
+  let message = SES.message subject body
+
+  case appProspectSendAddress app of
+    Nothing -> pure ()
+    Just sendAddress -> do
+      let request =
+            SES.sendEmail sendAddress destination message
+              & SES.seReplyToAddresses .~ maybeToList (emailAddressText <$> appAdmin app)
+      res <- sendEmail app request
+      case res of
+        EmailSentSuccesfully -> do
+          now <- liftIO getCurrentTime
+          runDB $ update prospectId [ProspectInvited =. Just now]
+        _ -> pure ()
+
+  redirect $ AdminR $ AdminProspectR prospectId
+
+exampleOrganiser :: Text
+exampleOrganiser = "SalsaOn2Happenings"
+
+exampleOrganiserSlug :: OrganiserSlug
+exampleOrganiserSlug = Slug "salsaon2happenings"
+
+prospectEmailTextContent :: (Route App -> [(Text, Text)] -> Text) -> Prospect -> Maybe ExternalEvent -> Text
+prospectEmailTextContent urlRender prospect mExternalEvent =
+  let yourEventsSentence =
+        case mExternalEvent of
+          Just externalEvent ->
+            T.pack $
+              concat
+                [ "Some of your events, for example ",
+                  show (externalEventTitle externalEvent),
+                  " (",
+                  T.unpack $ urlRender (externalEventRoute externalEvent) [],
+                  ") are already advertised on our site because our site acts as a search engine for parties across the internet as well."
+                ]
+          Nothing -> "Some of your events may already be advertised on our site because our site acts as a search engine for parties across the internet as well."
+   in TL.toStrict $ TLB.toLazyText $ $(textFile "templates/email/prospect.txt") urlRender
+
+prospectEmailHtmlContent :: (Route App -> [(Text, Text)] -> Text) -> Prospect -> Maybe ExternalEvent -> Text
+prospectEmailHtmlContent urlRender prospect mExternalEvent = TL.toStrict $ renderHtml $ $(hamletFile "templates/email/prospect.hamlet") urlRender
 
 postAdminProspectDeleteR :: ProspectId -> Handler Html
 postAdminProspectDeleteR prospectId = do

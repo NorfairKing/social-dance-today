@@ -1,14 +1,13 @@
-Hello #{prospectEmailName prospectEmail}
+Hello #{prospectName prospect}
 
 We would like to invite you to advertise your parties on @{HomeR}, for free!
 
 We are fellow social dancers and we have developed a website where
 dancers can find where they can go dance: @{HomeR}.
 
-We are glad that you organise parties for people to enjoy.
 #{yourEventsSentence}
 
-In the past three months, we have had 550 active users from Zürich.
+In the past three months, we have had 550 active users from Zürich, out of over 8000 all over the world.
 If you think your parties could benefit from more attendants, we can
 recommend you to become an organiser on our site for free.
 
@@ -31,3 +30,9 @@ We look forward to your reply.
 
 Kind regards
 Social Dance Today
+
+
+You are receiving this email because we think you may benefit from becoming an organiser.
+This email was sent by a human and in good faith.
+Should you still wish to no longer receive any emails from us, please click here:
+@{UnsubProspectR $ prospectSecret prospect}

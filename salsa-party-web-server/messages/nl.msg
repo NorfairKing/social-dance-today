@@ -340,6 +340,10 @@ DeleteScheduleErrorNotYourSchedule: Dit is niet uw herhaaldelijk feest. U kan di
 UnsubReminderTitle: Uitgeschreven
 UnsubReminderDescription: U krijgt voortaan geen herinneringsemails meer.
 
+# Unsubscribe Prospect
+UnsubProspectTitle: Uitgeschreven
+UnsubProspectDescription: U krijgt voortaan geen organisatoremails meer.
+
 # Google Maps
 GoogleMapAlt location@Text: Kaart van de omgeving van #{location}
 

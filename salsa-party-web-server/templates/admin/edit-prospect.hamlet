@@ -20,13 +20,13 @@
 
       <div .field>
         <label .label>
-          Email
+          Email Address
         <div .control>
           <input .input
             type=email
             required
-            value=#{prospectEmail prospect}
-            name="email">
+            value=#{prospectEmailAddress prospect}
+            name="email-address">
 
       <div .field>
         <label .label>

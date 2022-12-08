@@ -345,6 +345,10 @@ DeleteScheduleErrorNotYourSchedule: Sie können diesen Partyplan nicht löschen,
 UnsubReminderTitle: Abgemeldet
 UnsubReminderDescription: Sie erhalten keine Erinnerungs-E-Mails mehr. 
 
+# Unsubscribe Prospect
+UnsubProspectTitle: Abgemeldet
+UnsubProspectDescription: Sie erhalten keine Veranstalter-E-Mails mehr. 
+
 # Google Maps
 GoogleMapAlt location@Text: Karte der Umgebung von #{location}
 

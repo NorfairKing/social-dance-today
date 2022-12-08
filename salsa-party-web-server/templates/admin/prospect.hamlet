@@ -5,7 +5,7 @@
 
     <div .block .content>
       <p>
-        Email: #{prospectEmail prospect}
+        Email Address: #{prospectEmailAddress prospect}
 
       <p>
         Address: 
@@ -29,6 +29,10 @@
       <p>
         Modified:
         ^{maybe mempty formatAdminTime $ prospectModified prospect}
+
+      <p>
+        Invited:
+        ^{maybe mempty formatAdminTime $ prospectInvited prospect}
       
       <p>
         $maybe unsubscribed <- prospectUnsubscribed prospect
@@ -45,6 +49,21 @@
         <a .button href=@{AdminR $ AdminProspectEditR prospectId}>
           Edit
 
+        $maybe _ <- prospectUnsubscribed prospect
+        $nothing
+          $maybe _ <- prospectInvited prospect
+          $nothing
+            <form .form
+               method=post
+               action=@{AdminR $ AdminProspectInviteR prospectId}>
+              ^{token}
+              <button .button .is-warning
+                type=submit
+                onclick="return confirm('Are you sure you want email this prospect? This cannot be undone.');">
+                Invite
+
+    <div .block>
+      <div .buttons>
         $maybe _ <- prospectUnsubscribed prospect
         $nothing
           <a .button .is-warning href=@{UnsubProspectR $ prospectSecret prospect}

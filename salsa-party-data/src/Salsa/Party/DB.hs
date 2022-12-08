@@ -322,7 +322,7 @@ StaticMap
 
 Prospect
     name Text
-    email Text
+    emailAddress Text
     place PlaceId Maybe default=NULL
     externalEvent ExternalEventId Maybe default=null
 
@@ -330,10 +330,13 @@ Prospect
     created UTCTime
     modified UTCTime Maybe default=NULL
 
+    -- For emailing
     secret ProspectSecret
     unsubscribed UTCTime Maybe default=NULL
 
-    UniqueProspectEmail email
+    invited UTCTime Maybe default=NULL
+
+    UniqueProspectEmail emailAddress
     UniqueProspectSecret secret
 
     deriving Show

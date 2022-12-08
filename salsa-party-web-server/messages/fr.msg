@@ -335,6 +335,11 @@ DeleteScheduleErrorNotYourSchedule: Ceci n’est pas votre fête à supprimer.
 UnsubReminderTitle: Désinscription de rappels d'emails.
 UnsubReminderDescription: Vous vous êtes désinscrit à recevoir des emails de rappel avec succès et vous avez indiqué ne plus vouloir recevoir des emails à l’avenir.
 
+# Unsubscribe Prospect
+UnsubProspectTitle: Désinscription
+UnsubProspectDescription: Vous vous êtes désinscrit à recevoir des emails de l’organisateur.
+
+
 # Google Maps
 GoogleMapAlt location@Text: Carte des environs #{location}
 

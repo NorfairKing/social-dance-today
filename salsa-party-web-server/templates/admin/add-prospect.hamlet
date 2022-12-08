@@ -18,12 +18,12 @@
 
       <div .field>
         <label .label>
-          Email
+          Email Address
         <div .control>
           <input .input
             type=email
             required
-            name="email">
+            name="email-address">
 
       <div .field>
         <label .label>

@@ -98,6 +98,7 @@
 
   /prospect/#ProspectId AdminProspectR GET
   /prospect/#ProspectId/edit AdminProspectEditR GET POST
+  /prospect/#ProspectId/invite AdminProspectInviteR POST
   /prospect/#ProspectId/delete AdminProspectDeleteR POST
   
 

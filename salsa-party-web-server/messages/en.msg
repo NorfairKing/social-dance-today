@@ -336,7 +336,7 @@ DeleteScheduleErrorNotYourSchedule: This is not your party schedule to delete.
 UnsubReminderTitle: Unsubscribed from reminder emails
 UnsubReminderDescription: You have succesfully unsubscribed from reminder emails and revoked consent to receive any further reminder emails.
 
-# Unsubscribe Reminder 
+# Unsubscribe Prospect
 UnsubProspectTitle: Unsubscribed from organiser emails
 UnsubProspectDescription: You have succesfully unsubscribed from organiser emails and will not receive any further emails.
 

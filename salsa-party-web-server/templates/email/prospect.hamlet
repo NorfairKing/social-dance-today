@@ -1,5 +1,5 @@
 <p>
-  Hello #{prospectEmailName prospectEmail}
+  Hello #{prospectName prospect}
 
 <p>
   We would like to invite you to advertise your parties on
@@ -14,8 +14,7 @@
     @{HomeR}.
 
 <p>
-  We are glad that you organise parties for people to enjoy.
-  $maybe externalEvent <- prospectEmailExternalEvent prospectEmail
+  $maybe externalEvent <- mExternalEvent
     Some of your events,
     <a href=@{externalEventRoute externalEvent}>
       "#{externalEventTitle externalEvent}"
@@ -24,7 +23,7 @@
     Some of your events may already be advertised on our site because our site acts as a search engine for parties across the internet as well.
 
 <p>
-  In the past three months, we have had 550 active users from Zürich.
+  In the past three months, we have had 550 active users from Zürich, out of over 8000 all over the world.
   If you think your parties could benefit from more attendants, we can
   recommend you to become an organiser on our site for free.
 
@@ -61,3 +60,12 @@
   Kind regards
 <p>
   Social Dance Today
+
+
+<p>
+  You are receiving this email because we think you may benefit from becoming an organiser.
+  This email was sent by a human and in good faith.
+  Should you still wish to no longer receive any emails from us, please click
+  <a href=@{UnsubProspectR $ prospectSecret prospect}>
+    unsubscribe.
+

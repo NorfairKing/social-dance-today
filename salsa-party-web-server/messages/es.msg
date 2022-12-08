@@ -335,6 +335,11 @@ DeleteScheduleErrorNotYourSchedule: Este no es tu programa de fiestas para elimi
 UnsubReminderTitle: Dado de baja de los correos electrónicos de recordatorio
 UnsubReminderDescription: Se ha dado de baja con éxito de los correos electrónicos de recordatorio y ha revocado el consentimiento para recibir más correos electrónicos de recordatorio.
 
+# Unsubscribe Prospect
+UnsubProspectTitle: Unsubscribed from organiser emails
+UnsubProspectDescription: You have succesfully unsubscribed from organiser emails and will not receive any further emails.
+
+
 # Google Maps
 GoogleMapAlt location@Text: Mapa de la zona alrededor de #{location}
 
