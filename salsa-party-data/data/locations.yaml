@@ -50,6 +50,9 @@
 - query: "Munich"
   lat: 48.1375
   lon: 11.575
+- query: "Stuttgart"
+  lat: 48.77844
+  lon: 9.18001
   ## France
 - query: "Paris"
   lat: 48.858889700
