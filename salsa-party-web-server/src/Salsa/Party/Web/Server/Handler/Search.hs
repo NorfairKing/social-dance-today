@@ -21,13 +21,17 @@
 module Salsa.Party.Web.Server.Handler.Search where
 
 import Control.Arrow (left)
+import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import Network.HTTP.Types
 import Salsa.Party.Web.Server.Geocoding
+import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
+import Salsa.Party.Web.Server.Handler.Event.Party.LD
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Query
 import Salsa.Party.Web.Server.Handler.Search.Types
+import qualified Web.JSONLD as LD
 
 getAdvancedSearchR :: Handler Html
 getAdvancedSearchR = withNavBar $ do
@@ -404,6 +408,7 @@ searchResultsPage searchParameters@SearchParameters {..} = do
         -- > time.
         --
         addHeader "X-Robots-Tag" "noarchive"
+
         case searchParameterDate of
           SearchFromToday -> pure () -- Stays good
           _ -> addHeader "X-Robots-Tag" $ T.pack $ "unavailable_after: " <> formatTime defaultTimeLocale "%F" (addDays daysToKeepPartiesMarkedAsAvailable begin)
@@ -419,9 +424,22 @@ searchResultsPage searchParameters@SearchParameters {..} = do
             let danceStyleFilters = filter (/= searchParameterDanceStyle) $ Nothing : map Just allDanceStyles
             danceStyleFilterLinks <- mapM (\mDanceStyle -> (,) mDanceStyle <$> danceStyleFilterLink mDanceStyle) danceStyleFilters
 
+            renderUrl <- getUrlRender
+
+            let ldEvents = searchResultsToLDEvents renderUrl searchResults
+            toWidgetHead $ toJSONLDData ldEvents
+
             let pagination = $(widgetFile "search-pagination")
             addStylesheet $ StaticR zoom_without_container_css
             $(widgetFile "search") <> posterCSS
+
+searchResultsToLDEvents :: (Route App -> Text) -> Map Day [Result] -> [LD.Event]
+searchResultsToLDEvents renderUrl = foldMap (map (resultToLDEvent renderUrl))
+
+resultToLDEvent :: (Route App -> Text) -> Result -> LD.Event
+resultToLDEvent renderUrl = \case
+  External (Entity _ e) (Entity _ p) -> externalEventToLDEvent renderUrl e p
+  Internal (Entity _ e) (Entity _ o) (Entity _ p) -> partyToLDEvent renderUrl o e p
 
 resolveMPrevDayRoute :: Day -> SearchParameters -> WidgetFor App (Maybe Text)
 resolveMPrevDayRoute today searchParameters = do

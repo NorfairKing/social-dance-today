@@ -78,7 +78,6 @@ extra-source-files:
     templates/party.lucius
     templates/recurrence-form.hamlet
     templates/robots.txt
-    templates/robots.txt.orig
     templates/search-no-results.hamlet
     templates/search-pagination.hamlet
     templates/search.hamlet
