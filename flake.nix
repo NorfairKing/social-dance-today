@@ -95,6 +95,10 @@
           packages = builtins.attrNames pkgs.haskellPackages.salsaPartyPackages;
           inherit (pkgs) haskellPackages;
         };
+        module-graphs = pkgs.linkFarmFromDrvs "module-graphs"
+          (builtins.map
+            (p: p.modulegraph)
+            (builtins.attrValues pkgs.haskellPackages.salsaPartyPackages));
         pre-commit = pre-commit-hooks.lib.${system}.run {
           src = ./.;
           hooks = {

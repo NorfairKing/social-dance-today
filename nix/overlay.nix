@@ -17,9 +17,8 @@ with final.haskell.lib;
         let
           salsaPartyPackages =
             let
-              salsaPartyPkg =
-                name:
-                overrideCabal (self.callPackage (../${name}) { })
+              salsaPartyPkg = name:
+                (overrideCabal (self.callPackage (../${name}) { })
                   (old: {
                     configureFlags = (old.configureFlags or [ ]) ++ [
                       # Optimisations
@@ -49,6 +48,16 @@ with final.haskell.lib;
                     # Ugly hack because we can't just add flags to the 'test' invocation.
                     # Show test output as we go, instead of all at once afterwards.
                     testTarget = (old.testTarget or "") + " --show-details=direct";
+                  })).overrideAttrs
+                  (old: {
+                    postInstall = (old.postInstall or "") + ''
+                      mkdir -p $modulegraph
+                      ${final.haskellPackages.graphmod}/bin/graphmod -i src --quiet --prune-edges > $modulegraph/graph.dot
+                      ${final.graphviz}/bin/dot -Tsvg $modulegraph/graph.dot > $modulegraph/graph.svg
+                      ln -s $modulegraph/graph.dot $out/graph.dot
+                      ln -s $modulegraph/graph.svg $out/graph.svg
+                    '';
+                    outputs = (old.outputs or [ ]) ++ [ "modulegraph" ];
                   });
               salsaPartyPkgWithComp =
                 exeName: name:
