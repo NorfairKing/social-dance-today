@@ -1,0 +1,62 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      Edit Prospect
+
+    <form .form
+      method=post
+      action=@{AdminR $ AdminProspectEditR prospectId}>
+
+
+      <div .field>
+        <label .label>
+          Name
+        <div .control>
+          <input .input
+            type=text
+            name="name"
+            value=#{prospectName prospect}
+            required>
+
+      <div .field>
+        <label .label>
+          Email
+        <div .control>
+          <input .input
+            type=email
+            required
+            value=#{prospectEmail prospect}
+            name="email">
+
+      <div .field>
+        <label .label>
+          Address
+        <div .control>
+          <input .input
+            type=text
+            required
+            value=#{maybe "" placeQuery mPlace}
+            name="address">
+
+      <div .field>
+        <label .label>
+          Event
+        <div .control>
+          <input .input
+            type=text
+            value=#{fromMaybe "" mExternalEventRoute}
+            name="event">
+
+      <div .field>
+        <div .control>
+          ^{token}
+
+      <div .field>
+        <div .control>
+          <div .buttons>
+            <button #submit
+              .button .is-dark
+              type="submit">
+              Submit
+            <a .button href=@{AdminR $ AdminProspectR prospectId}>
+              Back

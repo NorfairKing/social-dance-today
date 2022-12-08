@@ -27,6 +27,8 @@
         #{nbExternalEvents} external Events
       <a .button href=@{AdminR AdminSchedulesR}>
         #{nbSchedules} recurring parties
+      <a .button href=@{AdminR AdminProspectsR}>
+        #{nbProspects} prospects
 
 
     <h2 .title .is-4>
@@ -36,8 +38,6 @@
         Geocoding
       <a .button href=@{AdminR AdminSiteTestR}>
         Site Tester
-      <a .button href=@{AdminR AdminProspectEmailR}>
-        Prospect Email
       <form .form
          method=post
          action=@{AdminR AdminTestOrganiserReminderR}>

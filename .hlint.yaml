@@ -45,6 +45,7 @@
   - name: addMessage
     within:
       - Salsa.Party.Web.Server.Handler.Admin.Panel
+      - Salsa.Party.Web.Server.Handler.Admin.Prospect
     message: Use addMessageI instead.
   - name: permissionDenied
     within: []

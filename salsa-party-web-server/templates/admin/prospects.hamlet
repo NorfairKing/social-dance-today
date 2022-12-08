@@ -1,0 +1,38 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      Prospects
+
+    <div .block>
+      <a .button href=@{AdminR AdminSubmitProspectR}>
+        New Prospect
+
+    <table .table .is-fullwidth .is-striped>
+      <thead>
+        <tr>
+          <th>
+            Name
+          <th>
+            Email
+          <th>
+            Created
+          <th>
+            Modified
+          <th width=50px>
+            Details
+      <tbody>
+        $forall Entity prospectId prospect <- paginatedElements paginated
+          <tr>
+            <td>
+              #{prospectName prospect}
+            <td>
+              #{prospectEmail prospect}
+            <td>
+              ^{formatAdminTime $ prospectCreated prospect}
+            <td>
+              ^{maybe mempty formatAdminTime $ prospectModified prospect}
+            <td>
+              <a .is-link href=@{AdminR $ AdminProspectR prospectId}>
+                Details
+
+^{paginationWidget pageRoute paginated pageNumber}

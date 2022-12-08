@@ -90,6 +90,16 @@
   /schedules AdminSchedulesR GET
   /schedules/#PageNumber AdminSchedulesPageR GET
 
+  /prospects AdminProspectsR GET
+  /prospects/#PageNumber AdminProspectsPageR GET
+
+  /submit-prospect AdminSubmitProspectR GET POST
+
+  /prospect/#ProspectId AdminProspectR GET
+  /prospect/#ProspectId/edit AdminProspectEditR GET POST
+  /prospect/#ProspectId/delete AdminProspectDeleteR POST
+  
+
   /importer/#ImporterMetadataId/events AdminImporterEventsR GET
   /importer/#ImporterMetadataId/events/#PageNumber AdminImporterEventsPageR GET
   /importer/#ImporterMetadataId/upcoming-events AdminImporterUpcomingEventsR GET
@@ -100,8 +110,8 @@
   /geocoding AdminGeocodingR GET POST
   /site-test AdminSiteTestR GET POST
 
-  /prospect-email AdminProspectEmailR GET POST
-  /prospect-email-send AdminProspectEmailSendR POST
+  -- /prospect-email AdminProspectEmailR GET POST
+  -- /prospect-email-send AdminProspectEmailSendR POST
 
   /test-organiser-reminder AdminTestOrganiserReminderR POST
 

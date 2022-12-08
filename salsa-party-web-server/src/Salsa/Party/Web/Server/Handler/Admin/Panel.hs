@@ -29,6 +29,7 @@ getAdminPanelR = do
   nbUpcomingExternalEvents30Days <- runDB $ count ([ExternalEventDay >=. today, ExternalEventDay <=. addDays 30 today] :: [Filter ExternalEvent])
   nbExternalEvents <- runDB $ count ([] :: [Filter ExternalEvent])
   nbSchedules <- runDB $ count ([] :: [Filter Schedule])
+  nbProspects <- runDB $ count ([] :: [Filter Prospect])
 
   mLatestUser <- runDB $ selectFirst [] [Desc UserCreated]
   mLatestOrganiser <- runDB $ selectFirst [] [Desc OrganiserCreated]
@@ -212,6 +213,20 @@ adminSchedulesPage filters sorters pageRoute pageNumber = do
     setTitle "Admin Schedules"
     setDescription "Admin overview of the schedules"
     $(widgetFile "admin/schedules")
+
+getAdminProspectsR :: Handler Html
+getAdminProspectsR = redirect $ AdminR $ AdminProspectsPageR paginatedFirstPage
+
+getAdminProspectsPageR :: PageNumber -> Handler Html
+getAdminProspectsPageR = adminProspectsPage [] [Asc ProspectId] (AdminR . AdminProspectsPageR)
+
+adminProspectsPage :: [Filter Prospect] -> [SelectOpt Prospect] -> (PageNumber -> Route App) -> PageNumber -> Handler Html
+adminProspectsPage filters sorters pageRoute pageNumber = do
+  paginated <- runDB $ selectPaginated defaultPageSize filters sorters pageNumber
+  withNavBar $ do
+    setTitle "Admin Prospects"
+    setDescription "Admin overview of the prospects"
+    $(widgetFile "admin/prospects")
 
 postAdminImporterResetR :: ImporterMetadataId -> Handler Html
 postAdminImporterResetR importerId = do

@@ -318,7 +318,16 @@ StaticMap
 
 
 Prospect
+    name Text
     email Text
+    place PlaceId Maybe default=NULL
+    externalEvent ExternalEventId Maybe default=null
+
+    -- For diagnostics
+    created UTCTime
+    modified UTCTime Maybe default=NULL
+
+    UniqueProspectEmail email
 
     deriving Show
     deriving Eq

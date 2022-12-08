@@ -26,6 +26,7 @@ extra-source-files:
     templates/account/schedule.hamlet
     templates/account/schedules.hamlet
     templates/account/submit.hamlet
+    templates/admin/add-prospect.hamlet
     templates/admin/charts.hamlet
     templates/admin/charts/bar-chart.hamlet
     templates/admin/charts/bar-chart.julius
@@ -33,6 +34,7 @@ extra-source-files:
     templates/admin/charts/line-chart.hamlet
     templates/admin/charts/line-chart.julius
     templates/admin/charts/line-chart.lucius
+    templates/admin/edit-prospect.hamlet
     templates/admin/external-events.hamlet
     templates/admin/geocoding.hamlet
     templates/admin/map.hamlet
@@ -42,6 +44,7 @@ extra-source-files:
     templates/admin/panel.hamlet
     templates/admin/parties.hamlet
     templates/admin/prospect.hamlet
+    templates/admin/prospects.hamlet
     templates/admin/schedules.hamlet
     templates/admin/site-test.hamlet
     templates/admin/user.hamlet
