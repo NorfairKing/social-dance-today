@@ -336,6 +336,10 @@ DeleteScheduleErrorNotYourSchedule: This is not your party schedule to delete.
 UnsubReminderTitle: Unsubscribed from reminder emails
 UnsubReminderDescription: You have succesfully unsubscribed from reminder emails and revoked consent to receive any further reminder emails.
 
+# Unsubscribe Reminder 
+UnsubProspectTitle: Unsubscribed from organiser emails
+UnsubProspectDescription: You have succesfully unsubscribed from organiser emails and will not receive any further emails.
+
 # Google Maps
 GoogleMapAlt location@Text: Map of the area around #{location}
 

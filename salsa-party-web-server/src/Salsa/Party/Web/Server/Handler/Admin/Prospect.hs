@@ -85,6 +85,7 @@ addProspect AddProspectForm {..} = do
   mExternalEvent <- forM addProspectFormEvent $ \eventUrl ->
     lookupProspectExternalEventByLink eventUrl
   now <- liftIO getCurrentTime
+  secret <- nextRandomUUID
   runDB $
     insert_
       Prospect
@@ -93,7 +94,9 @@ addProspect AddProspectForm {..} = do
           prospectPlace = entityKey <$> mPlaceEntity,
           prospectExternalEvent = entityKey <$> mExternalEvent,
           prospectCreated = now,
-          prospectModified = Nothing
+          prospectModified = Nothing,
+          prospectSecret = secret,
+          prospectUnsubscribed = Nothing
         }
 
   addMessage "is-success" "Succesfully submitted a new prospect"

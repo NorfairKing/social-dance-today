@@ -80,8 +80,11 @@ type OrganiserSlug = Slug O
 
 data R -- Phantom type anyway
 
--- This will be a secret id that a user has to present to one-click unsubscribe from reminder emails
+-- This is a secret id that a user has to present to one-click unsubscribe from reminder emails
 type ReminderSecret = UUID R
+
+-- This is a secret id that a prospect has to present to one-click unsubscribe from prospect emails
+type ProspectSecret = UUID R
 
 -- When adding a table here, be sure to add the corresponding roundtrip test as well.
 share
@@ -327,12 +330,15 @@ Prospect
     created UTCTime
     modified UTCTime Maybe default=NULL
 
+    secret ProspectSecret
+    unsubscribed UTCTime Maybe default=NULL
+
     UniqueProspectEmail email
+    UniqueProspectSecret secret
 
     deriving Show
     deriving Eq
     deriving Generic
-
 |]
 
 instance (ToBackendKey SqlBackend record) => NFData (Key record) where

@@ -29,6 +29,13 @@
       <p>
         Modified:
         ^{maybe mempty formatAdminTime $ prospectModified prospect}
+      
+      <p>
+        $maybe unsubscribed <- prospectUnsubscribed prospect
+          Unsubscribed:
+          <b> ^{formatAdminTime unsubscribed}
+        $nothing
+          Unsubscribed: No
 
     <div .block>
       <div .buttons>
@@ -37,6 +44,12 @@
 
         <a .button href=@{AdminR $ AdminProspectEditR prospectId}>
           Edit
+
+        $maybe _ <- prospectUnsubscribed prospect
+        $nothing
+          <a .button .is-warning href=@{UnsubProspectR $ prospectSecret prospect}
+            onclick="return confirm('Are you sure you want to unsubscribe this prospect? This cannot be undone.');">
+            Unsubscribe manually
 
         <form .form
            method=post
