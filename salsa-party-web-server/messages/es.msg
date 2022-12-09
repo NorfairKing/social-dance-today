@@ -336,8 +336,8 @@ UnsubReminderTitle: Dado de baja de los correos electrónicos de recordatorio
 UnsubReminderDescription: Se ha dado de baja con éxito de los correos electrónicos de recordatorio y ha revocado el consentimiento para recibir más correos electrónicos de recordatorio.
 
 # Unsubscribe Prospect
-UnsubProspectTitle: Unsubscribed from organiser emails
-UnsubProspectDescription: You have succesfully unsubscribed from organiser emails and will not receive any further emails.
+UnsubProspectTitle: Cancelado la suscripción a los correos electrónicos del organizador
+UnsubProspectDescription: Se ha cancelado con éxito la suscripción a los correos electrónicos del organizador y no recibirá más correos electrónicos.
 
 
 # Google Maps
