@@ -10,8 +10,8 @@ where
 import Salsa.Party.Web.Server.Handler.Import
 import qualified Web.JSONLD as LD
 
-partyPageLD :: Entity Organiser -> Entity Party -> Handler JSONLDData
-partyPageLD (Entity _ organiser) (Entity _ party@Party {..}) = do
+partyPageLD :: Organiser -> Party -> Handler JSONLDData
+partyPageLD organiser party@Party {..} = do
   place <- runDB $ get404 partyPlace
   renderUrl <- getUrlRender
   pure $ toJSONLDData $ partyToLDEvent renderUrl party organiser place

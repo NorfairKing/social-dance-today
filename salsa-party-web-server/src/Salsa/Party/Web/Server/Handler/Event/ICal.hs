@@ -14,9 +14,9 @@ getEventIcsR :: EventUUID -> Handler ICal.Calendar
 getEventIcsR eventUuid = do
   mPartyTup <- runDB $ getPartyTupByUuid eventUuid
   case mPartyTup of
-    Just (organiserEntity, partyEntity) -> partyPageICal organiserEntity partyEntity
+    Just (organiser, Entity _ party) -> partyPageICal organiser party
     Nothing -> do
       mExternalEvent <- runDB $ getExternalEventTupByUuid eventUuid
       case mExternalEvent of
-        Just (externalEventEntity, placeEntity) -> externalEventPageICal externalEventEntity placeEntity
+        Just (externalEvent, place) -> externalEventPageICal externalEvent place
         Nothing -> notFound

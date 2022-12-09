@@ -178,14 +178,14 @@ spec = do
                               partyDay = day,
                               partyPlace = place1Id
                             }
-                    party1Id <- DB.insert party1
+                    DB.insert_ party1
                     let party2 =
                           party2Prototype
                             { partyOrganiser = organiserId,
                               partyDay = day,
                               partyPlace = place2Id
                             }
-                    party2Id <- DB.insert party2
+                    DB.insert_ party2
                     -- close to party 1, but the next day
                     let party3 =
                           party3Prototype
@@ -207,8 +207,8 @@ spec = do
                       sr
                         `shouldBe` M.fromList
                           [ ( day,
-                              [ Internal (Entity organiserId organiser) (Entity party1Id party1) (Entity place1Id place1),
-                                Internal (Entity organiserId organiser) (Entity party2Id party2) (Entity place2Id place2)
+                              [ Internal organiser party1 place1,
+                                Internal organiser party2 place2
                               ]
                             )
                           ]
@@ -235,14 +235,14 @@ spec = do
                               partyDay = day,
                               partyPlace = place1Id
                             }
-                    party1Id <- DB.insert party1
+                    DB.insert_ party1
                     let party2 =
                           party2Prototype
                             { partyOrganiser = organiserId,
                               partyDay = day,
                               partyPlace = place2Id
                             }
-                    party2Id <- DB.insert party2
+                    DB.insert_ party2
                     -- close to party 1, but the next day
                     let party3 =
                           party3Prototype
@@ -264,8 +264,8 @@ spec = do
                       sr
                         `shouldBe` M.fromList
                           [ ( day,
-                              [ Internal (Entity organiserId organiser) (Entity party1Id party1) (Entity place1Id place1),
-                                Internal (Entity organiserId organiser) (Entity party2Id party2) (Entity place2Id place2)
+                              [ Internal organiser party1 place1,
+                                Internal organiser party2 place2
                               ]
                             )
                           ]
@@ -294,7 +294,7 @@ spec = do
                                 partyPlace = place1Id,
                                 partyPoster = Just $ imageKey image1Prototype
                               }
-                      party1Id <- DB.insert party1
+                      DB.insert_ party1
                       let party2 =
                             party2Prototype
                               { partyOrganiser = organiserId,
@@ -302,7 +302,7 @@ spec = do
                                 partyPlace = place2Id,
                                 partyPoster = Just $ imageKey image2Prototype
                               }
-                      party2Id <- DB.insert party2
+                      DB.insert_ party2
                       sr <-
                         runUncachedSearchQueryForResults @IO
                           SearchQuery
@@ -316,8 +316,8 @@ spec = do
                         sr
                           `shouldBe` M.fromList
                             [ ( day,
-                                [ Internal (Entity organiserId organiser) (Entity party1Id party1) (Entity place1Id place1),
-                                  Internal (Entity organiserId organiser) (Entity party2Id party2) (Entity place2Id place2)
+                                [ Internal organiser party1 place1,
+                                  Internal organiser party2 place2
                                 ]
                               )
                             ]
@@ -368,7 +368,7 @@ spec = do
                                           partyCancelled = False,
                                           partyHomepage = Nothing
                                         }
-                                party1Id <- DB.insert party1
+                                DB.insert_ party1
                                 let party2 = party2Prototype {partyTitle = "Party 2 def", partyDay = otherDay, partyPlace = place2Id}
                                 DB.insert_ party2
                                 let party3 = party3Prototype {partyTitle = "Party 3 ghi", partyDay = otherDay, partyPlace = place3Id}
@@ -393,14 +393,14 @@ spec = do
                                           externalEventPrice = Nothing,
                                           externalEventCancelled = Just False
                                         }
-                                externalEvent1Id <- DB.insert externalEvent1
+                                DB.insert_ externalEvent1
                                 let externalEvent2 =
                                       externalEvent2Prototype
                                         { externalEventTitle = "ellemenopeee abcdefghijklmnope",
                                           externalEventDay = day,
                                           externalEventPlace = place5Id
                                         }
-                                externalEvent2Id <- DB.insert externalEvent2
+                                DB.insert_ externalEvent2
                                 -- A duplicate of party 1, not supposed to be shown
                                 let externalEvent3 =
                                       externalEvent3Prototype
@@ -440,9 +440,9 @@ spec = do
                                   sr
                                     `shouldBe` M.fromList
                                       [ ( day,
-                                          [ Internal (Entity organiserId organiser) (Entity party1Id party1) (Entity place1Id place1),
-                                            External (Entity externalEvent1Id externalEvent1) (Entity place4Id place4),
-                                            External (Entity externalEvent2Id externalEvent2) (Entity place5Id place5)
+                                          [ Internal organiser party1 place1,
+                                            External externalEvent1 place4,
+                                            External externalEvent2 place5
                                           ]
                                         )
                                       ]

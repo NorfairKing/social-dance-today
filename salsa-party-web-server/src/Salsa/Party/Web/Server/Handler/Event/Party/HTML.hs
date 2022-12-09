@@ -23,8 +23,8 @@ import Salsa.Party.Web.Server.Handler.Event.Party.ICal
 import Salsa.Party.Web.Server.Handler.Event.Party.LD
 import Salsa.Party.Web.Server.Handler.Import
 
-partyPageHtml :: Entity Organiser -> Entity Party -> Handler Html
-partyPageHtml (Entity _ organiser@Organiser {..}) (Entity partyId party@Party {..}) = do
+partyPageHtml :: Organiser -> Entity Party -> Handler Html
+partyPageHtml organiser@Organiser {..} (Entity partyId party@Party {..}) = do
   isAdmin <- do
     mAuth <- maybeAuth
     case mAuth of

@@ -438,8 +438,8 @@ searchResultsToLDEvents renderUrl = foldMap (map (resultToLDEvent renderUrl))
 
 resultToLDEvent :: (Route App -> Text) -> Result -> LD.Event
 resultToLDEvent renderUrl = \case
-  External (Entity _ e) (Entity _ p) -> externalEventToLDEvent renderUrl e p
-  Internal (Entity _ e) (Entity _ o) (Entity _ p) -> partyToLDEvent renderUrl o e p
+  External e p -> externalEventToLDEvent renderUrl e p
+  Internal e o p -> partyToLDEvent renderUrl o e p
 
 resolveMPrevDayRoute :: Day -> SearchParameters -> WidgetFor App (Maybe Text)
 resolveMPrevDayRoute today searchParameters = do

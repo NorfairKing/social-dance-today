@@ -10,8 +10,8 @@ where
 import Salsa.Party.Web.Server.Handler.Import
 import qualified Web.JSONLD as LD
 
-externalEventPageLD :: Entity ExternalEvent -> Entity Place -> Handler JSONLDData
-externalEventPageLD (Entity _ externalEvent) (Entity _ place) = do
+externalEventPageLD :: ExternalEvent -> Place -> Handler JSONLDData
+externalEventPageLD externalEvent place = do
   renderUrl <- getUrlRender
   pure $ toJSONLDData $ externalEventToLDEvent renderUrl externalEvent place
 

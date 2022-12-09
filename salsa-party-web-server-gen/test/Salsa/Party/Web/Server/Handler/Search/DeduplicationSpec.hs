@@ -16,6 +16,7 @@ import Path.IO
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.Export
 import Salsa.Party.Web.Server.Handler.Event.Party.Export
 import Salsa.Party.Web.Server.Handler.Search.Deduplication
+import Salsa.Party.Web.Server.Handler.Search.Query
 import Salsa.Party.Web.Server.Handler.TestImport
 import Test.Syd.Persistent
 
@@ -111,8 +112,8 @@ positiveTest rootDir t1@(exportFile1, export1) t2@(exportFile2, export2) =
     (InternalExport _, ExternalExport _) -> positiveTest rootDir t2 t1 -- Assuming that duplicateness is symmetric
     (InternalExport _, InternalExport _) -> pure () -- Nothing to test yet.
     (ExternalExport externalEventExport1, InternalExport partyExport2) -> do
-      tup1 <- importExternalEvent externalEventExport1
-      tup2 <- importParty partyExport2
+      tup1 <- entityValTuple <$> importExternalEvent externalEventExport1
+      tup2 <- entityValTriple <$> importParty partyExport2
       let similar = externalEventIsSimilarEnoughToParty tup1 tup2
       if similar
         then pure ()
@@ -129,8 +130,8 @@ positiveTest rootDir t1@(exportFile1, export1) t2@(exportFile2, export2) =
                   ppShow $ computeSimilarityFormula $ similarityScoreExternalToInternal tup1 tup2
                 ]
     (ExternalExport externalEventExport1, ExternalExport externalEventExport2) -> do
-      tup1 <- importExternalEvent externalEventExport1
-      tup2 <- importExternalEvent externalEventExport2
+      tup1 <- entityValTuple <$> importExternalEvent externalEventExport1
+      tup2 <- entityValTuple <$> importExternalEvent externalEventExport2
       let similar = externalEventIsSimilarEnoughTo tup1 tup2
       if similar
         then pure ()
@@ -153,8 +154,8 @@ negativeTest rootDir1 rootDir2 t1@(exportFile1, export1) t2@(exportFile2, export
     (InternalExport _, ExternalExport _) -> negativeTest rootDir2 rootDir1 t2 t1 -- Assuming that duplicateness is symmetric
     (InternalExport _, InternalExport _) -> pure () -- Nothing to test yet.
     (ExternalExport externalEventExport1, InternalExport partyExport2) -> do
-      tup1 <- importExternalEvent externalEventExport1
-      tup2 <- importParty partyExport2
+      tup1 <- entityValTuple <$> importExternalEvent externalEventExport1
+      tup2 <- entityValTriple <$> importParty partyExport2
       let similar = externalEventIsSimilarEnoughToParty tup1 tup2
       if similar
         then
@@ -171,8 +172,8 @@ negativeTest rootDir1 rootDir2 t1@(exportFile1, export1) t2@(exportFile2, export
                 ]
         else pure ()
     (ExternalExport externalEventExport1, ExternalExport externalEventExport2) -> do
-      tup1 <- importExternalEvent externalEventExport1
-      tup2 <- importExternalEvent externalEventExport2
+      tup1 <- entityValTuple <$> importExternalEvent externalEventExport1
+      tup2 <- entityValTuple <$> importExternalEvent externalEventExport2
       let similar = externalEventIsSimilarEnoughTo tup1 tup2
       if similar
         then

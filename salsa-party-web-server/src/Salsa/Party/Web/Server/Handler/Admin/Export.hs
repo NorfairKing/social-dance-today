@@ -3,6 +3,7 @@
 module Salsa.Party.Web.Server.Handler.Admin.Export (getAdminExportDayR) where
 
 import Codec.Archive.Zip as Zip
+import Control.Arrow ((***))
 import Data.Aeson as JSON
 import Data.Foldable
 import qualified Data.Text as T
@@ -16,21 +17,25 @@ import Salsa.Party.Web.Server.Handler.Import
 getAdminExportDayR :: Day -> Handler TypedContent
 getAdminExportDayR day = do
   partyExports <- do
-    partyTups <- runDB $
-      E.select $
-        E.from $ \(organiser `E.InnerJoin` party) -> do
-          E.on $ party E.^. PartyOrganiser E.==. organiser E.^. OrganiserId
-          E.where_ $ party E.^. PartyDay E.==. E.val day
-          pure (organiser, party)
+    partyTups <-
+      runDB $
+        fmap (map (entityVal *** entityVal)) $
+          E.select $
+            E.from $ \(organiser `E.InnerJoin` party) -> do
+              E.on $ party E.^. PartyOrganiser E.==. organiser E.^. OrganiserId
+              E.where_ $ party E.^. PartyDay E.==. E.val day
+              pure (organiser, party)
     mapM (uncurry exportParty) partyTups
 
   externalEventExports <- do
-    externalEventTups <- runDB $
-      E.select $
-        E.from $ \(externalEvent `E.InnerJoin` place) -> do
-          E.on $ externalEvent E.^. ExternalEventPlace E.==. place E.^. PlaceId
-          E.where_ $ externalEvent E.^. ExternalEventDay E.==. E.val day
-          pure (externalEvent, place)
+    externalEventTups <-
+      runDB $
+        fmap (map (entityVal *** entityVal)) $
+          E.select $
+            E.from $ \(externalEvent `E.InnerJoin` place) -> do
+              E.on $ externalEvent E.^. ExternalEventPlace E.==. place E.^. PlaceId
+              E.where_ $ externalEvent E.^. ExternalEventDay E.==. E.val day
+              pure (externalEvent, place)
     mapM (uncurry exportExternalEvent) externalEventTups
 
   let jsonEntry :: ToJSON a => FilePath -> a -> Zip.Entry

@@ -14,9 +14,9 @@ getEventExportR :: EventUUID -> Handler TypedContent
 getEventExportR eventUuid = do
   mPartyTup <- runDB $ getPartyTupByUuid eventUuid
   case mPartyTup of
-    Just (organiserEntity, partyEntity) -> toTypedContent . JSONResponse <$> exportParty organiserEntity partyEntity
+    Just (organiser, Entity _ party) -> toTypedContent . JSONResponse <$> exportParty organiser party
     Nothing -> do
       mExternalEvent <- runDB $ getExternalEventTupByUuid eventUuid
       case mExternalEvent of
-        Just (externalEventEntity, placeEntity) -> toTypedContent . JSONResponse <$> exportExternalEvent externalEventEntity placeEntity
+        Just (externalEvent, place) -> toTypedContent . JSONResponse <$> exportExternalEvent externalEvent place
         Nothing -> notFound

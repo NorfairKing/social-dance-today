@@ -12,7 +12,6 @@ import Data.Hashable
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import Data.Time
-import Database.Persist
 import GHC.Generics (Generic)
 import Salsa.Party.DB
 
@@ -45,8 +44,8 @@ data SearchResult
 instance NFData SearchResult
 
 data Result
-  = External !(Entity ExternalEvent) !(Entity Place)
-  | Internal !(Entity Organiser) !(Entity Party) !(Entity Place)
+  = External !ExternalEvent !Place
+  | Internal !Organiser !Party !Place
   deriving (Show, Eq, Generic)
 
 instance NFData Result
