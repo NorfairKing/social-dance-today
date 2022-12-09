@@ -176,6 +176,9 @@ externalEventSlugRoute ExternalEvent {..} = do
   externalEventSlug_ <- externalEventSlug
   pure $ ExternalEventSlugR externalEventSlug_ externalEventDay
 
+-- We add two random letters to the end of the external event so that it's more
+-- likely to that the slug will be unique even if we find the same exact event
+-- in two places.
 makeExternalEventSlug :: EventUUID -> Text -> Maybe EventSlug
 makeExternalEventSlug uuid title = mkSlug $ T.pack $ T.unpack title <> [replacementChar] <> take 2 (uuidString uuid)
 
