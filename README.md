@@ -8,3 +8,7 @@ salsa-party-web-server-gen: Generators and integration tests
 salsa-party-web-server-e2e: End-to-end tests
 salsa-party-web-server-webdriver: Webdriver tests
 ```
+
+## Hacking
+
+Run `nix develop` or `direnv allow` to get a dev environment.
