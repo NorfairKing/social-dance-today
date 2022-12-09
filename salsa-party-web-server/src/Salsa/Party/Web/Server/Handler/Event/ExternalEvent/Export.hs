@@ -16,8 +16,8 @@ import Salsa.Party.Web.Server.Handler.Event.JSON.Place
 import Salsa.Party.Web.Server.Handler.Import
 import Web.JSONLD (mField)
 
-exportExternalEvent :: Entity ExternalEvent -> Entity Place -> Handler ExternalEventExport
-exportExternalEvent (Entity _ externalEvent) (Entity _ place) = do
+exportExternalEvent :: ExternalEvent -> Place -> Handler ExternalEventExport
+exportExternalEvent externalEvent place = do
   requireAdmin
   importerMetadata <- runDB $ get404 $ externalEventImporter externalEvent
   pure $ externalEventExport externalEvent place importerMetadata

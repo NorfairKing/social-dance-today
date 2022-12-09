@@ -17,8 +17,8 @@ import qualified ICal.PropertyType.URI as ICal
 import Network.URI
 import Salsa.Party.Web.Server.Handler.Import
 
-partyPageICal :: Entity Organiser -> Entity Party -> Handler ICal.Calendar
-partyPageICal (Entity _ organiser) (Entity _ party@Party {..}) = do
+partyPageICal :: Organiser -> Party -> Handler ICal.Calendar
+partyPageICal organiser party@Party {..} = do
   place <- runDB $ get404 partyPlace
   renderUrl <- getUrlRender
   pure $ partyCalendar renderUrl organiser party place

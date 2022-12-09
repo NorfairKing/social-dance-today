@@ -17,7 +17,6 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
 import Data.Validity
-import Database.Persist
 import GHC.Generics (Generic)
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Handler.Search.Scoring
@@ -28,20 +27,20 @@ import Text.EditDistance
 -- We don't like false-positives, because then we see duplicate events: External events that are the same as some internal event we have.
 -- We don't like false-negatives, because then we don't see certain external events.
 deduplicateExternalEventsExternally ::
-  Map Day [(Entity ExternalEvent, Entity Place)] ->
-  Map Day [(Entity ExternalEvent, Entity Place)]
+  Map Day [(ExternalEvent, Place)] ->
+  Map Day [(ExternalEvent, Place)]
 deduplicateExternalEventsExternally = M.mapMaybe go
   where
     go ::
-      [(Entity ExternalEvent, Entity Place)] ->
-      Maybe [(Entity ExternalEvent, Entity Place)]
+      [(ExternalEvent, Place)] ->
+      Maybe [(ExternalEvent, Place)]
     go externalsOnDay =
       -- TODO: This is a quadratic-time comparison.
       -- We rely on the assumption that there are not a lot of events happening in the same area on the same day.
       let uniques = deleteWorstDuplicates externalsOnDay
        in if null uniques then Nothing else Just uniques
 
-deleteWorstDuplicates :: [(Entity ExternalEvent, Entity Place)] -> [(Entity ExternalEvent, Entity Place)]
+deleteWorstDuplicates :: [(ExternalEvent, Place)] -> [(ExternalEvent, Place)]
 deleteWorstDuplicates = \case
   [] -> []
   (d : ds) -> case findDel (externalEventIsSimilarEnoughTo d) ds of
@@ -64,23 +63,24 @@ findDel predicate = go
         (f, rest) <- go as
         pure (f, a : rest)
 
-externalEventIsSimilarEnoughTo :: (Entity ExternalEvent, Entity Place) -> (Entity ExternalEvent, Entity Place) -> Bool
-externalEventIsSimilarEnoughTo trip1 trip2 = similarEnough 0.748 $ computeSimilarityFormula $ similarityScoreExternalToExternal trip1 trip2
+externalEventIsSimilarEnoughTo :: (ExternalEvent, Place) -> (ExternalEvent, Place) -> Bool
+externalEventIsSimilarEnoughTo tup1 tup2 =
+  similarEnough 0.748 $ computeSimilarityFormula $ similarityScoreExternalToExternal tup1 tup2
 
 -- | Find external events that look like internal events, and delete them from the external events list.
 --
 -- We don't like false-positives, because then we see duplicate events: External events that are the same as some internal event we have.
 -- We don't like false-negatives, because then we don't see certain external events.
 deduplicateExternalEvents ::
-  Map Day [(Entity Organiser, Entity Party, Entity Place)] ->
-  Map Day [(Entity ExternalEvent, Entity Place)] ->
-  Map Day [(Entity ExternalEvent, Entity Place)]
+  Map Day [(Organiser, Party, Place)] ->
+  Map Day [(ExternalEvent, Place)] ->
+  Map Day [(ExternalEvent, Place)]
 deduplicateExternalEvents internals externals = M.differenceWith go externals internals
   where
     go ::
-      [(Entity ExternalEvent, Entity Place)] ->
-      [(Entity Organiser, Entity Party, Entity Place)] ->
-      Maybe [(Entity ExternalEvent, Entity Place)]
+      [(ExternalEvent, Place)] ->
+      [(Organiser, Party, Place)] ->
+      Maybe [(ExternalEvent, Place)]
     go externalsOnDay internalsOnDay =
       -- TODO: This is a quadratic-time comparison.
       -- We rely on the assumption that there are not a lot of events happening in the same area on the same day.
@@ -89,14 +89,15 @@ deduplicateExternalEvents internals externals = M.differenceWith go externals in
           (\externalEvent -> not $ any (externalEventIsSimilarEnoughToParty externalEvent) internalsOnDay)
           externalsOnDay
 
-externalEventIsSimilarEnoughToParty :: (Entity ExternalEvent, Entity Place) -> (Entity Organiser, Entity Party, Entity Place) -> Bool
-externalEventIsSimilarEnoughToParty tup tup2 = similarEnough 0.8 $ computeSimilarityFormula $ similarityScoreExternalToInternal tup tup2
+externalEventIsSimilarEnoughToParty :: (ExternalEvent, Place) -> (Organiser, Party, Place) -> Bool
+externalEventIsSimilarEnoughToParty tup tup2 =
+  similarEnough 0.8 $ computeSimilarityFormula $ similarityScoreExternalToInternal tup tup2
 
 similarityScoreExternalToExternal ::
-  (Entity ExternalEvent, Entity Place) ->
-  (Entity ExternalEvent, Entity Place) ->
+  (ExternalEvent, Place) ->
+  (ExternalEvent, Place) ->
   SimilarityFormula
-similarityScoreExternalToExternal (Entity _ externalEvent1, Entity _ place1) (Entity _ externalEvent2, Entity _ place2) =
+similarityScoreExternalToExternal (externalEvent1, place1) (externalEvent2, place2) =
   let simVia simFunc fieldFunc = simFunc (fieldFunc externalEvent1) (fieldFunc externalEvent2)
       mSim f s simFunc = mSimFunc f (\v1 v2 -> Factor s (simFunc v1 v2))
       mSimFunc f simFunc fieldFunc =
@@ -120,10 +121,10 @@ similarityScoreExternalToExternal (Entity _ externalEvent1, Entity _ place1) (En
           ]
 
 similarityScoreExternalToInternal ::
-  (Entity ExternalEvent, Entity Place) ->
-  (Entity Organiser, Entity Party, Entity Place) ->
+  (ExternalEvent, Place) ->
+  (Organiser, Party, Place) ->
   SimilarityFormula
-similarityScoreExternalToInternal (Entity _ externalEvent, Entity _ place1) (Entity _ organiser, Entity _ party, Entity _ place2) =
+similarityScoreExternalToInternal (externalEvent, place1) (organiser, party, place2) =
   let sim simFunc fieldFunc1 fieldFunc2 = simFunc (fieldFunc1 externalEvent) (fieldFunc2 party)
       mSim f s simFunc = mSimFunc f (\v1 v2 -> Factor s (simFunc v1 v2))
       mSimFunc f simFunc fieldFunc1 fieldFunc2 =

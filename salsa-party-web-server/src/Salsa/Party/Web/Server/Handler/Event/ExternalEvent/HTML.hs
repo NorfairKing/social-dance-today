@@ -22,8 +22,8 @@ import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.ICal
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
 import Salsa.Party.Web.Server.Handler.Import
 
-externalEventPageHtml :: Entity ExternalEvent -> Entity Place -> Handler Html
-externalEventPageHtml (Entity _ externalEvent@ExternalEvent {..}) (Entity _ place@Place {..}) = do
+externalEventPageHtml :: ExternalEvent -> Place -> Handler Html
+externalEventPageHtml externalEvent@ExternalEvent {..} place@Place {..} = do
   isAdmin <- do
     mAuth <- maybeAuth
     case mAuth of

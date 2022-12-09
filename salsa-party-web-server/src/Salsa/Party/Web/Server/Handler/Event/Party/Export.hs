@@ -22,8 +22,8 @@ import Salsa.Party.Web.Server.Handler.Event.JSON.Place
 import Salsa.Party.Web.Server.Handler.Import
 import Web.JSONLD (mField)
 
-exportParty :: Entity Organiser -> Entity Party -> Handler PartyExport
-exportParty (Entity _ organiser) (Entity _ party) = do
+exportParty :: Organiser -> Party -> Handler PartyExport
+exportParty organiser party = do
   requireAdmin
   place <- runDB $ get404 $ partyPlace party
   user <- runDB $ get404 $ organiserUser organiser

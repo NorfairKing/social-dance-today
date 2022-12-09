@@ -6,11 +6,10 @@ import Data.Char as Char
 import Data.Foldable
 import Data.Text (Text)
 import qualified Data.Text as T
-import Database.Persist
 import Salsa.Party.DB
 
-scoreExternalEventTup :: (Entity ExternalEvent, Entity Place) -> Double
-scoreExternalEventTup (Entity _ externalEvent, Entity _ place) =
+scoreExternalEventTup :: (ExternalEvent, Place) -> Double
+scoreExternalEventTup (externalEvent, place) =
   foldl'
     (+)
     0

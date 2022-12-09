@@ -83,24 +83,31 @@ runUncachedSearchQueryForResults searchQuery = do
             M.map (map makeExternalResult) externalResults
           ]
 
-runInternalSearchQuery :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [(Entity Organiser, Entity Party, Entity Place)])
+entityValTuple :: (Entity a, Entity b) -> (a, b)
+entityValTuple (Entity _ a, Entity _ b) = (a, b)
+
+entityValTriple :: (Entity a, Entity b, Entity c) -> (a, b, c)
+entityValTriple (Entity _ a, Entity _ b, Entity _ c) = (a, b, c)
+
+runInternalSearchQuery :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [(Organiser, Party, Place)])
 runInternalSearchQuery SearchQuery {..} = do
-  rawPartyResults <- select $ do
-    (organiser :& party :& place) <-
-      from $
-        table @Organiser
-          `innerJoin` table @Party
-          `on` ( \(organiser :& party) ->
-                   organiser ^. OrganiserId ==. party ^. PartyOrganiser
-               )
-          `innerJoin` table @Place
-          `on` ( \(_ :& party :& place) ->
-                   party ^. PartyPlace ==. place ^. PlaceId
-               )
-    where_ $ dayLimit (party ^. PartyDay) searchQueryBegin searchQueryMEnd
-    forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
-    partySubstringQuery searchQueryDanceStyle party
-    pure (organiser, party, place)
+  rawPartyResults <- fmap (map entityValTriple) $
+    select $ do
+      (organiser :& party :& place) <-
+        from $
+          table @Organiser
+            `innerJoin` table @Party
+            `on` ( \(organiser :& party) ->
+                     organiser ^. OrganiserId ==. party ^. PartyOrganiser
+                 )
+            `innerJoin` table @Place
+            `on` ( \(_ :& party :& place) ->
+                     party ^. PartyPlace ==. place ^. PlaceId
+                 )
+      where_ $ dayLimit (party ^. PartyDay) searchQueryBegin searchQueryMEnd
+      forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
+      partySubstringQuery searchQueryDanceStyle party
+      pure (organiser, party, place)
 
   -- Post-process the distance before we fetch images so we don't fetch too many images.
   let postprocessedResults =
@@ -109,22 +116,23 @@ runInternalSearchQuery SearchQuery {..} = do
           (\dist -> postProcessParties dist searchQueryCoordinates rawPartyResults)
           searchQueryDistance
 
-  let partyResults = map (\tup@(_, Entity _ party, _) -> (partyDay party, tup)) postprocessedResults
+  let partyResults = map (\tup@(_, party, _) -> (partyDay party, tup)) postprocessedResults
   pure $ makeGroupedByDay partyResults
 
-runExternalSearchQuery :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [(Entity ExternalEvent, Entity Place)])
+runExternalSearchQuery :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [(ExternalEvent, Place)])
 runExternalSearchQuery SearchQuery {..} = do
-  rawExternalEventResults <- select $ do
-    (externalEvent :& place) <-
-      from $
-        table @ExternalEvent `innerJoin` table @Place
-          `on` ( \(externalEvent :& place) ->
-                   externalEvent ^. ExternalEventPlace ==. place ^. PlaceId
-               )
-    where_ $ dayLimit (externalEvent ^. ExternalEventDay) searchQueryBegin searchQueryMEnd
-    forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
-    externalEventSubstringQuery searchQueryDanceStyle externalEvent
-    pure (externalEvent, place)
+  rawExternalEventResults <- fmap (map entityValTuple) $
+    select $ do
+      (externalEvent :& place) <-
+        from $
+          table @ExternalEvent `innerJoin` table @Place
+            `on` ( \(externalEvent :& place) ->
+                     externalEvent ^. ExternalEventPlace ==. place ^. PlaceId
+                 )
+      where_ $ dayLimit (externalEvent ^. ExternalEventDay) searchQueryBegin searchQueryMEnd
+      forM_ searchQueryDistance $ \distance -> distanceEstimationQuery distance searchQueryCoordinates place
+      externalEventSubstringQuery searchQueryDanceStyle externalEvent
+      pure (externalEvent, place)
 
   -- Post-process the distance before we fetch images so we don't fetch too many images.
   let postprocessedResults =
@@ -133,7 +141,7 @@ runExternalSearchQuery SearchQuery {..} = do
           (\dist -> postProcessExternalEvents dist searchQueryCoordinates rawExternalEventResults)
           searchQueryDistance
 
-  let externalEventResults = flip map postprocessedResults $ \tup@(Entity _ externalEvent, _) -> (externalEventDay externalEvent, tup)
+  let externalEventResults = flip map postprocessedResults $ \tup@(externalEvent, _) -> (externalEventDay externalEvent, tup)
 
   pure $
     deduplicateExternalEventsExternally $
@@ -281,27 +289,27 @@ orExpr = \case
 postProcessParties ::
   Word ->
   Coordinates ->
-  [(Entity Organiser, Entity Party, Entity Place)] ->
-  [(Entity Organiser, Entity Party, Entity Place)]
+  [(Organiser, Party, Place)] ->
+  [(Organiser, Party, Place)]
 postProcessParties maximumDistance coordinates =
   mapMaybe $ \(organiser, party, place) -> do
-    guard $ coordinates `distanceTo` placeCoordinates (entityVal place) <= maximumDistance
+    guard $ coordinates `distanceTo` placeCoordinates place <= maximumDistance
     pure (organiser, party, place)
 
-makeInternalResult :: (Entity Organiser, Entity Party, Entity Place) -> Result
+makeInternalResult :: (Organiser, Party, Place) -> Result
 makeInternalResult (organiser, party, place) = Internal organiser party place
 
 postProcessExternalEvents ::
   Word ->
   Coordinates ->
-  [(Entity ExternalEvent, Entity Place)] ->
-  [(Entity ExternalEvent, Entity Place)]
+  [(ExternalEvent, Place)] ->
+  [(ExternalEvent, Place)]
 postProcessExternalEvents maximumDistance coordinates =
   mapMaybe $ \(externalEvent, place) -> do
-    guard $ coordinates `distanceTo` placeCoordinates (entityVal place) <= maximumDistance
+    guard $ coordinates `distanceTo` placeCoordinates place <= maximumDistance
     pure (externalEvent, place)
 
-makeExternalResult :: (Entity ExternalEvent, Entity Place) -> Result
+makeExternalResult :: (ExternalEvent, Place) -> Result
 makeExternalResult (externalEvent, place) = External externalEvent place
 
 sortResults :: Coordinates -> [Result] -> [Result]
@@ -316,8 +324,8 @@ sortResults coordinates =
       Internal _ _ _ -> True
       External _ _ -> False
     distanceToResult = \case
-      External _ (Entity _ place) -> placeCoordinates place `distanceTo` coordinates
-      Internal _ _ (Entity _ place) -> placeCoordinates place `distanceTo` coordinates
+      External _ place -> placeCoordinates place `distanceTo` coordinates
+      Internal _ _ place -> placeCoordinates place `distanceTo` coordinates
 
 defaultMaximumDistance :: Word
 defaultMaximumDistance = 50_000 -- 50 km

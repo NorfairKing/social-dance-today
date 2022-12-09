@@ -23,14 +23,14 @@ getEventR :: EventUUID -> Handler TypedContent
 getEventR eventUuid = do
   mPartyTup <- runDB $ getPartyTupByUuid eventUuid
   case mPartyTup of
-    Just partyTup@(Entity _ organiser, Entity _ party) -> case partySlugRoute organiser party of
+    Just partyTup@(organiser, Entity _ party) -> case partySlugRoute organiser party of
       Nothing -> partyPage partyTup
       Just route -> redirect route
     Nothing -> do
       mExternalEventTup <- runDB $ getExternalEventTupByUuid eventUuid
       case mExternalEventTup of
-        Just (externalEventEntity@(Entity _ externalEvent), placeEntity) -> case externalEventSlugRoute externalEvent of
-          Nothing -> externalEventPage externalEventEntity placeEntity
+        Just (externalEvent, placeEntity) -> case externalEventSlugRoute externalEvent of
+          Nothing -> externalEventPage externalEvent placeEntity
           Just route -> redirect route
         -- If the UUID represents a party that does not exist, we will assume
         -- that the event has dissappeared from our database.

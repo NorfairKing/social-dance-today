@@ -14,7 +14,7 @@ $forall day <- days
         <div .columns .is-multiline .is-centered>
           $forall result <- results
             $case result
-              $of Internal (Entity _ organiser) (Entity _ party) (Entity _ p) 
+              $of Internal organiser party p
                 <div .column .is-two-thirds-tablet .is-half-desktop>
                   <div .zoom-without-container>
                     <a  href=@{partyRoute organiser party}>
@@ -29,7 +29,7 @@ $forall day <- days
                           <h3 .subtitle .is-5>
                             #{placeQuery p}
 
-              $of External (Entity _ externalEvent) ( Entity _ p) 
+              $of External externalEvent p
                 <div .column .is-two-thirds-tablet .is-half-desktop>
                   <div .zoom-without-container>
                     <a  href=@{externalEventRoute externalEvent}>
