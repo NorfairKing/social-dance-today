@@ -102,7 +102,7 @@ with final.haskell.lib;
           # https://github.com/Twinside/Juicy.Pixels/pull/216
           JuicyPixels = self.callCabal2nix "JuicyPixels"
             (builtins.fetchGit {
-              url = "git@github.com:Twinside/Juicy.Pixels.git";
+              url = "https://github.com/Twinside/Juicy.Pixels/";
               rev = "4c4bd9356e2930bbbfd0b5ab6a704b14ec062a23";
             })
             { };

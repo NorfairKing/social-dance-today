@@ -1,5 +1,9 @@
 {
   description = "salsa-party";
+  nixConfig = {
+    extra-substituters = "https://social-dance-today.cachix.org";
+    extra-trusted-public-keys = "social-dance-today.cachix.org-1:IMOTHXO8rDm0QGlOw6dt170EHEm3a3I6omrWia/Sg1A=";
+  };
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-21.11";
     pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
