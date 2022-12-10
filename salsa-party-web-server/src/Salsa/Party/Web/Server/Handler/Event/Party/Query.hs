@@ -1,32 +1,73 @@
+{-# LANGUAGE TypeApplications #-}
+
 module Salsa.Party.Web.Server.Handler.Event.Party.Query
   ( getPartyTupBySlug,
+    getPartyTripBySlug,
     getPartyTupByUuid,
   )
 where
 
 import Control.Monad.IO.Class
 import Data.Time
-import qualified Database.Esqueleto.Legacy as E
-import Database.Persist
-import Database.Persist.Sql
+import Database.Esqueleto.Experimental
 import Salsa.Party.DB
 
 getPartyTupBySlug :: MonadIO m => OrganiserSlug -> EventSlug -> Day -> SqlPersistT m (Maybe (Organiser, Entity Party))
 getPartyTupBySlug organiserSlug_ partySlug_ day =
   fmap (fmap (\(Entity _ organiser, partyEntity) -> (organiser, partyEntity))) $
-    E.selectOne $
-      E.from $ \(organiser `E.InnerJoin` party) -> do
-        E.on $ party E.^. PartyOrganiser E.==. organiser E.^. OrganiserId
-        E.where_ $ party E.^. PartyDay E.==. E.val day
-        E.where_ $ organiser E.^. OrganiserSlug E.==. E.just (E.val organiserSlug_)
-        E.where_ $ party E.^. PartySlug E.==. E.just (E.val partySlug_)
-        pure (organiser, party)
+    selectOne $ do
+      (organiser :& party) <-
+        from $
+          table @Organiser
+            `innerJoin` table @Party
+            `on` ( \(organiser :& party) ->
+                     organiser ^. OrganiserId
+                       ==. party ^. PartyOrganiser
+                 )
+      where_ $ party ^. PartyDay ==. val day
+      where_ $ organiser ^. OrganiserSlug ==. just (val organiserSlug_)
+      where_ $ party ^. PartySlug ==. just (val partySlug_)
+      pure (organiser, party)
+
+getPartyTripBySlug :: MonadIO m => OrganiserSlug -> EventSlug -> Day -> SqlPersistT m (Maybe (Organiser, Party, Maybe Recurrence))
+getPartyTripBySlug organiserSlug_ partySlug_ day =
+  fmap (fmap (\(Entity _ organiser, Entity _ partyEntity, Value s) -> (organiser, partyEntity, s))) $
+    selectOne $ do
+      ((organiser :& party) :& (_ :& schedule)) <-
+        from $
+          ( table @Organiser
+              `innerJoin` table @Party
+              `on` ( \(organiser :& party) ->
+                       organiser ^. OrganiserId
+                         ==. party ^. PartyOrganiser
+                   )
+          )
+            `leftJoin` ( table @ScheduleParty
+                           `innerJoin` table @Schedule
+                           `on` ( \(scheduleParty :& schedule) ->
+                                    scheduleParty ^. SchedulePartySchedule ==. schedule ^. ScheduleId
+                                )
+                       )
+            `on` ( \((_ :& party) :& (scheduleParty :& _)) ->
+                     just (party ^. PartyId) ==. scheduleParty ?. SchedulePartyParty
+                 )
+      where_ $ party ^. PartyDay ==. val day
+      where_ $ organiser ^. OrganiserSlug ==. just (val organiserSlug_)
+      where_ $ party ^. PartySlug ==. just (val partySlug_)
+      pure (organiser, party, schedule ?. ScheduleRecurrence)
 
 getPartyTupByUuid :: MonadIO m => EventUUID -> SqlPersistT m (Maybe (Organiser, Entity Party))
 getPartyTupByUuid partyUuid_ =
   fmap (fmap (\(Entity _ organiser, partyEntity) -> (organiser, partyEntity))) $
-    E.selectOne $
-      E.from $ \(organiser `E.InnerJoin` party) -> do
-        E.on $ party E.^. PartyOrganiser E.==. organiser E.^. OrganiserId
-        E.where_ $ party E.^. PartyUuid E.==. E.val partyUuid_
-        pure (organiser, party)
+    selectOne $ do
+      (organiser :& party) <-
+        from $
+          table @Organiser
+            `innerJoin` table @Party
+            `on` ( \(organiser :& party) ->
+                     organiser ^. OrganiserId
+                       ==. party ^. PartyOrganiser
+                 )
+
+      where_ $ party ^. PartyUuid ==. val partyUuid_
+      pure (organiser, party)
