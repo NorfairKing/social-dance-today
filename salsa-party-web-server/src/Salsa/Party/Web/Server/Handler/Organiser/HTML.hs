@@ -12,6 +12,7 @@ where
 import qualified Data.Text.Encoding as TE
 import qualified Database.Esqueleto.Legacy as E
 import Safe (maximumMay)
+import Salsa.Party.Web.Server.Handler.Event.Party.LD
 import Salsa.Party.Web.Server.Handler.Import
 
 getOrganiserR :: OrganiserUUID -> Handler Html
@@ -43,12 +44,15 @@ organiserPage (Entity organiserId organiser@Organiser {..}) = do
   withNavBar $ do
     setTitleI $ MsgOrganiserTitle organiserName
     setDescriptionI $ MsgOrganiserDescription organiserName
+    renderUrl <- getUrlRender
+    let ldEvents = map (\(Entity _ party, Entity _ place) -> partyToLDEvent renderUrl party organiser place) parties
+    toWidgetHead $ toJSONLDData ldEvents
     addHeader "Last-Modified" $ TE.decodeLatin1 $ formatHTTPDate $ utcToHTTPDate lastModified
     addStylesheet $ StaticR zoom_without_container_css
     $(widgetFile "organiser") <> posterCSS
 
 getUpcomingPartiesOfOrganiser :: MonadIO m => Day -> OrganiserId -> SqlPersistT m [(Entity Party, Entity Place)]
-getUpcomingPartiesOfOrganiser today organiserId = do
+getUpcomingPartiesOfOrganiser today organiserId =
   E.select $
     E.from $ \(party `E.InnerJoin` p) -> do
       E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
