@@ -6,9 +6,9 @@ import Salsa.Party.Web.Server.Handler.Event.Party.JSON
 import Salsa.Party.Web.Server.Handler.Event.Party.LD
 import Salsa.Party.Web.Server.Handler.Import
 
-partyPage :: (Organiser, Entity Party) -> Handler TypedContent
-partyPage (organiser, partyEntity@(Entity _ party)) = selectRep $ do
-  provideRep $ partyPageHtml organiser partyEntity
+partyPage :: (Organiser, Party, Maybe Recurrence) -> Handler TypedContent
+partyPage (organiser, party, mRecurrence) = selectRep $ do
+  provideRep $ partyPageHtml organiser party mRecurrence
   provideRep $ partyPageLD organiser party
   provideRep $ partyPageICal organiser party
   provideRep $ partyPageJSON organiser party

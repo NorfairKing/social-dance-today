@@ -23,8 +23,8 @@ import Salsa.Party.Web.Server.Handler.Event.Party.ICal
 import Salsa.Party.Web.Server.Handler.Event.Party.LD
 import Salsa.Party.Web.Server.Handler.Import
 
-partyPageHtml :: Organiser -> Entity Party -> Handler Html
-partyPageHtml organiser@Organiser {..} (Entity partyId party@Party {..}) = do
+partyPageHtml :: Organiser -> Party -> Maybe Recurrence -> Handler Html
+partyPageHtml organiser@Organiser {..} party@Party {..} mRecurrence = do
   isAdmin <- do
     mAuth <- maybeAuth
     case mAuth of
@@ -34,7 +34,6 @@ partyPageHtml organiser@Organiser {..} (Entity partyId party@Party {..}) = do
         pure $ Just (userEmailAddress u) == mAdmin
 
   place@Place {..} <- runDB $ get404 partyPlace
-  mSchedule <- runDB $ getScheduleForParty partyId
   googleMapsWidget <- makeGoogleMapsWidget partyUuid placeQuery
   now <- getClientNow
   let today = localDay now

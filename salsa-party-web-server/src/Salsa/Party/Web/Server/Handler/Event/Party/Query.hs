@@ -4,6 +4,7 @@ module Salsa.Party.Web.Server.Handler.Event.Party.Query
   ( getPartyTupBySlug,
     getPartyTripBySlug,
     getPartyTupByUuid,
+    getPartyTripByUuid,
   )
 where
 
@@ -12,9 +13,9 @@ import Data.Time
 import Database.Esqueleto.Experimental
 import Salsa.Party.DB
 
-getPartyTupBySlug :: MonadIO m => OrganiserSlug -> EventSlug -> Day -> SqlPersistT m (Maybe (Organiser, Entity Party))
+getPartyTupBySlug :: MonadIO m => OrganiserSlug -> EventSlug -> Day -> SqlPersistT m (Maybe (Organiser, Party))
 getPartyTupBySlug organiserSlug_ partySlug_ day =
-  fmap (fmap (\(Entity _ organiser, partyEntity) -> (organiser, partyEntity))) $
+  fmap (fmap (\(Entity _ organiser, Entity _ party) -> (organiser, party))) $
     selectOne $ do
       (organiser :& party) <-
         from $
@@ -71,3 +72,28 @@ getPartyTupByUuid partyUuid_ =
 
       where_ $ party ^. PartyUuid ==. val partyUuid_
       pure (organiser, party)
+
+getPartyTripByUuid :: MonadIO m => EventUUID -> SqlPersistT m (Maybe (Organiser, Party, Maybe Recurrence))
+getPartyTripByUuid partyUuid_ =
+  fmap (fmap (\(Entity _ organiser, Entity _ partyEntity, Value s) -> (organiser, partyEntity, s))) $
+    selectOne $ do
+      ((organiser :& party) :& (_ :& schedule)) <-
+        from $
+          ( table @Organiser
+              `innerJoin` table @Party
+              `on` ( \(organiser :& party) ->
+                       organiser ^. OrganiserId
+                         ==. party ^. PartyOrganiser
+                   )
+          )
+            `leftJoin` ( table @ScheduleParty
+                           `innerJoin` table @Schedule
+                           `on` ( \(scheduleParty :& schedule) ->
+                                    scheduleParty ^. SchedulePartySchedule ==. schedule ^. ScheduleId
+                                )
+                       )
+            `on` ( \((_ :& party) :& (scheduleParty :& _)) ->
+                     just (party ^. PartyId) ==. scheduleParty ?. SchedulePartyParty
+                 )
+      where_ $ party ^. PartyUuid ==. val partyUuid_
+      pure (organiser, party, schedule ?. ScheduleRecurrence)

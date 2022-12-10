@@ -21,10 +21,10 @@ import Salsa.Party.Web.Server.Handler.Import
 
 getEventR :: EventUUID -> Handler TypedContent
 getEventR eventUuid = do
-  mPartyTup <- runDB $ getPartyTupByUuid eventUuid
+  mPartyTup <- runDB $ getPartyTripByUuid eventUuid
   case mPartyTup of
-    Just partyTup@(organiser, Entity _ party) -> case partySlugRoute organiser party of
-      Nothing -> partyPage partyTup
+    Just partyTrip@(organiser, party, _) -> case partySlugRoute organiser party of
+      Nothing -> partyPage partyTrip
       Just route -> redirect route
     Nothing -> do
       mExternalEventTup <- runDB $ getExternalEventTupByUuid eventUuid
@@ -46,10 +46,10 @@ getEventR eventUuid = do
 
 getPartySlugR :: OrganiserSlug -> EventSlug -> Day -> Handler TypedContent
 getPartySlugR organiserSlug_ partySlug_ day = do
-  mPartyTup <- runDB $ getPartyTupBySlug organiserSlug_ partySlug_ day
+  mPartyTup <- runDB $ getPartyTripBySlug organiserSlug_ partySlug_ day
   case mPartyTup of
     Nothing -> goneOrNotFound day
-    Just partyTup -> partyPage partyTup
+    Just partyTrip -> partyPage partyTrip
 
 getExternalEventSlugR :: EventSlug -> Day -> Handler TypedContent
 getExternalEventSlugR externalEventSlug_ day = do

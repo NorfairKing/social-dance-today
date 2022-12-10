@@ -25,9 +25,9 @@
             rel="author">
             _{MsgPartyOrganiser organiserName}
 
-        $maybe Entity _ schedule <- mSchedule
+        $maybe recurrence <- mRecurrence
           <h4 .subtitle .is-6>
-            ^{recurrenceDescriptionWidget (scheduleRecurrence schedule)}
+            ^{recurrenceDescriptionWidget recurrence}
 
         $maybe posterKey <- partyPoster
           <div .content>
@@ -149,12 +149,12 @@ $if isAdmin
                 #{ppShow organiser}
 
 
-            $maybe schedule <- mSchedule
+            $maybe recurrence <- mRecurrence
               <div .block>
                 <h5 .title .is-5>
-                  Raw schedule data
+                  Recurrence
                 <pre>
-                  #{ppShow schedule}
+                  #{ppShow recurrence}
 
 
             <div .block>
