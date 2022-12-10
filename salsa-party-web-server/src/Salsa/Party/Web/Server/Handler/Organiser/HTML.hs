@@ -38,25 +38,26 @@ organiserPage (Entity organiserId organiser@Organiser {..}) = do
   timeLocale <- getTimeLocale
   prettyDayFormat <- getPrettyDayFormat
   prettyDateTimeFormat <- getPrettyDateTimeFormat
-  let mLatestModifiedParty = maximumMay $ map (\(Entity _ Party {..}, _) -> fromMaybe partyCreated partyModified) parties
+  let mLatestModifiedParty = maximumMay $ map (\(Party {..}, _) -> fromMaybe partyCreated partyModified) parties
   let latestModifiedOrganiser = fromMaybe organiserCreated organiserModified
   let lastModified = maybe latestModifiedOrganiser (max latestModifiedOrganiser) mLatestModifiedParty
   withNavBar $ do
     setTitleI $ MsgOrganiserTitle organiserName
     setDescriptionI $ MsgOrganiserDescription organiserName
     renderUrl <- getUrlRender
-    let ldEvents = map (\(Entity _ party, Entity _ place) -> partyToLDEvent renderUrl party organiser place) parties
+    let ldEvents = map (\(party, place) -> partyToLDEvent renderUrl party organiser place) parties
     toWidgetHead $ toJSONLDData ldEvents
     addHeader "Last-Modified" $ TE.decodeLatin1 $ formatHTTPDate $ utcToHTTPDate lastModified
     addStylesheet $ StaticR zoom_without_container_css
     $(widgetFile "organiser") <> posterCSS
 
-getUpcomingPartiesOfOrganiser :: MonadIO m => Day -> OrganiserId -> SqlPersistT m [(Entity Party, Entity Place)]
+getUpcomingPartiesOfOrganiser :: MonadIO m => Day -> OrganiserId -> SqlPersistT m [(Party, Place)]
 getUpcomingPartiesOfOrganiser today organiserId =
-  E.select $
-    E.from $ \(party `E.InnerJoin` p) -> do
-      E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
-      E.where_ (party E.^. PartyOrganiser E.==. E.val organiserId)
-      E.where_ (party E.^. PartyDay E.>=. E.val today)
-      E.orderBy [E.asc $ party E.^. PartyDay]
-      pure (party, p)
+  fmap (map (\(Entity _ party, Entity _ place) -> (party, place))) $
+    E.select $
+      E.from $ \(party `E.InnerJoin` p) -> do
+        E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
+        E.where_ (party E.^. PartyOrganiser E.==. E.val organiserId)
+        E.where_ (party E.^. PartyDay E.>=. E.val today)
+        E.orderBy [E.asc $ party E.^. PartyDay]
+        pure (party, p)
