@@ -545,17 +545,19 @@ parseJSONLDEvents = awaitForever $ \(request, response, value) ->
       -- warn about our parser potentially being broken.
       let typeParser :: Value -> JSON.Parser Text
           typeParser = withObject "ValueWithType" $ \o -> o .: "@type"
+      let eventTypes = ["Event", "DanceEvent", "SocialEvent"]
       case JSON.parseMaybe typeParser value of
-        Just typ -> case typ of
-          "Event" ->
-            logWarnN $
-              T.pack $
-                unlines
-                  [ "Found a json object with '@type' 'Event', but couldn't parse it as an event:",
-                    errorMessageSingle,
-                    T.unpack $ LT.toStrict $ LTB.toLazyText $ JSON.encodePrettyToTextBuilder value
-                  ]
-          _ -> pure ()
+        Just typ ->
+          if typ `elem` eventTypes
+            then
+              logWarnN $
+                T.pack $
+                  unlines
+                    [ unwords ["Found a json object with '@type'", show typ, " but couldn't parse it as an event:"],
+                      errorMessageSingle,
+                      T.unpack $ LT.toStrict $ LTB.toLazyText $ JSON.encodePrettyToTextBuilder value
+                    ]
+            else pure ()
         Nothing ->
           case JSON.parseEither parseJSON value of
             Right events -> yieldMany $ map ((,,) request response) events
@@ -567,12 +569,12 @@ parseJSONLDEvents = awaitForever $ \(request, response, value) ->
               case JSON.parseMaybe listTypeParser value of
                 Nothing -> pure ()
                 Just types ->
-                  if all (== "Event") types
+                  if all (`elem` eventTypes) types
                     then
                       logWarnN $
                         T.pack $
                           unlines
-                            [ "Found a list of json objects that all have '@type' 'Event', but couldn't parse it as a list of events:",
+                            [ "Found a list of json objects that all have '@type' that look like an event, but couldn't parse it as a list of events:",
                               errorMessageList,
                               T.unpack $ LT.toStrict $ LTB.toLazyText $ JSON.encodePrettyToTextBuilder value
                             ]

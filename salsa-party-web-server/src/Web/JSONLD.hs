@@ -46,7 +46,7 @@ instance ToJSON Event where
     object $
       concat
         [ [ "@context" .= ("https://schema.org" :: Text),
-            "@type" .= ("Event" :: Text),
+            "@type" .= ("DanceEvent" :: Text),
             "name" .= eventName,
             "location" .= eventLocation,
             "startDate" .= eventStartDate
