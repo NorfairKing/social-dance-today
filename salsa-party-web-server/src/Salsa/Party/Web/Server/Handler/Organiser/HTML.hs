@@ -10,10 +10,10 @@ module Salsa.Party.Web.Server.Handler.Organiser.HTML
 where
 
 import qualified Data.Text.Encoding as TE
-import qualified Database.Esqueleto.Legacy as E
 import Safe (maximumMay)
 import Salsa.Party.Web.Server.Handler.Event.Party.LD
 import Salsa.Party.Web.Server.Handler.Import
+import Salsa.Party.Web.Server.Handler.Organiser.Query
 
 getOrganiserR :: OrganiserUUID -> Handler Html
 getOrganiserR uuid = do
@@ -50,14 +50,3 @@ organiserPage (Entity organiserId organiser@Organiser {..}) = do
     addHeader "Last-Modified" $ TE.decodeLatin1 $ formatHTTPDate $ utcToHTTPDate lastModified
     addStylesheet $ StaticR zoom_without_container_css
     $(widgetFile "organiser") <> posterCSS
-
-getUpcomingPartiesOfOrganiser :: MonadIO m => Day -> OrganiserId -> SqlPersistT m [(Party, Place)]
-getUpcomingPartiesOfOrganiser today organiserId =
-  fmap (map (\(Entity _ party, Entity _ place) -> (party, place))) $
-    E.select $
-      E.from $ \(party `E.InnerJoin` p) -> do
-        E.on (party E.^. PartyPlace E.==. p E.^. PlaceId)
-        E.where_ (party E.^. PartyOrganiser E.==. E.val organiserId)
-        E.where_ (party E.^. PartyDay E.>=. E.val today)
-        E.orderBy [E.asc $ party E.^. PartyDay]
-        pure (party, p)
