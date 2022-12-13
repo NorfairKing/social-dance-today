@@ -5,16 +5,16 @@
     extra-trusted-public-keys = "social-dance-today.cachix.org-1:IMOTHXO8rDm0QGlOw6dt170EHEm3a3I6omrWia/Sg1A=";
   };
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-21.11";
+    nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-22.11";
     pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
     haskell-dependency-graph-nix.url = "github:NorfairKing/haskell-dependency-graph-nix";
     haskell-dependency-graph-nix.inputs.nixpkgs.follows = "nixpkgs";
     haskell-dependency-graph-nix.inputs.pre-commit-hooks.follows = "pre-commit-hooks";
-    validity.url = "github:NorfairKing/validity?ref=flake";
+    validity.url = "github:NorfairKing/validity";
     validity.flake = false;
-    autodocodec.url = "github:NorfairKing/autodocodec?ref=flake";
+    autodocodec.url = "github:NorfairKing/autodocodec";
     autodocodec.flake = false;
-    safe-coloured-text.url = "github:NorfairKing/safe-coloured-text?ref=flake";
+    safe-coloured-text.url = "github:NorfairKing/safe-coloured-text";
     safe-coloured-text.flake = false;
     sydtest.url = "github:NorfairKing/sydtest";
     sydtest.flake = false;
@@ -63,7 +63,6 @@
         inherit system;
         config.allowUnfree = true;
         overlays = [
-          self.overlays.${system}
           (import (validity + "/nix/overlay.nix"))
           (import (safe-coloured-text + "/nix/overlay.nix"))
           (import (sydtest + "/nix/overlay.nix"))
@@ -77,6 +76,7 @@
           (import (pretty-relative-time + "/nix/overlay.nix"))
           (import (linkcheck + "/nix/overlay.nix"))
           (import (seocheck + "/nix/overlay.nix"))
+          self.overlays.${system}
         ];
       };
       pkgs = pkgsFor nixpkgs;

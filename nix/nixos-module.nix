@@ -48,12 +48,6 @@ in
                     example = 8001;
                     description = "The port to serve web requests on";
                   };
-                  ekg-port = mkOption {
-                    type = types.nullOr types.int;
-                    default = null;
-                    example = 8002;
-                    description = "The port to serve ekg requests on";
-                  };
                   admin = mkOption {
                     type = types.nullOr types.str;
                     example = "syd@cs-syd.eu";
@@ -187,7 +181,6 @@ in
           (nullOrOption "log-level" log-level)
           (nullOrOptionHead "host" hosts)
           (nullOrOption "port" port)
-          (nullOrOption "ekg-port" ekg-port)
           (nullOrOption "admin" admin)
           (nullOrOption "send-emails" send-emails)
           (nullOrOption "send-address" send-address)
@@ -251,15 +244,6 @@ in
               };
             };
           };
-          ekgHost = optionalAttrs (!builtins.isNull ekg-port) {
-            "ekg.${head hosts}" = {
-              enableACME = true;
-              forceSSL = true;
-              locations."/" = {
-                proxyPass = "http://localhost:${builtins.toString ekg-port}";
-              };
-            };
-          };
           redirectHost = host: {
             "${host}" = {
               enableACME = true;
@@ -277,7 +261,6 @@ in
         in
         optionalAttrs (enable && hosts != [ ]) (
           primaryHost
-          // ekgHost
           // mergeListRecursively (builtins.map redirectHost (tail hosts))
           // mergeListRecursively (builtins.map wwwRedirectHost hosts)
         );
@@ -323,7 +306,6 @@ in
         ];
       networking.firewall.allowedTCPPorts = builtins.concatLists [
         (optional (cfg.web-server.enable or false) cfg.web-server.port)
-        (optional ((cfg.web-server.enable or false) && !builtins.isNull (cfg.web-server.ekg-port or null)) cfg.web-server.ekg-port)
       ];
       services.nginx.virtualHosts =
         mergeListRecursively [

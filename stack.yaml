@@ -1,4 +1,4 @@
-resolver: lts-18.16
+resolver: lts-19.32
 packages:
 - salsa-party-data
 - salsa-party-data-gen
@@ -96,7 +96,7 @@ extra-deps:
     - safe-coloured-text
     - safe-coloured-text-terminfo
 - github: NorfairKing/sydtest
-  commit: aa42f6951502dba8836d1076c5b6068cdece7b91
+  commit: 65dbb63fa32110d8e11fd9ae5a5b62449e9f53d9
   subdirs:
     - sydtest
     - sydtest-aeson
@@ -122,11 +122,18 @@ extra-deps:
 - github: NorfairKing/pretty-relative-time
   commit: a634358ff274380a12360f7814c3aea46ea35b1b
 
+- github: georgefst/hs-webdriver
+  commit: cf9c387de7c1525ffbcd58125ccb3f798a97a2bb
 
-- mime-0.4.0.2@sha256:208947d9d1a19d08850be67ecb28c6e776db697f3bba05bd9d682e51a59f241f,983
-- amazonka-1.6.1
-- unliftio-core-0.1.2.0@sha256:b0a7652ffce2284a6cebe05c99eb60573a8fb6631163f34b0b30a80b4a78cb23,1081
-- webp-0.1.0.1@sha256:f3e9ebf257f898054755747a3987da5bd221e5931e4052c2ac22e3215a4bcb71,2349
+- github: brendanhay/amazonka
+  commit: cfe2584aef0b03c86650372d362c74f237925d8c
+  subdirs:
+  - lib/amazonka
+  - lib/amazonka-core
+  - lib/amazonka-test
+  - lib/services/amazonka-ses
+  - lib/services/amazonka-sso
+  - lib/services/amazonka-sts
 
 system-ghc: true
 nix:

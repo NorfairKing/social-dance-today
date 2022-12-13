@@ -95,6 +95,19 @@ with final.haskell.lib;
               salsa-party-web-server-gen = salsaPartyPkg "salsa-party-web-server-gen";
               salsa-party-web-server-webdriver = final.haskellPackages.sydtest-webdriver.enableWebdriver (salsaPartyPkg "salsa-party-web-server-webdriver");
             };
+          amazonkaRepo = builtins.fetchGit {
+            url = "https://github.com/brendanhay/amazonka";
+            rev = "cfe2584aef0b03c86650372d362c74f237925d8c";
+          };
+          amazonkaPkg = name: path: self.callCabal2nix name (amazonkaRepo + "/${path}") { };
+          amazonkaPackages = builtins.mapAttrs amazonkaPkg {
+            "amazonka" = "lib/amazonka";
+            "amazonka-core" = "lib/amazonka-core";
+            "amazonka-test" = "lib/amazonka-test";
+            "amazonka-ses" = "lib/services/amazonka-ses";
+            "amazonka-sso" = "lib/services/amazonka-sso";
+            "amazonka-sts" = "lib/services/amazonka-sts";
+          };
         in
         {
           inherit salsaPartyPackages;
@@ -106,7 +119,10 @@ with final.haskell.lib;
               rev = "4c4bd9356e2930bbbfd0b5ab6a704b14ec062a23";
             })
             { };
-        } // salsaPartyPackages
+          ekg-json = unmarkBroken super.ekg-json;
+
+
+        } // salsaPartyPackages // amazonkaPackages
     );
   });
 }

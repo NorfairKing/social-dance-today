@@ -244,8 +244,6 @@ library
     , data-default
     , deepseq
     , edit-distance
-    , ekg
-    , ekg-core
     , envparse
     , esqueleto
     , fast-logger
