@@ -11,8 +11,6 @@ let
 
   mergeListRecursively = pkgs.callPackage ./merge-lists-recursively.nix { };
 
-  toYamlFile = pkgs.callPackage ./to-yaml.nix { };
-
   mkLooperOption = looper.passthru.mkLooperOption;
 in
 {
@@ -197,7 +195,7 @@ in
           (nullOrOption "sentry" sentry)
           cfg.web-server.config
         ];
-      web-server-config-file = toYamlFile "salsa-web-server-config" web-server-config;
+      web-server-config-file = (pkgs.formats.yaml { }).generate "salsa-web-server-config.yaml" web-server-config;
 
       working-dir = "/www/salsa-party/${envname}/";
       web-server-working-dir = working-dir + "web-server/";
