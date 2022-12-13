@@ -27,6 +27,8 @@ import Yesod
 import Yesod.Auth
 import Yesod.EmbeddedStatic (EmbeddedStatic)
 
+{-# ANN module ("NOCOVER" :: String) #-}
+
 type PageNumber = Int
 
 mkYesodData "App" $(makeRelativeToProject "routes.txt" >>= parseRoutesFile)

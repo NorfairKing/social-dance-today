@@ -53,6 +53,7 @@ import Yesod
 import Yesod.Auth
 import Yesod.Auth.Message
 
+{-# ANN salsaAuthPlugin ("NOCOVER" :: String) #-}
 salsaAuthPlugin ::
   forall app.
   ( app ~ App,
@@ -180,6 +181,7 @@ loginForm =
     <$> (EmailAddress <$> ireq emailField "email-address")
     <*> (mkPassword <$> ireq passwordField "passphrase")
 
+{-# ANN postLoginR ("NOCOVER" :: String) #-}
 postLoginR ::
   ( app ~ App,
     YesodAuth app,

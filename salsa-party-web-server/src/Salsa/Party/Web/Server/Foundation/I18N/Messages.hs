@@ -10,6 +10,8 @@ import Data.Text (Text)
 import Salsa.Party.Web.Server.Foundation.App
 import Yesod
 
+{-# ANN module ("NOCOVER" :: String) #-}
+
 mkMessage "App" "messages" "en"
 
 siteTitle :: Text

@@ -37,7 +37,6 @@ with final.haskell.lib;
                     doBenchmark = true;
                     doHaddock = false;
                     doCoverage = false;
-                    doCheck = false; # Only check the release version.
                     enableLibraryProfiling = false;
                     enableExecutableProfiling = false;
                     buildDepends = (old.buildInputs or [ ]) ++ (with final; [

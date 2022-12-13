@@ -36,6 +36,8 @@
     linkcheck.flake = false;
     seocheck.url = "github:NorfairKing/seocheck?ref=flake";
     seocheck.flake = false;
+    dekking.url = "github:NorfairKing/dekking";
+    dekking.flake = false;
   };
 
   outputs =
@@ -56,6 +58,7 @@
     , pretty-relative-time
     , linkcheck
     , seocheck
+    , dekking
     }:
     let
       system = "x86_64-linux";
@@ -76,6 +79,7 @@
           (import (pretty-relative-time + "/nix/overlay.nix"))
           (import (linkcheck + "/nix/overlay.nix"))
           (import (seocheck + "/nix/overlay.nix"))
+          (import (dekking + "/nix/overlay.nix"))
           self.overlays.${system}
         ];
       };
@@ -98,6 +102,19 @@
         dependency-graph = haskell-dependency-graph-nix.lib.${system}.makeDependencyGraph {
           packages = builtins.attrNames pkgs.haskellPackages.salsaPartyPackages;
           inherit (pkgs) haskellPackages;
+        };
+        coverage-report = pkgs.dekking.makeCoverageReport {
+          name = "test-coverage-report";
+          packages = [
+            "salsa-party-data"
+            "salsa-party-web-server"
+          ];
+          coverage = [
+            "salsa-party-data-gen"
+            "salsa-party-web-server-gen"
+            "salsa-party-web-server-e2e"
+            "salsa-party-web-server-webdriver"
+          ];
         };
         pre-commit = pre-commit-hooks.lib.${system}.run {
           src = ./.;
