@@ -11,11 +11,20 @@ import Network.HTTP.Client as HTTP
 import Path
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Handler.Search.Types
+import Yesod.Core.Types
 import Yesod.EmbeddedStatic (EmbeddedStatic)
 
 data App = App
   { appRoot :: !(Maybe Text),
     appLogLevel :: !LogLevel,
+    appLogSource ::
+      !( Logger ->
+         Loc ->
+         LogSource ->
+         LogLevel ->
+         LogStr ->
+         IO ()
+       ),
     appHashDifficulty :: !Int,
     appStatic :: !EmbeddedStatic,
     appHTTPManager :: !HTTP.Manager,

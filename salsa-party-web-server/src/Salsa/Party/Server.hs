@@ -32,6 +32,7 @@ import System.Exit
 import Text.Colour
 import Text.Show.Pretty
 import UnliftIO
+import Yesod.Core
 
 salsaPartyServer :: IO ()
 salsaPartyServer = getSettings >>= runSalsaPartyServer
@@ -55,6 +56,7 @@ runSalsaPartyServer settings@Settings {..} = do
               App
                 { appRoot = settingHost,
                   appLogLevel = settingLogLevel,
+                  appLogSource = defaultMessageLoggerSource (shouldLogIO app),
                   appStatic = salsaPartyWebServerStatic,
                   appHashDifficulty = 10,
                   appConnectionPool = pool,

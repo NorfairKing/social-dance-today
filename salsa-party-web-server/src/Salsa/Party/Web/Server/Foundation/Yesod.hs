@@ -97,6 +97,7 @@ instance Yesod App where
       )
 
   shouldLogIO app _ ll = pure $ ll >= appLogLevel app
+  messageLoggerSource = appLogSource
 
   maximumContentLengthIO _ route = pure $ case route of
     Just (AccountR AccountSubmitPartyR) -> Nothing -- No limit on the images.

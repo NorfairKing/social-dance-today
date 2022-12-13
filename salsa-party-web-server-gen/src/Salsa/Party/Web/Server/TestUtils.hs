@@ -8,6 +8,7 @@
 
 module Salsa.Party.Web.Server.TestUtils where
 
+import Control.Exception
 import Control.Monad.Logger
 import Control.Monad.Reader
 import Data.ByteString (ByteString)
@@ -58,10 +59,19 @@ serverSetupFunc man = do
   sessionKeyFile <- resolveFile tdir "session-key.aes"
   searchResultCache <- liftIO $ newCache Nothing
   exploreResultCache <- liftIO $ newCache Nothing
+  let evaluatingLogSource logger loc source level str = do
+        _ <- evaluate logger
+        _ <- evaluate loc
+        _ <- evaluate source
+        _ <- evaluate level
+        _ <- evaluate str
+        pure ()
+
   pure
     App
       { appRoot = Nothing,
         appLogLevel = LevelError,
+        appLogSource = evaluatingLogSource,
         appStatic = salsaPartyWebServerStatic,
         appHashDifficulty = 4, -- Lowest
         appHTTPManager = man,
