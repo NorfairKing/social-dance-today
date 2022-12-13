@@ -99,9 +99,13 @@ instance Yesod App where
   shouldLogIO app _ ll = pure $ ll >= appLogLevel app
   messageLoggerSource = appLogSource
 
-  maximumContentLengthIO _ route = pure $ case route of
-    Just (AccountR AccountSubmitPartyR) -> Nothing -- No limit on the images.
-    _ -> Just $ 2 * 1024 * 1024 -- 2 megabytes
+  maximumContentLengthIO _ route = pure $ do
+    let defaultLimit = 2 * 1024 * 1024 -- 2 megabytes
+    let imageLimit = 10 * 1024 * 1024 -- 10 megabyte limit on images
+    case route of
+      Just (AccountR AccountSubmitPartyR) -> Just imageLimit
+      Just (AccountR AccountSubmitScheduleR) -> Just imageLimit
+      _ -> Just defaultLimit
 
   authRoute _ = Just $ AuthR LoginR
 
