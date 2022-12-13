@@ -29,9 +29,9 @@ spec = serverSpec $
       get $ ExploreSkylineR "../locations/Zürich.jpg"
       statusIs 404
 
-    forM_ locations $ \Location {..} -> do
-      let query = placeQuery locationPlace
-      it ("GETs a 200 for the explore skyline of " <> show query) $ do
+    it "GETS a 200 for random explory skyline's" $ \yc -> do
+      forAll (elements locations) $ \Location {..} -> runYesodClientM yc $ do
+        let query = placeQuery locationPlace
         get $ ExploreSkylineR query
         statusIs 200
 
