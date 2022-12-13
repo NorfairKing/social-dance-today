@@ -29,10 +29,6 @@ library:
   - password
   - path-pieces
   - persistent
-  - random
-  - resourcet
-  - shakespeare
-  - template-haskell
   - text
   - text-icu
   - time
@@ -46,5 +42,3 @@ library:
   - validity-time
   - yaml
   - yesod
-  - yesod-core
-  - yesod-form

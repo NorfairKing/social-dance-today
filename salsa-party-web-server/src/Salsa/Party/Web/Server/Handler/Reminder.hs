@@ -16,5 +16,5 @@ getUnsubReminderR secret = do
         update organiserReminderId [OrganiserReminderConsent =. False]
       withNavBar $ do
         setTitleI MsgUnsubReminderTitle
-        setDescriptionI MsgUnsubReminderDescription
+        setDescriptionIdempI MsgUnsubReminderDescription
         $(widgetFile "unsub/reminder")

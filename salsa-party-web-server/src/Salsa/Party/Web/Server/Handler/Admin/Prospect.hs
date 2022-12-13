@@ -19,12 +19,13 @@ module Salsa.Party.Web.Server.Handler.Admin.Prospect
   )
 where
 
+import qualified Amazonka.SES as SES
+import qualified Amazonka.SES.SendEmail as SES
+import qualified Amazonka.SES.Types as SES
 import Control.Monad
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Builder as TLB
-import Lens.Micro
-import qualified Network.AWS.SES as SES
 import Network.URI
 import Salsa.Party.Email
 import Salsa.Party.Web.Server.Geocoding
@@ -212,30 +213,24 @@ postAdminProspectInviteR prospectId = do
   let textContent = prospectEmailTextContent urlRender prospect mExternalEvent
   let htmlContent = prospectEmailHtmlContent urlRender prospect mExternalEvent
 
+  let textBody = SES.newContent textContent
+  let htmlBody = SES.newContent htmlContent
+  let body = SES.newBody {SES.html = Just htmlBody, SES.text = Just textBody}
+
+  let subject = SES.newContent "Advertise your parties on Social Dance Today for free!"
+
+  let message = SES.newMessage subject body
+
+  let destination = SES.newDestination {SES.toAddresses = Just [prospectEmailAddress prospect], SES.bccAddresses = Just ["syd@cs-syd.eu"]}
+
   app <- getYesod
-  let destination =
-        SES.destination
-          & SES.dToAddresses .~ [prospectEmailAddress prospect]
-          & SES.dBCCAddresses .~ ["syd@cs-syd.eu"]
-
-  let textBody = SES.content textContent
-  let htmlBody = SES.content htmlContent
-
-  let body =
-        SES.body
-          & SES.bText ?~ textBody
-          & SES.bHTML ?~ htmlBody
-
-  let subject = SES.content "Advertise your parties on Social Dance Today for free!"
-
-  let message = SES.message subject body
-
   case appProspectSendAddress app of
     Nothing -> pure ()
     Just sendAddress -> do
       let request =
-            SES.sendEmail sendAddress destination message
-              & SES.seReplyToAddresses .~ maybeToList (emailAddressText <$> appAdmin app)
+            (SES.newSendEmail sendAddress destination message)
+              { SES.replyToAddresses = Just $ maybeToList (emailAddressText <$> appAdmin app)
+              }
       res <- sendEmail app request
       case res of
         EmailSentSuccesfully -> do

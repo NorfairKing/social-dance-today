@@ -246,7 +246,6 @@ library
     , edit-distance
     , envparse
     , esqueleto
-    , fast-logger
     , file-embed
     , hashable
     , http-client
@@ -260,10 +259,8 @@ library
     , mtl
     , network-uri
     , optparse-applicative
-    , password
     , path
     , path-io
-    , path-pieces
     , persistent
     , persistent-sqlite
     , pretty-relative-time
@@ -290,7 +287,6 @@ library
     , validity-text
     , validity-time
     , vector
-    , wai
     , wai-extra
     , warp
     , xml-conduit
@@ -299,7 +295,6 @@ library
     , yesod-auth
     , yesod-autoreload
     , yesod-core
-    , yesod-form
     , yesod-sitemap
     , yesod-static
     , yesod-static-remote

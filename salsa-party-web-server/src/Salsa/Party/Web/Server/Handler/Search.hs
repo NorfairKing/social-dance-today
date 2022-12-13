@@ -43,7 +43,7 @@ getAdvancedSearchR = withNavBar $ do
   let defaultDistance = mToKm defaultMaximumDistance
   let stepDistance = mToKm maximumDistanceStep
   setTitleI MsgAdvancedSearchTitle
-  setDescriptionI MsgAdvancedSearchDescription
+  setDescriptionIdempI MsgAdvancedSearchDescription
   $(widgetFile "advanced-search") <> locateMeButton queryId statusId helpId
 
 mToKm :: Word -> Word
@@ -373,7 +373,7 @@ searchResultsPage searchParameters@SearchParameters {..} = do
 
       withNavBar $ do
         searchParametersHtmlTitle searchParameters >>= setTitleI
-        searchParametersHtmlDescription searchParameters >>= setDescriptionI
+        searchParametersHtmlDescription searchParameters >>= setDescriptionIdempI
         title <- searchParametersHtmlTitle searchParameters
         timeLocale <- getTimeLocale
         prettyDayFormat <- getPrettyDayFormat

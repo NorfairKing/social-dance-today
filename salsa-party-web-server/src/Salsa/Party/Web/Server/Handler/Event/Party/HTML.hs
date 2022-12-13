@@ -49,7 +49,7 @@ partyPageHtml organiser@Organiser {..} party@Party {..} mRecurrence = do
         then MsgPartyTitleCancelled partyTitle
         else MsgPartyTitleScheduled partyTitle
     messageRender <- getMessageRender
-    setDescription $ partyHtmlDescription messageRender timeLocale prettyDayFormat prettyTimeFormat party organiser place
+    setDescriptionIdemp $ partyHtmlDescription messageRender timeLocale prettyDayFormat prettyTimeFormat party organiser place
     let ldEvent = partyToLDEvent renderUrl party organiser place
     toWidgetHead $ toJSONLDData ldEvent
     addHeader "Last-Modified" $ TE.decodeLatin1 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe partyCreated partyModified

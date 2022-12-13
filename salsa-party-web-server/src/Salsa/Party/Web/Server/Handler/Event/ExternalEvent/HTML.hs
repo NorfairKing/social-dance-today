@@ -44,7 +44,7 @@ externalEventPageHtml externalEvent@ExternalEvent {..} place@Place {..} = do
   let guessedDanceStyles = guessDanceStyles externalEventTitle `S.union` maybe S.empty guessDanceStyles externalEventDescription
   withNavBar $ do
     setTitleI $ externalEventTitleMessage externalEvent
-    setDescription $ externalEventHtmlDescription messageRender timeLocale prettyDayFormat prettyTimeFormat externalEvent place
+    setDescriptionIdemp $ externalEventHtmlDescription messageRender timeLocale prettyDayFormat prettyTimeFormat externalEvent place
     toWidgetHead $ toJSONLDData $ externalEventToLDEvent renderUrl externalEvent place
     addHeader "Last-Modified" $ TE.decodeLatin1 $ formatHTTPDate $ utcToHTTPDate $ fromMaybe externalEventCreated externalEventModified
     addHeader "X-Robots-Tag" $ T.pack $ "unavailable_after: " <> formatTime timeLocale "%F" (addDays daysToKeepPartiesMarkedAsAvailable externalEventDay)

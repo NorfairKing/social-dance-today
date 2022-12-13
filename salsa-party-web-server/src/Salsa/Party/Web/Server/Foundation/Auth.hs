@@ -7,6 +7,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
@@ -20,10 +21,12 @@ module Salsa.Party.Web.Server.Foundation.Auth
   )
 where
 
+import qualified Amazonka.SES as SES
+import qualified Amazonka.SES.SendEmail as SES
+import qualified Amazonka.SES.Types as SES
 import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
-import Data.Function
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -34,8 +37,6 @@ import Data.Validity.Text ()
 import Data.Validity.Time ()
 import Database.Persist.Sql
 import GHC.Generics (Generic)
-import Lens.Micro
-import qualified Network.AWS.SES as SES
 import Salsa.Party.DB
 import Salsa.Party.Email
 import Salsa.Party.Web.Server.Foundation.App
@@ -53,6 +54,7 @@ import Yesod.Auth
 import Yesod.Auth.Message
 
 salsaAuthPlugin ::
+  forall app.
   ( app ~ App,
     YesodAuth app,
     AuthId app ~ UserId,
@@ -66,6 +68,7 @@ salsaAuthPlugin ::
   AuthPlugin app
 salsaAuthPlugin = AuthPlugin salsaAuthPluginName dispatch salsaLoginHandler
   where
+    dispatch :: Text -> [Text] -> AuthHandler app TypedContent
     dispatch "GET" ["register"] = getRegisterR >>= sendResponse
     dispatch "POST" ["register"] = postRegisterR
     dispatch "POST" ["login"] = postLoginR
@@ -87,7 +90,7 @@ getRegisterR = do
   liftHandler $
     withNavBar $ do
       setTitleI MsgRegistrationTitle
-      setDescriptionI MsgRegistrationDescription
+      setDescriptionIdempI MsgRegistrationDescription
       $(widgetFile "auth/register")
 
 data RegisterForm = RegisterForm
@@ -158,7 +161,7 @@ salsaLoginHandler _toParentRoute = do
   messages <- getMessages
   token <- genToken
   setTitleI MsgLoginTitle
-  setDescriptionI MsgLoginDescription
+  setDescriptionIdempI MsgLoginDescription
   $(widgetFile "auth/login")
 
 data LoginForm = LoginForm
@@ -233,22 +236,17 @@ sendVerificationEmail userEmailAddress verificationKey = do
   urlRender <- getUrlRenderParams
   messageRender <- getMessageRender
 
-  let subject = SES.content $ messageRender $ MsgVerificationEmailSubject siteTitle
+  let subject = SES.newContent $ messageRender $ MsgVerificationEmailSubject siteTitle
 
-  let textBody = SES.content $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/auth/email/verification-email.txt") urlRender
+  let textBody = SES.newContent $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/auth/email/verification-email.txt") urlRender
 
-  let htmlBody = SES.content $ LT.toStrict $ renderHtml $ $(ihamletFile "templates/auth/email/verification-email.hamlet") (toHtml . messageRender) urlRender
+  let htmlBody = SES.newContent $ LT.toStrict $ renderHtml $ $(ihamletFile "templates/auth/email/verification-email.hamlet") (toHtml . messageRender) urlRender
 
-  let body =
-        SES.body
-          & SES.bText ?~ textBody
-          & SES.bHTML ?~ htmlBody
+  let body = SES.newBody {SES.html = Just htmlBody, SES.text = Just textBody}
 
-  let message = SES.message subject body
+  let message = SES.newMessage subject body
 
-  let destination =
-        SES.destination
-          & SES.dToAddresses .~ [emailAddressText userEmailAddress]
+  let destination = SES.newDestination {SES.toAddresses = Just [emailAddressText userEmailAddress]}
 
   app <- getYesod
 
@@ -256,8 +254,9 @@ sendVerificationEmail userEmailAddress verificationKey = do
     Nothing -> pure ()
     Just sendAddress -> do
       let request =
-            SES.sendEmail sendAddress destination message
-              & SES.seReplyToAddresses .~ maybeToList (emailAddressText <$> appAdmin app)
+            (SES.newSendEmail sendAddress destination message)
+              { SES.replyToAddresses = Just $ maybeToList (emailAddressText <$> appAdmin app)
+              }
       sendEmailResult <- sendEmail app request
       case sendEmailResult of
         ErrorWhileSendingEmail _ -> do

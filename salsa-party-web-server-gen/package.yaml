@@ -26,7 +26,6 @@ library:
   - path-io
   - persistent
   - persistent-sqlite
-  - pretty-show
   - salsa-party-data
   - salsa-party-data-gen
   - salsa-party-web-server
@@ -89,11 +88,9 @@ tests:
     - genvalidity-sydtest-aeson
     - genvalidity-text
     - genvalidity-time
-    - http-client
     - ical
     - monad-logger
     - mtl
-    - password
     - path
     - path-io
     - persistent

@@ -575,10 +575,10 @@ instance FromJSON EntryPoint where
     EntryPoint
       <$> o .: "urlTemplate"
 
-mField :: ToJSON a => Text -> Maybe a -> [JSON.Pair]
+mField :: ToJSON a => Key -> Maybe a -> [JSON.Pair]
 mField k mv = [k .= v | v <- maybeToList mv]
 
-lField :: ToJSON a => Text -> [a] -> [JSON.Pair]
+lField :: ToJSON a => Key -> [a] -> [JSON.Pair]
 lField k = \case
   [] -> []
   lv -> [k .= lv]

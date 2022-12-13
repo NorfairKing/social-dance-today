@@ -1,8 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE StandaloneDeriving #-}
--- Hashable Day
-{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Salsa.Party.Web.Server.Handler.Search.Types where
 
@@ -25,8 +21,6 @@ data SearchQuery = SearchQuery
   deriving (Show, Eq, Generic)
 
 instance Hashable SearchQuery
-
-deriving instance Hashable Day
 
 instance NFData SearchQuery
 

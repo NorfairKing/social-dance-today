@@ -19,7 +19,7 @@ mkDerivation {
     salsa-party-data sydtest text yesod-form
   ];
   testHaskellDepends = [
-    base genvalidity genvalidity-sydtest genvalidity-sydtest-aeson
+    base genvalidity-sydtest genvalidity-sydtest-aeson
     genvalidity-sydtest-persistent path-pieces persistent QuickCheck
     salsa-party-data sydtest sydtest-aeson sydtest-persistent
     sydtest-persistent-sqlite time unliftio

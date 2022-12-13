@@ -43,7 +43,7 @@ organiserPage (Entity organiserId organiser@Organiser {..}) = do
   let lastModified = maybe latestModifiedOrganiser (max latestModifiedOrganiser) mLatestModifiedParty
   withNavBar $ do
     setTitleI $ MsgOrganiserTitle organiserName
-    setDescriptionI $ MsgOrganiserDescription organiserName
+    setDescriptionIdempI $ MsgOrganiserDescription organiserName
     renderUrl <- getUrlRender
     let ldEvents = map (\(party, place) -> partyToLDEvent renderUrl party organiser place) parties
     toWidgetHead $ toJSONLDData ldEvents

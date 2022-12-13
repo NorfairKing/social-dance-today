@@ -46,7 +46,7 @@ getAdminPanelR = do
   timeLocale <- getTimeLocale
   withNavBar $ do
     setTitle "Admin Panel"
-    setDescription "Admin panel for the salsa parties admin"
+    setDescriptionIdemp "Admin panel for the salsa parties admin"
     $(widgetFile "admin/panel")
 
 getAdminUsersR :: Handler Html
@@ -57,7 +57,7 @@ getAdminUsersPageR pageNumber = do
   paginated <- runDB $ selectPaginated defaultPageSize [] [Asc UserCreated, Asc UserId] pageNumber
   withNavBar $ do
     setTitle "Admin Users"
-    setDescription "Admin overview of the users"
+    setDescriptionIdemp "Admin overview of the users"
     $(widgetFile "admin/users")
 
 getAdminUserR :: UserId -> Handler Html
@@ -99,7 +99,7 @@ getAdminOrganisersPageR pageNumber = do
   paginated <- runDB $ selectPaginated defaultPageSize [] [Asc OrganiserId] pageNumber
   withNavBar $ do
     setTitle "Admin Organisers"
-    setDescription "Admin overview of the organisers"
+    setDescriptionIdemp "Admin overview of the organisers"
     $(widgetFile "admin/organisers")
 
 getAdminOrganiserRemindersR :: Handler Html
@@ -115,7 +115,7 @@ getAdminOrganiserRemindersPageR pageNumber = do
       pure (organiserReminder, mOrganiser, decision)
   withNavBar $ do
     setTitle "Admin Organiser Reminders"
-    setDescription "Admin overview of the organiser reminders"
+    setDescriptionIdemp "Admin overview of the organiser reminders"
     $(widgetFile "admin/organiser-reminders")
 
 postAdminDeleteEventR :: EventUUID -> Handler Html
@@ -142,7 +142,7 @@ adminPartiesPage filters sorters pageRoute pageNumber = do
   paginated <- runDB $ selectPaginated defaultPageSize filters sorters pageNumber
   withNavBar $ do
     setTitle "Admin Parties"
-    setDescription "Admin overview of the parties"
+    setDescriptionIdemp "Admin overview of the parties"
     $(widgetFile "admin/parties")
 
 getAdminExternalEventsR :: Handler Html
@@ -197,7 +197,7 @@ externalEventsListPage filters sorters pageRoute pageNumber = do
   token <- genToken
   withNavBar $ do
     setTitle "Admin External Events"
-    setDescription "Admin overview of the external events"
+    setDescriptionIdemp "Admin overview of the external events"
     $(widgetFile "admin/external-events")
 
 getAdminSchedulesR :: Handler Html
@@ -211,7 +211,7 @@ adminSchedulesPage filters sorters pageRoute pageNumber = do
   paginated <- runDB $ selectPaginated defaultPageSize filters sorters pageNumber
   withNavBar $ do
     setTitle "Admin Schedules"
-    setDescription "Admin overview of the schedules"
+    setDescriptionIdemp "Admin overview of the schedules"
     $(widgetFile "admin/schedules")
 
 getAdminProspectsR :: Handler Html
@@ -225,7 +225,7 @@ adminProspectsPage filters sorters pageRoute pageNumber = do
   paginated <- runDB $ selectPaginated defaultPageSize filters sorters pageNumber
   withNavBar $ do
     setTitle "Admin Prospects"
-    setDescription "Admin overview of the prospects"
+    setDescriptionIdemp "Admin overview of the prospects"
     $(widgetFile "admin/prospects")
 
 postAdminImporterResetR :: ImporterMetadataId -> Handler Html

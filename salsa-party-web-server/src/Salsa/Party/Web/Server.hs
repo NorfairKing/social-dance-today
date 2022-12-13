@@ -3,8 +3,6 @@
 module Salsa.Party.Web.Server where
 
 import Control.Monad.Logger
-import Network.HTTP.Types as HTTP
-import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
 import Network.Wai.Middleware.RequestLogger
 import Salsa.Party.OptParse

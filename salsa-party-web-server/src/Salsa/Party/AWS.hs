@@ -3,35 +3,36 @@
 
 module Salsa.Party.AWS where
 
+import qualified Amazonka as AWS
 import Control.Monad.Logger
 import Control.Retry
-import Lens.Micro
-import qualified Network.AWS as AWS
 import Network.HTTP.Client.Retry
 import UnliftIO
 
 runAWS ::
   ( MonadUnliftIO m,
-    MonadLoggerIO m
+    MonadLoggerIO m,
+    AWS.AWSRequest a
   ) =>
-  AWS.AWS a ->
-  m (Either AWS.Error a)
-runAWS func = do
+  a ->
+  m (Either AWS.Error (AWS.AWSResponse a))
+runAWS request = do
   logger <- mkAwsLogger
-  awsEnv <- liftIO $ AWS.newEnv AWS.Discover
-  let ourAwsEnv =
-        awsEnv
-          & AWS.envRegion .~ AWS.Ireland
-          & AWS.envLogger .~ logger
+  discoveredEnv <- liftIO $ AWS.newEnv AWS.discover
+  let awsEnv =
+        discoveredEnv
+          { AWS.logger = logger,
+            AWS.region = AWS.Ireland
+          }
 
   let awsRetryPolicy = httpRetryPolicy
   let shouldRetry = \case
         Left awsError -> case awsError of
           AWS.TransportError exception -> shouldRetryHttpException exception
           AWS.SerializeError _ -> pure False
-          AWS.ServiceError se -> pure $ shouldRetryStatusCode $ AWS._serviceStatus se
+          AWS.ServiceError (AWS.ServiceError' _ status _ _ _ _) -> pure $ shouldRetryStatusCode status
         Right _ -> pure False -- Didn't even fail.
-  let tryOnce = AWS.runResourceT $ AWS.runAWS ourAwsEnv $ AWS.trying AWS._Error func
+  let tryOnce = AWS.runResourceT $ AWS.sendEither awsEnv request
 
   retrying awsRetryPolicy (\_ -> shouldRetry) (\_ -> tryOnce)
 

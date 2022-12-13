@@ -7,12 +7,10 @@ module Salsa.Party.Email
   )
 where
 
+import qualified Amazonka.SES.SendEmail as SES
 import Control.Monad.Logger
 import Data.Text (Text)
 import qualified Data.Text as T
-import Lens.Micro
-import qualified Network.AWS as AWS
-import qualified Network.AWS.SES as SES
 import Salsa.Party.AWS
 import Salsa.Party.Web.Server.Foundation.App
 import Text.Show.Pretty
@@ -37,15 +35,15 @@ sendEmailWithoutResultLogging :: (MonadUnliftIO m, MonadLoggerIO m) => App -> SE
 sendEmailWithoutResultLogging App {..} request = do
   if appSendEmails
     then do
-      response <- runAWS $ AWS.send request
-      pure $ case (^. SES.sersResponseStatus) <$> response of
+      errOrResponse <- runAWS request
+      pure $ case SES.httpStatus <$> errOrResponse of
         Right 200 -> EmailSentSuccesfully
         _ ->
           let err =
                 T.pack $
                   unlines
                     [ "Failed to send email",
-                      ppShow response
+                      ppShow errOrResponse
                     ]
            in ErrorWhileSendingEmail err
     else pure NoEmailSent

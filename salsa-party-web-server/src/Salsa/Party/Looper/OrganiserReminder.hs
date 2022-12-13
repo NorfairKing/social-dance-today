@@ -17,12 +17,13 @@ module Salsa.Party.Looper.OrganiserReminder
   )
 where
 
+import qualified Amazonka.SES as SES
+import qualified Amazonka.SES.SendEmail as SES
+import qualified Amazonka.SES.Types as SES
 import qualified Data.Conduit.Combinators as C
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LTB
-import Lens.Micro
-import qualified Network.AWS.SES as SES
 import Salsa.Party.Email
 import Salsa.Party.Looper.Import
 import Text.Blaze.Html.Renderer.Text (renderHtml)
@@ -195,30 +196,27 @@ sendOrganiserReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) =
 sendOrganiserReminder emailAddress secret = do
   logInfoN $ T.pack $ unwords ["Sending reminder email to address:", show emailAddress]
 
-  let subject = SES.content "Reminder to submit your parties to social dance today"
+  let subject = SES.newContent "Reminder to submit your parties to social dance today"
 
   app <- ask
   let urlRender = yesodRender app (fromMaybe "" $ appRoot app)
 
-  let textBody = SES.content $ organiserReminderTextContent urlRender secret
-  let htmlBody = SES.content $ organiserReminderHtmlContent urlRender secret
+  let textBody = SES.newContent $ organiserReminderTextContent urlRender secret
+  let htmlBody = SES.newContent $ organiserReminderHtmlContent urlRender secret
 
-  let body =
-        SES.body
-          & SES.bText ?~ textBody
-          & SES.bHTML ?~ htmlBody
+  let body = SES.newBody {SES.html = Just htmlBody, SES.text = Just textBody}
 
-  let message = SES.message subject body
+  let message = SES.newMessage subject body
 
-  let destination =
-        SES.destination
-          & SES.dToAddresses .~ [emailAddressText emailAddress]
+  let destination = SES.newDestination {SES.toAddresses = Just [emailAddressText emailAddress]}
+
   case appSendAddress app of
     Nothing -> pure ()
     Just sendAddress -> do
       let request =
-            SES.sendEmail sendAddress destination message
-              & SES.seReplyToAddresses .~ maybeToList (emailAddressText <$> appAdmin app)
+            (SES.newSendEmail sendAddress destination message)
+              { SES.replyToAddresses = Just $ maybeToList (emailAddressText <$> appAdmin app)
+              }
 
       sendEmailResult <- sendEmail app request
       case sendEmailResult of

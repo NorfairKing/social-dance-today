@@ -35,7 +35,7 @@ getExploreR = do
 
   withNavBar $ do
     setTitleI MsgExploreTitle
-    setDescriptionI MsgExploreDescription
+    setDescriptionIdempI MsgExploreDescription
     addStylesheet $ StaticR zoom_without_container_css
     $(widgetFile "explore")
 

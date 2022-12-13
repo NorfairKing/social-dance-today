@@ -4,17 +4,17 @@
 
 module Salsa.Party.AdminNotification where
 
+import qualified Amazonka.SES as SES
+import qualified Amazonka.SES.SendEmail as SES
+import qualified Amazonka.SES.Types as SES
 import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
-import Data.Function
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LTB
-import Lens.Micro
-import qualified Network.AWS.SES as SES
 import Salsa.Party.DB
 import Salsa.Party.Email
 import Salsa.Party.Web.Server.Foundation
@@ -29,32 +29,28 @@ sendAdminNotification notificationContents = do
   forM_ mAdminEmailAddress $ \adminEmailAddress -> do
     logInfoN $ T.pack $ unwords ["Sending Admin Notification email to address:", show adminEmailAddress]
 
-    let subject = SES.content "Admin Notification"
+    let subject = SES.newContent "Admin Notification"
 
     app <- ask
     let renderUrl = yesodRender app (fromMaybe "" $ appRoot app)
 
-    let textBody = SES.content $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/admin-notification.txt") renderUrl
+    let textBody = SES.newContent $ LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/admin-notification.txt") renderUrl
 
-    let htmlBody = SES.content $ LT.toStrict $ renderHtml $ $(hamletFile "templates/email/admin-notification.hamlet") renderUrl
+    let htmlBody = SES.newContent $ LT.toStrict $ renderHtml $ $(hamletFile "templates/email/admin-notification.hamlet") renderUrl
 
-    let body =
-          SES.body
-            & SES.bText ?~ textBody
-            & SES.bHTML ?~ htmlBody
+    let body = SES.newBody {SES.html = Just htmlBody, SES.text = Just textBody}
 
-    let message = SES.message subject body
+    let message = SES.newMessage subject body
 
-    let destination =
-          SES.destination
-            & SES.dToAddresses .~ [emailAddressText adminEmailAddress]
+    let destination = SES.newDestination {SES.toAddresses = Just [emailAddressText adminEmailAddress]}
 
     case appSendAddress app of
       Nothing -> pure ()
       Just sendAddress -> do
         let request =
-              SES.sendEmail sendAddress destination message
-                & SES.seReplyToAddresses .~ maybeToList (emailAddressText <$> appAdmin app)
+              (SES.newSendEmail sendAddress destination message)
+                { SES.replyToAddresses = Just $ maybeToList (emailAddressText <$> appAdmin app)
+                }
 
         sendEmailResult <- sendEmail app request
         case sendEmailResult of

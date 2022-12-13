@@ -16,5 +16,5 @@ getUnsubProspectR secret = do
       runDB $ update prospectId [ProspectUnsubscribed =. Just now]
       withNavBar $ do
         setTitleI MsgUnsubProspectTitle
-        setDescriptionI MsgUnsubProspectDescription
+        setDescriptionIdempI MsgUnsubProspectDescription
         $(widgetFile "unsub/prospect")

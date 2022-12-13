@@ -119,9 +119,6 @@ with final.haskell.lib;
               rev = "4c4bd9356e2930bbbfd0b5ab6a704b14ec062a23";
             })
             { };
-          ekg-json = unmarkBroken super.ekg-json;
-
-
         } // salsaPartyPackages // amazonkaPackages
     );
   });

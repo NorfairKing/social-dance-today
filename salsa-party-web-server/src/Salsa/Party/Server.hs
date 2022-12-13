@@ -5,7 +5,6 @@
 
 module Salsa.Party.Server where
 
-import Control.Concurrent
 import Control.Concurrent.TokenLimiter.Concurrent
 import Control.Monad
 import Control.Monad.Logger
@@ -80,7 +79,7 @@ runSalsaPartyServer settings@Settings {..} = do
                 }
         concurrently_
           (runLoopers settings app)
-          (runSalsaPartyWebServer store settings app)
+          (runSalsaPartyWebServer settings app)
 
 runMyLoggingT :: LoggingT IO a -> IO a
 runMyLoggingT func =
