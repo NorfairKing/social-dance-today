@@ -32,7 +32,8 @@ tanzeventsChImporter :: Importer
 tanzeventsChImporter =
   Importer
     { importerName = "tanzevents.ch",
-      importerFunc = func
+      importerFunc = func,
+      importerUserAgent = UserAgentRandom
     }
 
 func :: Import ()

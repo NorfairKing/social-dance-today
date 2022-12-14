@@ -50,7 +50,8 @@ dancefloorfinderComImporter :: Importer
 dancefloorfinderComImporter =
   Importer
     { importerName = "dancefloorfinder.com",
-      importerFunc = func
+      importerFunc = func,
+      importerUserAgent = UserAgentRandom
     }
 
 func :: Import ()

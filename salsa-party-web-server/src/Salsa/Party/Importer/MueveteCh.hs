@@ -23,7 +23,8 @@ mueveteChImporter :: Importer
 mueveteChImporter =
   Importer
     { importerName = "muevete.ch",
-      importerFunc = func
+      importerFunc = func,
+      importerUserAgent = UserAgentRandom
     }
 
 func :: Import ()

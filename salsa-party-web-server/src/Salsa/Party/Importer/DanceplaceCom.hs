@@ -34,7 +34,8 @@ danceplaceComImporter :: Importer
 danceplaceComImporter =
   Importer
     { importerName = "danceplace.com",
-      importerFunc = func
+      importerFunc = func,
+      importerUserAgent = UserAgentRandom
     }
 
 func :: Import ()

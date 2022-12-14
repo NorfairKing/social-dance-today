@@ -1,7 +1,9 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Salsa.Party.Web.Server.Constants where
 
+import Data.ByteString (ByteString)
 import Language.Haskell.TH
 import System.Environment
 
@@ -15,6 +17,9 @@ development =
            runIO $ putStrLn "WARNING: BUILDING IN DEVELOPMENT MODE"
            pure 'True
    )
+
+socialDanceUserAgent :: ByteString
+socialDanceUserAgent = "social-dance.today"
 
 -- | How many days to show in search results
 defaultDaysAhead :: Integer

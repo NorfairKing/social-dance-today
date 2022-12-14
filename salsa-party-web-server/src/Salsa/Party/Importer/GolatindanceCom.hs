@@ -43,7 +43,8 @@ golatindanceComImporter :: Importer
 golatindanceComImporter =
   Importer
     { importerName = "golatindance.com",
-      importerFunc = func
+      importerFunc = func,
+      importerUserAgent = UserAgentSocial
     }
 
 func :: Import ()

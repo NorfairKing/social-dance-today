@@ -46,7 +46,8 @@ stayHappeningComImporter :: Importer
 stayHappeningComImporter =
   Importer
     { importerName = "stayhappening.com",
-      importerFunc = func
+      importerFunc = func,
+      importerUserAgent = UserAgentRandom
     }
 
 func :: Import ()

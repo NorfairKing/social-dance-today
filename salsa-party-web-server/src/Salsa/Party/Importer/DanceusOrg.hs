@@ -41,7 +41,8 @@ danceusOrgImporter :: Importer
 danceusOrgImporter =
   Importer
     { importerName = "danceus.org",
-      importerFunc = func
+      importerFunc = func,
+      importerUserAgent = UserAgentRandom
     }
 
 func :: Import ()

@@ -30,7 +30,8 @@ londonSalsaEventsComImporter :: Importer
 londonSalsaEventsComImporter =
   Importer
     { importerName = "londonsalsaevents.com",
-      importerFunc = func
+      importerFunc = func,
+      importerUserAgent = UserAgentRandom
     }
 
 func :: Import ()

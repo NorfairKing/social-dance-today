@@ -22,7 +22,8 @@ salsachicagoComImporter :: Importer
 salsachicagoComImporter =
   Importer
     { importerName = "salsachicago.com",
-      importerFunc = func
+      importerFunc = func,
+      importerUserAgent = UserAgentRandom
     }
 
 func :: Import ()

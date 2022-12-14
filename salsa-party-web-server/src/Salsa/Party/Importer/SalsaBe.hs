@@ -41,7 +41,8 @@ salsaBeImporter :: Importer
 salsaBeImporter =
   Importer
     { importerName = "salsa.be",
-      importerFunc = func
+      importerFunc = func,
+      importerUserAgent = UserAgentRandom
     }
 
 func :: Import ()

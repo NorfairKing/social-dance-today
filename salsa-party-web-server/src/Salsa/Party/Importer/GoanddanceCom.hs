@@ -40,7 +40,8 @@ goanddanceComImporter :: Importer
 goanddanceComImporter =
   Importer
     { importerName = "goanddance.com",
-      importerFunc = func
+      importerFunc = func,
+      importerUserAgent = UserAgentRandom
     }
 
 func :: Import ()

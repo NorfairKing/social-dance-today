@@ -54,8 +54,14 @@ import qualified Web.JSONLD.Parse as LD
 
 data Importer = Importer
   { importerName :: Text,
+    importerUserAgent :: UserAgent,
     importerFunc :: Import ()
   }
+  deriving (Generic)
+
+data UserAgent
+  = UserAgentSocial
+  | UserAgentRandom
   deriving (Generic)
 
 runImporter :: App -> Importer -> LoggingT IO ()
@@ -80,7 +86,9 @@ runImporter a Importer {..} = addImporterNameToLog importerName $ do
           ImporterMetadataLastRunImported =. Just 0
         ]
 
-  userAgent <- liftIO chooseUserAgent
+  userAgent <- case importerUserAgent of
+    UserAgentSocial -> pure socialDanceUserAgent
+    UserAgentRandom -> liftIO chooseUserAgent
   logDebugN $ T.pack $ unwords ["Chose user agent:", show userAgent]
   let tokenLimitConfig =
         TokenLimitConfig
@@ -343,8 +351,8 @@ waitToFetch uri = do
 setUserAgent :: ByteString -> Request -> Request
 setUserAgent userAgent requestPrototype =
   let oldHeaders = requestHeaders requestPrototype
-      newHeaders = case lookup "User-Agent" oldHeaders of
-        Nothing -> ("User-Agent", userAgent) : oldHeaders
+      newHeaders = case lookup hUserAgent oldHeaders of
+        Nothing -> (hUserAgent, userAgent) : oldHeaders
         Just _ -> oldHeaders
    in requestPrototype {requestHeaders = newHeaders}
 

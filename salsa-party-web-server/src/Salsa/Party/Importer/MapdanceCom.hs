@@ -52,7 +52,8 @@ mapdanceComImporter :: Importer
 mapdanceComImporter =
   Importer
     { importerName = "mapdance.com",
-      importerFunc = func
+      importerFunc = func,
+      importerUserAgent = UserAgentRandom
     }
 
 baseUrl :: String

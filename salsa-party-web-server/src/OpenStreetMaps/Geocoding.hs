@@ -17,6 +17,7 @@ import GHC.Generics (Generic)
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.Retry as HTTP
 import Salsa.Party.DB.Coordinates
+import Salsa.Party.Web.Server.Constants
 import Text.Read
 
 -- From https://nominatim.org/release-docs/develop/api/Search/#search-queries
@@ -82,7 +83,7 @@ makeGeocodingRequest manager GeocodingRequest {..} = do
         setQueryString
           [("q", Just $ TE.encodeUtf8 geocodingRequestQuery), ("format", Just "jsonv2")]
           requestPrototype
-            { requestHeaders = [("User-Agent", "social-dance.today")]
+            { requestHeaders = [("User-Agent", socialDanceUserAgent)]
             }
   errOrResponse <- runNoLoggingT $ httpLbsWithRetry request manager
   case errOrResponse of

@@ -25,7 +25,8 @@ tanzagendaChImporter :: Importer
 tanzagendaChImporter =
   Importer
     { importerName = "tanzagenda.ch",
-      importerFunc = func
+      importerFunc = func,
+      importerUserAgent = UserAgentSocial
     }
 
 func :: Import ()

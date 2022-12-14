@@ -40,7 +40,8 @@ eventsInfoImporter :: Importer
 eventsInfoImporter =
   Importer
     { importerName = "events.info",
-      importerFunc = func
+      importerFunc = func,
+      importerUserAgent = UserAgentRandom
     }
 
 func :: Import ()

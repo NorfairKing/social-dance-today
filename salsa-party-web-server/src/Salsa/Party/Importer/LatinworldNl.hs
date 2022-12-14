@@ -43,7 +43,8 @@ latinworldNlImporter :: Importer
 latinworldNlImporter =
   Importer
     { importerName = "latinworld.nl",
-      importerFunc = func
+      importerFunc = func,
+      importerUserAgent = UserAgentSocial
     }
 
 func :: Import ()

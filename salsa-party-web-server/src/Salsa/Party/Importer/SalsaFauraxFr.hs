@@ -30,7 +30,8 @@ salsaFauraxFrImporter :: Importer
 salsaFauraxFrImporter =
   Importer
     { importerName = "salsa.faurax.fr",
-      importerFunc = func
+      importerFunc = func,
+      importerUserAgent = UserAgentRandom
     }
 
 func :: Import ()
