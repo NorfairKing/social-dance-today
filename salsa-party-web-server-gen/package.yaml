@@ -84,6 +84,7 @@ tests:
     - containers
     - esqueleto
     - genvalidity
+    - genvalidity-containers
     - genvalidity-sydtest
     - genvalidity-sydtest-aeson
     - genvalidity-text

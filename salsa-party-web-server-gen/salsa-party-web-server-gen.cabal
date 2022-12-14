@@ -116,6 +116,7 @@ test-suite salsa-party-web-server-gen-test
     , containers
     , esqueleto
     , genvalidity
+    , genvalidity-containers
     , genvalidity-sydtest
     , genvalidity-sydtest-aeson
     , genvalidity-text

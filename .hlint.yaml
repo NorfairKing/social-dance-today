@@ -5,6 +5,8 @@
 - ignore:
     name: "Replace case with maybe"
 - ignore:
+    name: "Redundant if"
+- ignore:
     name: "Fuse on/on"
 - ignore:
     name: "Use tuple-section"
