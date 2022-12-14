@@ -59,6 +59,7 @@ test-suite salsa-party-web-server-gen-test
   main-is: Spec.hs
   other-modules:
       Salsa.Party.Importer.EnvSpec
+      Salsa.Party.Looper.ImportersSpec
       Salsa.Party.Looper.OrganiserReminderSpec
       Salsa.Party.Looper.PartySchedulerSpec
       Salsa.Party.PosterSpec

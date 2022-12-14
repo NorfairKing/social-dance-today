@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -8,9 +9,11 @@ import qualified Data.Map as M
 import Data.Ord
 import qualified Data.Text as T
 import Data.Time
+import Data.Validity
 import Database.Persist
 import Database.Persist.Sql
 import Database.Persist.Sqlite
+import GHC.Generics (Generic)
 import Safe
 import Salsa.Party.Importer
 import Salsa.Party.Importers
@@ -38,7 +41,7 @@ chooseImporterToRun Settings {..} app = do
   now <- liftIO getCurrentTime
   pure $ computeImporterToRun now soonestRuns
 
-computeImporterToRun :: UTCTime -> [(Importer, SoonestRun)] -> Maybe Importer
+computeImporterToRun :: UTCTime -> [(a, SoonestRun)] -> Maybe a
 computeImporterToRun now soonestRuns =
   case minimumByMay (comparing snd) soonestRuns of
     Nothing -> Nothing -- No loopers
@@ -55,7 +58,9 @@ data SoonestRun
   = RunASAP
   | RunNoSoonerThan !UTCTime
   | DontRun
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq, Ord, Generic)
+
+instance Validity SoonestRun
 
 getSoonestRun :: NominalDiffTime -> App -> ImporterSettings -> Importer -> LoggingT IO SoonestRun
 getSoonestRun importerInterval app ImporterSettings {..} importer =
