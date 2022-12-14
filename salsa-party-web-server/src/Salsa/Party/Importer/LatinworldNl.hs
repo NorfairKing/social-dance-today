@@ -44,7 +44,8 @@ latinworldNlImporter =
   Importer
     { importerName = "latinworld.nl",
       importerFunc = func,
-      importerUserAgent = UserAgentSocial
+      importerUserAgent = UserAgentSocial,
+      importerTimezoneOffset = 1 -- Dutch timezone
     }
 
 func :: Import ()

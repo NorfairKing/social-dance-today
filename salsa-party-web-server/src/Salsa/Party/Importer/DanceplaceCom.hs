@@ -35,7 +35,8 @@ danceplaceComImporter =
   Importer
     { importerName = "danceplace.com",
       importerFunc = func,
-      importerUserAgent = UserAgentRandom
+      importerUserAgent = UserAgentRandom,
+      importerTimezoneOffset = -5 -- Toronto, Canada
     }
 
 func :: Import ()

@@ -41,7 +41,8 @@ eventsInfoImporter =
   Importer
     { importerName = "events.info",
       importerFunc = func,
-      importerUserAgent = UserAgentRandom
+      importerUserAgent = UserAgentRandom,
+      importerTimezoneOffset = 1 -- Swiss time
     }
 
 func :: Import ()

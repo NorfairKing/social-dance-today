@@ -42,7 +42,8 @@ danceusOrgImporter =
   Importer
     { importerName = "danceus.org",
       importerFunc = func,
-      importerUserAgent = UserAgentRandom
+      importerUserAgent = UserAgentRandom,
+      importerTimezoneOffset = -5 -- Eastern Standard Time
     }
 
 func :: Import ()

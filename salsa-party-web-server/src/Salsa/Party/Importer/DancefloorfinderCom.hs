@@ -51,7 +51,8 @@ dancefloorfinderComImporter =
   Importer
     { importerName = "dancefloorfinder.com",
       importerFunc = func,
-      importerUserAgent = UserAgentRandom
+      importerUserAgent = UserAgentRandom,
+      importerTimezoneOffset = 1 -- Norway
     }
 
 func :: Import ()

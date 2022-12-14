@@ -33,7 +33,8 @@ tanzeventsChImporter =
   Importer
     { importerName = "tanzevents.ch",
       importerFunc = func,
-      importerUserAgent = UserAgentRandom
+      importerUserAgent = UserAgentRandom,
+      importerTimezoneOffset = 1 -- Swiss time
     }
 
 func :: Import ()

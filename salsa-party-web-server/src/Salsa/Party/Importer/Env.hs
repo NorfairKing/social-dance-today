@@ -53,9 +53,14 @@ import qualified Web.JSONLD as LD
 import qualified Web.JSONLD.Parse as LD
 
 data Importer = Importer
-  { importerName :: Text,
-    importerUserAgent :: UserAgent,
-    importerFunc :: Import ()
+  { importerName :: !Text,
+    importerFunc :: !(Import ()),
+    -- | The user agent we will use for fetching, so we can help the organisers
+    -- identify us.
+    importerUserAgent :: !UserAgent,
+    -- | The timezone of the people who made the site, so we can make sure not
+    -- to bother them.
+    importerTimezoneOffset :: !Int -- In hours
   }
   deriving (Generic)
 

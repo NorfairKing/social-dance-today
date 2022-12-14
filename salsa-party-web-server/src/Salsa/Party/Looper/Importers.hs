@@ -18,22 +18,38 @@ import Salsa.Party.OptParse
 import Salsa.Party.Web.Server.Application ()
 
 importersLooper :: Settings -> App -> LoggingT IO ()
-importersLooper Settings {..} app = do
+importersLooper settings app = do
+  mImporter <- chooseImporterToRun settings app
+  forM_ mImporter $ \importer -> do
+    logDebugN $
+      T.pack $
+        unwords
+          [ "Chosen importer to run was:",
+            show (importerName importer)
+          ]
+    runImporter app importer
+
+chooseImporterToRun :: Settings -> App -> LoggingT IO (Maybe Importer)
+chooseImporterToRun Settings {..} app = do
   soonestRuns <- forM allImporters $ \importer ->
     case M.lookup (importerName importer) settingImporterSettings of
       Nothing -> fail $ unwords ["Failed to configure importer:", show (importerName importer)]
       Just importerSettings -> (,) importer <$> getSoonestRun settingImporterInterval app importerSettings importer
+  now <- liftIO getCurrentTime
+  pure $ computeImporterToRun now soonestRuns
+
+computeImporterToRun :: UTCTime -> [(Importer, SoonestRun)] -> Maybe Importer
+computeImporterToRun now soonestRuns =
   case minimumByMay (comparing snd) soonestRuns of
-    Nothing -> pure () -- No loopers
+    Nothing -> Nothing -- No loopers
     Just (importer, soonestRun) -> do
-      logDebugN $ T.pack $ unwords ["Chosen importer to run was:", show (importerName importer), show soonestRun]
-      let run = runImporter app importer
       case soonestRun of
-        DontRun -> pure () -- Soonest is "don't run", don't do anything.
-        RunASAP -> run
-        RunNoSoonerThan threshold -> do
-          now <- liftIO getCurrentTime
-          when (now >= threshold) run
+        DontRun -> Nothing -- Soonest is "don't run", don't do anything.
+        RunASAP -> Just importer
+        RunNoSoonerThan threshold ->
+          if now >= threshold
+            then Just importer
+            else Nothing
 
 data SoonestRun
   = RunASAP

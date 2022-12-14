@@ -44,7 +44,8 @@ golatindanceComImporter =
   Importer
     { importerName = "golatindance.com",
       importerFunc = func,
-      importerUserAgent = UserAgentSocial
+      importerUserAgent = UserAgentSocial,
+      importerTimezoneOffset = -6 -- Texas timezone
     }
 
 func :: Import ()

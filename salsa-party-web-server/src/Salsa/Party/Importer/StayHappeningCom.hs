@@ -47,7 +47,8 @@ stayHappeningComImporter =
   Importer
     { importerName = "stayhappening.com",
       importerFunc = func,
-      importerUserAgent = UserAgentRandom
+      importerUserAgent = UserAgentRandom,
+      importerTimezoneOffset = -5 -- Eastern standard time
     }
 
 func :: Import ()

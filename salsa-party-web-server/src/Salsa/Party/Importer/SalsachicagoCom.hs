@@ -23,7 +23,8 @@ salsachicagoComImporter =
   Importer
     { importerName = "salsachicago.com",
       importerFunc = func,
-      importerUserAgent = UserAgentRandom
+      importerUserAgent = UserAgentRandom,
+      importerTimezoneOffset = -6 -- Chicago time
     }
 
 func :: Import ()

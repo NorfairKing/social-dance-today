@@ -31,7 +31,8 @@ salsaFauraxFrImporter =
   Importer
     { importerName = "salsa.faurax.fr",
       importerFunc = func,
-      importerUserAgent = UserAgentRandom
+      importerUserAgent = UserAgentRandom,
+      importerTimezoneOffset = 1 -- France time
     }
 
 func :: Import ()

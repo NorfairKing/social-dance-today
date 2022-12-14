@@ -33,7 +33,8 @@ salsaLoversBeImporter =
   Importer
     { importerName = "salsalovers.be",
       importerFunc = func,
-      importerUserAgent = UserAgentRandom
+      importerUserAgent = UserAgentRandom,
+      importerTimezoneOffset = 1 -- Belgian time
     }
 
 func :: Import ()

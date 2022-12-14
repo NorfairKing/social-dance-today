@@ -42,7 +42,8 @@ salsaBeImporter =
   Importer
     { importerName = "salsa.be",
       importerFunc = func,
-      importerUserAgent = UserAgentRandom
+      importerUserAgent = UserAgentRandom,
+      importerTimezoneOffset = 1 -- Belgian time
     }
 
 func :: Import ()

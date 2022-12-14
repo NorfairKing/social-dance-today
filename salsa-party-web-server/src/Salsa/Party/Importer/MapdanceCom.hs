@@ -53,7 +53,8 @@ mapdanceComImporter =
   Importer
     { importerName = "mapdance.com",
       importerFunc = func,
-      importerUserAgent = UserAgentRandom
+      importerUserAgent = UserAgentRandom,
+      importerTimezoneOffset = 1 -- France time
     }
 
 baseUrl :: String
