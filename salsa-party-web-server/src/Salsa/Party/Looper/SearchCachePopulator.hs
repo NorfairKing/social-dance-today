@@ -23,7 +23,6 @@ runSearchCachePopulator = do
     let address = placeQuery place
     let coordinates = placeCoordinates place
 
-    -- Without dance style:
     populateCacheForQuery
       address
       SearchQuery
@@ -33,18 +32,6 @@ runSearchCachePopulator = do
           searchQueryDistance = Just defaultMaximumDistance,
           searchQueryDanceStyle = Nothing
         }
-
-    -- Per dance-style too:
-    forM allDanceStyles $ \danceStyle -> do
-      populateCacheForQuery
-        address
-        SearchQuery
-          { searchQueryBegin = today,
-            searchQueryMEnd = Just $ addDays (defaultDaysAhead - 1) today,
-            searchQueryCoordinates = coordinates,
-            searchQueryDistance = Just defaultMaximumDistance,
-            searchQueryDanceStyle = Just danceStyle
-          }
 
   -- Purge expired results, because that doesn't happen automatically.
   searchResultCache <- asks appSearchResultCache
@@ -74,13 +61,10 @@ populateCacheForQuery address query = do
 
   logInfoN $
     T.pack $
-      unwords $
-        concat
-          [ [ "Populating search cache for location",
-              show address
-            ],
-            concat [["and style", show ds] | ds <- maybeToList (searchQueryDanceStyle query)]
-          ]
+      unwords
+        [ "Populating search cache for location",
+          show address
+        ]
   pool <- asks appConnectionPool
   let runDBHere func = runSqlPool (retryOnBusy func) pool
   queryResults <- runDBHere $ runUncachedSearchQueryForResults query

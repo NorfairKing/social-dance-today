@@ -50,8 +50,8 @@ runSalsaPartyServer settings@Settings {..} = do
         sessionKeyFile <- resolveFile' "client_session_key.aes"
         man <- HTTP.newTlsManager
         rateLimiter <- liftIO $ makeTokenLimiter OSM.tokenLimitConfig
-        searchResultCache <- liftIO $ newCache $ Just $ TimeSpec.fromNanoSecs $ (60 * 60 + 5) * 1_000_000_000 -- A bit more than one hour
-        exploreResultCache <- liftIO $ newCache $ Just $ TimeSpec.fromNanoSecs $ (6 * 60 * 60 + 5) * 1_000_000_000 -- A bit more than six hours
+        searchResultCache <- liftIO $ newCache $ Just $ TimeSpec.fromNanoSecs $ ((6 * 60 + 5) * 60) * 1_000_000_000 -- A bit more than 6 hours
+        exploreResultCache <- liftIO $ newCache $ Just $ TimeSpec.fromNanoSecs $ ((24 * 60 + 5) * 60) * 1_000_000_000 -- A bit more than 24 hours
         let app =
               App
                 { appRoot = settingHost,
