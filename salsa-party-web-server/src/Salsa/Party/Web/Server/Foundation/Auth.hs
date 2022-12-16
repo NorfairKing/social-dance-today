@@ -22,12 +22,10 @@ module Salsa.Party.Web.Server.Foundation.Auth
 where
 
 import qualified Amazonka.SES as SES
-import qualified Amazonka.SES.SendEmail as SES
 import qualified Amazonka.SES.Types as SES
 import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
-import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
@@ -255,10 +253,7 @@ sendVerificationEmail userEmailAddress verificationKey = do
   case appSendAddress app of
     Nothing -> pure ()
     Just sendAddress -> do
-      let request =
-            (SES.newSendEmail sendAddress destination message)
-              { SES.replyToAddresses = Just $ maybeToList (emailAddressText <$> appAdmin app)
-              }
+      let request = SES.newSendEmail sendAddress destination message
       sendEmailResult <- sendEmail app request
       case sendEmailResult of
         ErrorWhileSendingEmail _ -> do

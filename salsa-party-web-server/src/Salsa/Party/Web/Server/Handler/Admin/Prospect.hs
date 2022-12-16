@@ -20,7 +20,6 @@ module Salsa.Party.Web.Server.Handler.Admin.Prospect
 where
 
 import qualified Amazonka.SES as SES
-import qualified Amazonka.SES.SendEmail as SES
 import qualified Amazonka.SES.Types as SES
 import Control.Monad
 import qualified Data.Text as T
@@ -227,10 +226,7 @@ postAdminProspectInviteR prospectId = do
   case appProspectSendAddress app of
     Nothing -> pure ()
     Just sendAddress -> do
-      let request =
-            (SES.newSendEmail sendAddress destination message)
-              { SES.replyToAddresses = Just $ maybeToList (emailAddressText <$> appAdmin app)
-              }
+      let request = SES.newSendEmail sendAddress destination message
       res <- sendEmail app request
       case res of
         EmailSentSuccesfully -> do

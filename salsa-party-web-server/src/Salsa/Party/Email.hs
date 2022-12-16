@@ -9,9 +9,11 @@ where
 
 import qualified Amazonka.SES.SendEmail as SES
 import Control.Monad.Logger
+import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import Salsa.Party.AWS
+import Salsa.Party.DB
 import Salsa.Party.Web.Server.Foundation.App
 import Text.Show.Pretty
 import UnliftIO
@@ -32,10 +34,14 @@ sendEmail app request = do
   pure result
 
 sendEmailWithoutResultLogging :: (MonadUnliftIO m, MonadLoggerIO m) => App -> SES.SendEmail -> m SendEmailResult
-sendEmailWithoutResultLogging App {..} request = do
+sendEmailWithoutResultLogging App {..} sendEmailRequest = do
   if appSendEmails
     then do
-      errOrResponse <- runAWS request
+      let modifiedSendEmailRequest =
+            sendEmailRequest
+              { SES.replyToAddresses = Just $ maybeToList (emailAddressText <$> appAdmin)
+              }
+      errOrResponse <- runAWS modifiedSendEmailRequest
       pure $ case SES.httpStatus <$> errOrResponse of
         Right 200 -> EmailSentSuccesfully
         _ ->
