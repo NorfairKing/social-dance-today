@@ -43,12 +43,8 @@ sendAdminNotification notificationContents = do
 
     let destination = SES.newDestination {SES.toAddresses = Just [emailAddressText adminEmailAddress]}
 
-    case appSendAddress app of
-      Nothing -> pure ()
-      Just sendAddress -> do
-        let request = SES.newSendEmail sendAddress destination message
-        sendEmailResult <- sendEmail app request
-        case sendEmailResult of
-          NoEmailSent -> pure ()
-          EmailSentSuccesfully -> logInfoN $ T.pack $ unwords ["Succesfully send admin notification email to address:", show adminEmailAddress]
-          ErrorWhileSendingEmail _ -> logErrorN $ T.pack $ unwords ["Failed to send admin notification email to address:", show adminEmailAddress]
+    sendEmailResult <- sendEmailFromNoReply app destination message
+    case sendEmailResult of
+      NoEmailSent -> logWarnN "No admin notification email sent!"
+      EmailSentSuccesfully -> logInfoN $ T.pack $ unwords ["Succesfully send admin notification email to address:", show adminEmailAddress]
+      ErrorWhileSendingEmail _ -> logErrorN $ T.pack $ unwords ["Failed to send admin notification email to address:", show adminEmailAddress]

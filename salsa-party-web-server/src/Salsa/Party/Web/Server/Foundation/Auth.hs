@@ -250,19 +250,15 @@ sendVerificationEmail userEmailAddress verificationKey = do
 
   app <- getYesod
 
-  case appSendAddress app of
-    Nothing -> pure ()
-    Just sendAddress -> do
-      let request = SES.newSendEmail sendAddress destination message
-      sendEmailResult <- sendEmail app request
-      case sendEmailResult of
-        ErrorWhileSendingEmail _ -> do
-          addMessageI "is-danger" MsgVerificationEmailFailure
-          logErrorN $ T.pack $ unwords ["Failed to send verification email to address:", show userEmailAddress]
-        EmailSentSuccesfully -> do
-          addMessageI "is-success" (ConfirmationEmailSent $ emailAddressText userEmailAddress)
-          logInfoN $ T.pack $ unwords ["Succesfully send verification email to address:", show userEmailAddress]
-        NoEmailSent -> pure ()
+  sendEmailResult <- sendEmailFromNoReply app destination message
+  case sendEmailResult of
+    ErrorWhileSendingEmail _ -> do
+      addMessageI "is-danger" MsgVerificationEmailFailure
+      logErrorN $ T.pack $ unwords ["Failed to send verification email to address:", show userEmailAddress]
+    EmailSentSuccesfully -> do
+      addMessageI "is-success" (ConfirmationEmailSent $ emailAddressText userEmailAddress)
+      logInfoN $ T.pack $ unwords ["Succesfully send verification email to address:", show userEmailAddress]
+    NoEmailSent -> logWarnN "No verification email sent."
 
 getVerifyR ::
   ( app ~ App,

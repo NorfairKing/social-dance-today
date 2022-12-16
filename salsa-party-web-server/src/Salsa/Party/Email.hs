@@ -3,11 +3,14 @@
 
 module Salsa.Party.Email
   ( SendEmailResult (..),
+    sendEmailFromNoReply,
+    sendEmailFromHenk,
     sendEmail,
   )
 where
 
 import qualified Amazonka.SES.SendEmail as SES
+import qualified Amazonka.SES.Types as SES
 import Control.Monad.Logger
 import Data.Maybe
 import Data.Text (Text)
@@ -23,6 +26,22 @@ data SendEmailResult
   | EmailSentSuccesfully
   | ErrorWhileSendingEmail Text
   deriving (Show, Eq)
+
+sendEmailFromNoReply :: (MonadUnliftIO m, MonadLoggerIO m) => App -> SES.Destination -> SES.Message -> m SendEmailResult
+sendEmailFromNoReply app destination message = do
+  case appSendAddress app of
+    Nothing -> pure NoEmailSent
+    Just sendAddress -> do
+      let request = SES.newSendEmail sendAddress destination message
+      sendEmail app request
+
+sendEmailFromHenk :: (MonadUnliftIO m, MonadLoggerIO m) => App -> SES.Destination -> SES.Message -> m SendEmailResult
+sendEmailFromHenk app destination message = do
+  case appProspectSendAddress app of
+    Nothing -> pure NoEmailSent
+    Just sendAddress -> do
+      let request = SES.newSendEmail sendAddress destination message
+      sendEmail app request
 
 sendEmail :: (MonadUnliftIO m, MonadLoggerIO m) => App -> SES.SendEmail -> m SendEmailResult
 sendEmail app request = do

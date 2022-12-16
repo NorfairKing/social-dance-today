@@ -223,16 +223,12 @@ postAdminProspectInviteR prospectId = do
   let destination = SES.newDestination {SES.toAddresses = Just [prospectEmailAddress prospect], SES.bccAddresses = Just ["syd@cs-syd.eu"]}
 
   app <- getYesod
-  case appProspectSendAddress app of
-    Nothing -> pure ()
-    Just sendAddress -> do
-      let request = SES.newSendEmail sendAddress destination message
-      res <- sendEmail app request
-      case res of
-        EmailSentSuccesfully -> do
-          now <- liftIO getCurrentTime
-          runDB $ update prospectId [ProspectInvited =. Just now]
-        _ -> pure ()
+  sendEmailResult <- sendEmailFromHenk app destination message
+  case sendEmailResult of
+    EmailSentSuccesfully -> do
+      now <- liftIO getCurrentTime
+      runDB $ update prospectId [ProspectInvited =. Just now]
+    _ -> pure ()
 
   redirect $ AdminR $ AdminProspectR prospectId
 

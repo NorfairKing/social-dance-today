@@ -180,10 +180,7 @@ reminderDecisionSink = awaitForever $ \case
           ]
   ShouldSendReminder organiserReminderId emailAddress secret -> lift $ do
     now <- liftIO getCurrentTime
-    sendEmails <- asks appSendEmails
-    if sendEmails
-      then sendOrganiserReminder emailAddress secret
-      else logDebugN "Not sending reminder email because sendEmails is off."
+    sendOrganiserReminder emailAddress secret
     pool <- asks appConnectionPool
     let runDBHere func = runSqlPool (retryOnBusy func) pool
     runDBHere $
@@ -209,15 +206,11 @@ sendOrganiserReminder emailAddress secret = do
 
   let destination = SES.newDestination {SES.toAddresses = Just [emailAddressText emailAddress]}
 
-  case appSendAddress app of
-    Nothing -> pure ()
-    Just sendAddress -> do
-      let request = SES.newSendEmail sendAddress destination message
-      sendEmailResult <- sendEmail app request
-      case sendEmailResult of
-        NoEmailSent -> pure ()
-        EmailSentSuccesfully -> logInfoN $ T.pack $ unwords ["Succesfully send organiser reminder email to address:", show emailAddress]
-        ErrorWhileSendingEmail _ -> logErrorN $ T.pack $ unwords ["Failed to send organiser reminder email to address:", show emailAddress]
+  sendEmailResult <- sendEmailFromNoReply app destination message
+  case sendEmailResult of
+    NoEmailSent -> logWarnN "No organiser reminder email sent."
+    EmailSentSuccesfully -> logInfoN $ T.pack $ unwords ["Succesfully send organiser reminder email to address:", show emailAddress]
+    ErrorWhileSendingEmail _ -> logErrorN $ T.pack $ unwords ["Failed to send organiser reminder email to address:", show emailAddress]
 
 organiserReminderTextContent :: (Route App -> [(Text, Text)] -> Text) -> ReminderSecret -> Text
 organiserReminderTextContent urlRender secret = LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/organiser-reminder.txt") urlRender
