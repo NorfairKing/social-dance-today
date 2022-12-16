@@ -106,6 +106,7 @@ tribeCalendarJSONLDEvents = awaitForever $ \(request, response, event) -> do
         eventOrganizer <- LD.eventOrganizer event
         case eventOrganizer of
           LD.EventOrganizerOrganization organization -> pure $ LD.organizationName organization
+          LD.EventOrganizerPerson person -> pure $ LD.personName person
 
   let (externalEventDay, externalEventStart) = case LD.eventStartDate event of
         LD.EventStartDate d -> (LD.dateDay d, Nothing)

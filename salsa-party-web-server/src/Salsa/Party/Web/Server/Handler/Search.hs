@@ -31,6 +31,7 @@ import Salsa.Party.Web.Server.Handler.Event.Party.LD
 import Salsa.Party.Web.Server.Handler.Import
 import Salsa.Party.Web.Server.Handler.Search.Query
 import Salsa.Party.Web.Server.Handler.Search.Types
+import Text.Printf
 import qualified Web.JSONLD as LD
 
 getAdvancedSearchR :: Handler Html
@@ -425,6 +426,13 @@ searchResultsPage searchParameters@SearchParameters {..} = do
             danceStyleFilterLinks <- mapM (\mDanceStyle -> (,) mDanceStyle <$> danceStyleFilterLink mDanceStyle) danceStyleFilters
 
             renderUrl <- getUrlRender
+
+            let mDistance p = case searchParameterLocation of
+                  SearchAddress _ -> Nothing
+                  SearchCoordinates c ->
+                    let meters = c `distanceTo` placeCoordinates p
+                        km = fromIntegral meters / 1_000
+                     in Just (printf "%.1f km" (km :: Double) :: String)
 
             let ldEvents = searchResultsToLDEvents renderUrl searchResults
             toWidgetHead $ toJSONLDData ldEvents

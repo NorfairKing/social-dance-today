@@ -420,18 +420,20 @@ instance ToJSON EventImage where
 -- https://developers.google.com/search/docs/data-types/event#organizer
 data EventOrganizer
   = EventOrganizerOrganization !Organization
+  | EventOrganizerPerson !Person
   deriving (Show, Eq, Generic)
-
---  | EventOrganizerPerson
 
 instance Validity EventOrganizer
 
 instance ToJSON EventOrganizer where
   toJSON = \case
     EventOrganizerOrganization o -> toJSON o
+    EventOrganizerPerson p -> toJSON p
 
 instance FromJSON EventOrganizer where
-  parseJSON v = EventOrganizerOrganization <$> parseJSON v
+  parseJSON v =
+    (EventOrganizerOrganization <$> parseJSON v)
+      <|> (EventOrganizerPerson <$> parseJSON v)
 
 -- https://developers.google.com/search/docs/data-types/event#organizer
 -- https://schema.org/Organization
@@ -467,7 +469,7 @@ instance ToJSON Organization where
         ]
 
 data Person = Person
-  { personName :: !(Maybe Text),
+  { personName :: !Text,
     personUrl :: !(Maybe Text),
     personJobTitle :: !(Maybe Text),
     personAffiliation :: !(Maybe Text),
@@ -486,9 +488,9 @@ instance ToJSON Person where
     object $
       concat
         [ [ "@context" .= ("https://schema.org" :: Text),
-            "@type" .= ("Person" :: Text)
+            "@type" .= ("Person" :: Text),
+            "name" .= personName
           ],
-          mField "name" personName,
           mField "url" personUrl,
           mField "jobTitle" personJobTitle,
           mField "affiliation" personAffiliation,
@@ -502,7 +504,7 @@ instance ToJSON Person where
 instance FromJSON Person where
   parseJSON = withObject "Person" $ \o ->
     Person
-      <$> o .:? "name"
+      <$> o .: "name"
       <*> o .:? "url"
       <*> o .:? "jobTitle"
       <*> o .:? "affiliation"

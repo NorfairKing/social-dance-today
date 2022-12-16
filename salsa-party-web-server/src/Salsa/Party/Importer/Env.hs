@@ -639,6 +639,7 @@ convertLDEventToExternalEventWith makeKey = awaitForever $ \(request, _, ldEvent
               eventOrganizer <- LD.eventOrganizer ldEvent
               case eventOrganizer of
                 LD.EventOrganizerOrganization organization -> pure $ LD.organizationName organization
+                LD.EventOrganizerPerson person -> pure $ LD.personName person
         let externalEventHomepage = Nothing
         let externalEventPrice = Nothing
         let externalEventCancelled = case LD.eventStatus ldEvent of

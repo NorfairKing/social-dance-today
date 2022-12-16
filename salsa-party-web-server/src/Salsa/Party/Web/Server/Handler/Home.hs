@@ -62,7 +62,7 @@ socialDanceOrganisation renderUrl =
       LD.organizationFounder =
         Just
           Person
-            { personName = Just "Tom Sydney Kerckhove",
+            { personName = "Tom Sydney Kerckhove",
               personUrl = Just "https://cs-syd.eu",
               personJobTitle = Just "Professional Weirdo",
               personAffiliation = Just "CS SYD",

@@ -28,6 +28,9 @@ $forall day <- days
                             _{partyTitleMessage party}
                           <h3 .subtitle .is-5>
                             #{placeQuery p}
+                            $maybe distance <- mDistance p
+                              <small>
+                                (#{distance})
 
               $of External externalEvent p
                 <div .column .is-two-thirds-tablet .is-half-desktop>
@@ -41,6 +44,8 @@ $forall day <- days
                           <h2 .title .is-4>
                             _{externalEventTitleMessage externalEvent}
                           <h3 .subtitle .is-5>
+                            $maybe distance <- mDistance p
+                              (#{distance})
                             #{placeQuery p}
       $nothing
         <p .has-text-centered>
