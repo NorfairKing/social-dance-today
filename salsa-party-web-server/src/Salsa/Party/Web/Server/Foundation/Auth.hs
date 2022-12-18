@@ -22,12 +22,10 @@ module Salsa.Party.Web.Server.Foundation.Auth
 where
 
 import qualified Amazonka.SES as SES
-import qualified Amazonka.SES.SendEmail as SES
 import qualified Amazonka.SES.Types as SES
 import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
-import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
@@ -252,22 +250,15 @@ sendVerificationEmail userEmailAddress verificationKey = do
 
   app <- getYesod
 
-  case appSendAddress app of
-    Nothing -> pure ()
-    Just sendAddress -> do
-      let request =
-            (SES.newSendEmail sendAddress destination message)
-              { SES.replyToAddresses = Just $ maybeToList (emailAddressText <$> appAdmin app)
-              }
-      sendEmailResult <- sendEmail app request
-      case sendEmailResult of
-        ErrorWhileSendingEmail _ -> do
-          addMessageI "is-danger" MsgVerificationEmailFailure
-          logErrorN $ T.pack $ unwords ["Failed to send verification email to address:", show userEmailAddress]
-        EmailSentSuccesfully -> do
-          addMessageI "is-success" (ConfirmationEmailSent $ emailAddressText userEmailAddress)
-          logInfoN $ T.pack $ unwords ["Succesfully send verification email to address:", show userEmailAddress]
-        NoEmailSent -> pure ()
+  sendEmailResult <- sendEmailFromNoReply app destination message
+  case sendEmailResult of
+    ErrorWhileSendingEmail _ -> do
+      addMessageI "is-danger" MsgVerificationEmailFailure
+      logErrorN $ T.pack $ unwords ["Failed to send verification email to address:", show userEmailAddress]
+    EmailSentSuccesfully -> do
+      addMessageI "is-success" (ConfirmationEmailSent $ emailAddressText userEmailAddress)
+      logInfoN $ T.pack $ unwords ["Succesfully send verification email to address:", show userEmailAddress]
+    NoEmailSent -> logWarnN "No verification email sent."
 
 getVerifyR ::
   ( app ~ App,

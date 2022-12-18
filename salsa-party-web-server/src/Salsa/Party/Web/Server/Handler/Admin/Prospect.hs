@@ -22,7 +22,6 @@ module Salsa.Party.Web.Server.Handler.Admin.Prospect
 where
 
 import qualified Amazonka.SES as SES
-import qualified Amazonka.SES.SendEmail as SES
 import qualified Amazonka.SES.Types as SES
 import Control.Monad
 import qualified Data.Text as T
@@ -226,19 +225,12 @@ postAdminProspectInviteR prospectId = do
   let destination = SES.newDestination {SES.toAddresses = Just [prospectEmailAddress prospect], SES.bccAddresses = Just ["syd@cs-syd.eu"]}
 
   app <- getYesod
-  case appProspectSendAddress app of
-    Nothing -> pure ()
-    Just sendAddress -> do
-      let request =
-            (SES.newSendEmail sendAddress destination message)
-              { SES.replyToAddresses = Just $ maybeToList (emailAddressText <$> appAdmin app)
-              }
-      res <- sendEmail app request
-      case res of
-        EmailSentSuccesfully -> do
-          now <- liftIO getCurrentTime
-          runDB $ update prospectId [ProspectInvited =. Just now]
-        _ -> pure ()
+  sendEmailResult <- sendEmailFromHenk app destination message
+  case sendEmailResult of
+    EmailSentSuccesfully -> do
+      now <- liftIO getCurrentTime
+      runDB $ update prospectId [ProspectInvited =. Just now]
+    _ -> pure ()
 
   redirect $ AdminR $ AdminProspectR prospectId
 
