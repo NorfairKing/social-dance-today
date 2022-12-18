@@ -5,7 +5,7 @@ cd salsa-party-web-server
 
 killall salsa-party-web-server || true
 
-# export SALSA_PARTY_WEB_SERVER_SEND_EMAILS=False
+export SALSA_PARTY_WEB_SERVER_SEND_EMAILS=False
 export SALSA_PARTY_WEB_SERVER_SEND_ADDRESS=noreply@social-dance.today
 export SALSA_PARTY_WEB_SERVER_SEARCH_CACHE_POPULATOR_ENABLED=False
 export SALSA_PARTY_WEB_SERVER_SEARCH_CACHE_POPULATOR_PHASE=0

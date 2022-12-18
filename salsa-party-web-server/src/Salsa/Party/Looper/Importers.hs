@@ -35,17 +35,9 @@ importersLooper settings app = do
 
 chooseImporterToRun :: Settings -> App -> LoggingT IO (Maybe Importer)
 chooseImporterToRun Settings {..} app = do
-  soonestRuns <- forM allImporters $ \importer ->
-    case M.lookup (importerName importer) settingImporterSettings of
-      Nothing -> fail $ unwords ["Failed to configure importer:", show (importerName importer)]
-      Just importerSettings ->
-        (,) (importerName importer)
-          <$> ( (,)
-                  <$> getSoonestRun settingImporterInterval app importerSettings importer
-                  <*> pure (importerTimezoneOffset importer)
-              )
+  soonestRuns <- getSoonestRuns settingImporterInterval app settingImporterSettings
   now <- liftIO getCurrentTime
-  let mImporterName = computeImporterToRun settingImporterInterval now (M.fromList soonestRuns)
+  let mImporterName = computeImporterToRun settingImporterInterval now soonestRuns
   pure $ mImporterName >>= (\name -> find ((== name) . importerName) allImporters)
 
 -- | Compute which importer to run next.
@@ -100,26 +92,26 @@ data SoonestRun
 
 instance Validity SoonestRun
 
-getSoonestRun :: NominalDiffTime -> App -> ImporterSettings -> Importer -> LoggingT IO SoonestRun
-getSoonestRun importerInterval app ImporterSettings {..} importer =
-  if importerSettingEnabled
-    then do
-      let runDBHere :: SqlPersistT (LoggingT IO) a -> LoggingT IO a
-          runDBHere = flip runSqlPool (appConnectionPool app) . retryOnBusy
-      importerMetadataEntity <-
-        runDBHere $
-          upsertBy
-            (UniqueImporterMetadataName $ importerName importer)
-            ( ImporterMetadata
-                { importerMetadataName = importerName importer,
-                  importerMetadataLastRunStart = Nothing,
-                  importerMetadataLastRunEnd = Nothing,
-                  importerMetadataLastRunImported = Nothing
-                }
-            )
-            []
-      let mLastRun = importerMetadataLastRunStart $ entityVal importerMetadataEntity
-      case mLastRun of
-        Nothing -> pure RunASAP
-        Just lastRun -> pure $ RunNoSoonerThan $ addUTCTime importerInterval lastRun
-    else pure DontRun
+getSoonestRuns :: NominalDiffTime -> App -> Map Text ImporterSettings -> LoggingT IO (Map Text (SoonestRun, Int))
+getSoonestRuns importerInterval app settingsMap = do
+  let runDBHere :: SqlPersistT (LoggingT IO) a -> LoggingT IO a
+      runDBHere = flip runSqlPool (appConnectionPool app) . retryOnBusy
+  importerMetas <- runDBHere $ selectList [] []
+  fmap M.fromList $
+    forM allImporters $ \importer -> do
+      tup <-
+        case M.lookup (importerName importer) settingsMap of
+          Nothing -> fail $ unwords ["Failed to configure importer:", show (importerName importer)]
+          Just importerSettings -> do
+            soonestRun <-
+              if importerSettingEnabled importerSettings
+                then do
+                  let mLastRun = case find ((== importerName importer) . importerMetadataName . entityVal) importerMetas of
+                        Nothing -> Nothing
+                        Just (Entity _ importerMeta) -> importerMetadataLastRunStart importerMeta
+                  case mLastRun of
+                    Nothing -> pure RunASAP
+                    Just lastRun -> pure $ RunNoSoonerThan $ addUTCTime importerInterval lastRun
+                else pure DontRun
+            pure (soonestRun, importerTimezoneOffset importer)
+      pure (importerName importer, tup)
