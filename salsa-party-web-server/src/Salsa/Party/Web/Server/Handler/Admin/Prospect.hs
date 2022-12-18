@@ -15,6 +15,8 @@ module Salsa.Party.Web.Server.Handler.Admin.Prospect
     EditProspectForm (..),
     postAdminProspectEditR,
     postAdminProspectInviteR,
+    prospectEmailTextContent,
+    prospectEmailHtmlContent,
     postAdminProspectDeleteR,
   )
 where
@@ -217,7 +219,7 @@ postAdminProspectInviteR prospectId = do
   let htmlBody = SES.newContent htmlContent
   let body = SES.newBody {SES.html = Just htmlBody, SES.text = Just textBody}
 
-  let subject = SES.newContent "Advertise your parties on Social Dance Today for free!"
+  let subject = SES.newContent prospectEmailSubject
 
   let message = SES.newMessage subject body
 
@@ -246,6 +248,9 @@ exampleOrganiser = "SalsaOn2Happenings"
 exampleOrganiserSlug :: OrganiserSlug
 exampleOrganiserSlug = Slug "salsaon2happenings"
 
+prospectEmailSubject :: Text
+prospectEmailSubject = "Boost attendance at your parties by joining Social Dance Today"
+
 prospectEmailTextContent :: (Route App -> [(Text, Text)] -> Text) -> Prospect -> Maybe ExternalEvent -> Text
 prospectEmailTextContent urlRender prospect mExternalEvent =
   let yourEventsSentence =
@@ -253,13 +258,13 @@ prospectEmailTextContent urlRender prospect mExternalEvent =
           Just externalEvent ->
             T.pack $
               concat
-                [ "Some of your events, for example ",
+                [ "In fact, some of your events, such as ",
                   show (externalEventTitle externalEvent),
                   " (",
-                  T.unpack $ urlRender (externalEventRoute externalEvent) [],
-                  ") are already advertised on our site because our site acts as a search engine for parties across the internet as well."
+                  T.unpack (urlRender (externalEventRoute externalEvent) []),
+                  "), are already advertised on our site."
                 ]
-          Nothing -> "Some of your events may already be advertised on our site because our site acts as a search engine for parties across the internet as well."
+          Nothing -> "In fact, some of your events are probably already advertised on our site."
    in TL.toStrict $ TLB.toLazyText $ $(textFile "templates/email/prospect.txt") urlRender
 
 prospectEmailHtmlContent :: (Route App -> [(Text, Text)] -> Text) -> Prospect -> Maybe ExternalEvent -> Text

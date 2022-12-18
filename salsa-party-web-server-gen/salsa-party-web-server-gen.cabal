@@ -69,6 +69,7 @@ test-suite salsa-party-web-server-gen-test
       Salsa.Party.Web.Server.Handler.Account.PartySpec
       Salsa.Party.Web.Server.Handler.Account.ScheduleSpec
       Salsa.Party.Web.Server.Handler.Admin.PanelSpec
+      Salsa.Party.Web.Server.Handler.Admin.ProspectSpec
       Salsa.Party.Web.Server.Handler.Admin.SiteTestSpec
       Salsa.Party.Web.Server.Handler.AuthSpec
       Salsa.Party.Web.Server.Handler.Event.ExternalEvent.DescriptionSpec
