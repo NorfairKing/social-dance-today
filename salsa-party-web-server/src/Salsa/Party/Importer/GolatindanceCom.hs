@@ -64,7 +64,6 @@ func = do
       .| logRequestErrors
       .| jsonLDEventsC
       .| tribeCalendarJSONLDEvents
-      .| C.map (first removeDetails)
       .| C.mapM_ importExternalEventWithMImage
 
 parseCategoryUrls ::
@@ -75,13 +74,3 @@ parseCategoryUrls = awaitForever $ \(_, response) -> do
           refs <- attrs "href" "a"
           pure $ mapMaybe maybeUtf8 $ filter ("https://golatindance.com/events/category/" `LB.isPrefixOf`) refs
   yieldManyShuffled $ mapMaybe (parseURI . T.unpack) links
-
--- We remove details at Jason's request, so we only link to golatindance.com
-removeDetails :: ExternalEvent -> ExternalEvent
-removeDetails externalEvent =
-  externalEvent
-    { externalEventDescription = Nothing,
-      externalEventOrganiser = Nothing,
-      externalEventHomepage = Just $ externalEventOrigin externalEvent,
-      externalEventPrice = Nothing
-    }
