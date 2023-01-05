@@ -19,6 +19,7 @@ import Data.FileEmbed
 import qualified Data.Text as T
 import Data.Validity (Validity, prettyValidate)
 import Data.Yaml as Yaml
+import Database.Persist.Pagination
 import Database.Persist.Sql
 import GHC.Generics (Generic)
 import Salsa.Party.DB
@@ -69,9 +70,9 @@ setUpPlaces = do
 removeInvalidPlaces :: forall m. (MonadUnliftIO m, MonadLogger m) => SqlPersistT m ()
 removeInvalidPlaces = do
   logInfoN "Removing invalid places from the database"
-  acqPlacesSource <- selectSourceRes [] []
-  withAcquire acqPlacesSource $ \placesSource ->
-    runConduit $ placesSource .| C.mapM_ go
+  runConduit $
+    streamEntities [] PlaceId (PageSize 64) Ascend (Range Nothing Nothing)
+      .| C.mapM_ go
   where
     go :: Entity Place -> SqlPersistT m ()
     go (Entity placeId place) =

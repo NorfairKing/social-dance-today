@@ -48,6 +48,7 @@ library
     , password
     , path-pieces
     , persistent
+    , persistent-pagination
     , text
     , text-icu
     , time
