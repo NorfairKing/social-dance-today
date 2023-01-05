@@ -44,7 +44,8 @@ runExploreCachePopulator = do
 
     logInfoN $ T.pack $ unwords ["Populating explore cache for", show placeName]
     exploreQueryResult <- runDBHere $ uncachedExplorePartiesAroundLocationQuery today coordinates
-    liftIO $ Cache.insert' exploreResultCache Nothing coordinates exploreQueryResult
+    liftIO $ Cache.insert exploreResultCache coordinates exploreQueryResult
 
   -- Purge expired results, because that doesn't happen automatically.
+  logDebugN "Purging expired explore result cache items."
   liftIO $ Cache.purgeExpired exploreResultCache

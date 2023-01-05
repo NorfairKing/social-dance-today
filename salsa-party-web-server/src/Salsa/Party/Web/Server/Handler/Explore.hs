@@ -62,7 +62,7 @@ explorePartiesAroundLocationQuery exploreResultCache today coordinates = do
               show coordinates
             ]
       result <- uncachedExplorePartiesAroundLocationQuery today coordinates
-      liftIO $ Cache.insert' exploreResultCache Nothing coordinates result
+      liftIO $ Cache.insert exploreResultCache coordinates result
       pure result
 
 uncachedExplorePartiesAroundLocationQuery :: MonadIO m => Day -> Coordinates -> SqlPersistT m Word

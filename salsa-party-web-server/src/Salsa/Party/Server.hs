@@ -14,6 +14,7 @@ import Data.Cache
 import qualified Data.Text as T
 import Database.Persist.Sqlite
 import Lens.Micro
+import Looper (looperSetPeriod)
 import Network.HTTP.Client.TLS as HTTP
 import qualified OpenStreetMaps.Geocoding as OSM
 import Path
@@ -50,8 +51,14 @@ runSalsaPartyServer settings@Settings {..} = do
         sessionKeyFile <- resolveFile' "client_session_key.aes"
         man <- HTTP.newTlsManager
         rateLimiter <- liftIO $ makeTokenLimiter OSM.tokenLimitConfig
-        searchResultCache <- liftIO $ newCache $ Just $ TimeSpec.fromNanoSecs $ ((6 * 60 + 5) * 60) * 1_000_000_000 -- A bit more than 6 hours
-        exploreResultCache <- liftIO $ newCache $ Just $ TimeSpec.fromNanoSecs $ ((24 * 60 + 5) * 60) * 1_000_000_000 -- A bit more than 24 hours
+        let searchResultCacheTimeSpec =
+              TimeSpec.fromNanoSecs $
+                ceiling (looperSetPeriod settingSearchCachePopulatorLooperSettings + 5) * 1_000_000_000 -- A bit more the cache populator interval
+        searchResultCache <- liftIO $ newCache $ Just searchResultCacheTimeSpec
+        let exploreCacheTimeSpec =
+              TimeSpec.fromNanoSecs $
+                ceiling (looperSetPeriod settingExploreCachePopulatorLooperSettings + 5) * 1_000_000_000 -- A bit more than the cache populator interval
+        exploreResultCache <- liftIO $ newCache $ Just exploreCacheTimeSpec
         let app =
               App
                 { appRoot = settingHost,

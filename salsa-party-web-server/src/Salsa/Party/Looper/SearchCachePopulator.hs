@@ -34,6 +34,7 @@ runSearchCachePopulator = do
         }
 
   -- Purge expired results, because that doesn't happen automatically.
+  logDebugN "Purging expired search result cache items."
   searchResultCache <- asks appSearchResultCache
   liftIO $ Cache.purgeExpired searchResultCache
 
@@ -76,4 +77,4 @@ populateCacheForQuery address query = do
           ppShow query,
           ppShow queryResults
         ]
-  liftIO $ Cache.insert' searchResultCache Nothing query queryResults
+  liftIO $ Cache.insert searchResultCache query queryResults

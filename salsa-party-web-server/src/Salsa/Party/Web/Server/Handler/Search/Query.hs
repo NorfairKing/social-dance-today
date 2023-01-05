@@ -63,7 +63,7 @@ runSearchQueryForResults searchResultCache searchQuery = do
               ppShow searchQuery
             ]
       results <- runUncachedSearchQueryForResults searchQuery
-      liftIO $ Cache.insert' searchResultCache Nothing searchQuery results
+      liftIO $ Cache.insert searchResultCache searchQuery results
       pure results
 
 runUncachedSearchQueryForResults :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])

@@ -138,6 +138,7 @@
           cabal-install
           chromedriver
           chromium
+          haskellPackages.eventlog2html
           icu
           niv
           selenium-server-standalone
