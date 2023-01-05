@@ -24,6 +24,8 @@ import Control.Arrow (left)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
+import Data.Vector (Vector)
+import qualified Data.Vector as V
 import Network.HTTP.Types
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Event.ExternalEvent.LD
@@ -433,8 +435,8 @@ searchResultsPage searchParameters@SearchParameters {..} = do
             addStylesheet $ StaticR zoom_without_container_css
             $(widgetFile "search") <> posterCSS
 
-searchResultsToLDEvents :: (Route App -> Text) -> Map Day [Result] -> [LD.Event]
-searchResultsToLDEvents renderUrl = foldMap (map (resultToLDEvent renderUrl))
+searchResultsToLDEvents :: (Route App -> Text) -> Map Day (Vector Result) -> Vector LD.Event
+searchResultsToLDEvents renderUrl = foldMap (V.map (resultToLDEvent renderUrl))
 
 resultToLDEvent :: (Route App -> Text) -> Result -> LD.Event
 resultToLDEvent renderUrl = \case

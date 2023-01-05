@@ -11,7 +11,6 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import qualified Data.Cache as Cache
-import Data.List
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import Data.Maybe
@@ -19,6 +18,9 @@ import Data.Ord
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
+import Data.Vector (Vector)
+import qualified Data.Vector as V
+import qualified Data.Vector.Algorithms.Insertion as V
 import Database.Esqueleto.Experimental
 import Salsa.Party.DB
 import Salsa.Party.Web.Server.Handler.Search.Deduplication
@@ -41,7 +43,7 @@ runSearchQuery searchResultCache searchQuery@SearchQuery {..} = do
 
 -- For a begin day end day (inclusive) and a given place, find all parties per
 -- day sorted by distance, and with external parties at the end in any case.
-runSearchQueryForResults :: (MonadIO m, MonadLogger m) => SearchResultCache -> SearchQuery -> SqlPersistT m (Map Day [Result])
+runSearchQueryForResults :: (MonadIO m, MonadLogger m) => SearchResultCache -> SearchQuery -> SqlPersistT m (Map Day (Vector Result))
 runSearchQueryForResults searchResultCache searchQuery = do
   mCachedResults <- liftIO $ Cache.lookup searchResultCache searchQuery
   case mCachedResults of
@@ -66,7 +68,7 @@ runSearchQueryForResults searchResultCache searchQuery = do
       liftIO $ Cache.insert searchResultCache searchQuery results
       pure results
 
-runUncachedSearchQueryForResults :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day [Result])
+runUncachedSearchQueryForResults :: MonadIO m => SearchQuery -> SqlPersistT m (Map Day (Vector Result))
 runUncachedSearchQueryForResults searchQuery = do
   internalResults <- runInternalSearchQuery searchQuery
 
@@ -75,7 +77,7 @@ runUncachedSearchQueryForResults searchQuery = do
   let externalResults = deduplicateExternalEvents internalResults rawExternalResults
 
   pure $
-    M.map (sortResults (searchQueryCoordinates searchQuery)) $
+    M.map (sortResults (searchQueryCoordinates searchQuery) . V.fromList) $
       M.filter (not . null) $
         M.unionsWith
           (++)
@@ -312,13 +314,14 @@ postProcessExternalEvents maximumDistance coordinates =
 makeExternalResult :: (ExternalEvent, Place) -> Result
 makeExternalResult (externalEvent, place) = External externalEvent place
 
-sortResults :: Coordinates -> [Result] -> [Result]
+sortResults :: Coordinates -> Vector Result -> Vector Result
 sortResults coordinates =
-  sortBy $
-    mconcat
-      [ comparing (Down . isInternal), -- Internal results always go first.
-        comparing distanceToResult -- Sort by distance next.
-      ]
+  V.modify $
+    V.sortBy $
+      mconcat
+        [ comparing (Down . isInternal), -- Internal results always go first.
+          comparing distanceToResult -- Sort by distance next.
+        ]
   where
     isInternal = \case
       Internal _ _ _ -> True

@@ -76,6 +76,7 @@ library:
   - validity-text
   - validity-time
   - vector
+  - vector-algorithms
   - wai-extra
   - warp
   - xml-conduit

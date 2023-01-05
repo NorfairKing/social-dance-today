@@ -11,9 +11,9 @@
 , shakespeare, sydtest, sydtest-discover, tagsoup, template-haskell
 , text, time, token-limiter-concurrent, typed-process, typed-uuid
 , unliftio, validity, validity-text, validity-time, vector
-, wai-extra, warp, xml-conduit, xml-types, yesod, yesod-auth
-, yesod-autoreload, yesod-core, yesod-sitemap, yesod-static
-, yesod-static-remote, zip-archive
+, vector-algorithms, wai-extra, warp, xml-conduit, xml-types, yesod
+, yesod-auth, yesod-autoreload, yesod-core, yesod-sitemap
+, yesod-static, yesod-static-remote, zip-archive
 }:
 mkDerivation {
   pname = "salsa-party-web-server";
@@ -33,8 +33,8 @@ mkDerivation {
     salsa-party-data scalpel scientific shakespeare tagsoup
     template-haskell text time token-limiter-concurrent typed-process
     typed-uuid unliftio validity validity-text validity-time vector
-    wai-extra warp xml-conduit xml-types yesod yesod-auth
-    yesod-autoreload yesod-core yesod-sitemap yesod-static
+    vector-algorithms wai-extra warp xml-conduit xml-types yesod
+    yesod-auth yesod-autoreload yesod-core yesod-sitemap yesod-static
     yesod-static-remote zip-archive
   ];
   executableHaskellDepends = [ base ];

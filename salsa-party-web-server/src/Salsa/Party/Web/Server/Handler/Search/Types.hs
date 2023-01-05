@@ -8,6 +8,8 @@ import Data.Hashable
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import Data.Time
+import Data.Vector (Vector)
+import qualified Data.Vector as V
 import GHC.Generics (Generic)
 import Salsa.Party.DB
 
@@ -24,14 +26,14 @@ instance Hashable SearchQuery
 
 instance NFData SearchQuery
 
-nullSearchResults :: Map Day [Result] -> Bool
+nullSearchResults :: Map Day (Vector Result) -> Bool
 nullSearchResults = (== 0) . countSearchResults -- Not the same as M.null!
 
-countSearchResults :: Map Day [Result] -> Int
-countSearchResults = M.foldl (+) 0 . M.map length
+countSearchResults :: Map Day (Vector Result) -> Int
+countSearchResults = M.foldl (+) 0 . M.map V.length
 
 data SearchResult
-  = ResultsFound !(Map Day [Result])
+  = ResultsFound !(Map Day (Vector Result))
   | NoDataYet
   deriving (Show, Eq, Generic)
 
@@ -44,4 +46,4 @@ data Result
 
 instance NFData Result
 
-type SearchResultCache = Cache SearchQuery (Map Day [Result])
+type SearchResultCache = Cache SearchQuery (Map Day (Vector Result))
