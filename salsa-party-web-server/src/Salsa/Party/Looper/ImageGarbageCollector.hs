@@ -8,9 +8,10 @@ import Salsa.Party.Looper.Import
 runImageGarbageCollector :: App -> LoggingT IO ()
 runImageGarbageCollector App {..} = do
   let runDBHere func = runSqlPool (retryOnBusy func) appConnectionPool
-  acqImagesSource <- runDBHere $ selectSourceRes [] [Asc ImageId]
-  withAcquire acqImagesSource $ \imagesSource ->
-    runConduit $ imagesSource .| C.mapM_ (runDBHere . garbageCollectImage)
+  runDBHere $
+    runConduit $
+      streamEntities [] ImageId (PageSize 64) Ascend (Range Nothing Nothing)
+        .| C.mapM_ garbageCollectImage
 
 garbageCollectImage :: Entity Image -> SqlPersistT (LoggingT IO) ()
 garbageCollectImage (Entity imageId Image {..}) = do

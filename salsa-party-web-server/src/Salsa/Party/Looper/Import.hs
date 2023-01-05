@@ -11,6 +11,7 @@ import Data.Maybe as X
 import Data.Text as X (Text)
 import Data.Time as X
 import Database.Persist as X
+import Database.Persist.Pagination as X
 import Database.Persist.Sql as X
 import Database.Persist.Sqlite as X
 import Network.HTTP.Client as X
