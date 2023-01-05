@@ -64,6 +64,11 @@ func = do
       .| logRequestErrors
       .| jsonLDEventsC
       .| tribeCalendarJSONLDEvents
+      .| C.map
+        ( first $ \ee -> case externalEventHomepage ee of
+            Nothing -> ee {externalEventHomepage = Just $ externalEventOrigin ee}
+            Just _ -> ee
+        )
       .| C.mapM_ importExternalEventWithMImage
 
 parseCategoryUrls ::
