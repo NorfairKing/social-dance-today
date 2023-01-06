@@ -16,8 +16,10 @@ import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
 import Data.Aeson.Types as JSON
 import Data.ByteString (ByteString)
+import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
+import Data.List (find)
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Set (Set)
@@ -25,6 +27,7 @@ import qualified Data.Set as S
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Encoding.Error as TE
 import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.Builder as LTB
 import Data.Time
@@ -499,6 +502,23 @@ logRequestErrors' ::
 logRequestErrors' = awaitForever $ \(a, request, errOrResponse) -> case errOrResponse of
   Left err -> logErrorN $ T.pack $ unlines ["Error while fetching page:", ppShow err]
   Right response -> yield (a, request, response)
+
+httpBodyTextParserC :: Monad m => ConduitT (HTTP.Request, HTTP.Response LB.ByteString) (HTTP.Request, HTTP.Response Text) m ()
+httpBodyTextParserC = C.concatMap (traverse parseHttpBodyText) -- This uses Foldable ((,) a).
+
+parseHttpBodyText :: HTTP.Response LB.ByteString -> Either TE.UnicodeException (HTTP.Response Text)
+parseHttpBodyText response =
+  let headers = HTTP.responseHeaders response
+      contentType = lookup hContentType headers
+      iso88591Decoder = pure . TE.decodeLatin1
+      decoder :: ByteString -> Either TE.UnicodeException Text
+      decoder = case contentType of
+        Nothing -> iso88591Decoder
+        Just ct ->
+          if "charset=UTF-8" `SB.isInfixOf` ct
+            then TE.decodeUtf8'
+            else iso88591Decoder
+   in traverse (decoder . LB.toStrict) response
 
 teePrint ::
   (Show a, MonadIO m) => ConduitT a a m ()

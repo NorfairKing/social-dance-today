@@ -15,11 +15,9 @@ module Salsa.Party.Importer.SalsaFauraxFr (salsaFauraxFrImporter) where
 
 import Conduit
 import Control.Applicative
-import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
 import Network.HTTP.Client as HTTP
 import Network.URI as URI
 import Salsa.Party.Importer.Import
@@ -42,18 +40,12 @@ func =
       .| C.concatMap (parseRequest :: String -> Maybe HTTP.Request)
       .| doHttpRequestWith
       .| logRequestErrors
-      .| C.concatMap
-        ( \(request, response) ->
-            (,) request <$> traverse TE.decodeUtf8' (LB.toStrict <$> response)
-        )
+      .| httpBodyTextParserC
       .| scrapeEventLinks
       .| C.concatMap (requestFromURI :: URI -> Maybe HTTP.Request)
       .| doHttpRequestWith
       .| logRequestErrors
-      .| C.concatMap
-        ( \(request, response) ->
-            (,) request <$> traverse TE.decodeUtf8' (LB.toStrict <$> response)
-        )
+      .| httpBodyTextParserC
       .| scrapeEventPage
       .| C.mapM_ importExternalEvent
 
