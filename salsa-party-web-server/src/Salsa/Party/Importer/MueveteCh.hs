@@ -33,8 +33,8 @@ func =
   runConduit $
     yield "https://muevete.ch/salsaparties"
       .| C.concatMap (parseRequest :: String -> Maybe HTTP.Request)
-      .| doHttpRequestWith
-      .| logRequestErrors
+      .| httpRequestC
+      .| httpBodyTextParserC
       .| jsonLDEventsC
       .| convertLDEventToExternalEventWith
         ( \_ ldEvent ->

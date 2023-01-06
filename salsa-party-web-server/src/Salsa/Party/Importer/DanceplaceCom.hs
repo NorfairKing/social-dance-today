@@ -19,16 +19,13 @@ module Salsa.Party.Importer.DanceplaceCom (danceplaceComImporter) where
 
 import Conduit
 import Control.Applicative
-import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
-import Data.Maybe
 import qualified Data.Text as T
 import Network.HTTP.Client as HTTP
 import Network.URI
 import Salsa.Party.Importer.Import
 import Salsa.Party.Web.Server.Geocoding
 import Text.HTML.Scalpel
-import Text.HTML.Scalpel.Extended
 
 danceplaceComImporter :: Importer
 danceplaceComImporter =
@@ -46,34 +43,30 @@ func = do
   runConduit $
     yieldManyShuffled [currentYear, succ currentYear]
       .| C.concatMap (\y -> parseRequest ("https://www.danceplace.com/events/in/" <> show y) :: Maybe Request)
-      .| doHttpRequestWith
-      .| logRequestErrors
-      .| parseEventLinksFromYearPage
+      .| httpRequestC
+      .| httpBodyTextParserC
+      .| scrapeBodyC parseEventLinksFromYearPage
+      .| C.mapM shuffleList
+      .| C.concat
       .| deduplicateC
       .| C.concatMap (\t -> parseRequest (T.unpack t) :: Maybe Request)
-      .| doHttpRequestWith
-      .| logRequestErrors
+      .| httpRequestC
+      .| httpBodyTextParserC
       .| C.mapM_ (uncurry parseEventFromPage)
 
-parseEventLinksFromYearPage :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Text Import ()
-parseEventLinksFromYearPage = awaitForever $ \(_, response) -> do
-  let urls = fromMaybe [] $
-        scrapeStringLike (responseBody response) $ do
-          refs <-
-            chroots ("div" @: [hasClass "event-txt"]) $
-              attr "href" "a"
-          pure (mapMaybe maybeUtf8 refs :: [Text])
+parseEventLinksFromYearPage :: ScraperT Text Import [Text]
+parseEventLinksFromYearPage =
+  chroots ("div" @: [hasClass "event-txt"]) $
+    attr "href" "a"
 
-  yieldManyShuffled urls
-
-parseEventFromPage :: HTTP.Request -> HTTP.Response LB.ByteString -> Import ()
+parseEventFromPage :: HTTP.Request -> HTTP.Response Text -> Import ()
 parseEventFromPage request response = do
   now <- liftIO getCurrentTime
   let today = utctDay now
   let scraper = do
         externalEventDay <- do
           rawDate <- attr "content" ("meta" @: ["itemprop" @= "startDate"])
-          case maybeUtf8 rawDate >>= (parseTimeM True defaultTimeLocale "%FT%H:%M" . T.unpack) of
+          case parseTimeM True defaultTimeLocale "%FT%H:%M" (T.unpack rawDate) of
             Nothing -> fail "couldn't parse the day"
             Just d -> pure d
 
@@ -85,9 +78,9 @@ parseEventFromPage request response = do
                     Nothing -> uriText
                     Just suffix -> suffix
 
-        externalEventTitle <- text "title" >>= utf8
+        externalEventTitle <- text "title"
 
-        externalEventDescription <- mutf8 $ optional $ attr "content" ("meta" @: ["name" @= "description"])
+        externalEventDescription <- optional $ attr "content" ("meta" @: ["name" @= "description"])
 
         -- SOMETIMES the organiser is on the page, but it's probably not worth scraping.
         let externalEventOrganiser = Nothing
@@ -95,7 +88,7 @@ parseEventFromPage request response = do
         -- There are starting times on the pages but they're most often wrong; 00:00
         let externalEventStart = Nothing
 
-        externalEventHomepage <- mutf8 $ optional $ attr "href" ("a" @: ["itemprop" @= "url"])
+        externalEventHomepage <- optional $ attr "href" ("a" @: ["itemprop" @= "url"])
 
         let externalEventPrice = Nothing
 
@@ -111,11 +104,11 @@ parseEventFromPage request response = do
         externalEventUuid <- nextRandomUUID
         let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
 
-        mImageUri <- fmap (>>= parseURI . T.unpack) $ mutf8 $ optional $ attr "content" $ "meta" @: ["itemprop" @= "image"]
+        mImageUri <- fmap (>>= parseURI . T.unpack) $ optional $ attr "content" $ "meta" @: ["itemprop" @= "image"]
 
         externalEventPlace <- do
           rawAddressPieces <- chroot ("span" @: ["itemprop" @= "address"]) $ texts ("span" @: [hasClass "text-danger"])
-          rawAddress <- T.intercalate ", " . map T.strip <$> mapM utf8 rawAddressPieces
+          let rawAddress = T.intercalate ", " $ map T.strip rawAddressPieces
           let address = T.replace " , " ", " $ T.strip rawAddress
           app <- asks importEnvApp
           mPlaceEntity <- lift $ runReaderT (lookupPlaceRaw address) app

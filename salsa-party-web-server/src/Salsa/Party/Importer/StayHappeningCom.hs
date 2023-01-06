@@ -33,14 +33,11 @@
 module Salsa.Party.Importer.StayHappeningCom (stayHappeningComImporter) where
 
 import Conduit
-import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
-import Data.Maybe
 import qualified Data.Text as T
 import Network.HTTP.Client as HTTP
 import Salsa.Party.Importer.Import
 import Text.HTML.Scalpel
-import Text.HTML.Scalpel.Extended
 
 stayHappeningComImporter :: Importer
 stayHappeningComImporter =
@@ -56,40 +53,38 @@ func =
   runConduit $
     yield "https://stayhappening.com/"
       .| C.concatMap (parseRequest :: String -> Maybe HTTP.Request)
-      .| doHttpRequestWith
-      .| logRequestErrors
-      .| scrapeLocationLinks
+      .| httpRequestC
+      .| httpBodyTextParserC
+      .| scrapeBodyC scrapeLocationLinks
+      .| C.mapM shuffleList
+      .| C.concat
       .| deduplicateC
       .| C.concatMap makeLocationSalsaEventsRequest
-      .| doHttpRequestWith
-      .| logRequestErrors
-      .| scrapeEventLinks
+      .| httpRequestC
+      .| httpBodyTextParserC
+      .| scrapeBodyC scrapeEventLinks
+      .| C.mapM shuffleList
+      .| C.concat
       .| deduplicateC
       .| C.concatMap makeEventRequest
-      .| doHttpRequestWith
-      .| logRequestErrors
+      .| httpRequestC
+      .| httpBodyTextParserC
       .| jsonLDEventsC
       .| convertLDEventToExternalEvent eventUrlPrefix
       .| C.mapM_ importExternalEventWithMImage
 
-scrapeLocationLinks :: MonadIO m => ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Text m ()
-scrapeLocationLinks = awaitForever $ \(_, response) -> do
-  let uris = fromMaybe [] $
-        scrapeStringLike (responseBody response) $ do
-          refs <- attrs "href" "a"
-          pure $ filter ("https://stayhappening.com/" `T.isPrefixOf`) $ mapMaybe maybeUtf8 refs
-  yieldManyShuffled uris
+scrapeLocationLinks :: ScraperT Text Import [Text]
+scrapeLocationLinks = do
+  refs <- attrs "href" "a"
+  pure $ filter ("https://stayhappening.com/" `T.isPrefixOf`) refs
 
 makeLocationSalsaEventsRequest :: Text -> Maybe Request
 makeLocationSalsaEventsRequest t = parseRequest $ T.unpack t <> "--salsa"
 
-scrapeEventLinks :: MonadIO m => ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Text m ()
-scrapeEventLinks = awaitForever $ \(_, response) -> do
-  let uris = fromMaybe [] $
-        scrapeStringLike (responseBody response) $ do
-          refs <- attrs "href" "a"
-          pure $ filter (eventUrlPrefix `T.isPrefixOf`) $ mapMaybe maybeUtf8 refs
-  yieldManyShuffled uris
+scrapeEventLinks :: ScraperT Text Import [Text]
+scrapeEventLinks = do
+  refs <- attrs "href" "a"
+  pure $ filter (eventUrlPrefix `T.isPrefixOf`) refs
 
 makeEventRequest :: Text -> Maybe Request
 makeEventRequest = parseRequest . T.unpack

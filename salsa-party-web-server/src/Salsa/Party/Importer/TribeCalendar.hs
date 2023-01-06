@@ -23,7 +23,6 @@ module Salsa.Party.Importer.TribeCalendar
 where
 
 import Conduit
-import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
 import qualified Data.Text as T
@@ -32,7 +31,6 @@ import Network.HTTP.Client as HTTP
 import Network.URI
 import Salsa.Party.Importer.Import
 import Text.HTML.Scalpel
-import Text.HTML.Scalpel.Extended
 import qualified Web.JSONLD as LD
 
 -- For a given URL, find the tribe calendar and get all the event URLs in there.
@@ -40,8 +38,8 @@ tribeCalendarC :: ConduitT URI URI Import ()
 tribeCalendarC =
   andDays
     .| C.concatMap makeCalendarRequest
-    .| doHttpRequestWith
-    .| logRequestErrors
+    .| httpRequestC
+    .| httpBodyTextParserC
     .| parseUrlsInCalendars
     .| deduplicateC
 
@@ -62,22 +60,20 @@ makeCalendarRequest (uri, day) = do
 --
 -- Instead of parsing the actual ICS file, because they probably aren't valid
 -- (I tried), we just take the URLs that are on a line that says "URL: "
-parseUrlsInCalendars :: ConduitT (HTTP.Request, Response LB.ByteString) URI Import ()
+parseUrlsInCalendars :: ConduitT (HTTP.Request, Response Text) URI Import ()
 parseUrlsInCalendars =
   C.map (responseBody . snd)
     -- Unbounded is not safe here, but not sure what to do about it ..
-    .| C.splitOnUnboundedE (== 0x0a)
-    .| C.concatMap (LB.stripPrefix "URL:")
-    .| C.map (\lb -> fromMaybe lb $ LB.stripSuffix "\r" lb) -- Strip \r if there is one.
-    .| C.map LB.toStrict
-    .| C.concatMap TE.decodeUtf8'
+    .| C.splitOnUnboundedE (== '\n')
+    .| C.concatMap (T.stripPrefix "URL:")
+    .| C.map (\lb -> fromMaybe lb $ T.stripSuffix "\r" lb) -- Strip \r if there is one.
     .| C.concatMap (parseURI . T.unpack)
 
-importTribeCalendarJSONLDEvents :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString, LD.Event) Void Import ()
+importTribeCalendarJSONLDEvents :: ConduitT (LD.Event, (HTTP.Request, HTTP.Response Text)) Void Import ()
 importTribeCalendarJSONLDEvents = tribeCalendarJSONLDEvents .| C.mapM_ importExternalEventWithMImage
 
-tribeCalendarJSONLDEvents :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString, LD.Event) (ExternalEvent, Maybe URI) Import ()
-tribeCalendarJSONLDEvents = awaitForever $ \(request, response, event) -> do
+tribeCalendarJSONLDEvents :: ConduitT (LD.Event, (HTTP.Request, HTTP.Response Text)) (ExternalEvent, Maybe URI) Import ()
+tribeCalendarJSONLDEvents = awaitForever $ \(event, (request, response)) -> do
   -- We use this 'unescapeHtml' function because
   -- there are still html entities in the tags that we get.
   -- I'm not sure whether that's a mistake on their part or on ours, but it's definitely weird.
@@ -98,7 +94,7 @@ tribeCalendarJSONLDEvents = awaitForever $ \(request, response, event) -> do
                 ls <- texts "p"
                 pure $ T.intercalate "\n" ls
           -- We use forM_ instead of mayMaybe so that we never get partial descriptions
-          ts <- forM rawHtmls $ \rawHtml -> case maybeUtf8 rawHtml >>= (\t -> scrapeStringLike (T.replace "<br>" "" t) pScraper) of
+          ts <- forM rawHtmls $ \rawHtml -> case scrapeStringLike (T.replace "<br>" "" rawHtml) pScraper of
             Nothing -> fail "couldn't parse this tag"
             Just t -> pure t
           pure $ T.intercalate "\n\n" ts
@@ -120,7 +116,7 @@ tribeCalendarJSONLDEvents = awaitForever $ \(request, response, event) -> do
     else do
       let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
       -- It's probably possible to find this on the event page, but not in the event LD
-      let externalEventHomepage = scrapeStringLike (responseBody response) $ chroot ("dd" @: [hasClass "tribe-events-event-url"]) $ attr "href" "a" >>= utf8
+      let externalEventHomepage = scrapeStringLike (responseBody response) $ chroot ("dd" @: [hasClass "tribe-events-event-url"]) $ attr "href" "a"
 
       -- Nowhere on the page as far as we can tell.
       let externalEventPrice = Nothing

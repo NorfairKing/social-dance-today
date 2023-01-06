@@ -28,7 +28,6 @@
 module Salsa.Party.Importer.GolatindanceCom (golatindanceComImporter) where
 
 import Conduit
-import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
 import qualified Data.Text as T
@@ -37,7 +36,6 @@ import Network.URI
 import Salsa.Party.Importer.Import
 import Salsa.Party.Importer.TribeCalendar
 import Text.HTML.Scalpel
-import Text.HTML.Scalpel.Extended
 
 golatindanceComImporter :: Importer
 golatindanceComImporter =
@@ -53,15 +51,17 @@ func = do
   runConduit $
     yield "https://golatindance.com/"
       .| C.concatMap (parseRequest :: String -> Maybe Request)
-      .| doHttpRequestWith
-      .| logRequestErrors
-      .| parseCategoryUrls
+      .| httpRequestC
+      .| httpBodyTextParserC
+      .| scrapeBodyC scrapeCategoryUrls
+      .| C.mapM shuffleList
+      .| C.concat
       .| deduplicateC
       .| tribeCalendarC
       .| C.filter (isPrefixOf "https://golatindance.com/event/" . show)
       .| C.concatMap (requestFromURI :: URI -> Maybe Request)
-      .| doHttpRequestWith
-      .| logRequestErrors
+      .| httpRequestC
+      .| httpBodyTextParserC
       .| jsonLDEventsC
       .| tribeCalendarJSONLDEvents
       .| C.map
@@ -71,11 +71,7 @@ func = do
         )
       .| C.mapM_ importExternalEventWithMImage
 
-parseCategoryUrls ::
-  ConduitM (Request, Response LB.ByteString) URI Import ()
-parseCategoryUrls = awaitForever $ \(_, response) -> do
-  let links = fromMaybe [] $
-        scrapeStringLike (responseBody response) $ do
-          refs <- attrs "href" "a"
-          pure $ mapMaybe maybeUtf8 $ filter ("https://golatindance.com/events/category/" `LB.isPrefixOf`) refs
-  yieldManyShuffled $ mapMaybe (parseURI . T.unpack) links
+scrapeCategoryUrls :: ScraperT Text Import [URI]
+scrapeCategoryUrls = do
+  refs <- attrs "href" "a"
+  pure $ mapMaybe (parseURI . T.unpack) $ filter ("https://golatindance.com/events/category/" `T.isPrefixOf`) refs

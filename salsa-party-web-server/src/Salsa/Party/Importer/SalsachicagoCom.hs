@@ -35,7 +35,7 @@ func = do
       .| tribeCalendarC
       .| C.filter (isPrefixOf "http://salsachicago.com/event/" . show)
       .| C.concatMap (requestFromURI :: URI -> Maybe Request)
-      .| doHttpRequestWith
-      .| logRequestErrors
+      .| httpRequestC
+      .| httpBodyTextParserC
       .| jsonLDEventsC
       .| importTribeCalendarJSONLDEvents

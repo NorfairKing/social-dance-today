@@ -17,14 +17,12 @@
 module Salsa.Party.Importer.LondonSalsaEventsCom (londonSalsaEventsComImporter) where
 
 import Conduit
-import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
 import qualified Data.Text as T
 import Network.HTTP.Client as HTTP
 import Salsa.Party.Importer.Import
 import Text.HTML.Scalpel
-import Text.HTML.Scalpel.Extended
 
 londonSalsaEventsComImporter :: Importer
 londonSalsaEventsComImporter =
@@ -40,23 +38,23 @@ func =
   runConduit $
     yieldManyShuffled ["https://londonsalsaevents.com/list-events/", "https://londonsalsaevents.com/afternoon-social/"]
       .| C.concatMap (parseRequest :: String -> Maybe HTTP.Request)
-      .| doHttpRequestWith
-      .| logRequestErrors
+      .| httpRequestC
+      .| httpBodyTextParserC
       .| scrapeEventLinks
       .| deduplicateC
       .| C.concatMap makeEventRequest
-      .| doHttpRequestWith
-      .| logRequestErrors
+      .| httpRequestC
+      .| httpBodyTextParserC
       .| jsonLDEventsC
       .| convertLDEventToExternalEvent eventUrlPrefix
       .| C.mapM_ importExternalEventWithMImage
 
-scrapeEventLinks :: MonadIO m => ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Text m ()
+scrapeEventLinks :: MonadIO m => ConduitT (HTTP.Request, HTTP.Response Text) Text m ()
 scrapeEventLinks = awaitForever $ \(_, response) -> do
   let uris = fromMaybe [] $
         scrapeStringLike (responseBody response) $ do
           refs <- attrs "href" "a"
-          pure $ filter (eventUrlPrefix `T.isPrefixOf`) $ mapMaybe maybeUtf8 refs
+          pure $ filter (eventUrlPrefix `T.isPrefixOf`) refs
   yieldManyShuffled uris
 
 eventUrlPrefix :: Text

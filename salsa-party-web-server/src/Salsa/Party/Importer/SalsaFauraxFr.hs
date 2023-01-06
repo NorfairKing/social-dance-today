@@ -38,13 +38,11 @@ func =
   runConduit $
     yield "https://salsa.faurax.fr"
       .| C.concatMap (parseRequest :: String -> Maybe HTTP.Request)
-      .| doHttpRequestWith
-      .| logRequestErrors
+      .| httpRequestC
       .| httpBodyTextParserC
       .| scrapeEventLinks
       .| C.concatMap (requestFromURI :: URI -> Maybe HTTP.Request)
-      .| doHttpRequestWith
-      .| logRequestErrors
+      .| httpRequestC
       .| httpBodyTextParserC
       .| scrapeEventPage
       .| C.mapM_ importExternalEvent

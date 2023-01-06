@@ -23,21 +23,17 @@ module Salsa.Party.Importer.LatinworldNl (latinworldNlImporter) where
 
 import Conduit
 import Control.Applicative
-import qualified Data.ByteString.Lazy as LB
 import Data.Char as Char
 import qualified Data.Conduit.Combinators as C
 import Data.List
 import Data.Maybe
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
-import qualified Data.Text.Encoding.Error as TE
 import Network.HTTP.Client as HTTP
 import Network.URI
 import Safe
 import Salsa.Party.Importer.Import
 import Salsa.Party.Web.Server.Geocoding
 import Text.HTML.Scalpel
-import Text.HTML.Scalpel.Extended
 
 latinworldNlImporter :: Importer
 latinworldNlImporter =
@@ -59,13 +55,13 @@ func = do
       ]
       .| withPeriods
       .| makeAgendaRequestForPeriod
-      .| doHttpRequestWith
-      .| logRequestErrors
+      .| httpRequestC
+      .| httpBodyTextParserC
       .| parseAgendaPageUrls
       .| deduplicateC
       .| makeEventPageRequest
-      .| doHttpRequestWith'
-      .| logRequestErrors'
+      .| httpRequestC'
+      .| httpBodyTextParserC'
       .| importEventPage
 
 withPeriods :: MonadIO m => ConduitT a (a, Maybe Int) m ()
@@ -80,36 +76,34 @@ makeAgendaRequestForPeriod = C.concatMap $ \(url, mp) ->
     ) ::
     Maybe Request
 
-parseAgendaPageUrls :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Text Import ()
+parseAgendaPageUrls :: ConduitT (HTTP.Request, HTTP.Response Text) Text Import ()
 parseAgendaPageUrls = awaitForever $ \(_, response) -> do
-  let urls = fromMaybe [] $
-        scrapeStringLike (responseBody response) $
-          chroot "main" $
-            chroot ("div" @: [hasClass "media"]) $
-              chroot "table" $ do
-                refs <- chroots "td" $ attr "href" "a"
-                pure (mapMaybe maybeUtf8 refs :: [Text])
+  let urls =
+        fromMaybe [] $
+          scrapeStringLike (responseBody response) $
+            chroot "main" $
+              chroot ("div" @: [hasClass "media"]) $
+                chroot "table" $
+                  chroots "td" $ attr "href" "a"
   yieldManyShuffled urls
 
 makeEventPageRequest :: Monad m => ConduitT Text (Text, HTTP.Request) m ()
 makeEventPageRequest = C.concatMap $ \url ->
   (,) url <$> (parseRequest ("https://www.latinworld.nl/" <> T.unpack url) :: Maybe Request)
 
-importEventPage :: ConduitT (Text, HTTP.Request, HTTP.Response LB.ByteString) Void Import ()
-importEventPage = awaitForever $ \(relativeUrl, request, response) -> do
+importEventPage :: ConduitT (Text, (HTTP.Request, HTTP.Response Text)) Void Import ()
+importEventPage = awaitForever $ \(relativeUrl, (request, response)) -> do
   now <- liftIO getCurrentTime
   let today = utctDay now
       yesterday = addDays (-1) today
-  let eventScraper :: ScraperT LB.ByteString Import (ExternalEvent, Maybe URI)
+  let eventScraper :: ScraperT Text Import (ExternalEvent, Maybe URI)
       eventScraper = chroot "main" $
         chroot ("div" @: [hasClass "row"]) $ do
           externalEventUuid <- nextRandomUUID
 
           let externalEventKey = relativeUrl
 
-          let decodeLenient = T.strip . TE.decodeUtf8With TE.lenientDecode . LB.toStrict
-
-          header <- decodeLenient <$> text "h1"
+          header <- text "h1"
           (dateText, titleText) <- case T.splitOn ": " header of
             (dateText : rest) -> do
               let replaceSpace = \case
@@ -140,16 +134,16 @@ importEventPage = awaitForever $ \(relativeUrl, request, response) -> do
               let cell ix = case atMay cells ix of
                     Nothing -> fail "cell not found"
                     Just res -> pure res
-              mOrganiser <- optional $ decodeLenient <$> cell 1
+              mOrganiser <- optional $ cell 1
               rawAddressCell <- cell 15
-              guard $ "adres" `T.isInfixOf` decodeLenient rawAddressCell
-              addr1 <- decodeLenient <$> cell 16
-              addr2 <- decodeLenient <$> cell 19
-              addr3 <- decodeLenient <$> cell 22
+              guard $ "adres" `T.isInfixOf` rawAddressCell
+              addr1 <- T.strip <$> cell 16
+              addr2 <- T.strip <$> cell 19
+              addr3 <- T.strip <$> cell 22
               mRawLink <- optional $ do
-                rawLinkCell <- decodeLenient <$> cell 23
+                rawLinkCell <- cell 23
                 guard $ "zie ook" `T.isInfixOf` rawLinkCell
-                decodeLenient <$> cell 24
+                cell 24
               let address = T.intercalate ", " [addr1, addr2, addr3]
               let mLink = mRawLink >>= (headMay . dropWhile T.null . map T.strip . T.words)
               pure (address, mOrganiser, mLink)
@@ -171,20 +165,20 @@ importEventPage = awaitForever $ \(relativeUrl, request, response) -> do
                     Nothing -> fail "cell not found"
                     Just res -> pure res
               rawDateCell <- cell 2
-              guard $ "datum" `T.isInfixOf` decodeLenient rawDateCell
+              guard $ "datum" `T.isInfixOf` rawDateCell
               rawStart <- fmap join $
                 optional $ do
-                  rawTimeCell <- decodeLenient <$> cell 4
+                  rawTimeCell <- cell 4
                   guard $ "tijd" `T.isInfixOf` rawTimeCell
-                  headMay . T.words . decodeLenient <$> cell 5
+                  headMay . T.words <$> cell 5
               let mStart = rawStart >>= (parseTimeM True dutchTimeLocale "%H:%M" . T.unpack)
-              mPrice <- optional $ T.strip . decodeLenient <$> cell 7
+              mPrice <- optional $ T.strip <$> cell 7
               pure (mStart, mPrice)
 
           externalEventCancelled <-
             optional $ do
               t <- text ("font" @: ["color" @= "red"])
-              pure $ "geannuleerd" `T.isInfixOf` decodeLenient t
+              pure $ "geannuleerd" `T.isInfixOf` t
 
           let externalEventDescription = Nothing
 
@@ -198,8 +192,7 @@ importEventPage = awaitForever $ \(relativeUrl, request, response) -> do
           mImageUri <- fmap join $
             optional $ do
               refs <- attrs "src" "img"
-              let candidates = mapMaybe maybeUtf8 refs
-              pure $ find ("/media/flyers" `T.isPrefixOf`) candidates >>= parseURI . ("https://www.latinworld.nl/" <>) . T.unpack
+              pure $ find ("/media/flyers" `T.isPrefixOf`) refs >>= parseURI . ("https://www.latinworld.nl/" <>) . T.unpack
 
           pure (ExternalEvent {..}, mImageUri)
   lift $ do

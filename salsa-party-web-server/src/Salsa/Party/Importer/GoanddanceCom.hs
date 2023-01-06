@@ -51,8 +51,7 @@ func = do
   runConduit $
     yield "https://www.goandance.com/sitemaps/events-en.xml"
       .| C.concatMap (parseRequest :: String -> Maybe HTTP.Request)
-      .| doHttpRequestWith
-      .| logRequestErrors
+      .| httpRequestC
       .| C.concatMap (\(_, response) -> XML.parseLBS def (responseBody response))
       .| C.map parseLocNodes
       .| C.concatMapM shuffleList
@@ -60,8 +59,7 @@ func = do
       .| C.filter (notDefinitelyInThePast today)
       .| C.map T.unpack
       .| C.concatMap (parseRequest :: String -> Maybe HTTP.Request)
-      .| doHttpRequestWith
-      .| logRequestErrors
+      .| httpRequestC
       .| scrapeLDEvents
       .| convertLDEventToExternalEvent eventPagePrefix
       .| C.mapM_ importExternalEventWithMImage
@@ -111,7 +109,7 @@ accordingToYearNum today t =
    in flip all lastYears $ \y ->
         not $ T.pack (show y) `T.isInfixOf` t
 
-scrapeLDEvents :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString) (HTTP.Request, HTTP.Response LB.ByteString, LD.Event) Import ()
+scrapeLDEvents :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString) (LD.Event, (HTTP.Request, HTTP.Response LB.ByteString)) Import ()
 scrapeLDEvents = awaitForever $ \(request, response) -> do
   case TE.decodeUtf8' (LB.toStrict (responseBody response)) of
     Left _ -> pure ()
@@ -177,4 +175,4 @@ scrapeLDEvents = awaitForever $ \(request, response) -> do
 
       case mEvent of
         Nothing -> pure ()
-        Just ldEvent -> yield (request, response, ldEvent)
+        Just ldEvent -> yield (ldEvent, (request, response))

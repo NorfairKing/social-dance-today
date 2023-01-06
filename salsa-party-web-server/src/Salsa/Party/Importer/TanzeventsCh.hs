@@ -17,7 +17,6 @@ module Salsa.Party.Importer.TanzeventsCh (tanzeventsChImporter) where
 
 import Conduit
 import Control.Applicative
-import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
 import qualified Data.Text as T
@@ -26,7 +25,6 @@ import Network.URI as URI
 import Salsa.Party.Importer.Import
 import Salsa.Party.Web.Server.Geocoding
 import Text.HTML.Scalpel
-import Text.HTML.Scalpel.Extended
 
 tanzeventsChImporter :: Importer
 tanzeventsChImporter =
@@ -41,16 +39,16 @@ func :: Import ()
 func =
   runConduit $
     yield "https://tanzevents.ch/-tanzen/de/events/"
-      .| doHttpRequestWith
-      .| logRequestErrors
+      .| httpRequestC
+      .| httpBodyTextParserC
       .| scrapeStyleLinks
       .| C.concatMap makeLocationStyleRequest
-      .| doHttpRequestWith
-      .| logRequestErrors
+      .| httpRequestC
+      .| httpBodyTextParserC
       .| parseEventsFromStylePage
       .| C.mapM_ importExternalEvent
 
-scrapeStyleLinks :: MonadIO m => ConduitT (HTTP.Request, HTTP.Response LB.ByteString) URI m ()
+scrapeStyleLinks :: MonadIO m => ConduitT (HTTP.Request, HTTP.Response Text) URI m ()
 scrapeStyleLinks = awaitForever $ \(request, response) -> do
   let uris = fromMaybe [] $
         scrapeStringLike (responseBody response) $
@@ -58,24 +56,22 @@ scrapeStyleLinks = awaitForever $ \(request, response) -> do
             refs <- attrs "href" "a"
             pure $
               map (`relativeTo` getUri request) $
-                mapMaybe (parseURIReference . T.unpack) $
-                  mapMaybe maybeUtf8 refs
+                mapMaybe (parseURIReference . T.unpack) refs
   yieldManyShuffled uris
 
 makeLocationStyleRequest :: URI -> Maybe Request
 makeLocationStyleRequest = requestFromURI
 
-parseEventsFromStylePage :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString) ExternalEvent Import ()
+parseEventsFromStylePage :: ConduitT (HTTP.Request, HTTP.Response Text) ExternalEvent Import ()
 parseEventsFromStylePage = awaitForever $ \(request, response) -> do
   now <- liftIO getCurrentTime
   let today = utctDay now
   let yesterday = addDays (-1) today
-  let scrapeExternalEventsFromPage :: ScraperT LB.ByteString Import [ExternalEvent]
+  let scrapeExternalEventsFromPage :: ScraperT Text Import [ExternalEvent]
       scrapeExternalEventsFromPage =
         chroot ("div" @: [hasClass "dynpg_AA_row_Table"]) $
           chroots ("div" @: [hasClass "row"]) $ do
-            rawTitle <- text $ "div" @: [hasClass "dynpg_e_header_text"]
-            let externalEventTitle = unHTMLText rawTitle
+            externalEventTitle <- text $ "div" @: [hasClass "dynpg_e_header_text"]
 
             let externalEventDescription = Nothing :: Maybe Text
             (externalEventDay, externalEventStart) <- chroot ("div" @: [hasClass "when"]) $ do
@@ -83,7 +79,7 @@ parseEventsFromStylePage = awaitForever $ \(request, response) -> do
                 rawDay <- text $ "span" @: [hasClass "day"]
                 rawMonth <- text $ "span" @: [hasClass "month"]
                 rawYear <- text $ "span" @: [hasClass "year"]
-                let dateText = T.concat [unHTMLText rawYear, " ", unHTMLText rawMonth, ". ", unHTMLText rawDay]
+                let dateText = T.concat [rawYear, " ", rawMonth, ". ", rawDay]
 
                 day <- case parseTimeM True germanTimeLocale "%Y %b %d." (T.unpack dateText) of
                   Nothing -> fail "day not parseable"
@@ -94,7 +90,7 @@ parseEventsFromStylePage = awaitForever $ \(request, response) -> do
 
               hour <- optional $ do
                 rawHour <- text $ "div" @: [hasClass "hour"]
-                case parseTimeM True germanTimeLocale "%H:%M Uhr" (T.unpack (unHTMLText rawHour)) of
+                case parseTimeM True germanTimeLocale "%H:%M Uhr" (T.unpack rawHour) of
                   Nothing -> fail "hour not parseable"
                   Just h -> pure (h :: TimeOfDay)
 
@@ -105,8 +101,7 @@ parseEventsFromStylePage = awaitForever $ \(request, response) -> do
 
             externalEventHomepage <- optional $
               chroot ("p" @: [hasClass "event_url"]) $ do
-                ref <- attr "href" "a"
-                pure $ unHTMLAttribute ref
+                attr "href" "a"
 
             forM_ externalEventHomepage $ \link -> do
               let isLocal = T.isPrefixOf "https://social-dance.today/" link
@@ -121,8 +116,7 @@ parseEventsFromStylePage = awaitForever $ \(request, response) -> do
             let externalEventOrigin = T.pack $ show $ getUri request
 
             externalEventPlace <- do
-              rawAddress <- text ("span" @: [hasClass "shorttext"])
-              let addressText = unHTMLText rawAddress
+              addressText <- text ("span" @: [hasClass "shorttext"])
               let address = T.unwords $ filter (not . T.null) $ map T.strip $ T.words addressText
 
               app <- asks importEnvApp
@@ -132,7 +126,13 @@ parseEventsFromStylePage = awaitForever $ \(request, response) -> do
                 Just (Entity placeId _) -> pure placeId
 
             -- Theres' no natural key, so we just make one up
-            let externalEventKey = T.pack $ show (getUri request) <> formatTime defaultTimeLocale "%F" externalEventDay <> T.unpack externalEventTitle
+            let externalEventKey =
+                  T.pack $
+                    concat
+                      [ show (getUri request),
+                        formatTime defaultTimeLocale "%F" externalEventDay,
+                        T.unpack externalEventTitle
+                      ]
             externalEventUuid <- nextRandomUUID
             let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
 

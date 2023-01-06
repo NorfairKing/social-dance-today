@@ -35,17 +35,14 @@ module Salsa.Party.Importer.MapdanceCom (mapdanceComImporter) where
 
 import Conduit
 import Control.Applicative
-import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
-import Data.Maybe
-import qualified Data.Set as S
+import Data.Containers.ListUtils (nubOrd)
 import qualified Data.Text as T
 import Network.HTTP.Client as HTTP
 import Network.URI
 import Salsa.Party.Importer.Import
 import Salsa.Party.Web.Server.Geocoding
 import Text.HTML.Scalpel
-import Text.HTML.Scalpel.Extended
 import Text.Read (readMaybe)
 
 mapdanceComImporter :: Importer
@@ -66,8 +63,8 @@ func = do
     Nothing -> logErrorN "Unable to parse base url to uri"
     Just baseUri -> do
       request <- parseRequest $ show baseUri <> "/Find"
-      errOrResponse <- doHttpRequest request
-      case errOrResponse of
+      errOrResponse <- left show <$> doHttpRequest request
+      case errOrResponse >>= (left show . parseHttpBodyText) of
         Left err -> logErrorN $ T.pack $ "Failed to fetch the find page:\n" <> ppShow err
         Right response -> case scrapeStringLike (responseBody response) scrapeDanceTypesFromFindPage of
           Nothing -> pure ()
@@ -75,41 +72,42 @@ func = do
             runConduit $
               yieldManyShuffled danceTypes
                 .| C.concatMap (\style -> parseRequest $ baseUrl <> "/festivals/" <> T.unpack style :: Maybe Request)
-                .| doHttpRequestWith
-                .| logRequestErrors
-                .| C.concatMap (\(_, response_) -> fromMaybe [] $ scrapeStringLike (responseBody response_) scrapeCountryPagesFromFestivalStylePage :: [Text])
+                .| httpRequestC
+                .| httpBodyTextParserC
+                .| scrapeBodyC scrapeCountryPagesFromFestivalStylePage
+                .| C.concat
                 .| C.concatMap (\relativeURL -> parseRequest $ show baseUri <> T.unpack relativeURL :: Maybe Request)
-                .| doHttpRequestWith
-                .| logRequestErrors
-                .| C.concatMap (\(_, response_) -> fromMaybe [] $ scrapeStringLike (responseBody response_) scrapeFestivalPagesFromCountryPage :: [Text])
+                .| httpRequestC
+                .| httpBodyTextParserC
+                .| scrapeBodyC scrapeFestivalPagesFromCountryPage
+                .| C.concat
                 .| C.filter ("/e/" `T.isPrefixOf`) -- Really only the event pages
                 .| deduplicateC
                 .| C.concatMap (\relativeURL -> parseRequest $ show baseUri <> T.unpack relativeURL :: Maybe Request)
-                .| doHttpRequestWith
-                .| logRequestErrors
+                .| httpRequestC
+                .| httpBodyTextParserC
                 .| importFestivalPage
 
-scrapeDanceTypesFromFindPage :: Scraper LB.ByteString [Text]
+scrapeDanceTypesFromFindPage :: Monad m => ScraperT Text m [Text]
 scrapeDanceTypesFromFindPage = do
   fromSuggestions <- chroot ("div" @: [hasClass "md-tags-suggestions"]) $ texts $ "span" @: [hasClass "badge", hasClass "badge-default"]
   fromFestivals <- texts $ "span" @: ["itemprop" @= "about"]
-  pure $ mapMaybe maybeUtf8 $ S.toList . S.fromList $ fromSuggestions ++ fromFestivals
+  pure $ nubOrd $ fromSuggestions ++ fromFestivals
 
-scrapeCountryPagesFromFestivalStylePage :: Scraper LB.ByteString [Text]
-scrapeCountryPagesFromFestivalStylePage = do
-  refs <- chroots ("li" @: ["itemtype" @= "http://schema.org/Country"]) $ attr "href" $ "a" @: ["itemprop" @= "name"]
-  pure $ mapMaybe maybeUtf8 refs
+scrapeCountryPagesFromFestivalStylePage :: Monad m => ScraperT Text m [Text]
+scrapeCountryPagesFromFestivalStylePage =
+  chroots ("li" @: ["itemtype" @= "http://schema.org/Country"]) $
+    attr "href" $ "a" @: ["itemprop" @= "name"]
 
-scrapeFestivalPagesFromCountryPage :: Scraper LB.ByteString [Text]
-scrapeFestivalPagesFromCountryPage = do
-  refs <- attrs "href" $ "a" @: [hasClass "md-evtitem-name"]
-  pure $ mapMaybe maybeUtf8 refs
+scrapeFestivalPagesFromCountryPage :: Monad m => ScraperT Text m [Text]
+scrapeFestivalPagesFromCountryPage =
+  attrs "href" $ "a" @: [hasClass "md-evtitem-name"]
 
-importFestivalPage :: ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Void Import ()
+importFestivalPage :: ConduitT (HTTP.Request, HTTP.Response Text) Void Import ()
 importFestivalPage = awaitForever $ \(request, response) -> do
   now <- liftIO getCurrentTime
   let today = utctDay now
-  let scrapeExternalEventFromFestivalPage :: ScraperT LB.ByteString Import (ExternalEvent, Maybe URI)
+  let scrapeExternalEventFromFestivalPage :: ScraperT Text Import (ExternalEvent, Maybe URI)
       scrapeExternalEventFromFestivalPage = do
         externalEventUuid <- nextRandomUUID
         let externalEventKey =
@@ -118,24 +116,20 @@ importFestivalPage = awaitForever $ \(request, response) -> do
                     Nothing -> uriText
                     Just suffix -> suffix
 
-        rawTitle <- chroot ("div" @: [hasClass "evt-title-name"]) $ text $ "h1" @: ["itemprop" @= "name"]
-        externalEventTitle <- utf8 rawTitle
+        externalEventTitle <- chroot ("div" @: [hasClass "evt-title-name"]) $ text $ "h1" @: ["itemprop" @= "name"]
 
         let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
 
         externalEventDescription <- optional $
           chroot ("div" @: ["itemprop" @= "description", "lang" @= "en"]) $ do
-            rawParagraphs <- texts $ "p" @: [hasClass "evt-descr-p"]
-            paragraphs <- mapM utf8 rawParagraphs
+            paragraphs <- texts $ "p" @: [hasClass "evt-descr-p"]
             pure $ T.unlines paragraphs
 
-        externalEventOrganiser <- optional $ do
-          rawOrganiserName <- text $ "span" @: ["itemprop" @= "organizer.name"]
-          utf8 rawOrganiserName
+        externalEventOrganiser <- optional $ text $ "span" @: ["itemprop" @= "organizer.name"]
 
         localTime <- do
           rawStartDate <- attr "content" $ "div" @: ["itemprop" @= "startDate"]
-          case maybeUtf8 rawStartDate >>= (parseTimeM True defaultTimeLocale "%F %H:%M" . T.unpack) of
+          case parseTimeM True defaultTimeLocale "%F %H:%M" (T.unpack rawStartDate) of
             Nothing -> fail "Date not found"
             Just localTime -> pure localTime
 
@@ -158,16 +152,16 @@ importFestivalPage = awaitForever $ \(request, response) -> do
         address <- chroot ("div" @: ["itemprop" @= "location"]) $ do
           name <- text $ "div" @: ["itemprop" @= "name"]
           address <- text $ "div" @: ["itemprop" @= "address"]
-          pure $ T.concat $ mapMaybe maybeUtf8 [name, address]
+          pure $ T.concat [name, address]
 
         mCoordinates <- optional $
           chroot ("div" @: ["itemprop" @= "geo"]) $ do
             rawLat <- attr "content" $ "meta" @: ["itemprop" @= "latitude"]
-            coordinatesLat <- case maybeUtf8 rawLat >>= (readMaybe . T.unpack) of
+            coordinatesLat <- case readMaybe (T.unpack rawLat) of
               Nothing -> fail "could not read lat"
               Just lat -> pure lat
             rawLon <- attr "content" $ "meta" @: ["itemprop" @= "longitude"]
-            coordinatesLon <- case maybeUtf8 rawLon >>= (readMaybe . T.unpack) of
+            coordinatesLon <- case readMaybe (T.unpack rawLon) of
               Nothing -> fail "could not read lon"
               Just lon -> pure lon
             pure Coordinates {..}
@@ -189,7 +183,7 @@ importFestivalPage = awaitForever $ \(request, response) -> do
         externalEventImporter <- asks importEnvId
         let externalEventOrigin = T.pack $ show $ getUri request
 
-        mImageUri <- fmap (>>= parseURI . T.unpack) $ mutf8 $ optional $ attr "src" $ "img" @: ["itemprop" @= "image"]
+        mImageUri <- fmap (>>= parseURI . T.unpack) $ optional $ attr "src" $ "img" @: ["itemprop" @= "image"]
 
         pure (ExternalEvent {..}, mImageUri)
   lift $ do

@@ -9,17 +9,14 @@ module Salsa.Party.Importer.TanzagendaCh (tanzagendaChImporter) where
 
 import Conduit
 import Control.Applicative
-import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
 import Network.HTTP.Client as HTTP
 import Network.URI as URI
 import Salsa.Party.Importer.Import
 import Salsa.Party.Web.Server.Geocoding
 import Text.HTML.Scalpel
-import Text.HTML.Scalpel.Extended
 
 tanzagendaChImporter :: Importer
 tanzagendaChImporter =
@@ -36,13 +33,13 @@ func =
     yield "https://www.tanzagenda.ch/_info/customDataLoader/eventsData.php?get=data"
       .| withPages
       .| C.concatMap makeListRequest
-      .| doHttpRequestWith
-      .| logRequestErrors
+      .| httpRequestC
+      .| httpBodyTextParserC
       .| parseEventsKeys
       .| deduplicateC
       .| C.concatMap (\k -> (,) k <$> parseRequest ("https://tanzagenda.ch/events/" <> T.unpack k) :: Maybe (Text, Request))
-      .| doHttpRequestWith'
-      .| logRequestErrors'
+      .| httpRequestC'
+      .| httpBodyTextParserC'
       .| parseEventPage
 
 withPages :: MonadIO m => ConduitT a (a, Int) m ()
@@ -52,35 +49,32 @@ withPages = awaitForever $ \a -> do
 makeListRequest :: (String, Int) -> Maybe Request
 makeListRequest (url, pageNum) = parseRequest $ url <> "&page=" <> show pageNum
 
-parseEventsKeys :: MonadIO m => ConduitT (HTTP.Request, HTTP.Response LB.ByteString) Text m ()
+parseEventsKeys :: MonadIO m => ConduitT (HTTP.Request, HTTP.Response Text) Text m ()
 parseEventsKeys = awaitForever $ \(_, response) -> do
   let uris = fromMaybe [] $
         scrapeStringLike (responseBody response) $ do
           refs <- attrs "href" "a"
-          let links = mapMaybe maybeUtf8 refs
-          pure $ mapMaybe (T.stripPrefix "/events/") links
+          pure $ mapMaybe (T.stripPrefix "/events/") refs
   yieldManyShuffled uris
 
-parseEventPage :: ConduitT (Text, HTTP.Request, HTTP.Response LB.ByteString) Void Import ()
-parseEventPage = awaitForever $ \(key, request, response) -> do
+parseEventPage :: ConduitT (Text, (HTTP.Request, HTTP.Response Text)) Void Import ()
+parseEventPage = awaitForever $ \(key, (request, response)) -> do
   now <- liftIO getCurrentTime
   let today = utctDay now
-  let scrapeExternalEventFromPage :: ScraperT LB.ByteString Import (ExternalEvent, Maybe URI)
+  let scrapeExternalEventFromPage :: ScraperT Text Import (ExternalEvent, Maybe URI)
       scrapeExternalEventFromPage = chroot ("section" @: ["id" @= "events"]) $ do
         externalEventUuid <- nextRandomUUID
 
         let externalEventKey = key
 
-        rawTitle <- text "h1"
-        externalEventTitle <- utf8 rawTitle
+        externalEventTitle <- text "h1"
 
         let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle
 
         chroot ("div" @: [hasClass "card-body"]) $ do
           externalEventDay <- chroot ("div" @: [hasClass "row"]) $
             chroot ("div" @: [hasClass "col"]) $ do
-              rawDay <- text "h2"
-              dayText <- utf8 rawDay
+              dayText <- text "h2"
               day <- case parseTimeM True germanTimeLocale "%a %d. %B %Y" (T.unpack dayText) of
                 Nothing -> fail "day not parseable"
                 Just d -> pure d
@@ -90,8 +84,7 @@ parseEventPage = awaitForever $ \(key, request, response) -> do
           externalEventPlace <- chroot ("div" @: [hasClass "row"]) $
             chroot ("div" @: [hasClass "col"]) $
               chroot ("div" @: [hasClass "row"]) $ do
-                rawAddress <- text ("div" @: ["class" @= "row"])
-                addressText <- utf8 rawAddress
+                addressText <- text ("div" @: ["class" @= "row"])
                 let strippedAddress = T.strip addressText
                 case T.stripSuffix "Mehr über das Lokal" strippedAddress of
                   Nothing -> fail "not the right piece"
@@ -107,8 +100,7 @@ parseEventPage = awaitForever $ \(key, request, response) -> do
           externalEventStart <- optional $
             chroot ("div" @: [hasClass "row"]) $
               chroot ("div" @: [hasClass "col"]) $ do
-                rawTimeText <- text "h3"
-                timeText <- utf8 rawTimeText
+                timeText <- text "h3"
                 case T.stripPrefix "ab: " timeText of
                   Nothing -> fail "couldn't find time"
                   Just timeInput -> case parseTimeM True germanTimeLocale "%H:%M" (T.unpack timeInput) of
@@ -117,9 +109,8 @@ parseEventPage = awaitForever $ \(key, request, response) -> do
 
           externalEventDescription <- optional $
             chroot ("div" @: ["class" @= "col-12"]) $ do
-              rawSentences <- texts "p"
-              let sentences = map (T.strip . TE.decodeLatin1 . LB.toStrict) rawSentences
-              pure $ T.unlines sentences
+              sentences <- texts "p"
+              pure $ T.unlines $ map T.strip sentences
 
           let externalEventOrganiser = Nothing -- Not on the page
           let externalEventCancelled = Nothing -- Not on the page, I think
@@ -127,7 +118,7 @@ parseEventPage = awaitForever $ \(key, request, response) -> do
             chroot ("li" @: [hasClass "nav-item"]) $ do
               ref <- attr "href" ("a" @: [hasClass "nav-social"])
               _ <- text ("i" @: [hasClass "fal", hasClass "fa-browser"])
-              utf8 ref
+              pure ref
 
           let externalEventPrice = Nothing -- TODO, rather hard to parse
           let externalEventPoster = Nothing
@@ -137,8 +128,7 @@ parseEventPage = awaitForever $ \(key, request, response) -> do
           let externalEventOrigin = T.pack $ show $ getUri request
 
           mImageUri <- optional $ do
-            imgAttr <- attr "href" ("a" @: ["data-fancybox" @= "gallery"])
-            linkText <- utf8 imgAttr
+            linkText <- attr "href" ("a" @: ["data-fancybox" @= "gallery"])
             guard $ T.isPrefixOf "_bilder/" linkText
             let url = "https://tanzagenda.ch/" <> T.unpack linkText
             case parseURI url of

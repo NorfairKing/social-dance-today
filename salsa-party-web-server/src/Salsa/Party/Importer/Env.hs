@@ -2,6 +2,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
@@ -19,7 +20,6 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.Combinators as C
-import Data.List (find)
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Set (Set)
@@ -331,11 +331,18 @@ debugConduit = C.mapM $ \a -> do
   liftIO $ pPrint a
   pure a
 
-doHttpRequestWith :: ConduitT HTTP.Request (HTTP.Request, Either HttpException (HTTP.Response LB.ByteString)) Import ()
-doHttpRequestWith = C.mapM (\req -> (,) req <$> doHttpRequest req)
+httpRequestC :: ConduitT HTTP.Request (HTTP.Request, HTTP.Response LB.ByteString) Import ()
+httpRequestC = withoutExtra httpRequestC'
 
-doHttpRequestWith' :: ConduitT (a, HTTP.Request) (a, HTTP.Request, Either HttpException (HTTP.Response LB.ByteString)) Import ()
-doHttpRequestWith' = C.mapM (\(a, req) -> (,,) a req <$> doHttpRequest req)
+httpRequestC' :: ConduitT (a, HTTP.Request) (a, (HTTP.Request, HTTP.Response LB.ByteString)) Import ()
+httpRequestC' = awaitForever $ \(a, request) -> do
+  errOrResponse <- lift $ doHttpRequest request
+  case errOrResponse of
+    Left err -> logErrorN $ T.pack $ unlines ["Error while fetching page:", ppShow err]
+    Right response -> yield (a, (request, response))
+
+withoutExtra :: Monad m => (forall c. ConduitT (c, i) (c, o) m ()) -> ConduitT i o m ()
+withoutExtra conduit = C.map ((,) ()) .| conduit .| C.map snd
 
 doHttpRequest :: HTTP.Request -> Import (Either HttpException (HTTP.Response LB.ByteString))
 doHttpRequest requestPrototype = do
@@ -483,42 +490,47 @@ tryToImportImageBlob contentType imageBlob =
             [] -- No need to update anything, the casKey makes the image unique.
       pure $ Just casKey
 
-logRequestErrors ::
-  ConduitT
-    (HTTP.Request, Either HttpException (Response LB.ByteString))
-    (HTTP.Request, Response LB.ByteString)
-    Import
-    ()
-logRequestErrors = awaitForever $ \(request, errOrResponse) -> case errOrResponse of
-  Left err -> logErrorN $ T.pack $ unlines ["Error while fetching page:", ppShow err]
-  Right response -> yield (request, response)
+httpBodyTextParserC :: MonadLogger m => ConduitT (HTTP.Request, HTTP.Response LB.ByteString) (HTTP.Request, HTTP.Response Text) m ()
+httpBodyTextParserC = withoutExtra httpBodyTextParserC'
 
-logRequestErrors' ::
-  ConduitT
-    (a, HTTP.Request, Either HttpException (Response LB.ByteString))
-    (a, HTTP.Request, Response LB.ByteString)
-    Import
-    ()
-logRequestErrors' = awaitForever $ \(a, request, errOrResponse) -> case errOrResponse of
-  Left err -> logErrorN $ T.pack $ unlines ["Error while fetching page:", ppShow err]
-  Right response -> yield (a, request, response)
-
-httpBodyTextParserC :: Monad m => ConduitT (HTTP.Request, HTTP.Response LB.ByteString) (HTTP.Request, HTTP.Response Text) m ()
-httpBodyTextParserC = C.concatMap (traverse parseHttpBodyText) -- This uses Foldable ((,) a).
+httpBodyTextParserC' :: MonadLogger m => ConduitT (a, (HTTP.Request, HTTP.Response LB.ByteString)) (a, (HTTP.Request, HTTP.Response Text)) m ()
+httpBodyTextParserC' = awaitForever $ \(a, (request, response)) ->
+  case parseHttpBodyText response of
+    Left _ -> logErrorN "Error while decoding page to text"
+    Right response' -> yield (a, (request, response'))
 
 parseHttpBodyText :: HTTP.Response LB.ByteString -> Either TE.UnicodeException (HTTP.Response Text)
 parseHttpBodyText response =
   let headers = HTTP.responseHeaders response
       contentType = lookup hContentType headers
-      iso88591Decoder = pure . TE.decodeLatin1
+      iso88591 = pure . TE.decodeLatin1
+      utf8 = TE.decodeUtf8'
+      -- The default character encoding in HTML-5 is UTF-8.
+      -- There are more ways to specify the encoding but for simplicity's sake
+      -- we just hope that most pages use UTF-8.
+      -- More ways we could use to identify the decoder we should use:
+      -- - [BOM](https://en.wikipedia.org/wiki/Byte_order_mark)
+      -- - <meta charset="UTF-8">
+      -- - <meta http-equiv="Content-Type" content="UTF-8">
+      defDecoder = utf8
       decoder :: ByteString -> Either TE.UnicodeException Text
-      decoder = case contentType of
-        Nothing -> iso88591Decoder
-        Just ct ->
-          if "charset=UTF-8" `SB.isInfixOf` ct
-            then TE.decodeUtf8'
-            else iso88591Decoder
+      decoder =
+        case contentType of
+          Nothing -> defDecoder
+          Just ct ->
+            if "charset=ISO-8859-1" `SB.isInfixOf` ct
+              then iso88591
+              else defDecoder
    in traverse (decoder . LB.toStrict) response
+
+scrapeBodyC ::
+  ScraperT Text Import a ->
+  ConduitT (Request, Response Text) a Import ()
+scrapeBodyC scraper = awaitForever $ \(request, response) -> do
+  nothingOrMono <- lift $ scrapeStringLikeT (responseBody response) scraper
+  case nothingOrMono of
+    Nothing -> logWarnN $ T.pack $ unwords ["Failed to scrape from", show (getUri request)]
+    Just mono -> yield mono
 
 teePrint ::
   (Show a, MonadIO m) => ConduitT a a m ()
@@ -550,29 +562,29 @@ andDays = do
 
 jsonLDEventsC ::
   ConduitT
-    (Request, Response LB.ByteString)
-    (HTTP.Request, HTTP.Response LB.ByteString, LD.Event)
+    (Request, Response Text)
+    (LD.Event, (HTTP.Request, HTTP.Response Text))
     Import
     ()
 jsonLDEventsC = parseJSONLDPieces .| parseJSONLDEvents
 
-parseJSONLDPieces :: ConduitT (Request, Response LB.ByteString) (Request, Response LB.ByteString, JSON.Value) Import ()
+parseJSONLDPieces :: ConduitT (Request, Response Text) (JSON.Value, (Request, Response Text)) Import ()
 parseJSONLDPieces = awaitForever $ \(request, response) -> do
   let c = HTTP.statusCode (responseStatus response)
   when (200 <= c && c < 300) $ do
     let values = fromMaybe [] $ scrapeStringLike (responseBody response) LD.scrapeJSONLDValues
-    yieldManyShuffled $ map (\value -> (request, response, value)) values
+    yieldManyShuffled $ map (\value -> (value, (request, response))) values
 
 parseJSONLDEvents ::
   ConduitT
-    (HTTP.Request, HTTP.Response LB.ByteString, JSON.Value)
-    (HTTP.Request, HTTP.Response LB.ByteString, LD.Event)
+    (JSON.Value, (HTTP.Request, HTTP.Response Text))
+    (LD.Event, (HTTP.Request, HTTP.Response Text))
     Import
     ()
-parseJSONLDEvents = awaitForever $ \(request, response, value) ->
+parseJSONLDEvents = awaitForever $ \(value, (request, response)) ->
   -- Try to parse as a single event first
   case JSON.parseEither parseJSON value of
-    Right event -> yield (request, response, event)
+    Right event -> yield (event, (request, response))
     Left errorMessageSingle -> do
       -- Couldn't parse as a single event, check to
       -- warn about our parser potentially being broken.
@@ -593,7 +605,7 @@ parseJSONLDEvents = awaitForever $ \(request, response, value) ->
             else pure ()
         Nothing ->
           case JSON.parseEither parseJSON value of
-            Right events -> yieldMany $ map ((,,) request response) events
+            Right events -> yieldMany $ map (\e -> (e, (request, response))) events
             Left errorMessageList -> do
               let listTypeParser :: Value -> JSON.Parser [Text]
                   listTypeParser value_ = do
@@ -626,7 +638,7 @@ yieldManyShuffled list = do
 shuffleList :: MonadIO m => [a] -> m [a]
 shuffleList = liftIO . shuffleM
 
-convertLDEventToExternalEvent :: Text -> ConduitT (HTTP.Request, HTTP.Response LB.ByteString, LD.Event) (ExternalEvent, Maybe URI) Import ()
+convertLDEventToExternalEvent :: Text -> ConduitT (LD.Event, (HTTP.Request, response)) (ExternalEvent, Maybe URI) Import ()
 convertLDEventToExternalEvent keyPrefix = convertLDEventToExternalEventWith $ \request _ ->
   let uriText = T.pack $ show $ getUri request
    in case T.stripPrefix keyPrefix uriText of
@@ -634,8 +646,8 @@ convertLDEventToExternalEvent keyPrefix = convertLDEventToExternalEventWith $ \r
         Just suffix -> suffix
 
 convertLDEventToExternalEventWith ::
-  (HTTP.Request -> LD.Event -> Text) -> ConduitT (HTTP.Request, HTTP.Response LB.ByteString, LD.Event) (ExternalEvent, Maybe URI) Import ()
-convertLDEventToExternalEventWith makeKey = awaitForever $ \(request, _, ldEvent) -> do
+  (HTTP.Request -> LD.Event -> Text) -> ConduitT (LD.Event, (HTTP.Request, response)) (ExternalEvent, Maybe URI) Import ()
+convertLDEventToExternalEventWith makeKey = awaitForever $ \(ldEvent, (request, _)) -> do
   let (externalEventDay, externalEventStart) = case LD.eventStartDate ldEvent of
         LD.EventStartDate d -> (LD.dateDay d, Nothing)
         LD.EventStartDateTime dateTime ->
