@@ -24,6 +24,8 @@ where
 import qualified Amazonka.SES as SES
 import qualified Amazonka.SES.Types as SES
 import Control.Monad
+import Data.Map (Map)
+import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Builder as TLB
@@ -44,6 +46,13 @@ getAdminProspectR prospectId = do
   withNavBar $ do
     token <- genToken
     $(widgetFile "admin/prospect")
+
+stats :: Map Text Word
+stats =
+  M.fromList
+    [ "Zürich",
+      550
+    ]
 
 data AddProspectForm = AddProspectForm
   { addProspectFormName :: Text,
