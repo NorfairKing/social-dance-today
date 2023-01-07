@@ -22,6 +22,12 @@
 - query: "Brussels"
   lat: 50.843670900
   lon: 4.367436693
+- query: "Antwerp"
+  lat: 51.24847
+  lon: 4.75738
+- query: "Antwerpen"
+  lat: 51.24847
+  lon: 4.75738
 - query: "Hasselt"
   lat: 50.921295549
   lon: 5.305192877

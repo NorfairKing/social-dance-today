@@ -53,6 +53,7 @@ spec = appSpec $ do
               urlRender
               prospect
               mExternalEvent
+              (Just ("Zürich", 550))
   describe "prospectEmailHtmlContent" $
     it "looks the same as last time" $ \app ->
       let urlRender = yesodRender app "https://social-dance.today"
@@ -61,3 +62,4 @@ spec = appSpec $ do
               urlRender
               prospect
               mExternalEvent
+              (Just ("Zürich", 550))

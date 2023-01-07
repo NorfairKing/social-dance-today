@@ -7,7 +7,7 @@ As fellow social dancers, we understand the importance of having a go-to resourc
 That's why we created Social Dance Today, a search engine for parties all over the world.
 #{yourEventsSentence}
 
-Over the past three months, we've had 550 active users from Zürich alone, with a total of over 8000 users worldwide.
+#{activeUsersSentence}
 We believe that by becoming an organizer on our site, you could benefit from an increase in attendance at your parties.
 Plus, it's free to join!
 

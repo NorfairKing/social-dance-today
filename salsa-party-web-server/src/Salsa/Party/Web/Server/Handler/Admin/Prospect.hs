@@ -24,16 +24,21 @@ where
 import qualified Amazonka.SES as SES
 import qualified Amazonka.SES.Types as SES
 import Control.Monad
+import Data.List (find)
 import Data.Map (Map)
 import qualified Data.Map as M
+import Data.Ord (comparing)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Builder as TLB
 import Network.URI
+import Safe (minimumByMay)
+import Salsa.Party.DB.Migration (Location (..), locations)
 import Salsa.Party.Email
 import Salsa.Party.Web.Server.Geocoding
 import Salsa.Party.Web.Server.Handler.Admin.Panel (formatAdminTime)
 import Salsa.Party.Web.Server.Handler.Import
+import Salsa.Party.Web.Server.Handler.Search.Query (defaultMaximumDistance)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet
 import Text.Shakespeare.Text
@@ -46,13 +51,6 @@ getAdminProspectR prospectId = do
   withNavBar $ do
     token <- genToken
     $(widgetFile "admin/prospect")
-
-stats :: Map Text Word
-stats =
-  M.fromList
-    [ "Zürich",
-      550
-    ]
 
 data AddProspectForm = AddProspectForm
   { addProspectFormName :: Text,
@@ -220,8 +218,13 @@ postAdminProspectInviteR prospectId = do
   mExternalEvent <- forM (prospectExternalEvent prospect) $ \externalEventId -> runDB $ get404 externalEventId
 
   urlRender <- getUrlRenderParams
-  let textContent = prospectEmailTextContent urlRender prospect mExternalEvent
-  let htmlContent = prospectEmailHtmlContent urlRender prospect mExternalEvent
+  mActiveUsers <- fmap join $
+    forM (prospectPlace prospect) $ \placeId -> do
+      mPlace <- runDB $ get placeId
+      pure $ mPlace >>= closestCity
+
+  let textContent = prospectEmailTextContent urlRender prospect mExternalEvent mActiveUsers
+  let htmlContent = prospectEmailHtmlContent urlRender prospect mExternalEvent mActiveUsers
 
   let textBody = SES.newContent textContent
   let htmlBody = SES.newContent htmlContent
@@ -243,6 +246,34 @@ postAdminProspectInviteR prospectId = do
 
   redirect $ AdminR $ AdminProspectR prospectId
 
+closestCity :: Place -> Maybe (Text, Word)
+closestCity place =
+  fmap (first placeQuery)
+    . minimumByMay (comparing (distanceTo (placeCoordinates place) . placeCoordinates . fst))
+    . filter (\(p, _) -> placeCoordinates p `distanceTo` placeCoordinates place < defaultMaximumDistance)
+    . mapMaybe
+      ( \(city, c) -> do
+          location <- find ((== city) . placeQuery . locationPlace) locations
+          pure (locationPlace location, c)
+      )
+    $ M.toList activeUsersMap
+
+activeUsersMap :: Map Text Word
+activeUsersMap =
+  -- 2022-07-01 - 2022-10-01
+  M.fromList
+    [ ("Zürich", 650),
+      ("New York", 950),
+      ("London", 450),
+      ("Amsterdam", 110),
+      ("Antwerpen", 110),
+      ("Brussels", 100),
+      ("Leuven", 100)
+    ]
+
+worldwide90DayActiveUsers :: Word
+worldwide90DayActiveUsers = 8000
+
 exampleOrganiser :: Text
 exampleOrganiser = "SalsaOn2Happenings"
 
@@ -252,8 +283,8 @@ exampleOrganiserSlug = Slug "salsaon2happenings"
 prospectEmailSubject :: Text
 prospectEmailSubject = "Boost attendance at your parties by joining Social Dance Today"
 
-prospectEmailTextContent :: (Route App -> [(Text, Text)] -> Text) -> Prospect -> Maybe ExternalEvent -> Text
-prospectEmailTextContent urlRender prospect mExternalEvent =
+prospectEmailTextContent :: (Route App -> [(Text, Text)] -> Text) -> Prospect -> Maybe ExternalEvent -> Maybe (Text, Word) -> Text
+prospectEmailTextContent urlRender prospect mExternalEvent mActiveUsers =
   let yourEventsSentence =
         case mExternalEvent of
           Just externalEvent ->
@@ -266,10 +297,27 @@ prospectEmailTextContent urlRender prospect mExternalEvent =
                   "), are already advertised on our site."
                 ]
           Nothing -> "In fact, some of your events are probably already advertised on our site."
+      activeUsersSentence =
+        T.pack $
+          concat
+            [ "Over the past three months, we've had ",
+              case mActiveUsers of
+                Just (city, activeUsers) ->
+                  concat
+                    [ show activeUsers,
+                      " active users from ",
+                      T.unpack city,
+                      " alone, with "
+                    ]
+                Nothing -> "",
+              "a total of over ",
+              show worldwide90DayActiveUsers,
+              " users worldwide."
+            ]
    in TL.toStrict $ TLB.toLazyText $ $(textFile "templates/email/prospect.txt") urlRender
 
-prospectEmailHtmlContent :: (Route App -> [(Text, Text)] -> Text) -> Prospect -> Maybe ExternalEvent -> Text
-prospectEmailHtmlContent urlRender prospect mExternalEvent = TL.toStrict $ renderHtml $ $(hamletFile "templates/email/prospect.hamlet") urlRender
+prospectEmailHtmlContent :: (Route App -> [(Text, Text)] -> Text) -> Prospect -> Maybe ExternalEvent -> Maybe (Text, Word) -> Text
+prospectEmailHtmlContent urlRender prospect mExternalEvent mActiveUsers = TL.toStrict $ renderHtml $ $(hamletFile "templates/email/prospect.hamlet") urlRender
 
 postAdminProspectDeleteR :: ProspectId -> Handler Html
 postAdminProspectDeleteR prospectId = do
