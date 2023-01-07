@@ -69,7 +69,7 @@ func = do
             Nothing -> ee {externalEventHomepage = Just $ externalEventOrigin ee}
             Just _ -> ee
         )
-      .| C.mapM_ importExternalEventWithMImage
+      .| C.mapM_ importExternalEventWithMImage_
 
 scrapeCategoryUrls :: ScraperT Text Import [URI]
 scrapeCategoryUrls = do

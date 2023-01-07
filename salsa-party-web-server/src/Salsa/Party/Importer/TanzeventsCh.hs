@@ -46,7 +46,7 @@ func =
       .| httpRequestC
       .| httpBodyTextParserC
       .| parseEventsFromStylePage
-      .| C.mapM_ importExternalEvent
+      .| C.mapM_ importExternalEvent_
 
 scrapeStyleLinks :: MonadIO m => ConduitT (HTTP.Request, HTTP.Response Text) URI m ()
 scrapeStyleLinks = awaitForever $ \(request, response) -> do

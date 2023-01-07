@@ -62,7 +62,7 @@ func = do
       .| httpRequestC
       .| scrapeLDEvents
       .| convertLDEventToExternalEvent eventPagePrefix
-      .| C.mapM_ importExternalEventWithMImage
+      .| C.mapM_ importExternalEventWithMImage_
 
 parseLocNodes :: XML.Document -> [Text]
 parseLocNodes topLevel =

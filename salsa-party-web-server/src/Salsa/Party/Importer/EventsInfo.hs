@@ -54,7 +54,7 @@ func =
       .| deduplicateC
       .| eventPageConduit
       .| eventDetailsConverter
-      .| C.mapM_ importExternalEventWithMImage
+      .| C.mapM_ importExternalEventWithMImage_
 
 homePageConduit ::
   ConduitT

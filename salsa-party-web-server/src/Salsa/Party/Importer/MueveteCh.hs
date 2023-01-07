@@ -40,4 +40,4 @@ func =
         ( \_ ldEvent ->
             T.pack (show (LD.eventStartDate ldEvent)) <> fromMaybe "" (LD.eventUrl ldEvent)
         )
-      .| C.mapM_ importExternalEventWithMImage
+      .| C.mapM_ importExternalEventWithMImage_

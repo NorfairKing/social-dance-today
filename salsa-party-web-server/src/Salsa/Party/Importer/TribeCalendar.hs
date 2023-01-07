@@ -70,7 +70,7 @@ parseUrlsInCalendars =
     .| C.concatMap (parseURI . T.unpack)
 
 importTribeCalendarJSONLDEvents :: ConduitT (LD.Event, (HTTP.Request, HTTP.Response Text)) Void Import ()
-importTribeCalendarJSONLDEvents = tribeCalendarJSONLDEvents .| C.mapM_ importExternalEventWithMImage
+importTribeCalendarJSONLDEvents = tribeCalendarJSONLDEvents .| C.mapM_ importExternalEventWithMImage_
 
 tribeCalendarJSONLDEvents :: ConduitT (LD.Event, (HTTP.Request, HTTP.Response Text)) (ExternalEvent, Maybe URI) Import ()
 tribeCalendarJSONLDEvents = awaitForever $ \(event, (request, response)) -> do

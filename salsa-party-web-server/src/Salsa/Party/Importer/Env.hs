@@ -193,8 +193,49 @@ importDB func = do
   logFunc <- askLoggerIO
   liftIO $ runLoggingT (runSqlPool (retryOnBusy func) pool) logFunc
 
-importExternalEventWithMImage :: (ExternalEvent, Maybe URI) -> Import ()
-importExternalEventWithMImage (externalEvent, mImageURI) =
+importProspect :: Prospect -> Import ()
+importProspect newProspect = do
+  mProspect <- importDB $ getBy (UniqueProspectEmail (prospectEmailAddress newProspect))
+  case mProspect of
+    Nothing -> do
+      logInfoN $
+        T.pack $
+          unlines
+            [ "Importing prospect:",
+              ppShow newProspect
+            ]
+      importDB $ insert_ newProspect
+    Just (Entity prospectId knownProspect) -> do
+      logInfoN $ T.pack $ unlines ["Updating prospect because we already know about them:", ppShow newProspect]
+      case prospectUnsubscribed knownProspect of
+        Just _ -> logDebugN "Prospect already unsubscribed, not updating them."
+        Nothing -> do
+          -- Update the place
+          case (prospectPlace knownProspect, prospectPlace newProspect) of
+            (Nothing, Just placeId) -> importDB $ update prospectId [ProspectPlace =. Just placeId]
+            _ -> pure ()
+          -- Update the external event
+          let updateExternalEvent externalEventId = importDB $ update prospectId [ProspectExternalEvent =. Just externalEventId]
+          case (prospectExternalEvent knownProspect, prospectExternalEvent newProspect) of
+            (_, Nothing) -> pure ()
+            (Nothing, Just newEventId) -> do
+              logDebugN "We didn't know about the prospect's event yet, adding that info."
+              updateExternalEvent newEventId
+            (Just knownEventId, Just newEventId) -> do
+              mKnownEvent <- importDB $ get knownEventId
+              mNewEvent <- importDB $ get newEventId
+              case (mKnownEvent, mNewEvent) of
+                (_, Nothing) -> pure ()
+                (Nothing, Just _) -> updateExternalEvent newEventId
+                (Just knownEvent, Just newEvent) ->
+                  if externalEventDay knownEvent > externalEventDay newEvent
+                    then do
+                      logDebugN "The event we knew about was older, updating that info."
+                      updateExternalEvent newEventId
+                    else logDebugN "Not updating the event we know about because it is older than the one we had."
+
+importExternalEventWithMImageAnd :: (ExternalEvent, Maybe URI) -> (ExternalEventId -> Import ()) -> Import (Maybe ExternalEventId)
+importExternalEventWithMImageAnd (externalEvent, mImageURI) restFunc =
   importExternalEventAnd externalEvent $ \externalEventId -> do
     now <- liftIO getCurrentTime
     forM_ mImageURI $ \imageUri -> do
@@ -206,13 +247,23 @@ importExternalEventWithMImage (externalEvent, mImageURI) =
             [ ExternalEventPoster =. Just key,
               ExternalEventModified =. Just now
             ]
+    restFunc externalEventId
 
-importExternalEvent :: ExternalEvent -> Import ()
+importExternalEventWithMImage_ :: (ExternalEvent, Maybe URI) -> Import ()
+importExternalEventWithMImage_ = void . importExternalEventWithMImage
+
+importExternalEventWithMImage :: (ExternalEvent, Maybe URI) -> Import (Maybe ExternalEventId)
+importExternalEventWithMImage tup = importExternalEventWithMImageAnd tup $ \_ -> pure ()
+
+importExternalEvent_ :: ExternalEvent -> Import ()
+importExternalEvent_ = void . importExternalEvent
+
+importExternalEvent :: ExternalEvent -> Import (Maybe ExternalEventId)
 importExternalEvent externalEvent = importExternalEventAnd externalEvent $ \_ -> pure ()
 
 -- Import an external event and run the given function if anything has changed.
 -- We use this extra function to import images but only if the event has changed.
-importExternalEventAnd :: ExternalEvent -> (ExternalEventId -> Import ()) -> Import ()
+importExternalEventAnd :: ExternalEvent -> (ExternalEventId -> Import ()) -> Import (Maybe ExternalEventId)
 importExternalEventAnd candidate func = do
   logDebugN $
     T.pack $
@@ -221,7 +272,7 @@ importExternalEventAnd candidate func = do
           ppShow candidate
         ]
   case prettyValidate candidate of
-    Left err ->
+    Left err -> do
       logWarnN $
         T.pack $
           unlines
@@ -229,18 +280,20 @@ importExternalEventAnd candidate func = do
               err,
               ppShow candidate
             ]
+      pure Nothing
     Right externalEvent@ExternalEvent {..} -> do
       now <- liftIO getCurrentTime
       let today = utctDay now
       let yesterday = addDays (-1) today
       if externalEventDay < yesterday
-        then
+        then do
           logDebugN $
             T.pack $
               unwords
                 [ "Not importing external event because it is in the past:",
                   T.unpack externalEventOrigin
                 ]
+          pure Nothing
         else do
           importerId <- asks importEnvId
           mExternalEvent <- importDB $ do
@@ -254,7 +307,9 @@ importExternalEventAnd candidate func = do
                     [ "Importing never-before-seen event from",
                       T.unpack externalEventOrigin
                     ]
-              importDB (insert externalEvent) >>= func
+              externalEventId <- importDB (insert externalEvent)
+              func externalEventId
+              pure $ Just externalEventId
             Just (Entity externalEventId oldExternalEvent) -> do
               case externalEvent `changesComparedTo` oldExternalEvent of
                 Nothing -> do
@@ -264,7 +319,6 @@ importExternalEventAnd candidate func = do
                         [ "Not re-importing known event, because it was not changed",
                           show externalEventOrigin
                         ]
-                  pure ()
                 Just updates -> do
                   logInfoN $
                     T.pack $
@@ -280,6 +334,7 @@ importExternalEventAnd candidate func = do
                           NE.toList updates
                         )
                   func externalEventId
+              pure $ Just externalEventId
 
 jsonRequestConduit :: FromJSON a => ConduitT HTTP.Request a Import ()
 jsonRequestConduit = C.map ((,) ()) .| jsonRequestConduitWith .| C.map snd

@@ -195,6 +195,36 @@ importEventPage = awaitForever $ \(relativeUrl, (request, response)) -> do
               pure $ find ("/media/flyers" `T.isPrefixOf`) refs >>= parseURI . ("https://www.latinworld.nl/" <>) . T.unpack
 
           pure (ExternalEvent {..}, mImageUri)
+  let prospectScraper :: Entity ExternalEvent -> ScraperT Text Import (Maybe Prospect)
+      prospectScraper (Entity externalEventId ExternalEvent {..}) = fmap listToMaybe $
+        chroots ("table" @: ["style" @= "width: 100%"]) $ do
+          cells <- texts "td"
+          let cell ix = case atMay cells ix of
+                Nothing -> fail "cell not found"
+                Just res -> pure res
+
+          prospectName <- cell 1
+
+          emailLabel <- cell 6
+          guard $ "email" `T.isInfixOf` emailLabel
+          prospectEmailAddress <- cell 7
+
+          -- The organiser and the event are on the same page and there is only one address
+          let prospectPlace = Just externalEventPlace
+
+          let prospectExternalEvent = Just externalEventId
+
+          let prospectCreated = now
+          let prospectModified = Nothing
+          prospectSecret <- nextRandomUUID
+          let prospectUnsubscribed = Nothing
+          let prospectInvited = Nothing
+          pure Prospect {..}
+
   lift $ do
     mTup <- scrapeStringLikeT (responseBody response) eventScraper
-    mapM_ importExternalEventWithMImage mTup
+    forM mTup $ \(externalEvent, mImageUri) -> do
+      mExternalEventId <- importExternalEventWithMImage (externalEvent, mImageUri)
+      forM mExternalEventId $ \externalEventId -> do
+        mmProspect <- scrapeStringLikeT (responseBody response) (prospectScraper (Entity externalEventId externalEvent))
+        mapM_ importProspect (join mmProspect)

@@ -71,7 +71,7 @@ func =
       .| httpBodyTextParserC
       .| jsonLDEventsC
       .| convertLDEventToExternalEvent eventUrlPrefix
-      .| C.mapM_ importExternalEventWithMImage
+      .| C.mapM_ importExternalEventWithMImage_
 
 scrapeLocationLinks :: ScraperT Text Import [Text]
 scrapeLocationLinks = do

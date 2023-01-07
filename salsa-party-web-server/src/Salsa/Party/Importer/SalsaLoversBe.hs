@@ -51,7 +51,7 @@ func = do
         )
       .| C.concatMap getEventFromFeedElem
       .| convertToExternalEvent
-      .| C.mapM_ importExternalEvent
+      .| C.mapM_ importExternalEvent_
 
 data FeedElem
   = FeedElemEvent !Event

@@ -45,7 +45,7 @@ func =
       .| httpRequestC
       .| httpBodyTextParserC
       .| scrapeEventPage
-      .| C.mapM_ importExternalEvent
+      .| C.mapM_ importExternalEvent_
 
 scrapeEventLinks :: ConduitT (HTTP.Request, HTTP.Response Text) URI Import ()
 scrapeEventLinks = awaitForever $ \(request, response) -> do

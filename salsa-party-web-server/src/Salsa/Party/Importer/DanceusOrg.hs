@@ -69,7 +69,7 @@ func =
       .| jsonLDEventsC
       .| scrapImageIfStatic
       .| convertLDEventToExternalEvent eventUrlPrefix
-      .| C.mapM_ importExternalEventWithMImage
+      .| C.mapM_ importExternalEventWithMImage_
 
 dances :: [String]
 dances =

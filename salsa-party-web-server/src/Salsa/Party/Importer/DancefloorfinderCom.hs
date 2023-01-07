@@ -66,6 +66,7 @@ func = do
       .| jsonRequestConduit'
       .| C.concatMap (\(request, events) -> (,) request <$> (events :: [Event]))
       .| importEventSync
+      .| C.mapM_ importExternalEvent_
 
 data Event = Event
   { eventDay :: !Day,
@@ -103,7 +104,7 @@ instance FromJSON Event where
       <*> o .:? "price"
       <*> o .:? "organization"
 
-importEventSync :: ConduitT (HTTP.Request, Event) void Import ()
+importEventSync :: ConduitT (HTTP.Request, Event) ExternalEvent Import ()
 importEventSync = awaitForever $ \(request, Event {..}) -> do
   now <- liftIO getCurrentTime
   let today = utctDay now
@@ -143,4 +144,4 @@ importEventSync = awaitForever $ \(request, Event {..}) -> do
           externalEventImporter <- asks importEnvId
           let externalEventOrigin = T.pack $ show $ getUri request
 
-          lift $ importExternalEvent ExternalEvent {..}
+          yield ExternalEvent {..}

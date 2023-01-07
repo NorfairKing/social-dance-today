@@ -47,7 +47,7 @@ func =
       .| httpBodyTextParserC
       .| jsonLDEventsC
       .| convertLDEventToExternalEvent eventUrlPrefix
-      .| C.mapM_ importExternalEventWithMImage
+      .| C.mapM_ importExternalEventWithMImage_
 
 scrapeEventLinks :: MonadIO m => ConduitT (HTTP.Request, HTTP.Response Text) Text m ()
 scrapeEventLinks = awaitForever $ \(_, response) -> do
