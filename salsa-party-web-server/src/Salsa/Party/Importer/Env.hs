@@ -198,7 +198,7 @@ importProspect newProspect = do
   mProspect <- importDB $ getBy (UniqueProspectEmail (prospectEmailAddress newProspect))
   case mProspect of
     Nothing -> do
-      logInfoN $
+      logDebugN $
         T.pack $
           unlines
             [ "Importing prospect:",
@@ -206,7 +206,7 @@ importProspect newProspect = do
             ]
       importDB $ insert_ newProspect
     Just (Entity prospectId knownProspect) -> do
-      logInfoN $ T.pack $ unlines ["Updating prospect because we already know about them:", ppShow newProspect]
+      logDebugN $ T.pack $ unlines ["Updating prospect because we already know about them:", ppShow newProspect]
       case prospectUnsubscribed knownProspect of
         Just _ -> logDebugN "Prospect already unsubscribed, not updating them."
         Nothing -> do
