@@ -15,6 +15,13 @@
           Unknown
 
       <p>
+        Closest city: 
+        $maybe (city, count) <- mActiveUsers
+          #{city}, #{count} 90-day active users
+        $nothing
+          Unknown
+
+      <p>
         $maybe externalEvent <- mExternalEvent
           Known external event:
           <a href=@{externalEventRoute externalEvent}>

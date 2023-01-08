@@ -47,6 +47,7 @@ getAdminProspectR :: ProspectId -> Handler Html
 getAdminProspectR prospectId = do
   prospect <- runDB $ get404 prospectId
   mPlace <- forM (prospectPlace prospect) $ \placeId -> runDB $ get404 placeId
+  let mActiveUsers = mPlace >>= closestCity
   mExternalEvent <- forM (prospectExternalEvent prospect) $ \externalEventId -> runDB $ get404 externalEventId
   withNavBar $ do
     token <- genToken
@@ -267,6 +268,7 @@ activeUsersMap =
       ("London", 450),
       ("Amsterdam", 110),
       ("Antwerpen", 110),
+      ("Berlin", 152),
       ("Brussels", 100),
       ("Leuven", 100)
     ]
