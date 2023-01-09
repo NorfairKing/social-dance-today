@@ -273,6 +273,9 @@ DeletePartyErrorNotYourParty: This is not your party to delete.
 # Schedule Form
 ScheduleFormTitleLabel: Title
 ScheduleFormRecurrenceLabel: Recurrence
+ScheduleFormEmailConsentLabel: Email consent
+ScheduleFormEmailConsentDescription: I consent to receiving emails to remind me to keep this recurring party up-to-date.
+ScheduleFormEmailConsentHelp: We appreciate your efforts in helping us keep the information on our site accurate and current. To assist with this, we kindly request that you confirm the ongoing occurrence and current accuracy of your recurring party by responding to our periodic reminders, which are sent no more frequently than once every month.
 ScheduleFormAddressLabel: Address
 ScheduleFormDescriptionLabel: Description
 ScheduleFormStartLabel: Start

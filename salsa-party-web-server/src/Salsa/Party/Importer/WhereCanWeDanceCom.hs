@@ -102,7 +102,7 @@ importEventPage = awaitForever $ \(request, response) -> do
         externalEventDescription <-
           optional $
             chroot ("div" @: [hasClass "evnt-list-wrapper"]) $
-              text ("div" @: [hasClass "trix-content"])
+              T.strip <$> text ("div" @: [hasClass "trix-content"])
 
         let externalEventPoster = Nothing
         let externalEventSlug = makeExternalEventSlug externalEventUuid externalEventTitle

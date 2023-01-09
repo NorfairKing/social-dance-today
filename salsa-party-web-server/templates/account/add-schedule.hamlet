@@ -24,6 +24,18 @@
 
       <div .field>
         <label .label>
+          _{MsgScheduleFormEmailConsentLabel}
+        <label .checbox>
+          <input .checkbox
+            type=checkbox
+            required
+            name="email-consent">
+          _{MsgScheduleFormEmailConsentDescription}
+        <p .help>
+          _{MsgScheduleFormEmailConsentHelp}
+
+      <div .field>
+        <label .label>
           _{MsgScheduleFormAddressLabel}
         <div .control>
           <input .input

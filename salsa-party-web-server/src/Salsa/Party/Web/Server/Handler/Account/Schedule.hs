@@ -20,8 +20,7 @@ module Salsa.Party.Web.Server.Handler.Account.Schedule
   )
 where
 
-import Control.Monad
-import Control.Monad.Reader
+import Data.Functor
 import qualified Data.Text as T
 import qualified Database.Esqueleto.Legacy as E
 import Salsa.Party.Looper.PartyScheduler
@@ -76,16 +75,22 @@ instance Validity AddScheduleForm where
 
 addScheduleForm :: FormInput Handler AddScheduleForm
 addScheduleForm =
-  AddScheduleForm
-    <$> ireq titleField "title"
-    <*> recurrenceForm
-    <*> ireq textField "address"
-    <*> iopt descriptionField "description"
-    <*> iopt timeField "start"
-    -- We don't use urlField here because we store the urls as text anyway.
-    -- The html still contains type="url" so invaild urls will have been submitted on purpose.
-    <*> iopt textField "homepage"
-    <*> iopt textField "price"
+  ( AddScheduleForm
+      <$> ireq titleField "title"
+      <*> recurrenceForm
+      <*> ireq textField "address"
+      <*> iopt descriptionField "description"
+      <*> iopt timeField "start"
+      -- We don't use urlField here because we store the urls as text anyway.
+      -- The html still contains type="url" so invaild urls will have been submitted on purpose.
+      <*> iopt textField "homepage"
+      <*> iopt textField "price"
+  )
+    <* ireq scheduleEmailConsentField "email-consent"
+
+-- A bool that is only allowed to be rue
+scheduleEmailConsentField :: Field Handler Bool
+scheduleEmailConsentField = checkBool id MsgScheduleFormEmailConsentHelp checkBoxField
 
 -- Only works if you have only one recurrence field
 recurrenceForm :: FormInput Handler Recurrence
