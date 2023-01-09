@@ -51,4 +51,4 @@
               <a .is-link href=@{AdminR $ AdminProspectR prospectId}>
                 Details
 
-^{paginationWidget pageRoute paginated pageNumber}
+    ^{paginationWidget pageRoute paginated pageNumber}
