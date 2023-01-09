@@ -14,14 +14,18 @@
             Name
           <th>
             Email Address
-          <th>
+          <th width=60px>
             Created
-          <th>
+          <th width=60px>
             Modified
-          <th>
+          <th width=60px>
             Unsubscribed
-          <th>
+          <th width=60px>
             Invited
+          <th width=60px>
+            Event
+          <th width=60px>
+            Place
           <th width=50px>
             Details
       <tbody>
@@ -39,6 +43,10 @@
               ^{maybe mempty formatAdminTime $ prospectUnsubscribed prospect}
             <td>
               ^{maybe mempty formatAdminTime $ prospectInvited prospect}
+            <td>
+              #{maybe mempty (show . fromSqlKey) $ prospectExternalEvent prospect}
+            <td>
+              #{maybe mempty (show . fromSqlKey) $ prospectPlace prospect}
             <td>
               <a .is-link href=@{AdminR $ AdminProspectR prospectId}>
                 Details

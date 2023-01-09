@@ -218,7 +218,7 @@ getAdminProspectsR :: Handler Html
 getAdminProspectsR = redirect $ AdminR $ AdminProspectsPageR paginatedFirstPage
 
 getAdminProspectsPageR :: PageNumber -> Handler Html
-getAdminProspectsPageR = adminProspectsPage [] [Asc ProspectId] (AdminR . AdminProspectsPageR)
+getAdminProspectsPageR = adminProspectsPage [] [Asc ProspectInvited, Desc ProspectCreated] (AdminR . AdminProspectsPageR)
 
 adminProspectsPage :: [Filter Prospect] -> [SelectOpt Prospect] -> (PageNumber -> Route App) -> PageNumber -> Handler Html
 adminProspectsPage filters sorters pageRoute pageNumber = do
