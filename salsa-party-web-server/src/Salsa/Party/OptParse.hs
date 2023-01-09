@@ -54,6 +54,7 @@ data Settings = Settings
     settingSearchCachePopulatorLooperSettings :: !LooperSettings,
     settingExploreCachePopulatorLooperSettings :: !LooperSettings,
     settingOrganiserReminderLooperSettings :: !LooperSettings,
+    settingScheduleReminderLooperSettings :: !LooperSettings,
     settingPartyGarbageCollectorLooperSettings :: !LooperSettings,
     settingImageGarbageCollectorLooperSettings :: !LooperSettings,
     settingPartySchedulerLooperSettings :: !LooperSettings,
@@ -89,6 +90,7 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingSearchCachePopulatorLooperSettings = deriveLooperSettings (seconds 15) (hours 6) flagSearchCachePopulatorLooperFlags envSearchCachePopulatorLooperEnvironment (mc confSearchCachePopulatorLooperConfiguration)
   let settingExploreCachePopulatorLooperSettings = deriveLooperSettings (seconds 15) (hours 24) flagExploreCachePopulatorLooperFlags envExploreCachePopulatorLooperEnvironment (mc confExploreCachePopulatorLooperConfiguration)
   let settingOrganiserReminderLooperSettings = deriveLooperSettings (seconds 30) (hours 24) flagOrganiserReminderLooperFlags envOrganiserReminderLooperEnvironment (mc confOrganiserReminderLooperConfiguration)
+  let settingScheduleReminderLooperSettings = deriveLooperSettings (seconds 30) (hours 24) flagScheduleReminderLooperFlags envScheduleReminderLooperEnvironment (mc confScheduleReminderLooperConfiguration)
   let settingPartyGarbageCollectorLooperSettings = deriveLooperSettings (minutes 1) (hours 24) flagPartyGarbageCollectorLooperFlags envPartyGarbageCollectorLooperEnvironment (mc confPartyGarbageCollectorLooperConfiguration)
   let settingImageGarbageCollectorLooperSettings = deriveLooperSettings (minutes 1 + seconds 30) (hours 24) flagImageGarbageCollectorLooperFlags envImageGarbageCollectorLooperEnvironment (mc confImageGarbageCollectorLooperConfiguration)
   let settingPartySchedulerLooperSettings = deriveLooperSettings (minutes 2 + seconds 30) (hours 24) flagPartySchedulerLooperFlags envPartySchedulerLooperEnvironment (mc confPartySchedulerLooperConfiguration)
@@ -143,6 +145,7 @@ data Configuration = Configuration
     confSearchCachePopulatorLooperConfiguration :: !(Maybe LooperConfiguration),
     confExploreCachePopulatorLooperConfiguration :: !(Maybe LooperConfiguration),
     confOrganiserReminderLooperConfiguration :: !(Maybe LooperConfiguration),
+    confScheduleReminderLooperConfiguration :: !(Maybe LooperConfiguration),
     confPartyGarbageCollectorLooperConfiguration :: !(Maybe LooperConfiguration),
     confImageGarbageCollectorLooperConfiguration :: !(Maybe LooperConfiguration),
     confPartySchedulerLooperConfiguration :: !(Maybe LooperConfiguration),
@@ -173,6 +176,7 @@ instance HasCodec Configuration where
         <*> optionalFieldOrNull "search-cache-populator" "The search cache populator looper" .= confSearchCachePopulatorLooperConfiguration
         <*> optionalFieldOrNull "explore-cache-populator" "The explore cache populator looper" .= confExploreCachePopulatorLooperConfiguration
         <*> optionalFieldOrNull "organiser-reminder" "The organiser reminder looper" .= confOrganiserReminderLooperConfiguration
+        <*> optionalFieldOrNull "schedule-reminder" "The schedule reminder looper" .= confScheduleReminderLooperConfiguration
         <*> optionalFieldOrNull "party-garbage-collector" "The party garbage collector looper" .= confPartyGarbageCollectorLooperConfiguration
         <*> optionalFieldOrNull "image-garbage-collector" "The image garbage collector looper" .= confImageGarbageCollectorLooperConfiguration
         <*> optionalFieldOrNull "party-scheduler" "The party scheduler looper" .= confPartySchedulerLooperConfiguration
@@ -237,6 +241,7 @@ data Environment = Environment
     envSearchCachePopulatorLooperEnvironment :: !LooperEnvironment,
     envExploreCachePopulatorLooperEnvironment :: !LooperEnvironment,
     envOrganiserReminderLooperEnvironment :: !LooperEnvironment,
+    envScheduleReminderLooperEnvironment :: !LooperEnvironment,
     envPartyGarbageCollectorLooperEnvironment :: !LooperEnvironment,
     envImageGarbageCollectorLooperEnvironment :: !LooperEnvironment,
     envPartySchedulerLooperEnvironment :: !LooperEnvironment,
@@ -283,6 +288,7 @@ environmentParser =
       <*> looperEnvironmentParser "SEARCH_CACHE_POPULATOR"
       <*> looperEnvironmentParser "EXPLORE_CACHE_POPULATOR"
       <*> looperEnvironmentParser "ORGANISER_REMINDER"
+      <*> looperEnvironmentParser "SCHEDULE_REMINDER"
       <*> looperEnvironmentParser "PARTY_GARBAGE_COLLECTOR"
       <*> looperEnvironmentParser "IMAGE_GARBAGE_COLLECTOR"
       <*> looperEnvironmentParser "PARTY_SCHEDULER"
@@ -379,6 +385,7 @@ data Flags = Flags
     flagSearchCachePopulatorLooperFlags :: !LooperFlags,
     flagExploreCachePopulatorLooperFlags :: !LooperFlags,
     flagOrganiserReminderLooperFlags :: !LooperFlags,
+    flagScheduleReminderLooperFlags :: !LooperFlags,
     flagPartyGarbageCollectorLooperFlags :: !LooperFlags,
     flagImageGarbageCollectorLooperFlags :: !LooperFlags,
     flagPartySchedulerLooperFlags :: !LooperFlags,
@@ -543,6 +550,7 @@ parseFlags =
     <*> getLooperFlags "search-cache-populator"
     <*> getLooperFlags "explore-cache-populator"
     <*> getLooperFlags "organiser-reminder"
+    <*> getLooperFlags "schedule-reminder"
     <*> getLooperFlags "party-garbage-collector"
     <*> getLooperFlags "image-garbage-collector"
     <*> getLooperFlags "party-scheduler"

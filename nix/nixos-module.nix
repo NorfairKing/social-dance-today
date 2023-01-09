@@ -123,6 +123,7 @@ in
                   search-cache-populator = mkLooperOption "search-cache-populator";
                   explore-cache-populator = mkLooperOption "explore-cache-populator";
                   organiser-reminder = mkLooperOption "organiser-reminder";
+                  schedule-reminder = mkLooperOption "schedule-reminder";
                   party-garbage-collector = mkLooperOption "party-garbage-collector";
                   image-garbage-collector = mkLooperOption "image-garbage-collector";
                   party-scheduler = mkLooperOption "party-scheduler";
@@ -190,6 +191,7 @@ in
           (nullOrOption "google-search-console-verification" google-search-console-verification)
           (nullOrOption "image-garbage-collector" image-garbage-collector)
           (nullOrOption "organiser-reminder" organiser-reminder)
+          (nullOrOption "schedule-reminder" schedule-reminder)
           (nullOrOption "importers" importers)
           (nullOrOption "importer" importer)
           (nullOrOption "sentry" sentry)
