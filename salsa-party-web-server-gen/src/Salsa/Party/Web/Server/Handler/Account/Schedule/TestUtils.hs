@@ -56,6 +56,7 @@ addScheduleFormRequestBuilder AddScheduleForm {..} mPosterFile = do
   forM_ addScheduleFormHomepage $ \homepage -> addPostParam "homepage" homepage
   forM_ addScheduleFormPrice $ \price -> addPostParam "price" price
   forM_ mPosterFile $ \TestFile {..} -> addFileWith "poster" testFilePath testFileContents testFileType
+  addPostParam "email-consent" "yes"
 
 verifyScheduleAdded :: MonadIO m => ScheduleUUID -> AddScheduleForm -> SqlPersistT m ()
 verifyScheduleAdded scheduleUuid_ addScheduleForm_ = verifyScheduleAddedHelper scheduleUuid_ addScheduleForm_ Nothing

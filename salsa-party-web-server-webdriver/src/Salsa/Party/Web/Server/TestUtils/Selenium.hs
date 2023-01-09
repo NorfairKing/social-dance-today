@@ -322,6 +322,7 @@ driveAddSchedule AddScheduleForm {..} = do
     MonthlyRecurrence ix dow -> do
       selectIndex (Just ix)
       selectDow dow
+  findElem (ByName "email-consent") >>= click
   forM_ addScheduleFormDescription $ \description -> findElem (ByName "description") >>= sendKeys (Yesod.unTextarea description)
   forM_ addScheduleFormStart $ \start -> findElem (ByName "start") >>= sendKeys (T.pack (formatTime defaultTimeLocale "%I%M%p" start))
   forM_ addScheduleFormHomepage $ \homepage -> findElem (ByName "homepage") >>= sendKeys homepage
