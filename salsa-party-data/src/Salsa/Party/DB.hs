@@ -251,6 +251,22 @@ ScheduleParty
     deriving Eq
     deriving Generic
 
+-- This table represents metadata about sending
+-- schedule reminder emails about verifying the schedule.
+ScheduleReminder sql=schedule_reminder
+    schedule ScheduleId
+
+    -- Last reminded
+    reminded UTCTime Maybe sql=last
+    -- Last verified
+    verified UTCTime Maybe sql=last
+
+    UniqueScheduleReminderSchedule schedule
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
 
 ImporterMetadata sql=importer_metadata
     name Text

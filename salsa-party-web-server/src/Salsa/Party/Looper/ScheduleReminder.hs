@@ -35,9 +35,20 @@ runScheduleReminder = do
       .| scheduleReminderDecisionSink
 
 data ScheduleReminderDecision
+  = NotDueForVerificationUntil !UTCTime
+  | SentScheduleReminderTooRecentlyAlready !UTCTime
+  | ShouldSendScheduleReminder !EmailAddress
+  deriving (Show, Eq)
 
 makeScheduleReminderDecision :: (MonadUnliftIO m, MonadLoggerIO m) => Entity Schedule -> SqlPersistT m ScheduleReminderDecision
-makeScheduleReminderDecision (Entity scheduleId Schedule {..}) =
+makeScheduleReminderDecision (Entity scheduleId Schedule {..}) = do
+  logDebugN $
+    T.pack $
+      unwords
+        [ "Checking whether to send an schedule reminder about schedule",
+          show (fromSqlKey scheduleId)
+        ]
+
   undefined
 
 scheduleReminderDecisionSink :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => ConduitT ScheduleReminderDecision void m ()
