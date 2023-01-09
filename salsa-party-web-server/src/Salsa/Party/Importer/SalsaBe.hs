@@ -84,7 +84,6 @@ crawlSearchResults = awaitForever $ \(request, response) -> do
                     pure ref
                   -- The third link is the next page
                   pure $ listToMaybe links
-      liftIO $ print mLink
       case mLink >>= fmap (`relativeTo` getUri request) . parseURIReference . T.unpack >>= requestFromURI of
         Nothing -> logDebugN $ T.pack $ unwords ["Pages end here:", show (getUri request)]
         Just request' -> do
@@ -147,7 +146,6 @@ importEventPage = awaitForever $ \(request, response) -> do
                       . T.concat
                       . map (T.replace "\r" "\n" . T.replace "\r\n" "\n")
                       $ rawTexts
-              liftIO $ print textLines
 
               let descriptionLines =
                     takeWhile (not . T.isPrefixOf "Salseros and www.salsa.be a perfect match.")
