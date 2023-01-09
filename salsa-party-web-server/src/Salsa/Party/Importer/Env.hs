@@ -580,12 +580,25 @@ parseHttpBodyText response =
 
 scrapeBodyC ::
   ScraperT Text Import a ->
-  ConduitT (Request, Response Text) a Import ()
-scrapeBodyC scraper = awaitForever $ \(request, response) -> do
-  nothingOrMono <- lift $ scrapeStringLikeT (responseBody response) scraper
-  case nothingOrMono of
+  ConduitT (HTTP.Request, HTTP.Response Text) a Import ()
+scrapeBodyC scraper = scrapeBodyWithC (\_ _ -> scraper)
+
+scrapeBodyWithC ::
+  (HTTP.Request -> HTTP.Response Text -> ScraperT Text Import a) ->
+  ConduitT (HTTP.Request, HTTP.Response Text) a Import ()
+scrapeBodyWithC scraperFunc = awaitForever $ \tup@(request, response) -> do
+  nothingOrResult <- lift $ scrapeStringLikeT (responseBody response) (uncurry scraperFunc tup)
+  case nothingOrResult of
     Nothing -> logWarnN $ T.pack $ unwords ["Failed to scrape from", show (getUri request)]
-    Just mono -> yield mono
+    Just result -> yield result
+
+geoLocateScraper :: Text -> ScraperT body Import PlaceId
+geoLocateScraper address = do
+  app <- asks importEnvApp
+  mPlaceEntity <- lift $ runReaderT (lookupPlaceRaw address) app
+  case mPlaceEntity of
+    Nothing -> fail "could not geolocate"
+    Just (Entity placeId _) -> pure placeId
 
 teePrint ::
   (Show a, MonadIO m) => ConduitT a a m ()
