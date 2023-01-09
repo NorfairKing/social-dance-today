@@ -139,6 +139,7 @@ library
       Salsa.Party.Looper.OrganiserReminder
       Salsa.Party.Looper.PartyGarbageCollector
       Salsa.Party.Looper.PartyScheduler
+      Salsa.Party.Looper.ScheduleReminder
       Salsa.Party.Looper.SearchCachePopulator
       Salsa.Party.Loopers
       Salsa.Party.OptParse

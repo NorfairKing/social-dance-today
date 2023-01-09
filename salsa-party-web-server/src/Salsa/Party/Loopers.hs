@@ -33,6 +33,10 @@ runLoopers settings@Settings {..} app = do
             settingOrganiserReminderLooperSettings
             (runReaderT runOrganiserReminder app),
           mkLooperDef
+            "schedule-reminder"
+            settingScheduleReminderLooperSettings
+            (runReaderT runScheduleReminder app),
+          mkLooperDef
             "party-garbage-collector"
             settingPartyGarbageCollectorLooperSettings
             (runPartyGarbageCollector app),

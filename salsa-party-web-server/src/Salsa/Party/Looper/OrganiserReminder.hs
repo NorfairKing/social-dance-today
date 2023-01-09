@@ -40,7 +40,7 @@ runOrganiserReminder = do
     runConduit $
       organiserReminderSource
         .| C.mapM (runDBHere . makeOrganiserReminderDecision)
-        .| reminderDecisionSink
+        .| organiserReminderDecisionSink
 
 data OrganiserReminderDecision
   = NoReminderConsent
@@ -131,8 +131,8 @@ gracePeriodAfterParty = 3
 reminderInterval :: NominalDiffTime
 reminderInterval = 7 * nominalDay
 
-reminderDecisionSink :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => ConduitT OrganiserReminderDecision void m ()
-reminderDecisionSink = awaitForever $ \case
+organiserReminderDecisionSink :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => ConduitT OrganiserReminderDecision void m ()
+organiserReminderDecisionSink = awaitForever $ \case
   NoReminderConsent -> logDebugN "Not sending a reminder because the organiser has revoked consent."
   SentReminderTooRecentlyAlready recently ->
     logDebugN $
