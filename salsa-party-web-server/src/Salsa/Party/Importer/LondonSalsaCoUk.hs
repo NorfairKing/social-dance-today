@@ -79,14 +79,11 @@ importEventPage = awaitForever $ \(request, response) -> do
   let today = utctDay now
   let eventScraper :: ScraperT Text Import (ExternalEvent, Maybe URI)
       eventScraper = do
-        -- chroot ("table" @: ["id" @= "MainContent_toptbl"]) $ do
         externalEventUuid <- nextRandomUUID
 
         externalEventKey <- case T.stripPrefix eventUrlPrefix (T.pack (show (getUri request))) of
           Nothing -> fail "Failed to parse event key"
           Just k -> pure k
-
-        innerHTML anySelector >>= liftIO . writeFile ("/home/syd/" <> T.unpack externalEventKey) . T.unpack
 
         externalEventTitle <- text ("span" @: ["id" @= "MainContent_EventListMain_ename_0"])
 

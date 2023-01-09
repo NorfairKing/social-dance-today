@@ -126,24 +126,24 @@ lookupPlaceRaw query = do
 
 geocodeviaOSM :: (MonadReader App m, MonadLogger m, MonadIO m) => Text -> m (Maybe Coordinates)
 geocodeviaOSM query = do
-  logDebugNS "geocoding-google" $ "Geocoding using OpenStreetMaps: " <> query
+  logDebugNS "geocoding-google" $ T.pack $ unwords ["Geocoding using OpenStreetMaps:" <> show query]
   man <- asks appHTTPManager
   let req = OSM.GeocodingRequest {OSM.geocodingRequestQuery = query}
   resp <- liftIO $ OSM.makeGeocodingRequest man req
   case listToMaybe $ OSM.geocodingResponsePlaces resp of
     Just p -> pure $ Just Coordinates {coordinatesLat = OSM.placeLat p, coordinatesLon = OSM.placeLon p}
     Nothing -> do
-      logWarnNS "geocoding-openstreetmaps" $ "Failed to geocode using OpenStreetMaps: " <> query
+      logWarnNS "geocoding-openstreetmaps" $ T.pack $ unwords ["Failed to geocode using OpenStreetMaps:", show query]
       pure Nothing
 
 geocodeViaGoogle :: (MonadReader App m, MonadLogger m, MonadIO m) => Text -> Text -> m (Maybe Coordinates)
 geocodeViaGoogle key query = do
-  logDebugNS "geocoding-google" $ "Geocoding using Google: " <> query
+  logDebugNS "geocoding-google" $ T.pack $ unwords ["Geocoding using Google:", show query]
   man <- asks appHTTPManager
   let req = Google.GeocodingRequest {Google.geocodingRequestAddress = query, Google.geocodingRequestKey = key}
   resp <- liftIO $ Google.makeGeocodingRequest man req
   case listToMaybe $ Google.geocodingResponseAddresses resp of
     Just a -> pure $ Just Coordinates {coordinatesLat = Google.addressLat a, coordinatesLon = Google.addressLon a}
     Nothing -> do
-      logWarnNS "geocoding-google" $ "Failed to geocode using Google: " <> query
+      logWarnNS "geocoding-google" $ T.pack $ unwords ["Failed to geocode using Google:", show query]
       pure Nothing

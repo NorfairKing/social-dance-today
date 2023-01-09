@@ -4,7 +4,8 @@ import Salsa.Party.Importer
 
 allImporters :: [Importer]
 allImporters =
-  [ londonSalsaCoUkImporter,
+  [ whereCanWeDanceComImporter,
+    londonSalsaCoUkImporter,
     salsaFauraxFrImporter,
     eventsInfoImporter,
     golatindanceComImporter,
