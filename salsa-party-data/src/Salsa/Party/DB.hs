@@ -257,9 +257,9 @@ ScheduleReminder sql=schedule_reminder
     schedule ScheduleId
 
     -- Last reminded
-    reminded UTCTime Maybe sql=last
+    reminded UTCTime Maybe sql=reminded
     -- Last verified
-    verified UTCTime Maybe sql=last
+    verified UTCTime Maybe sql=verified
 
     UniqueScheduleReminderSchedule schedule
 
