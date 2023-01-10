@@ -45,6 +45,7 @@ extra-source-files:
     templates/admin/parties.hamlet
     templates/admin/prospect.hamlet
     templates/admin/prospects.hamlet
+    templates/admin/schedule.hamlet
     templates/admin/schedules.hamlet
     templates/admin/site-test.hamlet
     templates/admin/user.hamlet
@@ -175,6 +176,7 @@ library
       Salsa.Party.Web.Server.Handler.Admin.Map
       Salsa.Party.Web.Server.Handler.Admin.Panel
       Salsa.Party.Web.Server.Handler.Admin.Prospect
+      Salsa.Party.Web.Server.Handler.Admin.Schedule
       Salsa.Party.Web.Server.Handler.Admin.SiteTest
       Salsa.Party.Web.Server.Handler.Admin.TestOrganiserReminder
       Salsa.Party.Web.Server.Handler.Event

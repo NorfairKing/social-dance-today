@@ -20,8 +20,10 @@
             Recurrence
           <th>
             Created
+          <th width=50px>
+            Details
       <tbody>
-        $forall Entity _ schedule <- paginatedElements paginated
+        $forall Entity scheduleId schedule <- paginatedElements paginated
           <tr>
             <td>
               #{scheduleTitle schedule}
@@ -29,4 +31,8 @@
               ^{recurrenceDescriptionWidget $ scheduleRecurrence schedule}
             <td>
               ^{formatAdminTime $ scheduleCreated schedule}
+            <td>
+              <a .is-link href=@{AdminR $ AdminScheduleR scheduleId}>
+                Details
+
 

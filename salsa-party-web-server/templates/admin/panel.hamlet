@@ -174,12 +174,12 @@
             <a .is-link href=@{EventR $ partyUuid latestParty}>
               #{partyTitle latestParty}
 
-      $maybe Entity _ latestPartySchedule <- mLatestPartySchedule
+      $maybe Entity latestScheduleId latestPartySchedule <- mLatestPartySchedule
         <div .level-item .has-text-centered>
           <div>
             <p .heading>
               Party Schedule
-            <p .content>
+            <a .is-link href=@{AdminR $ AdminScheduleR latestScheduleId}>
               #{scheduleTitle latestPartySchedule}
               ^{recurrenceDescriptionWidget $ scheduleRecurrence latestPartySchedule}
 

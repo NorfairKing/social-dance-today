@@ -17,6 +17,7 @@ module Salsa.Party.Web.Server.Handler.Account.Schedule
     getAccountScheduleEditR,
     postAccountScheduleEditR,
     postAccountScheduleDeleteR,
+    getPartiesOfSchedule,
   )
 where
 

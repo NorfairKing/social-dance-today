@@ -90,6 +90,7 @@
 
   /schedules AdminSchedulesR GET
   /schedules/#PageNumber AdminSchedulesPageR GET
+  /schedule/#ScheduleId AdminScheduleR GET
 
   /prospects AdminProspectsR GET
   /prospects/#PageNumber AdminProspectsPageR GET

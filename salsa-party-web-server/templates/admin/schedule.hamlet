@@ -1,0 +1,64 @@
+<section .section>
+  <div .container>
+    <h1 .title .is-3>
+      Schedule: #{scheduleTitle schedule}
+
+    <div .block .content>
+      <p>
+        Organiser:
+        <a href=@{AdminR $ AdminUserR $ organiserUser organiser}>
+          #{organiserName organiser}
+
+      <p>
+        Created:
+        ^{formatAdminTime $ scheduleCreated schedule}
+
+      <p>
+        Modified:
+        ^{maybe mempty formatAdminTime $ scheduleModified schedule}
+
+      <p>
+        Reminded:
+        ^{maybe mempty formatAdminTime $ mScheduleReminder >>= (scheduleReminderReminded . entityVal)}
+      
+      <p>
+        Verified:
+        ^{maybe mempty formatAdminTime $ mScheduleReminder >>= (scheduleReminderVerified . entityVal)}
+
+      <p>
+        Reminder decision: 
+        $case reminderDecision
+          $of NotDueForReminderUntil ut
+            Not due for a reminder until ^{formatAdminTime ut}
+          $of ScheduleOrganiserNotFound _
+            Organiser not found
+          $of ScheduleUserNotFound _
+            User not found
+          $of SentScheduleReminderTooRecentlyAlready ut
+            Already sent a reminder too recently: ^{formatAdminTime ut}
+          $of ShouldSendScheduleReminder _ emailAddress
+            Should send a reminder to #{emailAddressText emailAddress}
+
+<section .section>
+  <div .container>
+    <h2 .title .is-4>
+      Parties
+    <table .table .is-narrow .is-striped .is-hoverable .is-fullwidth>
+      <thead>
+        <tr>
+          <th .is-narrow>
+            Day
+          <th>
+            Title
+      <tbody>
+        $forall Entity _ party <- parties
+          <tr onclick="window.location='@{EventR $ partyUuid party}';">
+            <td .is-narrow>
+              ^{formatAdminDay $ partyDay party}
+            <td>
+              <a href=@{EventR $ partyUuid party}>
+                $if partyCancelled party
+                  _{MsgPartyTitleCancelled (partyTitle party)}
+                $else
+                  _{MsgPartyTitleScheduled (partyTitle party)}
+
