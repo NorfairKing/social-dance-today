@@ -11,6 +11,8 @@ module Salsa.Party.Looper.ScheduleReminder
     makeScheduleReminderDecision,
     scheduleReminderGraceTimeToBeReminded,
     scheduleReminderGraceTimeToVerify,
+    scheduleReminderTextContent,
+    scheduleReminderHtmlContent,
   )
 where
 
@@ -91,7 +93,7 @@ makeScheduleReminderDecision (Entity scheduleId Schedule {..}) = do
           pure $
             if nextReminderTime < now
               then case mReminded of
-                Nothing -> ShouldSendScheduleReminder userEmailAddress
+                Nothing -> ShouldSendScheduleReminder scheduleId userEmailAddress
                 Just reminded -> SentScheduleReminderTooRecentlyAlready reminded
               else NotDueForReminderUntil nextReminderTime
 
@@ -105,7 +107,7 @@ data ScheduleReminderDecision
   | -- | We should send a reminder now because:
     -- * The schedule has not been created/modified/verified in 'scheduleReminderGraceTimeToBeReminded'
     -- * We haven't sent a reminder yet.
-    ShouldSendScheduleReminder !EmailAddress
+    ShouldSendScheduleReminder !ScheduleId !EmailAddress
   deriving (Show, Eq, Generic)
 
 instance Validity ScheduleReminderDecision
@@ -150,14 +152,54 @@ scheduleReminderDecisionSink = C.mapM_ $ \case
           [ "Not sending a schedule reminder because we've already recently sent a reminder:",
             show ut
           ]
-  ShouldSendScheduleReminder emailAddress -> do
+  ShouldSendScheduleReminder scheduleId emailAddress -> do
     logInfoN $
       T.pack $
         unwords
           [ "Sending schedule reminder email to address:",
             show emailAddress
           ]
-    sendScheduleReminder emailAddress
+    now <- liftIO getCurrentTime
+    sendEmailResult <- sendScheduleReminder emailAddress
+    case sendEmailResult of
+      NoEmailSent -> logWarnN "No schedule reminder email sent."
+      ErrorWhileSendingEmail _ -> logErrorN $ T.pack $ unwords ["Failed to send schedule reminder email to address:", show emailAddress]
+      EmailSentSuccesfully -> do
+        logInfoN $ T.pack $ unwords ["Succesfully send schedule reminder email to address:", show emailAddress]
+        pool <- asks appConnectionPool
+        let runDBHere func = runSqlPool (retryOnBusy func) pool
+        void $
+          runDBHere $
+            upsertBy
+              (UniqueScheduleReminderSchedule scheduleId)
+              ( ScheduleReminder
+                  { scheduleReminderSchedule = scheduleId,
+                    scheduleReminderReminded = Just now,
+                    scheduleReminderVerified = Nothing
+                  }
+              )
+              [ScheduleReminderReminded =. Just now]
 
-sendScheduleReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => EmailAddress -> m ()
-sendScheduleReminder = undefined
+sendScheduleReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => EmailAddress -> m SendEmailResult
+sendScheduleReminder emailAddress = do
+  let subject = SES.newContent "Action required: Verify your recurring party on Social Dance Today."
+
+  app <- ask
+  let urlRender = yesodRender app (fromMaybe "" $ appRoot app)
+
+  let textBody = SES.newContent $ scheduleReminderTextContent urlRender
+  let htmlBody = SES.newContent $ scheduleReminderHtmlContent urlRender
+
+  let body = SES.newBody {SES.html = Just htmlBody, SES.text = Just textBody}
+
+  let message = SES.newMessage subject body
+
+  let destination = SES.newDestination {SES.toAddresses = Just [emailAddressText emailAddress]}
+
+  sendEmailFromNoReply app destination message
+
+scheduleReminderTextContent :: (Route App -> [(Text, Text)] -> Text) -> Text
+scheduleReminderTextContent urlRender = LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/schedule-reminder.txt") urlRender
+
+scheduleReminderHtmlContent :: (Route App -> [(Text, Text)] -> Text) -> Text
+scheduleReminderHtmlContent urlRender = LT.toStrict $ renderHtml $ $(hamletFile "templates/email/schedule-reminder.hamlet") urlRender

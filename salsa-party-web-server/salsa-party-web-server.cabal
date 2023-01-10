@@ -62,6 +62,8 @@ extra-source-files:
     templates/email/organiser-reminder.txt
     templates/email/prospect.hamlet
     templates/email/prospect.txt
+    templates/email/schedule-reminder.hamlet
+    templates/email/schedule-reminder.txt
     templates/error/404.hamlet
     templates/error/410.hamlet
     templates/explore.hamlet

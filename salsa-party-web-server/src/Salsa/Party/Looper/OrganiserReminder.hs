@@ -179,6 +179,7 @@ organiserReminderDecisionSink = C.mapM_ $ \case
             show created
           ]
   ShouldSendReminder organiserReminderId emailAddress secret -> do
+    logInfoN $ T.pack $ unwords ["Sending reminder email to address:", show emailAddress]
     now <- liftIO getCurrentTime
     sendOrganiserReminder emailAddress secret
     pool <- asks appConnectionPool
@@ -190,8 +191,6 @@ organiserReminderDecisionSink = C.mapM_ $ \case
 
 sendOrganiserReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => EmailAddress -> ReminderSecret -> m ()
 sendOrganiserReminder emailAddress secret = do
-  logInfoN $ T.pack $ unwords ["Sending reminder email to address:", show emailAddress]
-
   let subject = SES.newContent "Reminder to submit your parties to social dance today"
 
   app <- ask

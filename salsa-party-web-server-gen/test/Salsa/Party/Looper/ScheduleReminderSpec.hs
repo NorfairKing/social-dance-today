@@ -128,9 +128,11 @@ spec = do
                 insert_ scheduleReminder
                 let scheduleEntity = Entity scheduleId schedule
                 decision <- makeScheduleReminderDecision scheduleEntity
-                case decision of
-                  ShouldSendScheduleReminder _ -> pure ()
-                  d -> liftIO $ expectationFailure $ "Expected 'ShouldSendScheduleReminder' but got: " <> show d
+                liftIO $ case decision of
+                  ShouldSendScheduleReminder scheduleId' emailAddress -> do
+                    scheduleId' `shouldBe` scheduleId
+                    emailAddress `shouldBe` userEmailAddress user
+                  d -> expectationFailure $ "Expected 'ShouldSendScheduleReminder' but got: " <> show d
 
       it "decides not to send a reminder for a schedule that's been recently verified" $ \pool ->
         forAllValid $ \userPrototype ->
