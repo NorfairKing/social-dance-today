@@ -165,7 +165,7 @@ scheduleReminderDecisionSink = C.mapM_ $ \case
       NoEmailSent -> logWarnN "No schedule reminder email sent."
       ErrorWhileSendingEmail _ -> logErrorN $ T.pack $ unwords ["Failed to send schedule reminder email to address:", show emailAddress]
       EmailSentSuccesfully -> do
-        logInfoN $ T.pack $ unwords ["Succesfully send schedule reminder email to address:", show emailAddress]
+        logInfoN $ T.pack $ unwords ["Succesfully send schedule reminder email to address:", show emailAddress, "about schedule", show (fromSqlKey scheduleId)]
         pool <- asks appConnectionPool
         let runDBHere func = runSqlPool (retryOnBusy func) pool
         void $

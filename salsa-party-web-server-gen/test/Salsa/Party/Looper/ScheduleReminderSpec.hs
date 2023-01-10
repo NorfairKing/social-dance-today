@@ -183,3 +183,13 @@ spec = do
                   let scheduleEntity = Entity scheduleId schedule
                   decision <- makeScheduleReminderDecision scheduleEntity
                   liftIO $ shouldBeValid decision
+
+  appSpec $ do
+    describe "scheduleReminderTextContent" $
+      it "looks the same as last time" $ \app ->
+        let urlRender = yesodRender app "https://social-dance.today"
+         in pureGoldenTextFile "test_resources/email/schedule-reminder.txt" $ scheduleReminderTextContent urlRender
+    describe "scheduleReminderHtmlContent" $
+      it "looks the same as last time" $ \app ->
+        let urlRender = yesodRender app "https://social-dance.today"
+         in pureGoldenTextFile "test_resources/email/schedule-reminder.html" $ scheduleReminderHtmlContent urlRender
