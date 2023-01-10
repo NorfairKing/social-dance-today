@@ -420,6 +420,10 @@ instance Validity ScheduleParty
 
 instance NFData ScheduleParty
 
+instance Validity ScheduleReminder
+
+instance NFData ScheduleReminder
+
 instance Validity StaticMap
 
 instance NFData StaticMap

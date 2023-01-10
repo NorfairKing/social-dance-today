@@ -33,6 +33,7 @@ spec = do
     persistEntitySpec @Image
     persistEntitySpec @Schedule
     persistEntitySpec @ScheduleParty
+    persistEntitySpec @ScheduleReminder
     persistEntitySpec @ImporterMetadata
     persistEntitySpec @ExternalEvent
     persistEntitySpec @StaticMap
