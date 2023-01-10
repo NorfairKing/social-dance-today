@@ -17,6 +17,7 @@ module Salsa.Party.Web.Server.Handler.Account.Schedule
     getAccountScheduleEditR,
     postAccountScheduleEditR,
     postAccountScheduleDeleteR,
+    getVerifyScheduleR,
     getPartiesOfSchedule,
   )
 where
@@ -447,6 +448,9 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
 
   addMessageI "is-success" MsgEditScheduleSuccess
   redirect $ AccountR $ AccountScheduleEditR scheduleUuid
+
+getVerifyScheduleR :: ScheduleReminderSecret -> Handler Html
+getVerifyScheduleR secret = undefined
 
 getFuturePartiesOfSchedule :: MonadIO m => Day -> ScheduleId -> SqlPersistT m [PartyId]
 getFuturePartiesOfSchedule today scheduleId = fmap (fmap E.unValue) $

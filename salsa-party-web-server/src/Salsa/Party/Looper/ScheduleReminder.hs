@@ -60,7 +60,7 @@ runScheduleReminder = do
 -- no sooner than 2 months after the 'latestTime'.
 -- (See scheduleReminderGraceTimeToBeReminded.)
 makeScheduleReminderDecision :: (MonadUnliftIO m, MonadLoggerIO m) => Entity Schedule -> SqlPersistT m ScheduleReminderDecision
-makeScheduleReminderDecision (Entity scheduleId Schedule {..}) = do
+makeScheduleReminderDecision scheduleEntity@(Entity scheduleId Schedule {..}) = do
   logDebugN $
     T.pack $
       unwords
@@ -93,7 +93,7 @@ makeScheduleReminderDecision (Entity scheduleId Schedule {..}) = do
           pure $
             if nextReminderTime < now
               then case mReminded of
-                Nothing -> ShouldSendScheduleReminder scheduleId userEmailAddress
+                Nothing -> ShouldSendScheduleReminder scheduleEntity userEmailAddress
                 Just reminded -> SentScheduleReminderTooRecentlyAlready reminded
               else NotDueForReminderUntil nextReminderTime
 
@@ -107,7 +107,7 @@ data ScheduleReminderDecision
   | -- | We should send a reminder now because:
     -- * The schedule has not been created/modified/verified in 'scheduleReminderGraceTimeToBeReminded'
     -- * We haven't sent a reminder yet.
-    ShouldSendScheduleReminder !ScheduleId !EmailAddress
+    ShouldSendScheduleReminder !(Entity Schedule) !EmailAddress
   deriving (Show, Eq, Generic)
 
 instance Validity ScheduleReminderDecision
@@ -116,11 +116,18 @@ instance Validity ScheduleReminderDecision
 scheduleReminderGraceTimeToBeReminded :: NominalDiffTime
 scheduleReminderGraceTimeToBeReminded = 2 * 30 * nominalDay
 
--- | How long after the remind we mark a schedule as 'possibly out of date'
+-- | How long after the latest update we mark a schedule as 'possibly out of date'
 --
 -- Must be more than 'scheduleReminderGraceTimeToBeReminded'
 scheduleReminderGraceTimeToVerify :: NominalDiffTime
 scheduleReminderGraceTimeToVerify = 3 * 30 * nominalDay
+
+scheduleExpiryDate :: Schedule -> ScheduleReminder -> Day
+scheduleExpiryDate Schedule {..} ScheduleReminder {..} =
+  let latestModification = fromMaybe scheduleCreated scheduleModified
+      latestVerification = fromMaybe scheduleCreated scheduleReminderVerified
+      latestTime = max latestModification latestVerification
+   in utctDay $ addUTCTime scheduleReminderGraceTimeToVerify latestTime
 
 scheduleReminderDecisionSink :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => ConduitT ScheduleReminderDecision void m ()
 scheduleReminderDecisionSink = C.mapM_ $ \case
@@ -152,7 +159,7 @@ scheduleReminderDecisionSink = C.mapM_ $ \case
           [ "Not sending a schedule reminder because we've already recently sent a reminder:",
             show ut
           ]
-  ShouldSendScheduleReminder scheduleId emailAddress -> do
+  ShouldSendScheduleReminder (Entity scheduleId schedule) emailAddress -> do
     logInfoN $
       T.pack $
         unwords
@@ -175,7 +182,7 @@ scheduleReminderDecisionSink = C.mapM_ $ \case
           )
           []
     now <- liftIO getCurrentTime
-    sendEmailResult <- sendScheduleReminder emailAddress (scheduleReminderSecret scheduleReminder)
+    sendEmailResult <- sendScheduleReminder emailAddress schedule scheduleReminder
     case sendEmailResult of
       NoEmailSent -> logWarnN "No schedule reminder email sent."
       ErrorWhileSendingEmail _ -> logErrorN $ T.pack $ unwords ["Failed to send schedule reminder email to address:", show emailAddress]
@@ -183,15 +190,15 @@ scheduleReminderDecisionSink = C.mapM_ $ \case
         logInfoN $ T.pack $ unwords ["Succesfully send schedule reminder email to address:", show emailAddress, "about schedule", show (fromSqlKey scheduleId)]
         runDBHere $ update scheduleReminderId [ScheduleReminderReminded =. Just now]
 
-sendScheduleReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => EmailAddress -> ScheduleReminderSecret -> m SendEmailResult
-sendScheduleReminder emailAddress secret = do
+sendScheduleReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => EmailAddress -> Schedule -> ScheduleReminder -> m SendEmailResult
+sendScheduleReminder emailAddress schedule scheduleReminder = do
   let subject = SES.newContent "Action required: Verify your recurring party on Social Dance Today."
 
   app <- ask
   let urlRender = yesodRender app (fromMaybe "" $ appRoot app)
 
-  let textBody = SES.newContent $ scheduleReminderTextContent urlRender secret
-  let htmlBody = SES.newContent $ scheduleReminderHtmlContent urlRender secret
+  let textBody = SES.newContent $ scheduleReminderTextContent urlRender schedule scheduleReminder
+  let htmlBody = SES.newContent $ scheduleReminderHtmlContent urlRender schedule scheduleReminder
 
   let body = SES.newBody {SES.html = Just htmlBody, SES.text = Just textBody}
 
@@ -201,8 +208,16 @@ sendScheduleReminder emailAddress secret = do
 
   sendEmailFromNoReply app destination message
 
-scheduleReminderTextContent :: (Route App -> [(Text, Text)] -> Text) -> ScheduleReminderSecret -> Text
-scheduleReminderTextContent urlRender secret = LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/schedule-reminder.txt") urlRender
+scheduleReminderTextContent ::
+  (Route App -> [(Text, Text)] -> Text) ->
+  Schedule ->
+  ScheduleReminder ->
+  Text
+scheduleReminderTextContent urlRender schedule scheduleReminder = LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/schedule-reminder.txt") urlRender
 
-scheduleReminderHtmlContent :: (Route App -> [(Text, Text)] -> Text) -> ScheduleReminderSecret -> Text
-scheduleReminderHtmlContent urlRender secret = LT.toStrict $ renderHtml $ $(hamletFile "templates/email/schedule-reminder.hamlet") urlRender
+scheduleReminderHtmlContent ::
+  (Route App -> [(Text, Text)] -> Text) ->
+  Schedule ->
+  ScheduleReminder ->
+  Text
+scheduleReminderHtmlContent urlRender schedule scheduleReminder = LT.toStrict $ renderHtml $ $(hamletFile "templates/email/schedule-reminder.hamlet") urlRender

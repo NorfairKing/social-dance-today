@@ -6,6 +6,7 @@ import Data.Time
 import Data.UUID as UUID
 import Data.UUID.Typed as Typed
 import Database.Persist
+import Database.Persist.Sql
 import Salsa.Party.DB
 import Salsa.Party.Looper.ScheduleReminder
 import Salsa.Party.Web.Server.TestUtils
@@ -74,96 +75,99 @@ spec = do
         forAllValid $ \userPrototype ->
           forAllValid $ \organiserPrototype ->
             forAllValid $ \schedulePrototype ->
-              runPersistentTest pool $ do
-                now <- liftIO getCurrentTime
-                let user = userPrototype
-                userId <- insert user
-                let organiser = organiserPrototype {organiserUser = userId}
-                organiserId <- insert organiser
-                let created = addUTCTime (-scheduleReminderGraceTimeToBeReminded) now
-                let schedule =
-                      schedulePrototype
-                        { scheduleOrganiser = organiserId,
-                          scheduleCreated = created,
-                          scheduleModified = Nothing
-                        }
-                scheduleId <- insert schedule
-                let scheduleReminder =
-                      ScheduleReminder
-                        { scheduleReminderSchedule = scheduleId,
-                          scheduleReminderReminded = Just now,
-                          scheduleReminderVerified = Nothing
-                        }
-                insert_ scheduleReminder
-                let scheduleEntity = Entity scheduleId schedule
-                decision <- makeScheduleReminderDecision scheduleEntity
-                liftIO $ case decision of
-                  SentScheduleReminderTooRecentlyAlready ut -> ut `shouldBe` now
-                  d -> expectationFailure $ "Expected 'SentScheduleReminderTooRecentlyAlready' but got: " <> show d
-
-      it "decides to send a reminder for an old schedule that's not had any reminders sent" $ \pool ->
-        forAllValid $ \userPrototype ->
-          forAllValid $ \organiserPrototype ->
-            forAllValid $ \schedulePrototype ->
-              runPersistentTest pool $ do
-                now <- liftIO getCurrentTime
-                let user = userPrototype
-                userId <- insert user
-                let organiser = organiserPrototype {organiserUser = userId}
-                organiserId <- insert organiser
-                let created = addUTCTime (-scheduleReminderGraceTimeToBeReminded) now
-                let schedule =
-                      schedulePrototype
-                        { scheduleOrganiser = organiserId,
-                          scheduleCreated = created,
-                          scheduleModified = Nothing
-                        }
-                scheduleId <- insert schedule
-                let scheduleReminder =
-                      ScheduleReminder
-                        { scheduleReminderSchedule = scheduleId,
-                          scheduleReminderReminded = Nothing,
-                          scheduleReminderVerified = Nothing
-                        }
-                insert_ scheduleReminder
-                let scheduleEntity = Entity scheduleId schedule
-                decision <- makeScheduleReminderDecision scheduleEntity
-                liftIO $ case decision of
-                  ShouldSendScheduleReminder scheduleId' emailAddress -> do
-                    scheduleId' `shouldBe` scheduleId
-                    emailAddress `shouldBe` userEmailAddress user
-                  d -> expectationFailure $ "Expected 'ShouldSendScheduleReminder' but got: " <> show d
-
-      it "decides not to send a reminder for a schedule that's been recently verified" $ \pool ->
-        forAllValid $ \userPrototype ->
-          forAllValid $ \organiserPrototype ->
-            forAllValid $ \schedulePrototype ->
-              forAllValid $ \reminded ->
+              forAllValid $ \scheduleReminderPrototype ->
                 runPersistentTest pool $ do
                   now <- liftIO getCurrentTime
                   let user = userPrototype
                   userId <- insert user
                   let organiser = organiserPrototype {organiserUser = userId}
                   organiserId <- insert organiser
+                  let created = addUTCTime (-scheduleReminderGraceTimeToBeReminded) now
                   let schedule =
                         schedulePrototype
                           { scheduleOrganiser = organiserId,
-                            scheduleCreated = now,
+                            scheduleCreated = created,
                             scheduleModified = Nothing
                           }
                   scheduleId <- insert schedule
                   let scheduleReminder =
-                        ScheduleReminder
+                        scheduleReminderPrototype
                           { scheduleReminderSchedule = scheduleId,
-                            scheduleReminderReminded = reminded,
-                            scheduleReminderVerified = Just now
+                            scheduleReminderReminded = Just now,
+                            scheduleReminderVerified = Nothing
                           }
                   insert_ scheduleReminder
                   let scheduleEntity = Entity scheduleId schedule
                   decision <- makeScheduleReminderDecision scheduleEntity
                   liftIO $ case decision of
-                    NotDueForReminderUntil ut -> ut `shouldBe` addUTCTime scheduleReminderGraceTimeToBeReminded now
-                    d -> expectationFailure $ "Expected 'NotDueForReminderUntil' but got: " <> show d
+                    SentScheduleReminderTooRecentlyAlready ut -> ut `shouldBe` now
+                    d -> expectationFailure $ "Expected 'SentScheduleReminderTooRecentlyAlready' but got: " <> show d
+
+      it "decides to send a reminder for an old schedule that's not had any reminders sent" $ \pool ->
+        forAllValid $ \userPrototype ->
+          forAllValid $ \organiserPrototype ->
+            forAllValid $ \schedulePrototype ->
+              forAllValid $ \scheduleReminderPrototype ->
+                runPersistentTest pool $ do
+                  now <- liftIO getCurrentTime
+                  let user = userPrototype
+                  userId <- insert user
+                  let organiser = organiserPrototype {organiserUser = userId}
+                  organiserId <- insert organiser
+                  let created = addUTCTime (-scheduleReminderGraceTimeToBeReminded) now
+                  let schedule =
+                        schedulePrototype
+                          { scheduleOrganiser = organiserId,
+                            scheduleCreated = created,
+                            scheduleModified = Nothing
+                          }
+                  scheduleId <- insert schedule
+                  let scheduleReminder =
+                        scheduleReminderPrototype
+                          { scheduleReminderSchedule = scheduleId,
+                            scheduleReminderReminded = Nothing,
+                            scheduleReminderVerified = Nothing
+                          }
+                  insert_ scheduleReminder
+                  let scheduleEntity = Entity scheduleId schedule
+                  decision <- makeScheduleReminderDecision scheduleEntity
+                  liftIO $ case decision of
+                    ShouldSendScheduleReminder scheduleEntity' emailAddress -> do
+                      scheduleEntity' `shouldBe` scheduleEntity
+                      emailAddress `shouldBe` userEmailAddress user
+                    d -> expectationFailure $ "Expected 'ShouldSendScheduleReminder' but got: " <> show d
+
+      it "decides not to send a reminder for a schedule that's been recently verified" $ \pool ->
+        forAllValid $ \userPrototype ->
+          forAllValid $ \organiserPrototype ->
+            forAllValid $ \schedulePrototype ->
+              forAllValid $ \scheduleReminderPrototype ->
+                forAllValid $ \reminded ->
+                  runPersistentTest pool $ do
+                    now <- liftIO getCurrentTime
+                    let user = userPrototype
+                    userId <- insert user
+                    let organiser = organiserPrototype {organiserUser = userId}
+                    organiserId <- insert organiser
+                    let schedule =
+                          schedulePrototype
+                            { scheduleOrganiser = organiserId,
+                              scheduleCreated = now,
+                              scheduleModified = Nothing
+                            }
+                    scheduleId <- insert schedule
+                    let scheduleReminder =
+                          scheduleReminderPrototype
+                            { scheduleReminderSchedule = scheduleId,
+                              scheduleReminderReminded = reminded,
+                              scheduleReminderVerified = Just now
+                            }
+                    insert_ scheduleReminder
+                    let scheduleEntity = Entity scheduleId schedule
+                    decision <- makeScheduleReminderDecision scheduleEntity
+                    liftIO $ case decision of
+                      NotDueForReminderUntil ut -> ut `shouldBe` addUTCTime scheduleReminderGraceTimeToBeReminded now
+                      d -> expectationFailure $ "Expected 'NotDueForReminderUntil' but got: " <> show d
 
       it "always decides something" $ \pool ->
         forAllValid $ \userPrototype ->
@@ -185,11 +189,33 @@ spec = do
                   liftIO $ shouldBeValid decision
 
   appSpec $ do
+    let schedule =
+          Schedule
+            { scheduleUuid = Typed.UUID $ UUID.fromWords 10 20 30 40,
+              scheduleOrganiser = toSqlKey 1,
+              scheduleRecurrence = MonthlyRecurrence Third Friday,
+              scheduleTitle = "Example Party",
+              scheduleDescription = Nothing,
+              scheduleStart = Nothing,
+              scheduleHomepage = Nothing,
+              schedulePrice = Nothing,
+              scheduleCreated = UTCTime (fromGregorian 2023 01 10) 0,
+              scheduleModified = Nothing,
+              schedulePlace = toSqlKey 1,
+              schedulePoster = Nothing
+            }
+        scheduleReminder =
+          ScheduleReminder
+            { scheduleReminderSchedule = toSqlKey 1,
+              scheduleReminderSecret = Typed.UUID $ UUID.fromWords 11 21 31 41,
+              scheduleReminderReminded = Just $ UTCTime (fromGregorian 2023 03 10) 0,
+              scheduleReminderVerified = Nothing
+            }
     describe "scheduleReminderTextContent" $
       it "looks the same as last time" $ \app ->
         let urlRender = yesodRender app "https://social-dance.today"
-         in pureGoldenTextFile "test_resources/email/schedule-reminder.txt" $ scheduleReminderTextContent urlRender
+         in pureGoldenTextFile "test_resources/email/schedule-reminder.txt" $ scheduleReminderTextContent urlRender schedule scheduleReminder
     describe "scheduleReminderHtmlContent" $
       it "looks the same as last time" $ \app ->
         let urlRender = yesodRender app "https://social-dance.today"
-         in pureGoldenTextFile "test_resources/email/schedule-reminder.html" $ scheduleReminderHtmlContent urlRender
+         in pureGoldenTextFile "test_resources/email/schedule-reminder.html" $ scheduleReminderHtmlContent urlRender schedule scheduleReminder

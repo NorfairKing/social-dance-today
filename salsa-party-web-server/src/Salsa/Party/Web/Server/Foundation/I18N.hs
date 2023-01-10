@@ -65,6 +65,12 @@ recurrenceDescriptionMessage recurrence = do
             FourthToLast -> MsgRecurrenceMonthlyDescriptionDayOfWeekFourthToLast
        in func dowStr
 
+recurrenceDescriptionEnglish :: Recurrence -> Text
+recurrenceDescriptionEnglish =
+  T.pack . \case
+    MonthlyRecurrence ix dow -> unwords ["Every", show ix, show dow]
+    WeeklyRecurrence dow -> unwords ["Every", show dow]
+
 dayOfWeekIndexMessage :: DayOfWeekIndex -> AppMessage
 dayOfWeekIndexMessage = \case
   First -> MsgRecurrenceMonthlyDescriptionEveryFirst

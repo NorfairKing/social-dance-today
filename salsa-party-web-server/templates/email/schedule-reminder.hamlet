@@ -1,2 +1,53 @@
 <html>
   <body>
+    <p>
+      Dear Organiser
+
+    <p>
+      TL;DR: Please verify that this recurring party of yours still occurs and is up to date on @{HomeR}.
+
+    <p>
+      This email is in regards to the following recurring party that you have listed on https://social-dance.today.
+      We want to make sure that the party is still taking place and that the information is up-to-date.
+
+    <p>
+      Title: #{scheduleTitle schedule}
+    <p>
+      Recurrence: #{recurrenceDescriptionEnglish $ scheduleRecurrence schedule}
+
+    <p>
+      Click
+      <b>
+        <a href=@{VerifyScheduleR $ scheduleReminderSecret scheduleReminder}>
+          here
+      if this information is still accurate.
+
+    <p>
+      If the party information needs updating, please make any necessary changes
+      <a href=@{AccountR $ AccountScheduleR $ scheduleUuid schedule}>
+        here.
+
+    <p>
+      If this party is not updated, cancelled, or deleted,
+      <b>
+        by #{formatTime defaultTimeLocale "%F" $ scheduleExpiryDate schedule scheduleReminder},
+      it will be marked as unverified and eventually removed from the site.
+
+
+    <p>
+      We appreciate your effort to help us keep the information on our site accurate.
+
+    <p>
+      If you have any questions or concerns, please don't hesitate to reach out to us.
+
+    
+    <p>
+      Best regards,
+  
+    <p>
+      Social Dance Today
+
+    <p> 
+      You received this email because you are an organiser at Social Dance Today and you consented to receiving this email.
+
+
