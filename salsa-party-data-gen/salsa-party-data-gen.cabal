@@ -29,6 +29,8 @@ library
     , microlens
     , monad-logger
     , password
+    , path
+    , path-io
     , persistent
     , persistent-sqlite
     , salsa-party-data

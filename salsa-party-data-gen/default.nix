@@ -3,9 +3,9 @@
 , genvalidity-persistent, genvalidity-sydtest
 , genvalidity-sydtest-aeson, genvalidity-sydtest-persistent
 , genvalidity-text, genvalidity-time, genvalidity-typed-uuid, lib
-, microlens, monad-logger, password, path-pieces, persistent
-, persistent-sqlite, QuickCheck, salsa-party-data, sydtest
-, sydtest-aeson, sydtest-discover, sydtest-persistent
+, microlens, monad-logger, password, path, path-io, path-pieces
+, persistent, persistent-sqlite, QuickCheck, salsa-party-data
+, sydtest, sydtest-aeson, sydtest-discover, sydtest-persistent
 , sydtest-persistent-sqlite, text, time, unliftio, yesod-form
 }:
 mkDerivation {
@@ -15,8 +15,8 @@ mkDerivation {
   libraryHaskellDepends = [
     base genvalidity genvalidity-bytestring genvalidity-persistent
     genvalidity-text genvalidity-time genvalidity-typed-uuid microlens
-    monad-logger password persistent persistent-sqlite QuickCheck
-    salsa-party-data sydtest text yesod-form
+    monad-logger password path path-io persistent persistent-sqlite
+    QuickCheck salsa-party-data sydtest text yesod-form
   ];
   testHaskellDepends = [
     base genvalidity-sydtest genvalidity-sydtest-aeson

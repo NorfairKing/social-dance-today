@@ -23,6 +23,7 @@ library:
   - monad-logger
   - mtl
   - password
+  - path
   - path-io
   - persistent
   - persistent-sqlite

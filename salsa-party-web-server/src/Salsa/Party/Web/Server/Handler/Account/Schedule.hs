@@ -469,7 +469,7 @@ getScheduleVerifyR secret = do
       setCreds
         False
         Creds
-          { credsPlugin = salsaAuthPluginName,
+          { credsPlugin = "schedule-secret",
             credsIdent = emailAddressText $ userEmailAddress user,
             credsExtra = []
           }
@@ -489,7 +489,7 @@ getScheduleUpdateR secret = do
       setCreds
         False
         Creds
-          { credsPlugin = salsaAuthPluginName,
+          { credsPlugin = "schedule-secret",
             credsIdent = emailAddressText $ userEmailAddress user,
             credsExtra = []
           }

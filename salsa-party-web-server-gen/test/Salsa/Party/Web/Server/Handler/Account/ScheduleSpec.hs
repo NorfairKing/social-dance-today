@@ -415,3 +415,17 @@ spec = serverSpec $ do
           setUrl $ AccountR $ AccountScheduleDeleteR uuid
           addToken
         statusIs 404
+
+  describe "ScheduleVerifyR" $
+    it "gets a 404 with a nonexistent schedule" $ \yc -> do
+      forAllValid $ \secret ->
+        runYesodClientM yc $ do
+          get $ ScheduleVerifyR secret
+          statusIs 404
+
+  describe "ScheduleUpdateR" $
+    it "gets a 404 with a nonexistent schedule" $ \yc -> do
+      forAllValid $ \secret ->
+        runYesodClientM yc $ do
+          get $ ScheduleUpdateR secret
+          statusIs 404

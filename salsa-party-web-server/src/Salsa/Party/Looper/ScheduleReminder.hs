@@ -9,6 +9,7 @@ module Salsa.Party.Looper.ScheduleReminder
   ( runScheduleReminder,
     ScheduleReminderDecision (..),
     makeScheduleReminderDecision,
+    readyScheduleReminder,
     scheduleReminderGraceTimeToBeReminded,
     scheduleReminderGraceTimeToVerify,
     scheduleReminderTextContent,
@@ -166,21 +167,9 @@ scheduleReminderDecisionSink = C.mapM_ $ \case
           [ "Sending schedule reminder email to address:",
             show emailAddress
           ]
-    secret <- liftIO nextRandomUUID
     pool <- asks appConnectionPool
     let runDBHere func = runSqlPool (retryOnBusy func) pool
-    Entity scheduleReminderId scheduleReminder <-
-      runDBHere $
-        upsertBy
-          (UniqueScheduleReminderSchedule scheduleId)
-          ( ScheduleReminder
-              { scheduleReminderSchedule = scheduleId,
-                scheduleReminderSecret = secret,
-                scheduleReminderReminded = Nothing,
-                scheduleReminderVerified = Nothing
-              }
-          )
-          []
+    Entity scheduleReminderId scheduleReminder <- runDBHere $ readyScheduleReminder scheduleId
     now <- liftIO getCurrentTime
     sendEmailResult <- sendScheduleReminder emailAddress schedule scheduleReminder
     case sendEmailResult of
@@ -189,6 +178,20 @@ scheduleReminderDecisionSink = C.mapM_ $ \case
       EmailSentSuccesfully -> do
         logInfoN $ T.pack $ unwords ["Succesfully send schedule reminder email to address:", show emailAddress, "about schedule", show (fromSqlKey scheduleId)]
         runDBHere $ update scheduleReminderId [ScheduleReminderReminded =. Just now]
+
+readyScheduleReminder :: (MonadUnliftIO m) => ScheduleId -> SqlPersistT m (Entity ScheduleReminder)
+readyScheduleReminder scheduleId = do
+  secret <- liftIO nextRandomUUID
+  upsertBy
+    (UniqueScheduleReminderSchedule scheduleId)
+    ( ScheduleReminder
+        { scheduleReminderSchedule = scheduleId,
+          scheduleReminderSecret = secret,
+          scheduleReminderReminded = Nothing,
+          scheduleReminderVerified = Nothing
+        }
+    )
+    []
 
 sendScheduleReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => EmailAddress -> Schedule -> ScheduleReminder -> m SendEmailResult
 sendScheduleReminder emailAddress schedule scheduleReminder = do

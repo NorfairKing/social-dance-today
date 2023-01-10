@@ -10,10 +10,10 @@ Title: Example Party
 Recurrence: Every Third Friday
 
 Click here if this information is still accurate:
-https://social-dance.today/verify/schedule/0000000b-0000-0015-0000-001f00000029
+https://social-dance.today/schedule/verify/0000000b-0000-0015-0000-001f00000029
 
 If the party information needs updating, please make any necessary changes here:
-https://social-dance.today/account/schedule/0000000a-0000-0014-0000-001e00000028
+https://social-dance.today/schedule/update/0000000b-0000-0015-0000-001f00000029
 
 **If this party is not updated, cancelled, or deleted, by 2023-04-10, it will be marked as unverified and eventually removed from the site.**
 

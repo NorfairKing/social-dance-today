@@ -20,7 +20,7 @@ mkDerivation {
     base bytestring cache filepath genvalidity genvalidity-bytestring
     genvalidity-persistent genvalidity-sydtest genvalidity-time
     genvalidity-typed-uuid http-client microlens monad-logger mtl
-    password path-io persistent persistent-sqlite QuickCheck
+    password path path-io persistent persistent-sqlite QuickCheck
     salsa-party-data salsa-party-data-gen salsa-party-web-server
     sydtest sydtest-persistent-sqlite sydtest-wai sydtest-yesod text
     time yesod yesod-auth

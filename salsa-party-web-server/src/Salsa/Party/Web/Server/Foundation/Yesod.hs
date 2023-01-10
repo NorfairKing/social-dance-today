@@ -182,13 +182,17 @@ instance YesodAuth App where
   logoutDest _ = HomeR
   authenticate Creds {..} =
     let byEmail = do
-          mUser <- liftHandler $ runDB $ getBy (UniqueUserEmailAddress (EmailAddress credsIdent))
-          pure $ case mUser of
-            Nothing -> UserError $ IdentifierNotFound credsIdent
-            Just (Entity userId _) -> Authenticated userId
+          if null credsExtra
+            then do
+              mUser <- liftHandler $ runDB $ getBy (UniqueUserEmailAddress (EmailAddress credsIdent))
+              pure $ case mUser of
+                Nothing -> UserError $ IdentifierNotFound credsIdent
+                Just (Entity userId _) -> Authenticated userId
+            else pure $ ServerError "Must have empty extra creds."
      in case credsPlugin of
           "impersonation" -> byEmail
           "salsa" -> byEmail
+          "schedule-secret" -> byEmail
           _ -> pure $ ServerError "Unknown auth plugin"
   onLogin = addMessageI "is-success" NowLoggedIn
   authPlugins _ = [salsaAuthPlugin]

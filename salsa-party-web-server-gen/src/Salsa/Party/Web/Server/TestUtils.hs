@@ -6,7 +6,11 @@
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
-module Salsa.Party.Web.Server.TestUtils where
+module Salsa.Party.Web.Server.TestUtils
+  ( module Salsa.Party.Web.Server.TestUtils,
+    module Salsa.Party.DB.TestUtils,
+  )
+where
 
 import Control.Exception
 import Control.Monad.Logger
@@ -27,9 +31,11 @@ import qualified Database.Persist.Sqlite as DB
 import GHC.Generics (Generic)
 import Lens.Micro ((.~))
 import Network.HTTP.Client as HTTP
+import Path
 import Path.IO
 import Salsa.Party.DB
 import Salsa.Party.DB.Migration
+import Salsa.Party.DB.TestUtils
 import Salsa.Party.Web.Server.Application ()
 import Salsa.Party.Web.Server.Foundation
 import Salsa.Party.Web.Server.Gen ()
@@ -93,20 +99,6 @@ serverSetupFunc man = do
 
 adminEmail :: EmailAddress
 adminEmail = "admin@example.com"
-
-type DBSpec = SpecWith DB.ConnectionPool
-
-dbSpec :: DBSpec -> Spec
-dbSpec = modifyMaxSuccess (`div` 10) . setupAround salsaConnectionPoolSetupFunc
-
-salsaConnectionPoolSetupFunc :: SetupFunc DB.ConnectionPool
-salsaConnectionPoolSetupFunc =
-  SetupFunc $ \func ->
-    runNoLoggingT $
-      let info = mkSqliteConnectionInfo ":memory:" & walEnabled .~ False & fkEnabled .~ False
-       in withSqlitePoolInfo info 1 $ \pool -> do
-            _ <- runSqlPool (completeServerMigration True) pool
-            liftIO $ func pool
 
 data TestFile = TestFile
   { testFilePath :: !FilePath,
