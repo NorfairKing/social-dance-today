@@ -343,6 +343,9 @@ UnsubReminderDescription: You have succesfully unsubscribed from reminder emails
 UnsubProspectTitle: Unsubscribed from organiser emails
 UnsubProspectDescription: You have succesfully unsubscribed from organiser emails and will not receive any further emails.
 
+# Verify schedule
+VerifyScheduleSuccess: Succesfully verified recurring party
+
 # Google Maps
 GoogleMapAlt location@Text: Map of the area around #{location}
 

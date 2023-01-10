@@ -151,7 +151,7 @@ OrganiserReminder sql=organiser_reminder
     last UTCTime Maybe sql=last
 
     UniqueOrganiserReminderOrganiser organiser
-    UniqueOrganiserReminderSecret secret !force
+    UniqueOrganiserReminderSecret secret
 
     deriving Show
     deriving Eq
@@ -272,6 +272,7 @@ ScheduleReminder sql=schedule_reminder
     verified UTCTime Maybe sql=verified
 
     UniqueScheduleReminderSchedule schedule
+    UniqueScheduleReminderSecret secret
 
     deriving Show
     deriving Eq

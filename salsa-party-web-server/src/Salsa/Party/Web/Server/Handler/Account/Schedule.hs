@@ -17,7 +17,8 @@ module Salsa.Party.Web.Server.Handler.Account.Schedule
     getAccountScheduleEditR,
     postAccountScheduleEditR,
     postAccountScheduleDeleteR,
-    getVerifyScheduleR,
+    getScheduleVerifyR,
+    getScheduleUpdateR,
     getPartiesOfSchedule,
   )
 where
@@ -449,8 +450,50 @@ editSchedule (Entity scheduleId Schedule {..}) form mFileInfo = do
   addMessageI "is-success" MsgEditScheduleSuccess
   redirect $ AccountR $ AccountScheduleEditR scheduleUuid
 
-getVerifyScheduleR :: ScheduleReminderSecret -> Handler Html
-getVerifyScheduleR secret = undefined
+getScheduleVerifyR :: ScheduleReminderSecret -> Handler Html
+getScheduleVerifyR secret = do
+  mScheduleReminder <- runDB $ getBy $ UniqueScheduleReminderSecret secret
+  case mScheduleReminder of
+    Nothing -> notFound
+    Just (Entity scheduleReminderId scheduleReminder) -> do
+      schedule <- runDB $ get404 $ scheduleReminderSchedule scheduleReminder
+      organiser <- runDB $ get404 $ scheduleOrganiser schedule
+      user <- runDB $ get404 $ organiserUser organiser
+
+      -- Mark the schedule as verified
+      now <- liftIO getCurrentTime
+      runDB $ update scheduleReminderId [ScheduleReminderVerified =. Just now]
+
+      -- Auto-login and redirect to the schedule page
+      addMessageI "is-success" MsgVerifyScheduleSuccess
+      setCreds
+        False
+        Creds
+          { credsPlugin = salsaAuthPluginName,
+            credsIdent = emailAddressText $ userEmailAddress user,
+            credsExtra = []
+          }
+      redirect $ AccountR $ AccountScheduleR $ scheduleUuid schedule
+
+getScheduleUpdateR :: ScheduleReminderSecret -> Handler Html
+getScheduleUpdateR secret = do
+  mScheduleReminder <- runDB $ getBy $ UniqueScheduleReminderSecret secret
+  case mScheduleReminder of
+    Nothing -> notFound
+    Just (Entity _ scheduleReminder) -> do
+      schedule <- runDB $ get404 $ scheduleReminderSchedule scheduleReminder
+      organiser <- runDB $ get404 $ scheduleOrganiser schedule
+      user <- runDB $ get404 $ organiserUser organiser
+
+      -- Auto-login and redirect to the schedule page
+      setCreds
+        False
+        Creds
+          { credsPlugin = salsaAuthPluginName,
+            credsIdent = emailAddressText $ userEmailAddress user,
+            credsExtra = []
+          }
+      redirect $ AccountR $ AccountScheduleR $ scheduleUuid schedule
 
 getFuturePartiesOfSchedule :: MonadIO m => Day -> ScheduleId -> SqlPersistT m [PartyId]
 getFuturePartiesOfSchedule today scheduleId = fmap (fmap E.unValue) $

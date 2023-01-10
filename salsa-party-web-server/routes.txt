@@ -30,7 +30,8 @@
 /unsub/reminder/#OrganiserReminderSecret UnsubReminderR GET
 /unsub/prospect/#ProspectSecret UnsubProspectR GET
 
-/verify/schedule/#ScheduleReminderSecret VerifyScheduleR GET
+/schedule/verify/#ScheduleReminderSecret ScheduleVerifyR GET
+/schedule/update/#ScheduleReminderSecret ScheduleUpdateR GET
 
 /account AccountR:
   / AccountOverviewR GET

@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 -- Not sure why this is necessary?
-{-# OPTIONS_GHC -fno-warn-partial-fields -ddump-splices #-}
+{-# OPTIONS_GHC -fno-warn-partial-fields #-}
 
 module Salsa.Party.Web.Server.Foundation.I18N.Messages where
 

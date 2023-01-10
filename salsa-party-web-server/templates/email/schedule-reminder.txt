@@ -10,10 +10,10 @@ Title: #{scheduleTitle schedule}
 Recurrence: #{recurrenceDescriptionEnglish $ scheduleRecurrence schedule}
 
 Click here if this information is still accurate:
-@{VerifyScheduleR $ scheduleReminderSecret scheduleReminder}
+@{ScheduleVerifyR $ scheduleReminderSecret scheduleReminder}
 
 If the party information needs updating, please make any necessary changes here:
-@{AccountR $ AccountScheduleR $ scheduleUuid schedule}
+@{ScheduleUpdateR $ scheduleReminderSecret scheduleReminder}
 
 **If this party is not updated, cancelled, or deleted, by #{formatTime defaultTimeLocale "%F" $ scheduleExpiryDate schedule scheduleReminder}, it will be marked as unverified and eventually removed from the site.**
 

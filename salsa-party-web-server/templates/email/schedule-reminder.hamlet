@@ -18,13 +18,13 @@
     <p>
       Click
       <b>
-        <a href=@{VerifyScheduleR $ scheduleReminderSecret scheduleReminder}>
+        <a href=@{ScheduleVerifyR $ scheduleReminderSecret scheduleReminder}>
           here
       if this information is still accurate.
 
     <p>
       If the party information needs updating, please make any necessary changes
-      <a href=@{AccountR $ AccountScheduleR $ scheduleUuid schedule}>
+      <a href=@{ScheduleUpdateR $ scheduleReminderSecret scheduleReminder}>
         here.
 
     <p>
