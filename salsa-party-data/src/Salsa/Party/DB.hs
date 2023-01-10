@@ -78,13 +78,20 @@ type OrganiserUUID = UUID O
 
 type OrganiserSlug = Slug O
 
-data R -- Phantom type anyway
+data OR -- Phantom type anyway
 
 -- This is a secret id that a user has to present to one-click unsubscribe from reminder emails
-type ReminderSecret = UUID R
+type OrganiserReminderSecret = UUID OR
+
+data SR -- Phantom type anyway
+
+-- This is a secret id that a user has to present to verify  a schedule
+type ScheduleReminderSecret = UUID SR
+
+data PS -- Phantom type anyway
 
 -- This is a secret id that a prospect has to present to one-click unsubscribe from prospect emails
-type ProspectSecret = UUID R
+type ProspectSecret = UUID PS
 
 -- When adding a table here, be sure to add the corresponding roundtrip test as well.
 share
@@ -138,7 +145,7 @@ OrganiserReminder sql=organiser_reminder
     consent Bool default=false sql=consent
 
     -- The secret that a user supplies to one-click unsubscribe.
-    secret ReminderSecret default=NULL
+    secret OrganiserReminderSecret
 
     -- Last reminded
     last UTCTime Maybe sql=last
@@ -255,6 +262,9 @@ ScheduleParty
 -- schedule reminder emails about verifying the schedule.
 ScheduleReminder sql=schedule_reminder
     schedule ScheduleId
+
+    -- The secret that a user supplies to verify the schedule
+    secret ScheduleReminderSecret
 
     -- Last reminded
     reminded UTCTime Maybe sql=reminded

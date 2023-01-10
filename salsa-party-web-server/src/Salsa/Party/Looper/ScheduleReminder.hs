@@ -159,36 +159,39 @@ scheduleReminderDecisionSink = C.mapM_ $ \case
           [ "Sending schedule reminder email to address:",
             show emailAddress
           ]
+    secret <- liftIO nextRandomUUID
+    pool <- asks appConnectionPool
+    let runDBHere func = runSqlPool (retryOnBusy func) pool
+    Entity scheduleReminderId scheduleReminder <-
+      runDBHere $
+        upsertBy
+          (UniqueScheduleReminderSchedule scheduleId)
+          ( ScheduleReminder
+              { scheduleReminderSchedule = scheduleId,
+                scheduleReminderSecret = secret,
+                scheduleReminderReminded = Nothing,
+                scheduleReminderVerified = Nothing
+              }
+          )
+          []
     now <- liftIO getCurrentTime
-    sendEmailResult <- sendScheduleReminder emailAddress
+    sendEmailResult <- sendScheduleReminder emailAddress (scheduleReminderSecret scheduleReminder)
     case sendEmailResult of
       NoEmailSent -> logWarnN "No schedule reminder email sent."
       ErrorWhileSendingEmail _ -> logErrorN $ T.pack $ unwords ["Failed to send schedule reminder email to address:", show emailAddress]
       EmailSentSuccesfully -> do
         logInfoN $ T.pack $ unwords ["Succesfully send schedule reminder email to address:", show emailAddress, "about schedule", show (fromSqlKey scheduleId)]
-        pool <- asks appConnectionPool
-        let runDBHere func = runSqlPool (retryOnBusy func) pool
-        void $
-          runDBHere $
-            upsertBy
-              (UniqueScheduleReminderSchedule scheduleId)
-              ( ScheduleReminder
-                  { scheduleReminderSchedule = scheduleId,
-                    scheduleReminderReminded = Just now,
-                    scheduleReminderVerified = Nothing
-                  }
-              )
-              [ScheduleReminderReminded =. Just now]
+        runDBHere $ update scheduleReminderId [ScheduleReminderReminded =. Just now]
 
-sendScheduleReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => EmailAddress -> m SendEmailResult
-sendScheduleReminder emailAddress = do
+sendScheduleReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => EmailAddress -> ScheduleReminderSecret -> m SendEmailResult
+sendScheduleReminder emailAddress secret = do
   let subject = SES.newContent "Action required: Verify your recurring party on Social Dance Today."
 
   app <- ask
   let urlRender = yesodRender app (fromMaybe "" $ appRoot app)
 
-  let textBody = SES.newContent $ scheduleReminderTextContent urlRender
-  let htmlBody = SES.newContent $ scheduleReminderHtmlContent urlRender
+  let textBody = SES.newContent $ scheduleReminderTextContent urlRender secret
+  let htmlBody = SES.newContent $ scheduleReminderHtmlContent urlRender secret
 
   let body = SES.newBody {SES.html = Just htmlBody, SES.text = Just textBody}
 
@@ -198,8 +201,8 @@ sendScheduleReminder emailAddress = do
 
   sendEmailFromNoReply app destination message
 
-scheduleReminderTextContent :: (Route App -> [(Text, Text)] -> Text) -> Text
-scheduleReminderTextContent urlRender = LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/schedule-reminder.txt") urlRender
+scheduleReminderTextContent :: (Route App -> [(Text, Text)] -> Text) -> ScheduleReminderSecret -> Text
+scheduleReminderTextContent urlRender secret = LT.toStrict $ LTB.toLazyText $ $(textFile "templates/email/schedule-reminder.txt") urlRender
 
-scheduleReminderHtmlContent :: (Route App -> [(Text, Text)] -> Text) -> Text
-scheduleReminderHtmlContent urlRender = LT.toStrict $ renderHtml $ $(hamletFile "templates/email/schedule-reminder.hamlet") urlRender
+scheduleReminderHtmlContent :: (Route App -> [(Text, Text)] -> Text) -> ScheduleReminderSecret -> Text
+scheduleReminderHtmlContent urlRender secret = LT.toStrict $ renderHtml $ $(hamletFile "templates/email/schedule-reminder.hamlet") urlRender

@@ -27,7 +27,7 @@
 
 /image/#CASKey ImageR GET
 
-/unsub/reminder/#ReminderSecret UnsubReminderR GET
+/unsub/reminder/#OrganiserReminderSecret UnsubReminderR GET
 /unsub/Prospect/#ProspectSecret UnsubProspectR GET
 
 /account AccountR:

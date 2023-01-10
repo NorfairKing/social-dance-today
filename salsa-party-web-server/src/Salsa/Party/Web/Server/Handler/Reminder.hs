@@ -6,7 +6,7 @@ module Salsa.Party.Web.Server.Handler.Reminder where
 
 import Salsa.Party.Web.Server.Handler.Import
 
-getUnsubReminderR :: ReminderSecret -> Handler Html
+getUnsubReminderR :: OrganiserReminderSecret -> Handler Html
 getUnsubReminderR secret = do
   mOrganiserReminder <- runDB $ getBy $ UniqueOrganiserReminderSecret secret
   case mOrganiserReminder of
