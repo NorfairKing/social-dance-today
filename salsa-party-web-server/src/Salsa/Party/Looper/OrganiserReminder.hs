@@ -132,7 +132,7 @@ reminderInterval :: NominalDiffTime
 reminderInterval = 7 * nominalDay
 
 organiserReminderDecisionSink :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => ConduitT OrganiserReminderDecision void m ()
-organiserReminderDecisionSink = awaitForever $ \case
+organiserReminderDecisionSink = C.mapM_ $ \case
   NoReminderConsent -> logDebugN "Not sending a reminder because the organiser has revoked consent."
   SentReminderTooRecentlyAlready recently ->
     logDebugN $
@@ -142,7 +142,7 @@ organiserReminderDecisionSink = awaitForever $ \case
             show recently
           ]
   OrganiserNotFound organiserId ->
-    logWarnN $
+    logErrorN $
       T.pack $
         unwords
           [ "Organiser not found:",
@@ -156,7 +156,7 @@ organiserReminderDecisionSink = awaitForever $ \case
             show day
           ]
   UserNotFound userId ->
-    logWarnN $
+    logErrorN $
       T.pack $
         unwords
           [ "User not found:",
@@ -178,7 +178,7 @@ organiserReminderDecisionSink = awaitForever $ \case
             show $ fromSqlKey userId,
             show created
           ]
-  ShouldSendReminder organiserReminderId emailAddress secret -> lift $ do
+  ShouldSendReminder organiserReminderId emailAddress secret -> do
     now <- liftIO getCurrentTime
     sendOrganiserReminder emailAddress secret
     pool <- asks appConnectionPool

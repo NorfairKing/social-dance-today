@@ -121,7 +121,43 @@ scheduleReminderGraceTimeToVerify :: NominalDiffTime
 scheduleReminderGraceTimeToVerify = 3 * 30 * nominalDay
 
 scheduleReminderDecisionSink :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => ConduitT ScheduleReminderDecision void m ()
-scheduleReminderDecisionSink = undefined
+scheduleReminderDecisionSink = C.mapM_ $ \case
+  NotDueForReminderUntil ut ->
+    logDebugN $
+      T.pack $
+        unwords
+          [ "Not sending a schedule reminder because the schedule is not due for a reminder until:",
+            show ut
+          ]
+  ScheduleOrganiserNotFound organiserId ->
+    logErrorN $
+      T.pack $
+        unwords
+          [ "Organiser not found:",
+            show $ fromSqlKey organiserId
+          ]
+  ScheduleUserNotFound userId ->
+    logErrorN $
+      T.pack $
+        unwords
+          [ "User not found:",
+            show $ fromSqlKey userId
+          ]
+  SentScheduleReminderTooRecentlyAlready ut ->
+    logDebugN $
+      T.pack $
+        unwords
+          [ "Not sending a schedule reminder because we've already recently sent a reminder:",
+            show ut
+          ]
+  ShouldSendScheduleReminder emailAddress -> do
+    logInfoN $
+      T.pack $
+        unwords
+          [ "Sending schedule reminder email to address:",
+            show emailAddress
+          ]
+    sendScheduleReminder emailAddress
 
 sendScheduleReminder :: (MonadUnliftIO m, MonadLoggerIO m, MonadReader App m) => EmailAddress -> m ()
 sendScheduleReminder = undefined

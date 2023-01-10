@@ -42,11 +42,11 @@ spec = do
                 scheduleId <- insert schedule
                 let scheduleEntity = Entity scheduleId schedule
                 decision <- makeScheduleReminderDecision scheduleEntity
-                case decision of
-                  NotDueForReminderUntil _ -> pure ()
-                  d -> liftIO $ expectationFailure $ "Expected 'NotDueForReminderUntil' but got: " <> show d
+                liftIO $ case decision of
+                  NotDueForReminderUntil ut -> ut `shouldBe` addUTCTime scheduleReminderGraceTimeToBeReminded now
+                  d -> expectationFailure $ "Expected 'NotDueForReminderUntil' but got: " <> show d
 
-      it "decides not to send a reminder for a schedule that's recently been created" $ \pool ->
+      it "decides not to send a reminder for a schedule that's recently been modified" $ \pool ->
         forAllValid $ \userPrototype ->
           forAllValid $ \organiserPrototype ->
             forAllValid $ \schedulePrototype ->
@@ -66,9 +66,9 @@ spec = do
                   scheduleId <- insert schedule
                   let scheduleEntity = Entity scheduleId schedule
                   decision <- makeScheduleReminderDecision scheduleEntity
-                  case decision of
-                    NotDueForReminderUntil _ -> pure ()
-                    d -> liftIO $ expectationFailure $ "Expected 'NotDueForReminderUntil' but got: " <> show d
+                  liftIO $ case decision of
+                    NotDueForReminderUntil ut -> ut `shouldBe` addUTCTime scheduleReminderGraceTimeToBeReminded (max created now)
+                    d -> expectationFailure $ "Expected 'NotDueForReminderUntil' but got: " <> show d
 
       it "decides not to send another reminder for a schedule that's only recently had a reminder sent" $ \pool ->
         forAllValid $ \userPrototype ->
@@ -97,9 +97,9 @@ spec = do
                 insert_ scheduleReminder
                 let scheduleEntity = Entity scheduleId schedule
                 decision <- makeScheduleReminderDecision scheduleEntity
-                case decision of
-                  SentScheduleReminderTooRecentlyAlready _ -> pure ()
-                  d -> liftIO $ expectationFailure $ "Expected 'SentScheduleReminderTooRecentlyAlready' but got: " <> show d
+                liftIO $ case decision of
+                  SentScheduleReminderTooRecentlyAlready ut -> ut `shouldBe` now
+                  d -> expectationFailure $ "Expected 'SentScheduleReminderTooRecentlyAlready' but got: " <> show d
 
       it "decides to send a reminder for an old schedule that's not had any reminders sent" $ \pool ->
         forAllValid $ \userPrototype ->
@@ -159,9 +159,9 @@ spec = do
                   insert_ scheduleReminder
                   let scheduleEntity = Entity scheduleId schedule
                   decision <- makeScheduleReminderDecision scheduleEntity
-                  case decision of
-                    NotDueForReminderUntil _ -> pure ()
-                    d -> liftIO $ expectationFailure $ "Expected 'NotDueForReminderUntil' but got: " <> show d
+                  liftIO $ case decision of
+                    NotDueForReminderUntil ut -> ut `shouldBe` addUTCTime scheduleReminderGraceTimeToBeReminded now
+                    d -> expectationFailure $ "Expected 'NotDueForReminderUntil' but got: " <> show d
 
       it "always decides something" $ \pool ->
         forAllValid $ \userPrototype ->
